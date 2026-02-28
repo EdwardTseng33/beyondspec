@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://beyondspec.tw/sitemap.xml
