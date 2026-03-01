@@ -308,18 +308,67 @@ const PriorityDot = ({ priority }) => {
   return <span title={`優先級：${p.label}`} style={{ fontSize: 10 }}>{p.icon}</span>;
 };
 
-const Btn = ({ children, onClick, color = C.accent, outline, small, full, style: sx }) => {
+// ══════════════════════════════════════════════
+// 🎨 Design System — Button Component
+// ══════════════════════════════════════════════
+// Variants: primary (filled) / secondary (outline) / ghost (text only) / danger
+// Sizes: sm / md (default) / lg
+// Usage: <Btn>Primary</Btn>  <Btn variant="secondary">Cancel</Btn>  <Btn size="sm">Small</Btn>
+//        <Btn outline>...</Btn> is legacy alias for variant="secondary"
+
+const Btn = ({ children, onClick, color = C.accent, outline, variant, small, size, full, icon, style: sx }) => {
   const [hov, setHov] = useState(false);
+  // Resolve variant: legacy `outline` prop → "secondary"
+  const v = variant || (outline ? "secondary" : "primary");
+  // Resolve size: legacy `small` prop → "sm"
+  const s = size || (small ? "sm" : "md");
+
+  const sizeMap = {
+    sm:  { padding: "6px 14px", fontSize: 13, iconSize: 13, borderRadius: 8, gap: 5 },
+    md:  { padding: "9px 20px", fontSize: 14, iconSize: 14, borderRadius: 10, gap: 6 },
+    lg:  { padding: "11px 26px", fontSize: 15, iconSize: 15, borderRadius: 12, gap: 7 },
+  };
+
+  const variantStyles = {
+    primary: {
+      border: "none",
+      background: hov ? color : `${color}dd`,
+      color: "#fff",
+      boxShadow: hov ? `0 4px 14px ${color}40` : `0 2px 8px ${color}20`,
+    },
+    secondary: {
+      border: `1.5px solid ${hov ? color : `${color}50`}`,
+      background: hov ? `${color}12` : "transparent",
+      color: hov ? color : `${color}cc`,
+      boxShadow: "none",
+    },
+    ghost: {
+      border: "1.5px solid transparent",
+      background: hov ? "rgba(255,255,255,.06)" : "transparent",
+      color: hov ? C.ink : C.inkMuted,
+      boxShadow: "none",
+    },
+    danger: {
+      border: "none",
+      background: hov ? C.rose : `${C.rose}dd`,
+      color: "#fff",
+      boxShadow: hov ? `0 4px 14px ${C.rose}40` : `0 2px 8px ${C.rose}20`,
+    },
+  };
+
+  const sz = sizeMap[s];
+  const vs = variantStyles[v] || variantStyles.primary;
+
   return (
     <button onClick={onClick} className="castle-btn-pop"
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
-        padding: small ? "6px 14px" : "9px 20px", borderRadius: 10,
-        border: outline ? `1px solid ${color}40` : "none",
-        background: outline ? (hov ? `${color}10` : "transparent") : (hov ? `${color}30` : `${color}20`),
-        color, fontSize: small ? 13 : 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+        padding: sz.padding, borderRadius: sz.borderRadius,
+        border: vs.border, background: vs.background, color: vs.color,
+        fontSize: sz.fontSize, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
         transition: T, width: full ? "100%" : "auto",
-        boxShadow: hov && !outline ? `0 4px 12px ${color}20` : "none",
+        boxShadow: vs.boxShadow, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: sz.gap,
+        letterSpacing: ".02em",
         ...sx
       }}>{children}</button>
   );
@@ -355,7 +404,7 @@ const ConfirmModal = ({ title, message, onConfirm, onCancel, danger }) => {
         <h3 style={{ margin: "0 0 10px", fontSize: 18, fontWeight: 800, color: C.ink }}>{title}</h3>
         <p style={{ margin: "0 0 24px", fontSize: 14, color: C.inkSoft, lineHeight: 1.7 }}>{message}</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-          <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+          <Btn variant="ghost" onClick={onCancel}>取消</Btn>
           <Btn color={danger ? C.rose : C.accent} onClick={onConfirm}>{danger ? "確定刪除" : "確定"}</Btn>
         </div>
       </div>
@@ -399,7 +448,7 @@ const LostReasonModal = ({ dealName, onConfirm, onCancel }) => {
           </div>
         )}
         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-          <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+          <Btn variant="ghost" onClick={onCancel}>取消</Btn>
           <Btn color={C.rose} onClick={() => { if (reason) onConfirm(reason, customNote); }}>
             {reason ? "確認標記未成案" : "請選擇原因"}
           </Btn>
@@ -592,7 +641,7 @@ const DealForm = ({ deal, roles, allDeals, onSave, onCancel }) => {
       )}
       <Field label="備註"><textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={f.notes} onChange={(e) => set("notes", e.target.value)} /></Field>
       <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 10 }}>
-        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn variant="ghost" onClick={onCancel}>取消</Btn>
         <Btn color={C.emerald} onClick={() => { if (f.name && f.company) onSave(f); }}>{deal ? "儲存" : "新增"}</Btn>
       </div>
     </div>
@@ -619,7 +668,7 @@ const TaskForm = ({ task, deals, roles, onSave, onCancel }) => {
         </select>
       </Field>
       <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 10 }}>
-        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn variant="ghost" onClick={onCancel}>取消</Btn>
         <Btn color={C.emerald} onClick={() => { if (f.text) onSave(f); }}>{task ? "儲存" : "新增"}</Btn>
       </div>
     </div>
@@ -642,7 +691,7 @@ const LeadForm = ({ lead, roles, onSave, onCancel }) => {
       </div>
       <Field label="備註"><textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={f.notes} onChange={(e) => set("notes", e.target.value)} /></Field>
       <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 10 }}>
-        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn variant="ghost" onClick={onCancel}>取消</Btn>
         <Btn color={C.emerald} onClick={() => { if (f.name && f.company) onSave(f); }}>{lead ? "儲存" : "新增"}</Btn>
       </div>
     </div>
@@ -684,7 +733,7 @@ const RoleForm = ({ role, onSave, onCancel }) => {
         <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 10, background: `${f.color}18`, color: f.color, fontSize: 15, fontWeight: 600 }}>{f.emoji} {f.name || "未命名"} <span style={{ fontSize: 12, opacity: .6 }}>({f.title || "無職稱"})</span></span>
       </div>
       <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 18 }}>
-        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn variant="ghost" onClick={onCancel}>取消</Btn>
         <Btn color={C.emerald} onClick={() => { if (f.name) onSave(f); }}>{role ? "儲存" : "新增角色"}</Btn>
       </div>
     </div>
@@ -838,11 +887,11 @@ const PipelineView = ({ deals, roles, onArchive, onUpdate, onStageChange, expand
       icon={editing ? "✏️" : selectedStage.icon}
       accentColor={selectedStage.color}
       actions={editing ? <>
-        <Btn small color={C.emerald} onClick={saveEdit}>💾 儲存變更</Btn>
-        <Btn small outline color={C.inkMuted} onClick={cancelEdit}>取消</Btn>
+        <Btn color={C.emerald} size="sm" onClick={saveEdit}>儲存變更</Btn>
+        <Btn variant="ghost" size="sm" onClick={cancelEdit}>取消</Btn>
       </> : <>
         <Btn small color={C.accent} onClick={startEdit}>✏️ 編輯</Btn>
-        <Btn small outline color={C.rose} onClick={() => { onArchive(selectedDeal.id); onExpand(null); }}>📦 封存</Btn>
+        <Btn variant="secondary" color={C.rose} size="sm" onClick={() => { onArchive(selectedDeal.id); onExpand(null); }}>封存</Btn>
       </>}
     >
       {/* Stage quick-switch — always visible */}
@@ -1119,7 +1168,7 @@ const TasksView = ({ tasks, deals, roles, onEdit, onArchive, onStatusChange, sea
         title={selectedTask.text} icon={pri?.icon || "📋"} accentColor={st?.color}
         actions={<>
           <Btn small color={C.accent} onClick={() => onEdit(selectedTask)}>✏️ 編輯任務</Btn>
-          <Btn small outline color={C.rose} onClick={() => { onArchive(selectedTask.id); setSelectedId(null); }}>📦 封存</Btn>
+          <Btn variant="secondary" color={C.rose} size="sm" onClick={() => { onArchive(selectedTask.id); setSelectedId(null); }}>封存</Btn>
         </>}
       >
         {/* Status badge row */}
@@ -1253,7 +1302,7 @@ const BDTrackerView = ({ leads, roles, onEdit, onArchive, onConvert }) => {
       actions={<>
         <Btn small color={C.accent} onClick={() => onEdit(selectedLead)}>✏️ 編輯</Btn>
         {selectedLead.status === "call_booked" && <Btn small color={C.emerald} onClick={() => { onConvert(selectedLead); setSelectedId(null); }}>🎯 轉入漏斗</Btn>}
-        <Btn small outline color={C.rose} onClick={() => { onArchive(selectedLead.id); setSelectedId(null); }}>📦 封存</Btn>
+        <Btn variant="secondary" color={C.rose} size="sm" onClick={() => { onArchive(selectedLead.id); setSelectedId(null); }}>封存</Btn>
       </>}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
@@ -1467,8 +1516,8 @@ const AnalyticsView = ({ deals, roles, goals: savedGoals, onGoalsChange }) => {
             ))}
           </div>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
-            <Btn outline color={C.inkMuted} small onClick={() => setShowGoalEditor(false)}>取消</Btn>
-            <Btn color={C.emerald} small onClick={() => { onGoalsChange(goalDraft); setShowGoalEditor(false); }}>儲存目標</Btn>
+            <Btn variant="ghost" size="sm" onClick={() => setShowGoalEditor(false)}>取消</Btn>
+            <Btn color={C.emerald} size="sm" onClick={() => { onGoalsChange(goalDraft); setShowGoalEditor(false); }}>儲存目標</Btn>
           </div>
         </div>
       )}
@@ -1798,8 +1847,8 @@ const DocumentsView = ({ userDocs, onAddDoc, onDeleteDoc, showAddForm, onCloseFo
               style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.ink, fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <Btn color={C.emerald} small onClick={handleAddDoc}>✅ 新增</Btn>
-            <Btn outline color={C.inkMuted} small onClick={onCloseForm}>取消</Btn>
+            <Btn color={C.emerald} size="sm" onClick={handleAddDoc}>新增</Btn>
+            <Btn variant="ghost" size="sm" onClick={onCloseForm}>取消</Btn>
           </div>
         </div>
       )}
