@@ -42,12 +42,13 @@ const { useState, useRef, useEffect, useCallback } = React;
 const API_URL = "https://script.google.com/macros/s/AKfycbyzmgzpzVtlIQeKnDhBQocVRDpxGxlSZvBGLgTy4aEl8yL5A6lwV2-qfO2n8IM96GU4/exec";
 const GOOGLE_CLIENT_ID = "870408555328-8vg2runp456id06aeen8vcplfbhl8c60.apps.googleusercontent.com";
 
-// localStorage helper
+// localStorage helper — user-scoped for multi-tenant isolation
 const ls = {
-  get: (key, fallback) => { try { const v = localStorage.getItem(`castle_${key}`); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
-  set: (key, val) => { try { localStorage.setItem(`castle_${key}`, JSON.stringify(val)); } catch {} },
-  getUser: () => ls.get("user", null),
-  setUser: (u) => ls.set("user", u),
+  _uid: () => { try { const u = JSON.parse(localStorage.getItem("castle_user")); return u?.email ? u.email.replace(/[^a-zA-Z0-9]/g, "_") : "guest"; } catch { return "guest"; } },
+  get: (key, fallback) => { try { const v = localStorage.getItem(`castle_${ls._uid()}_${key}`); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
+  set: (key, val) => { try { localStorage.setItem(`castle_${ls._uid()}_${key}`, JSON.stringify(val)); } catch {} },
+  getUser: () => { try { const v = localStorage.getItem("castle_user"); return v ? JSON.parse(v) : null; } catch { return null; } },
+  setUser: (u) => { try { localStorage.setItem("castle_user", JSON.stringify(u)); } catch {} },
 };
 
 // API caller (fire-and-forget for writes, await for reads)
@@ -150,21 +151,21 @@ const BD_STATUS = [
 ];
 const BD_CHANNELS = ["LinkedIn", "AppWorks", "AAMA", "TTA", "Startup Island", "COSCUP / g0v", "活動認識", "朋友推薦", "其他"];
 
-// ── Document Templates ──
+// ── Document Templates (built-in, no external files needed) ──
 const DOC_TEMPLATES = [
-  { id: "contract-tier1", name: "Tier 1 服務合約（產品健檢）", category: "合約", icon: "📝", format: "DOCX", url: "/templates/contract-tier1.docx", desc: "單次產品健檢合約範本，含服務範圍、交付物、付款條件" },
-  { id: "contract-tier2", name: "Tier 2 服務合約（Sprint）", category: "合約", icon: "📝", format: "DOCX", url: "/templates/contract-tier2.docx", desc: "2~4 週 Sprint 合約範本，含里程碑、驗收標準" },
-  { id: "contract-tier3", name: "Tier 3 服務合約（長期顧問）", category: "合約", icon: "📝", format: "DOCX", url: "/templates/contract-tier3.docx", desc: "月費制顧問合約，含 SLA、變更流程" },
-  { id: "proposal-template", name: "提案簡報模板", category: "提案", icon: "📊", format: "PPTX", url: "/templates/proposal-template.pptx", desc: "標準提案簡報，含公司介紹、方法論、案例、報價" },
-  { id: "discovery-deck", name: "探索會議簡報模板", category: "提案", icon: "🗓", format: "PPTX", url: "/templates/discovery-deck.pptx", desc: "探索會議用簡報，含產業研究框架、問題清單" },
-  { id: "health-check", name: "產品健檢報告模板", category: "報告", icon: "🩺", format: "DOCX", url: "/templates/health-check-report.docx", desc: "產品健檢標準報告格式，含評分矩陣、建議清單" },
-  { id: "nda", name: "NDA 保密協議", category: "合約", icon: "🔒", format: "PDF", url: "/templates/nda.pdf", desc: "雙方保密協議範本" },
-  { id: "quotation", name: "報價單模板", category: "提案", icon: "💰", format: "XLSX", url: "/templates/quotation.xlsx", desc: "標準報價單，含項目、工時、單價、合計" },
-  { id: "invoice", name: "請款單模板", category: "財務", icon: "🧾", format: "XLSX", url: "/templates/invoice.xlsx", desc: "請款單範本，含匯款資訊、稅務欄位" },
-  { id: "case-study", name: "案例研究模板", category: "行銷", icon: "📖", format: "DOCX", url: "/templates/case-study.docx", desc: "客戶案例撰寫模板，含挑戰、方案、成果結構" },
+  { id: "contract-tier1", name: "Tier 1 服務合約（產品健檢）", category: "合約", icon: "📝", format: "DOCX", desc: "單次產品健檢合約範本，含服務範圍、交付物、付款條件" },
+  { id: "contract-tier2", name: "Tier 2 服務合約（Sprint）", category: "合約", icon: "📝", format: "DOCX", desc: "2~4 週 Sprint 合約範本，含里程碑、驗收標準" },
+  { id: "contract-tier3", name: "Tier 3 服務合約（長期顧問）", category: "合約", icon: "📝", format: "DOCX", desc: "月費制顧問合約，含 SLA、變更流程" },
+  { id: "proposal-template", name: "提案簡報模板", category: "提案", icon: "📊", format: "PPTX", desc: "標準提案簡報，含公司介紹、方法論、案例、報價" },
+  { id: "discovery-deck", name: "探索會議簡報模板", category: "提案", icon: "🗓", format: "PPTX", desc: "探索會議用簡報，含產業研究框架、問題清單" },
+  { id: "health-check", name: "產品健檢報告模板", category: "報告", icon: "🩺", format: "DOCX", desc: "產品健檢標準報告格式，含評分矩陣、建議清單" },
+  { id: "nda", name: "NDA 保密協議", category: "合約", icon: "🔒", format: "PDF", desc: "雙方保密協議範本" },
+  { id: "quotation", name: "報價單模板", category: "提案", icon: "💰", format: "XLSX", desc: "標準報價單，含項目、工時、單價、合計" },
+  { id: "invoice", name: "請款單模板", category: "財務", icon: "🧾", format: "XLSX", desc: "請款單範本，含匯款資訊、稅務欄位" },
+  { id: "case-study", name: "案例研究模板", category: "行銷", icon: "📖", format: "DOCX", desc: "客戶案例撰寫模板，含挑戰、方案、成果結構" },
 ];
 
-const DOC_CATEGORIES = ["全部", "合約", "提案", "報告", "財務", "行銷"];
+const DOC_CATEGORIES = ["全部", "合約", "提案", "報告", "財務", "行銷", "自訂"];
 
 // ── Demo Data ──
 const INIT_DEALS = [
@@ -217,6 +218,51 @@ const exportCSV = (filename, headers, rows) => {
   const a = document.createElement("a");
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
+};
+
+// ── Smart Business Logic ──
+const STAGE_TASKS = {
+  inquiry: [
+    { text: "回覆客戶初步詢問", priority: "high" },
+    { text: "準備公司介紹 & 過往案例", priority: "mid" },
+    { text: "確認客戶需求範圍", priority: "high" },
+  ],
+  exploring: [
+    { text: "準備探索會議簡報", priority: "high" },
+    { text: "研究客戶產業 & 競品", priority: "mid" },
+    { text: "製作初步可行性評估", priority: "mid" },
+  ],
+  proposal: [
+    { text: "撰寫正式提案文件", priority: "high" },
+    { text: "準備報價單", priority: "high" },
+    { text: "內部提案審查", priority: "mid" },
+  ],
+  negotiation: [
+    { text: "準備合約草稿", priority: "high" },
+    { text: "確認付款條件 & 時程", priority: "high" },
+    { text: "安排合約簽署流程", priority: "mid" },
+  ],
+};
+
+const EMAIL_TEMPLATES = {
+  inquiry: (deal) => `${deal.contact} 您好，\n\n感謝您對 Beyond Spec 的關注！我是愛德華，很高興收到您關於「${deal.name}」的詢問。\n\n為了更好地了解您的需求，想請教幾個問題：\n1. 目前產品/專案的發展階段？\n2. 最迫切想解決的問題是什麼？\n3. 預期的時程和預算範圍？\n\n期待與您進一步交流！\n\nBest regards,\n愛德華 | Beyond Spec 規格外工作室`,
+  exploring: (deal) => `${deal.contact} 您好，\n\n感謝上次的交流！針對「${deal.name}」專案，我們已初步了解您的需求。\n\n想跟您約一次探索會議（約 60 分鐘），讓我們更深入討論：\n• 現有產品架構與痛點\n• 可能的解決方案方向\n• 合作模式與時程規劃\n\n您這週有空的時段嗎？\n\nBest regards,\n愛德華 | Beyond Spec`,
+  proposal: (deal) => `${deal.contact} 您好，\n\n附上「${deal.name}」專案的正式提案。\n\n本次提案包含：\n• 需求分析與建議方案\n• 執行時程與里程碑\n• 投資金額：${fmt(deal.value)}\n\n如有任何問題，歡迎隨時討論。期待您的回覆！\n\nBest regards,\n愛德華 | Beyond Spec`,
+  negotiation: (deal) => `${deal.contact} 您好，\n\n很高興「${deal.name}」專案進入最後階段！\n\n附上合約草稿供您審閱，主要條款包括：\n• 服務範圍與交付物\n• 時程：[請填入]\n• 金額：${fmt(deal.value)}\n• 付款方式：[請填入]\n\n如有需要調整的地方，請隨時告知。\n\nBest regards,\n愛德華 | Beyond Spec`,
+  won: (deal) => `${deal.contact} 您好，\n\n感謝選擇 Beyond Spec！🎉\n\n「${deal.name}」專案正式啟動，接下來的步驟：\n1. 專案 Kick-off 會議（本週安排）\n2. 確認詳細需求文件\n3. 第一個里程碑交付\n\n期待合作愉快！\n\nBest regards,\n愛德華 | Beyond Spec`,
+};
+
+// Deal health: days since last activity
+const dealHealth = (deal) => {
+  if (deal.archived || deal.stage === "won" || deal.stage === "lost") return null;
+  const created = new Date(deal.created);
+  const now = new Date();
+  const days = Math.floor((now - created) / 86400000);
+  const thresholds = { inquiry: 7, exploring: 14, proposal: 10, negotiation: 7 };
+  const limit = thresholds[deal.stage] || 14;
+  if (days >= limit * 2) return { level: "danger", label: `停滯 ${days} 天`, color: "#EF4444" };
+  if (days >= limit) return { level: "warn", label: `${days} 天未推進`, color: "#F59E0B" };
+  return { level: "ok", label: `${days} 天`, color: null };
 };
 
 // ── Transition helper ──
@@ -577,6 +623,48 @@ const RoleForm = ({ role, onSave, onCancel }) => {
 // ══════════════════════════════════════════════
 
 // ── Stats Row (North Star Metrics) ──
+// ── Morning Brief Banner ──
+const MorningBrief = ({ deals, tasks, leads, onDismiss }) => {
+  const { mobile } = useWindowSize();
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+
+  const active = deals.filter(d => !d.archived && !["won","lost"].includes(d.stage));
+  const overdueTasks = tasks.filter(t => !t.archived && t.status !== "done" && t.due < today());
+  const stale = active.filter(d => { const h = dealHealth(d); return h && h.level !== "ok"; });
+  const hotDeals = active.filter(d => d.stage === "negotiation");
+  const todayTasks = tasks.filter(t => !t.archived && t.status !== "done" && t.due === today());
+
+  // Generate smart brief
+  const lines = [];
+  if (overdueTasks.length > 0) lines.push({ icon: "🔴", text: `${overdueTasks.length} 個逾期任務需要處理`, color: C.rose });
+  if (todayTasks.length > 0) lines.push({ icon: "📋", text: `今天有 ${todayTasks.length} 個任務到期`, color: C.gold });
+  if (hotDeals.length > 0) lines.push({ icon: "🔥", text: `${hotDeals.length} 個案件在議價階段，接近簽約！`, color: C.emerald });
+  if (stale.length > 0) lines.push({ icon: "⚠️", text: `${stale.length} 個案件停滯過久，建議主動跟進`, color: C.orange });
+  if (lines.length === 0) lines.push({ icon: "✨", text: "一切順利！今天繼續保持好節奏。", color: C.accent });
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "早安" : hour < 18 ? "午安" : "晚安";
+
+  return (
+    <div style={{ background: `linear-gradient(135deg, ${C.card} 0%, ${C.surface} 100%)`, border: `1px solid ${C.borderHover}`, borderRadius: 16, padding: mobile ? 18 : 24, marginBottom: mobile ? 16 : 24, position: "relative" }}>
+      <button onClick={() => setDismissed(true)} style={{ position: "absolute", top: 12, right: 14, background: "transparent", border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, fontFamily: "inherit", padding: 4 }}>✕</button>
+      <div style={{ fontSize: mobile ? 16 : 18, fontWeight: 800, color: C.ink, marginBottom: 12 }}>🏰 {greeting}，魔法長！</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {lines.map((l, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: l.color || C.inkSoft }}>
+            <span>{l.icon}</span>
+            <span>{l.text}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 11, color: C.inkMuted, marginTop: 12, borderTop: `1px solid ${C.border}`, paddingTop: 10 }}>
+        📊 管線中 {active.length} 案 · 📋 待辦 {tasks.filter(t => !t.archived && t.status !== "done").length} 項 · 🎯 追蹤 {leads.filter(l => !l.archived).length} 個 BD 對象
+      </div>
+    </div>
+  );
+};
+
 const StatsRow = ({ deals, tasks, leads, onHealthClick }) => {
   const { mobile } = useWindowSize();
   const active = deals.filter((d) => !d.archived && !["won", "lost"].includes(d.stage));
@@ -630,11 +718,17 @@ const PipelineView = ({ deals, roles, onArchive, onUpdate, onStageChange, expand
 
   const DealCard = ({ d, stage }) => {
     const isSelected = expandedId === d.id;
+    const health = dealHealth(d);
     return (
       <div style={{ marginBottom: 8 }}>
         <HoverCard onClick={() => onExpand(isSelected ? null : d.id)} selected={isSelected} accentColor={stage.color}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, lineHeight: 1.4, flex: 1 }}>{d.name}</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, lineHeight: 1.4, flex: 1 }}>
+              {d.name}
+              {health && health.level !== "ok" && (
+                <span title={health.label} style={{ marginLeft: 6, fontSize: 10, padding: "2px 6px", borderRadius: 6, background: `${health.color}20`, color: health.color, fontWeight: 600, verticalAlign: "middle" }}>{health.label}</span>
+              )}
+            </div>
             <span style={{ fontSize: 13, color: C.inkMuted, opacity: .6 }}>→</span>
           </div>
           <div style={{ fontSize: 12, color: C.inkMuted, margin: "6px 0 8px" }}>{d.company}</div>
@@ -727,6 +821,31 @@ const PipelineView = ({ deals, roles, onArchive, onUpdate, onStageChange, expand
           {selectedDeal.notes && (
             <DrawerSection label="備註">
               <div style={{ background: C.surface, borderRadius: 10, padding: 14, fontSize: 14, color: C.inkSoft, lineHeight: 1.8, border: `1px solid ${C.border}` }}>{selectedDeal.notes}</div>
+            </DrawerSection>
+          )}
+          {/* Smart: Suggested tasks for current stage */}
+          {STAGE_TASKS[selectedDeal.stage] && (
+            <DrawerSection label="💡 建議任務">
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {STAGE_TASKS[selectedDeal.stage].map((st, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: C.surface, borderRadius: 10, border: `1px solid ${C.border}`, fontSize: 13, color: C.inkSoft }}>
+                    <span style={{ color: st.priority === "high" ? C.rose : C.gold, fontSize: 10 }}>{st.priority === "high" ? "🔴" : "🟡"}</span>
+                    <span style={{ flex: 1 }}>{st.text}</span>
+                  </div>
+                ))}
+              </div>
+            </DrawerSection>
+          )}
+          {/* Smart: Email template */}
+          {EMAIL_TEMPLATES[selectedDeal.stage] && (
+            <DrawerSection label="📧 快速跟進信件">
+              <div style={{ position: "relative" }}>
+                <pre style={{ background: C.surface, borderRadius: 10, padding: 14, fontSize: 12, color: C.inkSoft, lineHeight: 1.7, border: `1px solid ${C.border}`, whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "inherit", margin: 0, maxHeight: 200, overflowY: "auto" }}>
+                  {EMAIL_TEMPLATES[selectedDeal.stage](selectedDeal)}
+                </pre>
+                <Btn small color={C.accent} onClick={() => { navigator.clipboard?.writeText(EMAIL_TEMPLATES[selectedDeal.stage](selectedDeal)); }}
+                  style={{ position: "absolute", top: 8, right: 8 }}>📋 複製</Btn>
+              </div>
             </DrawerSection>
           )}
         </>
@@ -1301,36 +1420,83 @@ const AnalyticsView = ({ deals, roles, goals: savedGoals, onGoalsChange }) => {
 };
 
 // ── Documents / Templates View ──
-const DocumentsView = () => {
+const DocumentsView = ({ userDocs, onAddDoc, onDeleteDoc, showAddForm, onCloseForm }) => {
   const { mobile } = useWindowSize();
   const [catFilter, setCatFilter] = useState("全部");
   const [copied, setCopied] = useState(null);
+  const [newDoc, setNewDoc] = useState({ name: "", url: "", category: "自訂", desc: "" });
 
-  const filtered = catFilter === "全部" ? DOC_TEMPLATES : DOC_TEMPLATES.filter((d) => d.category === catFilter);
+  // Combine built-in templates (no url) + user custom docs (with url)
+  const allDocs = [...DOC_TEMPLATES, ...(userDocs || [])];
+  const filtered = catFilter === "全部" ? allDocs : allDocs.filter((d) => d.category === catFilter);
 
   const copyLink = (url) => {
-    const fullUrl = window.location.origin + url;
-    navigator.clipboard?.writeText(fullUrl).then(() => {
+    navigator.clipboard?.writeText(url).then(() => {
       setCopied(url);
       setTimeout(() => setCopied(null), 2000);
     });
   };
 
-  const formatColors = { DOCX: C.accent, PPTX: C.orange, PDF: C.rose, XLSX: C.emerald };
+  const handleAddDoc = () => {
+    if (!newDoc.name || !newDoc.url) return;
+    const doc = { id: "custom_" + Date.now(), name: newDoc.name, url: newDoc.url, category: newDoc.category || "自訂", icon: "📎", format: newDoc.url.match(/\.(pdf|docx?|xlsx?|pptx?|csv)/i)?.[1]?.toUpperCase() || "LINK", desc: newDoc.desc || "", custom: true };
+    onAddDoc(doc);
+    setNewDoc({ name: "", url: "", category: "自訂", desc: "" });
+    if (onCloseForm) onCloseForm();
+  };
+
+  const formatColors = { DOCX: C.accent, DOC: C.accent, PPTX: C.orange, PPT: C.orange, PDF: C.rose, XLSX: C.emerald, XLS: C.emerald, CSV: C.emerald, LINK: C.cyan };
 
   return (
     <div>
-      <div style={{ fontSize: 15, color: C.inkSoft, marginBottom: 20, lineHeight: 1.7 }}>業務提案、合約範本與文件資源。點擊下載或複製連結分享給客戶。</div>
+      <div style={{ fontSize: 15, color: C.inkSoft, marginBottom: 20, lineHeight: 1.7 }}>
+        業務文件資源庫。內建範本為參考用，自訂文件可貼上 Google Drive / Dropbox 連結來管理。
+      </div>
 
       {/* Category filter */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
         {DOC_CATEGORIES.map((cat) => (
           <button key={cat} onClick={() => setCatFilter(cat)}
             style={{ padding: "6px 16px", borderRadius: 20, border: catFilter === cat ? `1.5px solid ${C.accent}` : `1px solid ${C.border}`, background: catFilter === cat ? `${C.accent}15` : "transparent", color: catFilter === cat ? C.accent : C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T }}>
-            {cat}
+            {cat} {cat === "自訂" && userDocs?.length ? `(${userDocs.length})` : ""}
           </button>
         ))}
       </div>
+
+      {/* Add Document Form */}
+      {showAddForm && (
+        <div style={{ background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 14, padding: mobile ? 18 : 24, marginBottom: 20 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: C.ink, marginBottom: 16 }}>📎 新增自訂文件</div>
+          <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 12 }}>
+            <div>
+              <label style={{ fontSize: 12, color: C.inkMuted, marginBottom: 4, display: "block" }}>文件名稱 *</label>
+              <input value={newDoc.name} onChange={(e) => setNewDoc({ ...newDoc, name: e.target.value })} placeholder="例：Q1 提案簡報"
+                style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.ink, fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 12, color: C.inkMuted, marginBottom: 4, display: "block" }}>分類</label>
+              <select value={newDoc.category} onChange={(e) => setNewDoc({ ...newDoc, category: e.target.value })}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.ink, fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}>
+                {DOC_CATEGORIES.filter(c => c !== "全部").map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ fontSize: 12, color: C.inkMuted, marginBottom: 4, display: "block" }}>連結 URL *（Google Drive、Dropbox 或任何下載連結）</label>
+            <input value={newDoc.url} onChange={(e) => setNewDoc({ ...newDoc, url: e.target.value })} placeholder="https://drive.google.com/file/d/..."
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.ink, fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 12, color: C.inkMuted, marginBottom: 4, display: "block" }}>備註說明</label>
+            <input value={newDoc.desc} onChange={(e) => setNewDoc({ ...newDoc, desc: e.target.value })} placeholder="簡述用途..."
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.ink, fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <Btn color={C.emerald} small onClick={handleAddDoc}>✅ 儲存</Btn>
+            <Btn outline color={C.inkMuted} small onClick={onCloseForm}>取消</Btn>
+          </div>
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "repeat(auto-fill, minmax(340px, 1fr))", gap: 12 }}>
         {filtered.map((doc) => (
@@ -1341,18 +1507,27 @@ const DocumentsView = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                   <div style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>{doc.name}</div>
                   <Badge color={formatColors[doc.format] || C.inkMuted} bg={`${formatColors[doc.format] || C.inkMuted}15`} small>{doc.format}</Badge>
+                  {!doc.url && !doc.custom && <Badge color={C.inkMuted} bg={`${C.inkMuted}10`} small>範本</Badge>}
                 </div>
                 <div style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.6, marginBottom: 12 }}>{doc.desc}</div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <Btn small color={C.accent} onClick={() => window.open(doc.url, "_blank")}>⬇ 下載</Btn>
-                  <Btn small outline color={copied === doc.url ? C.emerald : C.inkMuted} onClick={() => copyLink(doc.url)}>
-                    {copied === doc.url ? "✅ 已複製" : "🔗 複製連結"}
-                  </Btn>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {doc.url ? (
+                    <>
+                      <Btn small color={C.accent} onClick={() => window.open(doc.url, "_blank")}>📂 開啟</Btn>
+                      <Btn small outline color={copied === doc.url ? C.emerald : C.inkMuted} onClick={() => copyLink(doc.url)}>
+                        {copied === doc.url ? "✅ 已複製" : "🔗 複製連結"}
+                      </Btn>
+                      {doc.custom && <Btn small outline color={C.rose} onClick={() => onDeleteDoc(doc.id)}>🗑 刪除</Btn>}
+                    </>
+                  ) : (
+                    <span style={{ fontSize: 12, color: C.inkMuted, fontStyle: "italic" }}>📋 內建範本參考（需自行建立實際檔案）</span>
+                  )}
                 </div>
               </div>
             </div>
           </HoverCard>
         ))}
+        {filtered.length === 0 && <div style={{ padding: 40, textAlign: "center", color: C.inkMuted, fontSize: 14 }}>此分類尚無文件</div>}
       </div>
     </div>
   );
@@ -1502,6 +1677,10 @@ function CastleDashboard() {
   const [activityLog, setActivityLog] = usePersisted("log", []);
   const [goals, setGoals] = usePersisted("goals", { month: { deals: 5, revenue: 300000 }, quarter: { deals: 12, revenue: 800000 }, year: { deals: 40, revenue: 3000000 } });
   const [syncing, setSyncing] = useState(false);
+  const [userDocs, setUserDocs] = usePersisted("docs", []);
+
+  const addUserDoc = (doc) => setUserDocs((prev) => [...prev, doc]);
+  const deleteUserDoc = (id) => setUserDocs((prev) => prev.filter((d) => d.id !== id));
 
   const nDeal = useRef(Math.max(...(deals.length ? deals : INIT_DEALS).map((d) => d.id)) + 1);
   const nTask = useRef(Math.max(...(tasks.length ? tasks : INIT_TASKS).map((t) => t.id)) + 1);
@@ -1746,6 +1925,7 @@ function CastleDashboard() {
 
       {/* ── Remove maxWidth for full-width layout ── */}
       <div style={{ padding: mobile ? "20px 18px" : "28px 36px", flex: 1 }}>
+        <MorningBrief deals={deals} tasks={tasks} leads={leads} />
         <StatsRow deals={deals} tasks={tasks} leads={leads} onHealthClick={() => { setTab("tasks"); setTaskFilter("overdue"); }} />
 
         {/* Tab bar */}
@@ -1762,7 +1942,7 @@ function CastleDashboard() {
             {tab === "pipeline" && <Btn color={C.emerald} onClick={() => setModal("addDeal")} full={mobile}>+ 新增案件</Btn>}
             {tab === "tasks" && <Btn color={C.accent} onClick={() => setModal("addTask")} full={mobile}>+ 新增任務</Btn>}
             {tab === "bd" && <Btn color={C.cyan} onClick={() => setModal("addLead")} full={mobile}>+ 新增 BD 對象</Btn>}
-            {tab === "docs" && <Btn color={C.gold} onClick={() => window.open("/templates/", "_blank")} full={mobile}>📂 開啟文件庫</Btn>}
+            {tab === "docs" && <Btn color={C.gold} onClick={() => setModal("addDoc")} full={mobile}>+ 新增文件</Btn>}
             {tab === "roles" && <Btn color={C.violet} onClick={() => setModal("addRole")} full={mobile}>+ 新增角色</Btn>}
           </div>
         </div>
@@ -1780,7 +1960,7 @@ function CastleDashboard() {
         {tab === "tasks" && <TasksView tasks={tasks} deals={deals.filter((d) => !d.archived)} roles={activeRoles} onEdit={(t) => { setEditItem(t); setModal("editTask"); }} onArchive={archiveTask} onStatusChange={changeTaskStatus} search={taskSearch} filter={taskFilter} />}
         {tab === "bd" && <BDTrackerView leads={leads} roles={activeRoles} onEdit={(l) => { setEditItem(l); setModal("editLead"); }} onArchive={archiveLead} onConvert={convertLead} />}
         {tab === "analytics" && <AnalyticsView deals={deals} roles={roles} goals={goals} onGoalsChange={setGoals} />}
-        {tab === "docs" && <DocumentsView />}
+        {tab === "docs" && <DocumentsView userDocs={userDocs} onAddDoc={addUserDoc} onDeleteDoc={deleteUserDoc} showAddForm={modal === "addDoc"} onCloseForm={() => setModal(null)} />}
         {tab === "roles" && <RolesView roles={roles} onAdd={() => setModal("addRole")} onEdit={(r) => { setEditItem(r); setModal("editRole"); }} onArchive={archiveRole} />}
       </div>
 
@@ -1808,7 +1988,7 @@ function CastleDashboard() {
 
       {/* Footer — pushed to bottom */}
       <div style={{ borderTop: `1px solid ${C.border}`, padding: mobile ? "14px 18px" : "18px 36px", textAlign: "center", marginTop: "auto" }}>
-        <span style={{ fontSize: 12, color: C.inkMuted }}>🏰 移動城堡指揮部 v5.4 — 規格外工作室 Beyond Spec</span>
+        <span style={{ fontSize: 12, color: C.inkMuted }}>🏰 移動城堡指揮部 v6.0 — 規格外工作室 Beyond Spec</span>
       </div>
     </div>
   );
