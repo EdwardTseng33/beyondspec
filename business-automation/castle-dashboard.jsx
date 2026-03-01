@@ -2385,7 +2385,7 @@ const AmbientStars = ({ width = 200, height = 120 }) => {
 };
 
 // ── Version Changelog ──
-const VERSION = "1.06";
+const VERSION = "1.07";
 const CHANGELOG = [
   {
     version: "1.06", date: "2026-03-01", title: "像素世界大升級",
