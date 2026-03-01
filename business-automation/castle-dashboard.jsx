@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
 // ══════════════════════════════════════════════════════════════
-// 🏰 移動城堡業務指揮 Dashboard v1.04
+// 🏰 移動城堡業務指揮 Dashboard v1.08
 // Beyond Spec 規格外工作室 — 業務管理系統
 //
 // 功能模組：
@@ -541,15 +541,15 @@ const DetailDrawer = ({ open, onClose, title, icon, accentColor, children, actio
     <div style={{ position: "fixed", inset: 0, zIndex: 9000, display: "flex", justifyContent: "flex-end" }}>
       {/* Backdrop */}
       <div onClick={onClose} style={{
-        position: "absolute", inset: 0, background: "rgba(0,0,0,.5)", backdropFilter: "blur(4px)",
+        position: "absolute", inset: 0, background: "rgba(0,0,0,.35)", backdropFilter: "blur(2px)",
         animation: "drawerFadeIn .2s ease"
       }} />
       {/* Panel */}
       <div style={{
         position: "relative", width: drawerW, maxWidth: "100%", height: "100%",
-        background: C.bg, borderLeft: mobile ? "none" : `1px solid ${C.border}`,
+        background: C.card, borderLeft: mobile ? "none" : `1.5px solid ${C.borderHover}`,
         display: "flex", flexDirection: "column",
-        boxShadow: "-20px 0 60px rgba(0,0,0,.3)",
+        boxShadow: `-24px 0 80px rgba(0,0,0,.5), -2px 0 20px ${accentColor || C.accent}15`,
         animation: "drawerSlideIn .28s cubic-bezier(.16,1,.3,1)"
       }}>
         {/* Header */}
@@ -890,7 +890,7 @@ const PipelineView = ({ deals, roles, onArchive, onUpdate, onStageChange, expand
         <Btn color={C.emerald} size="sm" onClick={saveEdit}>儲存變更</Btn>
         <Btn variant="ghost" size="sm" onClick={cancelEdit}>取消</Btn>
       </> : <>
-        <Btn small color={C.accent} onClick={startEdit}>✏️ 編輯</Btn>
+        <Btn size="sm" color={C.accent} onClick={startEdit}>編輯</Btn>
         <Btn variant="secondary" color={C.rose} size="sm" onClick={() => { onArchive(selectedDeal.id); onExpand(null); }}>封存</Btn>
       </>}
     >
@@ -1167,7 +1167,7 @@ const TasksView = ({ tasks, deals, roles, onEdit, onArchive, onStatusChange, sea
       <DetailDrawer open={!!selectedTask} onClose={() => setSelectedId(null)}
         title={selectedTask.text} icon={pri?.icon || "📋"} accentColor={st?.color}
         actions={<>
-          <Btn small color={C.accent} onClick={() => onEdit(selectedTask)}>✏️ 編輯任務</Btn>
+          <Btn size="sm" color={C.accent} onClick={() => onEdit(selectedTask)}>編輯任務</Btn>
           <Btn variant="secondary" color={C.rose} size="sm" onClick={() => { onArchive(selectedTask.id); setSelectedId(null); }}>封存</Btn>
         </>}
       >
@@ -1300,8 +1300,8 @@ const BDTrackerView = ({ leads, roles, onEdit, onArchive, onConvert }) => {
     <DetailDrawer open={!!selectedLead} onClose={() => setSelectedId(null)}
       title={selectedLead.name} icon="🎯" accentColor={selectedStatus.color}
       actions={<>
-        <Btn small color={C.accent} onClick={() => onEdit(selectedLead)}>✏️ 編輯</Btn>
-        {selectedLead.status === "call_booked" && <Btn small color={C.emerald} onClick={() => { onConvert(selectedLead); setSelectedId(null); }}>🎯 轉入漏斗</Btn>}
+        <Btn size="sm" color={C.accent} onClick={() => onEdit(selectedLead)}>編輯</Btn>
+        {selectedLead.status === "call_booked" && <Btn size="sm" color={C.emerald} onClick={() => { onConvert(selectedLead); setSelectedId(null); }}>轉入漏斗</Btn>}
         <Btn variant="secondary" color={C.rose} size="sm" onClick={() => { onArchive(selectedLead.id); setSelectedId(null); }}>封存</Btn>
       </>}
     >
@@ -1936,30 +1936,39 @@ const px = (size, grid) => {
         "#": "#3a3a5c", "W": "#e8e8f0", "B": "#6C8EFF", "F": "#FB923C", "R": "#F472B6",
         "G": "#34D399", "Y": "#F5A623", "V": "#A78BFA", "D": "#1c1c28", "S": "#8888aa",
         "O": "#FB923C", "L": "#22D3EE", "C": "#cc5533",
-        // Extended palette for characters
-        "H": "#FFD700", // Howl's golden hair
+        // Extended palette for characters (matched to bead art reference)
+        "H": "#FFD700", // Howl's golden hair (bright)
         "h": "#C4A000", // Howl hair shadow
-        "P": "#F8C8DC", // Skin/peach
+        "P": "#FDDCB5", // Skin/peach (warm)
         "p": "#E8A090", // Skin shadow
-        "K": "#2a2a3c", // Dark coat/black
-        "k": "#444466", // Dark grey
-        "M": "#8B4513", // Brown (Markl hair)
-        "m": "#A0522D", // Light brown
+        "K": "#1a1a2a", // Black coat/clothes
+        "k": "#3a3a5c", // Dark grey fabric
+        "M": "#CD7F32", // Brown/orange hair
+        "m": "#A0522D", // Darker brown hair
         "T": "#D2691E", // Tan/brown
-        "t": "#F4A460", // Sandy brown
-        "e": "#556B2F", // Dark green (Markl outfit)
-        "g": "#2E8B57", // Medium green
-        "b": "#4169E1", // Sophie blue dress
-        "a": "#6495ED", // Sophie light blue
-        "r": "#B22222", // Red accent
-        "w": "#DCDCDC", // Light grey
-        "n": "#8B7355", // Wood/brown
+        "t": "#F4A460", // Sandy brown / straw hat
+        "e": "#4CAF50", // Markl green outfit (brighter)
+        "g": "#2E7D32", // Darker green
+        "b": "#4A90D9", // Sophie blue dress
+        "a": "#7BB8F0", // Sophie light blue
+        "r": "#CC3333", // Red accent / Howl coat lining
+        "w": "#DCDCDC", // Light grey / white gloves
+        "n": "#8B7355", // Wood/stick brown
         "I": "#FFE4B5", // Light skin
         "i": "#DEB887", // Darker skin
         "E": "#C0C0C0", // Silver/metal
         "Z": "#708090", // Slate grey (metal parts)
         "q": "#8B0000", // Dark red (roof)
         "u": "#CD853F", // Peru (building)
+        "1": "#FF6600", // Calcifer bright orange
+        "2": "#FF4400", // Calcifer deep orange
+        "3": "#FFaa00", // Calcifer yellow-orange
+        "4": "#663311", // Dark wood (log)
+        "5": "#995522", // Medium wood
+        "6": "#BB7744", // Light wood
+        "7": "#FFEE88", // Howl bright yellow hair
+        "8": "#DD8855", // Coat rust/tan highlight
+        "9": "#556688", // Dark blue-grey (Howl coat outer)
       }[ch];
       if (c) shadows.push(`${x * size}px ${y * size}px 0 0 ${c}`);
     });
@@ -2011,159 +2020,187 @@ const CASTLE_FRAMES = [
   ],
 ];
 
-// 🔥 Calcifer pixel sprite (8x8) — two animation frames
+// 🔥 Calcifer pixel sprite (10x9) — based on bead art: flame with face on logs
 const CALCIFER_FRAMES = [
   [
-    "  YYYY  ",
-    " YOFFOY ",
-    "YOFFFFO ",
-    "OFFFFFFO",
-    "OFFCCFFO",
-    " OFFFFO ",
-    "  BWBW  ",
-    "   DD   ",
+    "   3YY3   ",
+    "  31OO13  ",
+    " 3O1FF1O3 ",
+    " 1FFFFFF1 ",
+    "O1FFFFFF1O",
+    " 1FKFFKF1 ",
+    " 1FF22FF1 ",
+    "  456654  ",
+    "  44  44  ",
   ],
   [
-    "  YOYY  ",
-    " YOFFOY ",
-    " OFFFFO ",
-    "YFFFFFFO",
-    "OFFCCFFO",
-    " OFFFFO ",
-    "  WBBW  ",
-    "   DD   ",
+    "  3Y3YY   ",
+    "  31OO13  ",
+    "  O1FF1O3 ",
+    " 1FFFFFF1 ",
+    "31FFFFFF1O",
+    " 1FKFFKF1 ",
+    " 1FF22FF1 ",
+    "  456654  ",
+    "   44 44  ",
   ],
 ];
 
-// 🥕 Turnip Head pixel sprite (7x10)
+// 🥕 Turnip Head pixel sprite (11x16) — scarecrow with top hat, outstretched arms, stick
 const TURNIP_FRAMES = [
   [
-    "  GGG  ",
-    " GGGGG ",
-    "  GGG  ",
-    " WWWWW ",
-    "WWVWVWW",
-    "WWWRWWW",
-    "WWWWWWW",
-    " WWWWW ",
-    "  #W#  ",
-    "  # #  ",
+    "    KKK    ",
+    "   KKKKK   ",
+    "   KRRRK   ",
+    "   KKKKK   ",
+    "    PPP    ",
+    "   PkPkP   ",
+    "    PPP    ",
+    "  w KBKK w ",
+    " ww KKKK ww",
+    "    KKKK   ",
+    "    KKKK   ",
+    "    K  K   ",
+    "    K  K   ",
+    "     nn    ",
+    "     nn    ",
+    "     nn    ",
   ],
   [
-    "  GGG  ",
-    " GGGGG ",
-    "  GGG  ",
-    " WWWWW ",
-    "WWVWVWW",
-    "WWWRWWW",
-    "WWWWWWW",
-    " WWWWW ",
-    "  #W#  ",
-    "  #  # ",
+    "    KKK    ",
+    "   KKKKK   ",
+    "   KRRRK   ",
+    "   KKKKK   ",
+    "    PPP    ",
+    "   PkPkP   ",
+    "    PPP    ",
+    " w  KBKK  w",
+    "ww  KKKK  w",
+    "    KKKK   ",
+    "    KKKK   ",
+    "    K  K   ",
+    "    K  K   ",
+    "     nn    ",
+    "     nn    ",
+    "      nn   ",
   ],
 ];
 
-// 🧙 Howl pixel sprite (10x14) — blonde hair, dark coat, confident pose
+// 🧙 Howl pixel sprite (12x18) — based on bead art: golden hair, dark coat with red/rainbow lining, walking
 const HOWL_FRAMES = [
   [
-    "   HHHH   ",
-    "  HHHHHH  ",
-    "  HhHHhH  ",
-    "  PPPPPP  ",
-    "  PBWBWp  ",
-    "  PPpRPp  ",
-    "  KPPPPK  ",
-    " KKKKKKK  ",
-    " KKBkBKK  ",
-    " KK#KK#K  ",
-    "  KKKKKK  ",
-    "  KK  KK  ",
-    "  KK  KK  ",
-    "  ##  ##  ",
+    "    7HHH    ",
+    "   7HHHHH   ",
+    "   H7HHhH   ",
+    "   PPPPPH   ",
+    "   PkPkPh   ",
+    "    PPPP    ",
+    "   9rYr9K   ",
+    "  9KrFr9KK  ",
+    "  9Kr8r9K   ",
+    "  9KKKKK    ",
+    "   KKKKK    ",
+    "   K9K9K    ",
+    "   KK KK    ",
+    "   KK KK    ",
+    "   KK  KK   ",
+    "   KK  KK   ",
+    "   KK  KK   ",
+    "   ##  ##   ",
   ],
   [
-    "   HHHH   ",
-    "  HHHHHH  ",
-    "  HhHHhH  ",
-    "  PPPPPP  ",
-    "  PBWBWp  ",
-    "  PPpRPp  ",
-    "  KPPPPK  ",
-    " KKKKKKK  ",
-    " KKBkBKK  ",
-    " KK#KK#K  ",
-    "  KKKKKK  ",
-    "  KK  KK  ",
-    "   KK KK  ",
-    "   ## ##  ",
+    "    7HHH    ",
+    "   7HHHHH   ",
+    "   H7HHhH   ",
+    "   PPPPPH   ",
+    "   PkPkPh   ",
+    "    PPPP    ",
+    "   9rYr9K   ",
+    "  9KrFr9KK  ",
+    "  9Kr8r9K   ",
+    "  9KKKKK    ",
+    "   KKKKK    ",
+    "   K9K9K    ",
+    "   KK KK    ",
+    "    KK KK   ",
+    "   KK   KK  ",
+    "   KK   KK  ",
+    "   ##    KK ",
+    "         ## ",
   ],
 ];
 
-// 🌸 Sophie pixel sprite (9x14) — blue dress, brown hair, warm presence
+// 🌸 Sophie pixel sprite (10x16) — based on bead art: straw hat with red band, brown hair, blue dress, walking stick
 const SOPHIE_FRAMES = [
   [
-    "   MMM   ",
-    "  MMMMM  ",
-    "  MmMmM  ",
-    "  PPPPP  ",
-    "  PBPBp  ",
-    "  PPRPp  ",
-    "  bbbbb  ",
-    " bbbbbbb ",
-    " bbabbbb ",
-    " bbbbbbb ",
-    "  bbbbb  ",
-    "  bb bb  ",
-    "  PP PP  ",
-    "  ## ##  ",
+    "   ttttt   ",
+    "  ttttttt  ",
+    "  trrrrrt  ",
+    "  tttttt   ",
+    "   MmMm    ",
+    "  MMMMMM   ",
+    "   PPPPP   ",
+    "   PkPkP   ",
+    "    PPP    ",
+    "   bbbbb   ",
+    "  bbbbbbb  ",
+    "  bababbb  ",
+    "  bbbbbbb  ",
+    "   bbbbb   ",
+    "   PP PP n ",
+    "   ## ## n ",
   ],
   [
-    "   MMM   ",
-    "  MMMMM  ",
-    "  MmMmM  ",
-    "  PPPPP  ",
-    "  PBPBp  ",
-    "  PPRPp  ",
-    "  bbbbb  ",
-    " bbbbbbb ",
-    " bbabbbb ",
-    " bbbbbbb ",
-    "  bbbbb  ",
-    "  bb bb  ",
-    "   PPPP  ",
-    "   ####  ",
+    "   ttttt   ",
+    "  ttttttt  ",
+    "  trrrrrt  ",
+    "  tttttt   ",
+    "   MmMm    ",
+    "  MMMMMM   ",
+    "   PPPPP   ",
+    "   PkPkP   ",
+    "    PPP    ",
+    "   bbbbb   ",
+    "  bbbbbbb  ",
+    "  bababbb  ",
+    "  bbbbbbb  ",
+    "   bbbbb   ",
+    "    PP PP n",
+    "    ## ##n ",
   ],
 ];
 
-// 🌿 Markl pixel sprite (8x12) — small, green outfit, messy hair
+// 🌿 Markl pixel sprite (9x13) — based on bead art: small kid, messy orange-brown hair, green tunic
 const MARKL_FRAMES = [
   [
-    "  MMMM  ",
-    " MmMMmM ",
-    "  PPPP  ",
-    "  PBBp  ",
-    "  PPPp  ",
-    "  eeee  ",
-    " eeeeee ",
-    " eegege ",
-    "  eeee  ",
-    "  ee ee ",
-    "  PP PP ",
-    "  #  #  ",
+    "  mMMMm  ",
+    " MmMMMmM ",
+    " MMMMMM  ",
+    "  PPPPP  ",
+    "  PkPkP  ",
+    "   PPP   ",
+    "  eeeee  ",
+    " eeeeeee ",
+    " eegegee ",
+    "  eeeee  ",
+    "  ee ee  ",
+    "  PP PP  ",
+    "  #   #  ",
   ],
   [
-    "  MMMM  ",
-    " MmMMmM ",
-    "  PPPP  ",
-    "  PBBp  ",
-    "  PPPp  ",
-    "  eeee  ",
-    " eeeeee ",
-    " eegege ",
-    "  eeee  ",
-    "  ee ee ",
-    "   PP PP",
-    "   #  # ",
+    "  mMMMm  ",
+    " MmMMMmM ",
+    " MMMMMM  ",
+    "  PPPPP  ",
+    "  PkPkP  ",
+    "   PPP   ",
+    "  eeeee  ",
+    " eeeeeee ",
+    " eegegee ",
+    "  eeeee  ",
+    "  ee ee  ",
+    "   PP PP ",
+    "   #   # ",
   ],
 ];
 
@@ -2205,32 +2242,74 @@ const PixelSprite = ({ frames, size = 2, interval = 500, style = {} }) => {
 
 // 🏰 Footer parade — castle + characters walking across the bottom
 const PARADE_GROUPS = [
-  { frames: CASTLE_FRAMES, size: 2, interval: 400, offsetY: -8, label: null },
-  { frames: HOWL_FRAMES, size: 2, interval: 500, offsetY: 4, label: "🧙 霍爾", gap: 40 },
-  { frames: SOPHIE_FRAMES, size: 2, interval: 500, offsetY: 6, label: "🌸 蘇菲", gap: 30 },
-  { frames: MARKL_FRAMES, size: 2, interval: 450, offsetY: 8, label: "🌿 馬魯克", gap: 26 },
-  { frames: TURNIP_FRAMES, size: 2, interval: 600, offsetY: 6, label: "🥕 蕪菁頭", gap: 28 },
+  { frames: CASTLE_FRAMES, size: 2, interval: 400, offsetY: -4, label: null },
+  { frames: HOWL_FRAMES, size: 2, interval: 500, offsetY: 0, label: "🧙 霍爾", gap: 36 },
+  { frames: CALCIFER_FRAMES, size: 2, interval: 300, offsetY: 18, label: "🔥 卡西法", gap: 12 },
+  { frames: SOPHIE_FRAMES, size: 2, interval: 500, offsetY: 4, label: "🌸 蘇菲", gap: 28 },
+  { frames: MARKL_FRAMES, size: 2, interval: 450, offsetY: 10, label: "🌿 馬魯克", gap: 22 },
+  { frames: TURNIP_FRAMES, size: 2, interval: 600, offsetY: 4, label: "🥕 蕪菁頭", gap: 26 },
+];
+
+// 🎭 Character dialogue scenes — random interactions between characters
+// Parade order: 0=Castle, 1=Howl, 2=Calcifer, 3=Sophie, 4=Markl, 5=Turnip
+const DIALOGUE_SCENES = [
+  { speaker: 1, text: "這產品需要更多靈魂...", color: C.accent },
+  { speaker: 3, text: "先確認用戶是誰！", color: C.rose },
+  { speaker: 2, text: "告訴我要什麼，交給我！", color: C.orange },
+  { speaker: 1, text: "讓我把故事說得無法抗拒", color: C.accent },
+  { speaker: 4, text: "截止日是什麼時候？", color: C.emerald },
+  { speaker: 5, text: "...數據不是這樣說的。", color: C.violet },
+  { speaker: 3, text: "ROI 算過了嗎？", color: C.rose },
+  { speaker: 2, text: "三天，但需求不能再改了！", color: C.orange },
+  { speaker: 1, text: "平庸的設計？重來。", color: C.accent },
+  { speaker: 4, text: "收到！整理成三個 action items", color: C.emerald },
+  { speaker: 5, text: "...先觀察。", color: C.violet },
+  { speaker: 3, text: "預算要抓緊啊！", color: C.rose },
+  { speaker: 2, text: "技術上沒問題，交給我燒", color: C.orange },
+  { speaker: 1, text: "我看到差異化了！", color: C.accent },
+  { speaker: 4, text: "進度我來追蹤！", color: C.emerald },
+  { speaker: 5, text: "用戶說的和做的不一樣", color: C.violet },
+  { speaker: 3, text: "這篇文案可以更有溫度", color: C.rose },
+  { speaker: 4, text: "Checklist 已更新！", color: C.emerald },
+  { speaker: 2, text: "又要加需求...我要燒光了", color: C.orange },
 ];
 
 const CastleParade = () => {
-  const [pos, setPos] = useState(-260);
+  const [pos, setPos] = useState(-280);
   const [visible, setVisible] = useState(false);
   const [hovered, setHovered] = useState(null);
+  const [dialogue, setDialogue] = useState(null);
   const timer = useRef(null);
+  const dialogueTimer = useRef(null);
+  const dialogueIdx = useRef(0);
 
   useEffect(() => {
-    const first = setTimeout(() => { setPos(-260); setVisible(true); }, 8000);
-    return () => { clearTimeout(first); clearTimeout(timer.current); };
+    const first = setTimeout(() => { setPos(-280); setVisible(true); }, 6000);
+    return () => { clearTimeout(first); clearTimeout(timer.current); clearInterval(dialogueTimer.current); };
   }, []);
+
+  // Random dialogue bubbles while walking
+  useEffect(() => {
+    if (!visible) { setDialogue(null); return; }
+    const showNext = () => {
+      const scene = DIALOGUE_SCENES[dialogueIdx.current % DIALOGUE_SCENES.length];
+      dialogueIdx.current++;
+      setDialogue(scene);
+      setTimeout(() => setDialogue(null), 3000);
+    };
+    const delay = setTimeout(showNext, 3000);
+    dialogueTimer.current = setInterval(showNext, 8000);
+    return () => { clearTimeout(delay); clearInterval(dialogueTimer.current); };
+  }, [visible]);
 
   useEffect(() => {
     if (!visible) return;
     const id = setInterval(() => {
       setPos((p) => {
-        if (p > window.innerWidth + 280) {
+        if (p > window.innerWidth + 300) {
           setVisible(false);
-          timer.current = setTimeout(() => { setPos(-260); setVisible(true); }, 50000);
-          return -260;
+          timer.current = setTimeout(() => { setPos(-280); setVisible(true); dialogueIdx.current = Math.floor(Math.random() * DIALOGUE_SCENES.length); }, 40000);
+          return -280;
         }
         return p + 0.5;
       });
@@ -2240,21 +2319,31 @@ const CastleParade = () => {
 
   if (!visible) return null;
 
-  let cursorX = 0;
   return React.createElement("div", {
-    style: { position: "fixed", bottom: 6, left: pos, zIndex: 50, display: "flex", alignItems: "flex-end", opacity: hovered !== null ? 0.85 : 0.4, transition: "opacity .5s", pointerEvents: "auto" },
+    style: { position: "fixed", bottom: 44, left: pos, zIndex: 50, display: "flex", alignItems: "flex-end", opacity: hovered !== null ? 0.9 : 0.5, transition: "opacity .5s", pointerEvents: "auto" },
   },
     PARADE_GROUPS.map((g, i) => {
-      cursorX += g.gap || 0;
       return React.createElement("div", {
         key: i,
         style: { marginLeft: g.gap || 0, marginBottom: g.offsetY || 0, position: "relative", cursor: "default" },
         onMouseEnter: () => setHovered(i),
         onMouseLeave: () => setHovered(null),
       },
+        // Character name on hover
         hovered === i && g.label && React.createElement("div", {
-          style: { position: "absolute", top: -20, left: "50%", transform: "translateX(-50%)", fontSize: 10, color: C.accent, whiteSpace: "nowrap", animation: "fadeSlideUp .3s ease", pointerEvents: "none", textShadow: "0 1px 3px rgba(0,0,0,.8)" },
+          style: { position: "absolute", top: -22, left: "50%", transform: "translateX(-50%)", fontSize: 10, color: C.accent, whiteSpace: "nowrap", animation: "fadeSlideUp .3s ease", pointerEvents: "none", textShadow: "0 1px 4px rgba(0,0,0,.9)" },
         }, g.label),
+        // Dialogue bubble — shows above the speaking character
+        dialogue && dialogue.speaker === i && React.createElement("div", {
+          style: {
+            position: "absolute", top: -40, left: "50%", transform: "translateX(-50%)",
+            background: `${C.card}ee`, border: `1px solid ${dialogue.color}40`,
+            borderRadius: 8, padding: "4px 10px", fontSize: 10, color: dialogue.color,
+            whiteSpace: "nowrap", animation: "fadeSlideUp .4s ease", pointerEvents: "none",
+            boxShadow: `0 2px 12px rgba(0,0,0,.5), 0 0 8px ${dialogue.color}15`,
+            fontWeight: 600, letterSpacing: ".01em",
+          },
+        }, dialogue.text),
         React.createElement(PixelSprite, { frames: g.frames, size: g.size, interval: g.interval })
       );
     })
@@ -2385,8 +2474,21 @@ const AmbientStars = ({ width = 200, height = 120 }) => {
 };
 
 // ── Version Changelog ──
-const VERSION = "1.07";
+const VERSION = "1.08";
 const CHANGELOG = [
+  {
+    version: "1.08", date: "2026-03-01", title: "Bug 修復 & 互動升級",
+    features: [
+      { icon: "🏰", text: "角色互動場景 — Footer 上緣的像素角色對話動畫，霍爾 & 蘇菲 & 馬魯克 & 蕪菁頭隨機互動" },
+      { icon: "💬", text: "角色對話氣泡 — 角色巡遊時隨機冒出經典台詞，增加城堡生活感" },
+      { icon: "🎨", text: "Drawer 面板視覺升級 — 提高編輯面板亮度與對比，減少背景模糊干擾" },
+    ],
+    fixes: [
+      { icon: "🐛", text: "修復卡西法更版彈窗白屏 — CHANGELOG 缺少 fixes 屬性導致 .length crash" },
+      { icon: "🐛", text: "修復按鈕設計不一致 — 移除殘餘 emoji、統一使用 Design System Btn 組件" },
+      { icon: "🐛", text: "修復編輯面板被霧玻璃遮蔽 — 降低背景遮罩不透明度，提亮面板底色" },
+    ],
+  },
   {
     version: "1.07", date: "2026-03-01", title: "Design System 設計系統",
     features: [
@@ -2510,11 +2612,11 @@ const ChangelogModal = ({ open, onClose }) => {
                   </div>
                 </div>
               )}
-              {release.fixes.length > 0 && (
+              {(release.fixes || []).length > 0 && (
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: C.orange, letterSpacing: ".06em", marginBottom: 8 }}>BUG FIXES</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {release.fixes.map((f, i) => (
+                    {(release.fixes || []).map((f, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 12px", background: C.surface, borderRadius: 10, fontSize: 13, color: C.inkSoft, lineHeight: 1.6 }}>
                         <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{f.icon}</span>
                         <span>{f.text}</span>
