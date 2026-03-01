@@ -1,18 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>移動城堡指揮部 — CRM Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-</head>
-<body style="margin:0;background:#0f172a">
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect, useCallback, useMemo, useRef } = React;
+import { useState, useRef, useEffect, useCallback } from "react";
 
 // ══════════════════════════════════════════════════════════════
 // 🏰 移動城堡業務指揮 Dashboard v1.04
@@ -2369,7 +2355,7 @@ const ActivityLog = ({ log, open, onClose }) => {
   );
 };
 
-function CastleDashboard() {
+export default function CastleDashboard() {
   const { mobile } = useWindowSize();
   const [user, setUser] = useState(() => ls.getUser());
   const [tab, setTab] = useState("pipeline");
@@ -2789,7 +2775,3 @@ function CastleDashboard() {
     </div>
   );
 }
-ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(CastleDashboard));
-</script>
-</body>
-</html>
