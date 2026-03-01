@@ -2388,6 +2388,16 @@ const AmbientStars = ({ width = 200, height = 120 }) => {
 const VERSION = "1.07";
 const CHANGELOG = [
   {
+    version: "1.07", date: "2026-03-01", title: "Design System 設計系統",
+    features: [
+      { icon: "🎨", text: "按鈕設計系統 — 建立統一的 Btn 組件：primary（實心填色）/ secondary（描邊）/ ghost（文字）/ danger 四種變體" },
+      { icon: "📐", text: "按鈕尺寸規範 — sm / md / lg 三種標準尺寸，統一 padding、fontSize、borderRadius" },
+      { icon: "✨", text: "按鈕視覺升級 — Primary 按鈕使用白色文字 + 彩色填充 + hover 陰影，更直覺清晰" },
+      { icon: "🧹", text: "移除按鈕內 emoji — 不再用 ✅💾📦🗑📂🔗 等 emoji 裝飾按鈕，讓設計更乾淨專業" },
+      { icon: "👻", text: "Ghost 按鈕取代取消 — 所有「取消」按鈕統一為 ghost 變體，視覺權重降低，主次分明" },
+    ],
+  },
+  {
     version: "1.06", date: "2026-03-01", title: "像素世界大升級",
     features: [
       { icon: "🧙", text: "霍爾像素精靈 — 金髮黑袍的 10x14 像素角色，點擊說出產品策略語錄" },
