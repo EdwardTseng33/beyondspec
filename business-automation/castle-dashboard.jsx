@@ -1867,11 +1867,11 @@ const DocumentsView = ({ userDocs, onAddDoc, onDeleteDoc, showAddForm, onCloseFo
                   </div>
                   {doc.desc && <div style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.6, marginBottom: 12 }}>{doc.desc}</div>}
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <Btn small color={C.accent} onClick={() => window.open(doc.url, "_blank")}>📂 開啟</Btn>
-                    <Btn small outline color={copied === doc.id ? C.emerald : C.inkMuted} onClick={() => copyLink(doc.id, doc.url)}>
-                      {copied === doc.id ? "✅ 已複製" : "🔗 複製連結"}
+                    <Btn color={C.accent} size="sm" onClick={() => window.open(doc.url, "_blank")}>開啟</Btn>
+                    <Btn variant="secondary" color={copied === doc.id ? C.emerald : C.inkMuted} size="sm" onClick={() => copyLink(doc.id, doc.url)}>
+                      {copied === doc.id ? "已複製" : "複製連結"}
                     </Btn>
-                    <Btn small outline color={C.rose} onClick={() => onDeleteDoc(doc.id)}>🗑 刪除</Btn>
+                    <Btn variant="secondary" color={C.rose} size="sm" onClick={() => onDeleteDoc(doc.id)}>刪除</Btn>
                   </div>
                 </div>
               </div>
@@ -1908,7 +1908,7 @@ const RolesView = ({ roles, onAdd, onEdit, onArchive }) => {
               </div>
               <div style={{ display: "flex", gap: 6 }}>
                 <Btn small color={C.accent} onClick={() => onEdit(r)}>編輯</Btn>
-                <Btn small outline color={C.rose} onClick={() => onArchive(r.id)}>封存</Btn>
+                <Btn variant="secondary" color={C.rose} size="sm" onClick={() => onArchive(r.id)}>封存</Btn>
               </div>
             </div>
           </HoverCard>
