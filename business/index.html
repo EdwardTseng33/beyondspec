@@ -1,21 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>🏰 移動城堡業務指揮 Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏰 移動城堡指揮部 — Beyond Spec</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #08080c; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
-  ::selection { background: rgba(108,142,255,.3); }
-</style>
+<style>body{margin:0;background:#08080c;overflow-x:hidden}</style>
 </head>
 <body>
 <div id="root"></div>
@@ -23,17 +18,22 @@
 const { useState, useRef, useEffect, useCallback } = React;
 
 // ══════════════════════════════════════════════════════════════
-// 🏰 移動城堡業務指揮 Dashboard v5.0 — 完整業務工作站
-// Beyond Spec — 業務漏斗 + 任務看板 + BD Tracker + 數據分析 + 文件資源 + 角色管理 + 活動紀錄 + 指令面板
+// 🏰 移動城堡業務指揮 Dashboard v1.02
+// Beyond Spec 規格外工作室 — 業務管理系統
 //
-// v4.2 改版重點：
-// ✅ 字體全面放大 — 工作直觀不費眼力
-// ✅ UI 精緻化 — hover 效果、過渡動畫、微互動
-// ✅ 卡片展開模式 — 點擊展開詳情，內含編輯 / 狀態切換
-// ✅ 全寬佈局 — 移除 maxWidth 限制，BD 欄位不再截斷
-// ✅ 📈 數據分析 — 月/季/年目標達成度 + 案件速度（進件→簽約天數）
-// ✅ 📁 文件資源 — 合約範本、提案模板，可下載/複製連結
-// ✅ 全頁面 RWD 響應式
+// 功能模組：
+// 📊 業務漏斗 — 案件階段管理 + 拖拉移動 + 詳情編輯
+// 📋 任務看板 — 待辦/進行中/已完成 + 搜尋篩選
+// 🎯 BD 開發 — 潛在客戶追蹤 + 渠道管理
+// 📈 數據分析 — 月/季/年目標達成度 + 可自訂目標
+// 📁 文件資源 — 範本庫 + 自訂文件管理（Google Drive / Dropbox）
+// 👥 角色管理 — 城堡五位夥伴 + 自訂角色
+// 🏰 智慧晨報 — 每日摘要 + 停滯案件警示
+// 💡 案件助手 — 建議任務 + Email 模板 + 健康度指標
+// ☁️ 雲端同步 — Google Sheets 後端 + 多帳號隔離
+// 🔐 Google Sign-In — OAuth 2.0 登入
+// ⌨️ 指令面板 — Cmd+K 快速操作
+// 📜 活動紀錄 — 操作歷史追蹤
 // ══════════════════════════════════════════════════════════════
 
 // ══════════════════════════════════════════════
@@ -151,21 +151,13 @@ const BD_STATUS = [
 ];
 const BD_CHANNELS = ["LinkedIn", "AppWorks", "AAMA", "TTA", "Startup Island", "COSCUP / g0v", "活動認識", "朋友推薦", "其他"];
 
-// ── Document Templates (built-in, no external files needed) ──
-const DOC_TEMPLATES = [
-  { id: "contract-tier1", name: "Tier 1 服務合約（產品健檢）", category: "合約", icon: "📝", format: "DOCX", desc: "單次產品健檢合約範本，含服務範圍、交付物、付款條件" },
-  { id: "contract-tier2", name: "Tier 2 服務合約（Sprint）", category: "合約", icon: "📝", format: "DOCX", desc: "2~4 週 Sprint 合約範本，含里程碑、驗收標準" },
-  { id: "contract-tier3", name: "Tier 3 服務合約（長期顧問）", category: "合約", icon: "📝", format: "DOCX", desc: "月費制顧問合約，含 SLA、變更流程" },
-  { id: "proposal-template", name: "提案簡報模板", category: "提案", icon: "📊", format: "PPTX", desc: "標準提案簡報，含公司介紹、方法論、案例、報價" },
-  { id: "discovery-deck", name: "探索會議簡報模板", category: "提案", icon: "🗓", format: "PPTX", desc: "探索會議用簡報，含產業研究框架、問題清單" },
-  { id: "health-check", name: "產品健檢報告模板", category: "報告", icon: "🩺", format: "DOCX", desc: "產品健檢標準報告格式，含評分矩陣、建議清單" },
-  { id: "nda", name: "NDA 保密協議", category: "合約", icon: "🔒", format: "PDF", desc: "雙方保密協議範本" },
-  { id: "quotation", name: "報價單模板", category: "提案", icon: "💰", format: "XLSX", desc: "標準報價單，含項目、工時、單價、合計" },
-  { id: "invoice", name: "請款單模板", category: "財務", icon: "🧾", format: "XLSX", desc: "請款單範本，含匯款資訊、稅務欄位" },
-  { id: "case-study", name: "案例研究模板", category: "行銷", icon: "📖", format: "DOCX", desc: "客戶案例撰寫模板，含挑戰、方案、成果結構" },
-];
+// ── Document Categories ──
+const DOC_CATEGORIES = ["全部", "合約", "提案", "報告", "財務", "行銷", "其他"];
 
-const DOC_CATEGORIES = ["全部", "合約", "提案", "報告", "財務", "行銷", "自訂"];
+// ── Default docs (shown for new users, all have real URLs and are deletable) ──
+const DEFAULT_DOCS = [
+  { id: "sample_1", name: "Beyond Spec 服務介紹", category: "提案", icon: "🏰", format: "PDF", url: "https://beyondspec.tw", desc: "公司官網，可分享給潛在客戶了解服務內容", custom: true },
+];
 
 // ── Demo Data ──
 const INIT_DEALS = [
@@ -269,6 +261,38 @@ const dealHealth = (deal) => {
 const T = "all .2s cubic-bezier(.4,0,.2,1)";
 const T_SPRING = "all .35s cubic-bezier(.34,1.56,.64,1)";
 
+// ── Animated Number Hook ──
+const useAnimatedNumber = (target, duration = 600) => {
+  const [display, setDisplay] = useState(target);
+  const prev = useRef(target);
+  useEffect(() => {
+    const from = prev.current;
+    const diff = target - from;
+    if (diff === 0) return;
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      setDisplay(Math.round(from + diff * ease));
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    prev.current = target;
+  }, [target, duration]);
+  return display;
+};
+
+// ── Staggered Entrance Hook ──
+const useStagger = (count, baseDelay = 40) => {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setVisible(true), 10); return () => clearTimeout(t); }, []);
+  return (index) => ({
+    opacity: visible ? 1 : 0,
+    transform: visible ? "translateY(0)" : "translateY(12px)",
+    transition: `opacity .4s cubic-bezier(.4,0,.2,1) ${index * baseDelay}ms, transform .4s cubic-bezier(.4,0,.2,1) ${index * baseDelay}ms`,
+  });
+};
+
 // ══════════════════════════════════════════════
 // Reusable UI Components
 // ══════════════════════════════════════════════
@@ -292,7 +316,7 @@ const PriorityDot = ({ priority }) => {
 const Btn = ({ children, onClick, color = C.accent, outline, small, full, style: sx }) => {
   const [hov, setHov] = useState(false);
   return (
-    <button onClick={onClick}
+    <button onClick={onClick} className="castle-btn-pop"
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
         padding: small ? "6px 14px" : "9px 20px", borderRadius: 10,
@@ -300,7 +324,6 @@ const Btn = ({ children, onClick, color = C.accent, outline, small, full, style:
         background: outline ? (hov ? `${color}10` : "transparent") : (hov ? `${color}30` : `${color}20`),
         color, fontSize: small ? 13 : 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
         transition: T, width: full ? "100%" : "auto",
-        transform: hov ? "translateY(-1px)" : "none",
         boxShadow: hov && !outline ? `0 4px 12px ${color}20` : "none",
         ...sx
       }}>{children}</button>
@@ -626,7 +649,9 @@ const RoleForm = ({ role, onSave, onCancel }) => {
 // ── Morning Brief Banner ──
 const MorningBrief = ({ deals, tasks, leads, onDismiss }) => {
   const { mobile } = useWindowSize();
-  const [dismissed, setDismissed] = useState(false);
+  const todayKey = `brief_${today()}`;
+  const [dismissed, setDismissed] = useState(() => ls.get(todayKey, false));
+  const dismiss = () => { setDismissed(true); ls.set(todayKey, true); };
   if (dismissed) return null;
 
   const active = deals.filter(d => !d.archived && !["won","lost"].includes(d.stage));
@@ -647,8 +672,10 @@ const MorningBrief = ({ deals, tasks, leads, onDismiss }) => {
   const greeting = hour < 12 ? "早安" : hour < 18 ? "午安" : "晚安";
 
   return (
-    <div style={{ background: `linear-gradient(135deg, ${C.card} 0%, ${C.surface} 100%)`, border: `1px solid ${C.borderHover}`, borderRadius: 16, padding: mobile ? 18 : 24, marginBottom: mobile ? 16 : 24, position: "relative" }}>
-      <button onClick={() => setDismissed(true)} style={{ position: "absolute", top: 12, right: 14, background: "transparent", border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, fontFamily: "inherit", padding: 4 }}>✕</button>
+    <div className="castle-brief" style={{ background: `linear-gradient(135deg, ${C.card} 0%, ${C.surface} 100%)`, border: `1px solid ${C.borderHover}`, borderRadius: 16, padding: mobile ? 18 : 24, marginBottom: mobile ? 16 : 24, position: "relative", overflow: "hidden" }}>
+      {/* Subtle shimmer accent */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${C.accent}00, ${C.accent}60, ${C.gold}60, ${C.accent}00)`, backgroundSize: "200% 100%", animation: "shimmer 3s ease-in-out infinite" }} />
+      <button onClick={dismiss} style={{ position: "absolute", top: 12, right: 14, background: "transparent", border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, fontFamily: "inherit", padding: 4 }}>✕</button>
       <div style={{ fontSize: mobile ? 16 : 18, fontWeight: 800, color: C.ink, marginBottom: 12 }}>🏰 {greeting}，魔法長！</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {lines.map((l, i) => (
@@ -663,6 +690,14 @@ const MorningBrief = ({ deals, tasks, leads, onDismiss }) => {
       </div>
     </div>
   );
+};
+
+// ── Animated Stat Number ──
+const AnimStat = ({ value, prefix = "", suffix = "", color, size }) => {
+  const num = typeof value === "number" ? value : parseInt(String(value).replace(/[^0-9-]/g, "")) || 0;
+  const animated = useAnimatedNumber(num);
+  const display = prefix + animated.toLocaleString() + suffix;
+  return <span style={{ fontSize: size, fontWeight: 800, color, fontFamily: "'JetBrains Mono',monospace", animation: "countUp .4s ease" }}>{display}</span>;
 };
 
 const StatsRow = ({ deals, tasks, leads, onHealthClick }) => {
@@ -681,19 +716,24 @@ const StatsRow = ({ deals, tasks, leads, onHealthClick }) => {
   const avgCycle = wonWithDates.length > 0 ? Math.round(wonWithDates.reduce((s, d) => s + (new Date(d.signedDate) - new Date(d.created)) / 86400000, 0) / wonWithDates.length) : null;
 
   const stats = [
-    { label: "🎉 已簽約營收", value: fmt(wonTotal), color: C.emerald, sub: `${won.length} 件成交 · 北極星指標 ⭐` },
-    { label: "🏆 贏單率", value: `${winRate}%`, color: winRate >= 50 ? C.emerald : winRate >= 30 ? C.gold : C.rose, sub: closed > 0 ? `已結案 ${closed} 案（贏 ${won.length} / 輸 ${lost.length}）` : "尚無已結案案件" },
-    { label: "📊 加權管線值", value: fmt(Math.round(weightedPipeline)), color: C.gold, sub: `${active.length} 進行中 · 預估轉換收入` },
-    { label: "⏱ 成交週期", value: avgCycle !== null ? `${avgCycle} 天` : "—", color: avgCycle !== null ? (avgCycle <= 14 ? C.emerald : avgCycle <= 30 ? C.gold : C.orange) : C.inkMuted, sub: avgCycle !== null ? `洽詢→簽約平均 ${avgCycle} 天` : "尚無成交數據" },
+    { label: "🎉 已簽約營收", rawNum: wonTotal, prefix: "NT$ ", value: fmt(wonTotal), color: C.emerald, sub: `${won.length} 件成交 · 北極星指標 ⭐` },
+    { label: "🏆 贏單率", rawNum: winRate, suffix: "%", value: `${winRate}%`, color: winRate >= 50 ? C.emerald : winRate >= 30 ? C.gold : C.rose, sub: closed > 0 ? `已結案 ${closed} 案（贏 ${won.length} / 輸 ${lost.length}）` : "尚無已結案案件" },
+    { label: "📊 加權管線值", rawNum: Math.round(weightedPipeline), prefix: "NT$ ", value: fmt(Math.round(weightedPipeline)), color: C.gold, sub: `${active.length} 進行中 · 預估轉換收入` },
+    { label: "⏱ 成交週期", rawNum: avgCycle, suffix: avgCycle !== null ? " 天" : "", value: avgCycle !== null ? `${avgCycle} 天` : "—", color: avgCycle !== null ? (avgCycle <= 14 ? C.emerald : avgCycle <= 30 ? C.gold : C.orange) : C.inkMuted, sub: avgCycle !== null ? `洽詢→簽約平均 ${avgCycle} 天` : "尚無成交數據" },
   ];
   return (
     <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4,1fr)", gap: mobile ? 10 : 16, marginBottom: mobile ? 20 : 28, position: "relative" }}>
       {stats.map((s, i) => (
-        <HoverCard key={i}
-          style={{ padding: mobile ? "14px 16px" : "20px 24px" }}>
-          <div style={{ fontSize: 12, color: C.inkMuted, marginBottom: 6, fontWeight: 500, letterSpacing: ".04em" }}>{s.label}</div>
-          <div style={{ fontSize: mobile ? 22 : 28, fontWeight: 800, color: s.color, fontFamily: "'JetBrains Mono',monospace" }}>{s.value}</div>
-          {s.sub && <div style={{ fontSize: 11, color: C.inkMuted, marginTop: 4 }}>{s.sub}</div>}
+        <HoverCard key={i} style={{ padding: mobile ? "14px 16px" : "20px 24px" }}>
+          <div className="castle-stat-card" style={{ animationDelay: `${i * 60}ms` }}>
+            <div style={{ fontSize: 12, color: C.inkMuted, marginBottom: 6, fontWeight: 500, letterSpacing: ".04em" }}>{s.label}</div>
+            {s.rawNum !== null && s.rawNum !== undefined ? (
+              <AnimStat value={s.rawNum} prefix={s.prefix || ""} suffix={s.suffix || ""} color={s.color} size={mobile ? 22 : 28} />
+            ) : (
+              <div style={{ fontSize: mobile ? 22 : 28, fontWeight: 800, color: s.color, fontFamily: "'JetBrains Mono',monospace" }}>{s.value}</div>
+            )}
+            {s.sub && <div style={{ fontSize: 11, color: C.inkMuted, marginTop: 4 }}>{s.sub}</div>}
+          </div>
         </HoverCard>
       ))}
     </div>
@@ -1424,53 +1464,70 @@ const DocumentsView = ({ userDocs, onAddDoc, onDeleteDoc, showAddForm, onCloseFo
   const { mobile } = useWindowSize();
   const [catFilter, setCatFilter] = useState("全部");
   const [copied, setCopied] = useState(null);
-  const [newDoc, setNewDoc] = useState({ name: "", url: "", category: "自訂", desc: "" });
+  const [newDoc, setNewDoc] = useState({ name: "", url: "", category: "其他", desc: "" });
 
-  // Combine built-in templates (no url) + user custom docs (with url)
-  const allDocs = [...DOC_TEMPLATES, ...(userDocs || [])];
-  const filtered = catFilter === "全部" ? allDocs : allDocs.filter((d) => d.category === catFilter);
+  const docs = userDocs || [];
+  const filtered = catFilter === "全部" ? docs : docs.filter((d) => d.category === catFilter);
+  const usedCats = ["全部", ...DOC_CATEGORIES.filter(c => c !== "全部" && docs.some(d => d.category === c))];
 
-  const copyLink = (url) => {
+  const copyLink = (id, url) => {
     navigator.clipboard?.writeText(url).then(() => {
-      setCopied(url);
+      setCopied(id);
       setTimeout(() => setCopied(null), 2000);
     });
   };
 
-  const handleAddDoc = () => {
-    if (!newDoc.name || !newDoc.url) return;
-    const doc = { id: "custom_" + Date.now(), name: newDoc.name, url: newDoc.url, category: newDoc.category || "自訂", icon: "📎", format: newDoc.url.match(/\.(pdf|docx?|xlsx?|pptx?|csv)/i)?.[1]?.toUpperCase() || "LINK", desc: newDoc.desc || "", custom: true };
-    onAddDoc(doc);
-    setNewDoc({ name: "", url: "", category: "自訂", desc: "" });
-    if (onCloseForm) onCloseForm();
+  const detectFormat = (url) => {
+    const ext = url.match(/\.(pdf|docx?|xlsx?|pptx?|csv|txt)/i)?.[1]?.toUpperCase();
+    if (ext) return ext;
+    if (url.includes("drive.google.com")) return "GDRIVE";
+    if (url.includes("dropbox.com")) return "DBOX";
+    if (url.includes("notion.so") || url.includes("notion.site")) return "NOTION";
+    if (url.includes("figma.com")) return "FIGMA";
+    return "LINK";
   };
 
-  const formatColors = { DOCX: C.accent, DOC: C.accent, PPTX: C.orange, PPT: C.orange, PDF: C.rose, XLSX: C.emerald, XLS: C.emerald, CSV: C.emerald, LINK: C.cyan };
+  const formatIcons = { PDF: "📕", DOCX: "📄", DOC: "📄", PPTX: "📊", PPT: "📊", XLSX: "📗", XLS: "📗", CSV: "📗", GDRIVE: "☁️", DBOX: "📦", NOTION: "📝", FIGMA: "🎨", LINK: "🔗", TXT: "📃" };
+  const formatColors = { DOCX: C.accent, DOC: C.accent, PPTX: C.orange, PPT: C.orange, PDF: C.rose, XLSX: C.emerald, XLS: C.emerald, CSV: C.emerald, GDRIVE: C.cyan, DBOX: C.accent, NOTION: C.inkSoft, FIGMA: C.violet, LINK: C.cyan, TXT: C.inkSoft };
+
+  const handleAddDoc = () => {
+    if (!newDoc.name || !newDoc.url) return;
+    const fmt = detectFormat(newDoc.url);
+    const doc = { id: "doc_" + Date.now(), name: newDoc.name, url: newDoc.url, category: newDoc.category || "其他", icon: formatIcons[fmt] || "📎", format: fmt, desc: newDoc.desc || "", custom: true };
+    onAddDoc(doc);
+    setNewDoc({ name: "", url: "", category: "其他", desc: "" });
+    if (onCloseForm) onCloseForm();
+  };
 
   return (
     <div>
       <div style={{ fontSize: 15, color: C.inkSoft, marginBottom: 20, lineHeight: 1.7 }}>
-        業務文件資源庫。內建範本為參考用，自訂文件可貼上 Google Drive / Dropbox 連結來管理。
+        你的業務文件資源庫。貼上 Google Drive、Dropbox、Notion 或任何連結來統一管理文件。
       </div>
 
-      {/* Category filter */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
-        {DOC_CATEGORIES.map((cat) => (
-          <button key={cat} onClick={() => setCatFilter(cat)}
-            style={{ padding: "6px 16px", borderRadius: 20, border: catFilter === cat ? `1.5px solid ${C.accent}` : `1px solid ${C.border}`, background: catFilter === cat ? `${C.accent}15` : "transparent", color: catFilter === cat ? C.accent : C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T }}>
-            {cat} {cat === "自訂" && userDocs?.length ? `(${userDocs.length})` : ""}
-          </button>
-        ))}
-      </div>
+      {/* Category filter — only show categories that have docs */}
+      {docs.length > 0 && (
+        <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+          {usedCats.map((cat) => {
+            const count = cat === "全部" ? docs.length : docs.filter(d => d.category === cat).length;
+            return (
+              <button key={cat} onClick={() => setCatFilter(cat)}
+                style={{ padding: "6px 16px", borderRadius: 20, border: catFilter === cat ? `1.5px solid ${C.accent}` : `1px solid ${C.border}`, background: catFilter === cat ? `${C.accent}15` : "transparent", color: catFilter === cat ? C.accent : C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T }}>
+                {cat} ({count})
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Add Document Form */}
       {showAddForm && (
         <div style={{ background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 14, padding: mobile ? 18 : 24, marginBottom: 20 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: C.ink, marginBottom: 16 }}>📎 新增自訂文件</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: C.ink, marginBottom: 16 }}>📎 新增文件</div>
           <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 12 }}>
             <div>
               <label style={{ fontSize: 12, color: C.inkMuted, marginBottom: 4, display: "block" }}>文件名稱 *</label>
-              <input value={newDoc.name} onChange={(e) => setNewDoc({ ...newDoc, name: e.target.value })} placeholder="例：Q1 提案簡報"
+              <input value={newDoc.name} onChange={(e) => setNewDoc({ ...newDoc, name: e.target.value })} placeholder="例：Q1 客戶提案簡報"
                 style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.ink, fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
             </div>
             <div>
@@ -1482,53 +1539,55 @@ const DocumentsView = ({ userDocs, onAddDoc, onDeleteDoc, showAddForm, onCloseFo
             </div>
           </div>
           <div style={{ marginBottom: 12 }}>
-            <label style={{ fontSize: 12, color: C.inkMuted, marginBottom: 4, display: "block" }}>連結 URL *（Google Drive、Dropbox 或任何下載連結）</label>
-            <input value={newDoc.url} onChange={(e) => setNewDoc({ ...newDoc, url: e.target.value })} placeholder="https://drive.google.com/file/d/..."
+            <label style={{ fontSize: 12, color: C.inkMuted, marginBottom: 4, display: "block" }}>連結 URL *</label>
+            <input value={newDoc.url} onChange={(e) => setNewDoc({ ...newDoc, url: e.target.value })} placeholder="https://drive.google.com/file/d/... 或任何連結"
               style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.ink, fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
+            <div style={{ fontSize: 11, color: C.inkMuted, marginTop: 4 }}>支援：Google Drive、Dropbox、Notion、Figma、或任何可開啟的網址</div>
           </div>
           <div style={{ marginBottom: 16 }}>
             <label style={{ fontSize: 12, color: C.inkMuted, marginBottom: 4, display: "block" }}>備註說明</label>
-            <input value={newDoc.desc} onChange={(e) => setNewDoc({ ...newDoc, desc: e.target.value })} placeholder="簡述用途..."
+            <input value={newDoc.desc} onChange={(e) => setNewDoc({ ...newDoc, desc: e.target.value })} placeholder="簡述文件用途..."
               style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.ink, fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <Btn color={C.emerald} small onClick={handleAddDoc}>✅ 儲存</Btn>
+            <Btn color={C.emerald} small onClick={handleAddDoc}>✅ 新增</Btn>
             <Btn outline color={C.inkMuted} small onClick={onCloseForm}>取消</Btn>
           </div>
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "repeat(auto-fill, minmax(340px, 1fr))", gap: 12 }}>
-        {filtered.map((doc) => (
-          <HoverCard key={doc.id} style={{ padding: 20 }}>
-            <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-              <span style={{ fontSize: 28, flexShrink: 0 }}>{doc.icon}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>{doc.name}</div>
-                  <Badge color={formatColors[doc.format] || C.inkMuted} bg={`${formatColors[doc.format] || C.inkMuted}15`} small>{doc.format}</Badge>
-                  {!doc.url && !doc.custom && <Badge color={C.inkMuted} bg={`${C.inkMuted}10`} small>範本</Badge>}
-                </div>
-                <div style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.6, marginBottom: 12 }}>{doc.desc}</div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {doc.url ? (
-                    <>
-                      <Btn small color={C.accent} onClick={() => window.open(doc.url, "_blank")}>📂 開啟</Btn>
-                      <Btn small outline color={copied === doc.url ? C.emerald : C.inkMuted} onClick={() => copyLink(doc.url)}>
-                        {copied === doc.url ? "✅ 已複製" : "🔗 複製連結"}
-                      </Btn>
-                      {doc.custom && <Btn small outline color={C.rose} onClick={() => onDeleteDoc(doc.id)}>🗑 刪除</Btn>}
-                    </>
-                  ) : (
-                    <span style={{ fontSize: 12, color: C.inkMuted, fontStyle: "italic" }}>📋 內建範本參考（需自行建立實際檔案）</span>
-                  )}
+      {/* Document cards */}
+      {filtered.length > 0 ? (
+        <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "repeat(auto-fill, minmax(340px, 1fr))", gap: 12 }}>
+          {filtered.map((doc) => (
+            <HoverCard key={doc.id} style={{ padding: 20 }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 28, flexShrink: 0 }}>{doc.icon || "📎"}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: C.ink, wordBreak: "break-word" }}>{doc.name}</div>
+                    <Badge color={formatColors[doc.format] || C.cyan} bg={`${formatColors[doc.format] || C.cyan}15`} small>{doc.format}</Badge>
+                  </div>
+                  {doc.desc && <div style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.6, marginBottom: 12 }}>{doc.desc}</div>}
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <Btn small color={C.accent} onClick={() => window.open(doc.url, "_blank")}>📂 開啟</Btn>
+                    <Btn small outline color={copied === doc.id ? C.emerald : C.inkMuted} onClick={() => copyLink(doc.id, doc.url)}>
+                      {copied === doc.id ? "✅ 已複製" : "🔗 複製連結"}
+                    </Btn>
+                    <Btn small outline color={C.rose} onClick={() => onDeleteDoc(doc.id)}>🗑 刪除</Btn>
+                  </div>
                 </div>
               </div>
-            </div>
-          </HoverCard>
-        ))}
-        {filtered.length === 0 && <div style={{ padding: 40, textAlign: "center", color: C.inkMuted, fontSize: 14 }}>此分類尚無文件</div>}
-      </div>
+            </HoverCard>
+          ))}
+        </div>
+      ) : (
+        <div style={{ textAlign: "center", padding: "60px 20px" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>📁</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: C.ink, marginBottom: 8 }}>{catFilter === "全部" ? "尚未新增任何文件" : `「${catFilter}」分類尚無文件`}</div>
+          <div style={{ fontSize: 14, color: C.inkMuted, marginBottom: 20, lineHeight: 1.6 }}>點擊上方「+ 新增文件」開始建立你的業務文件庫<br/>可貼上 Google Drive、Dropbox 或任何檔案連結</div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1677,7 +1736,7 @@ function CastleDashboard() {
   const [activityLog, setActivityLog] = usePersisted("log", []);
   const [goals, setGoals] = usePersisted("goals", { month: { deals: 5, revenue: 300000 }, quarter: { deals: 12, revenue: 800000 }, year: { deals: 40, revenue: 3000000 } });
   const [syncing, setSyncing] = useState(false);
-  const [userDocs, setUserDocs] = usePersisted("docs", []);
+  const [userDocs, setUserDocs] = usePersisted("docs", DEFAULT_DOCS);
 
   const addUserDoc = (doc) => setUserDocs((prev) => [...prev, doc]);
   const deleteUserDoc = (id) => setUserDocs((prev) => prev.filter((d) => d.id !== id));
@@ -1866,7 +1925,33 @@ function CastleDashboard() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: C.bg, color: C.ink, fontFamily: "'Noto Sans TC',-apple-system,sans-serif", fontSize: 15 }}>
-      <style>{`@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}@keyframes drawerSlideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}@keyframes drawerFadeIn{from{opacity:0}to{opacity:1}}*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.25)}`}</style>
+      <style>{`
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes drawerSlideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes drawerFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes briefSlideDown{from{opacity:0;transform:translateY(-20px);max-height:0}to{opacity:1;transform:translateY(0);max-height:400px}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 12px 4px rgba(239,68,68,.15)}}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes countUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tabSlide{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.castle-tab-content{animation:fadeSlideUp .35s cubic-bezier(.4,0,.2,1)}
+.castle-stat-card{animation:scaleIn .4s cubic-bezier(.4,0,.2,1) both}
+.castle-stat-card:nth-child(1){animation-delay:0ms}
+.castle-stat-card:nth-child(2){animation-delay:60ms}
+.castle-stat-card:nth-child(3){animation-delay:120ms}
+.castle-stat-card:nth-child(4){animation-delay:180ms}
+.castle-brief{animation:briefSlideDown .5s cubic-bezier(.4,0,.2,1)}
+.castle-pulse{animation:pulseGlow 2s ease-in-out infinite}
+.castle-hover-lift{transition:all .25s cubic-bezier(.4,0,.2,1)}
+.castle-hover-lift:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.3)}
+.castle-btn-pop{transition:all .2s cubic-bezier(.34,1.56,.64,1)}
+.castle-btn-pop:hover{transform:scale(1.04)}
+.castle-btn-pop:active{transform:scale(.97)}
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.25)}
+`}</style>
       {/* Header */}
       <div style={{ borderBottom: `1px solid ${C.border}`, padding: mobile ? "14px 18px" : "16px 36px", display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.surface}80`, backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: mobile ? 12 : 16 }}>
@@ -1897,7 +1982,7 @@ function CastleDashboard() {
           </button>
           {/* Overdue badge */}
           {(() => { const overdue = tasks.filter((t) => !t.archived && t.status !== "done" && t.due < today()).length; return overdue > 0 ? (
-            <button onClick={() => { setTab("tasks"); setTaskFilter("overdue"); }} title={`${overdue} 個逾期任務`}
+            <button onClick={() => { setTab("tasks"); setTaskFilter("overdue"); }} title={`${overdue} 個逾期任務`} className="castle-pulse"
               style={{ position: "relative", width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.rose}30`, background: `${C.rose}10`, color: C.rose, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}>
               ⚠️<span style={{ position: "absolute", top: -4, right: -4, background: C.rose, color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{overdue}</span>
             </button>
@@ -1955,13 +2040,15 @@ function CastleDashboard() {
           </div>
         )}
 
-        {/* Content */}
-        {tab === "pipeline" && <PipelineView deals={deals} roles={activeRoles} onArchive={archiveDeal} onUpdate={updateDeal} onStageChange={changeStage} expandedId={expandedDealId} onExpand={setExpandedDealId} />}
-        {tab === "tasks" && <TasksView tasks={tasks} deals={deals.filter((d) => !d.archived)} roles={activeRoles} onEdit={(t) => { setEditItem(t); setModal("editTask"); }} onArchive={archiveTask} onStatusChange={changeTaskStatus} search={taskSearch} filter={taskFilter} />}
-        {tab === "bd" && <BDTrackerView leads={leads} roles={activeRoles} onEdit={(l) => { setEditItem(l); setModal("editLead"); }} onArchive={archiveLead} onConvert={convertLead} />}
-        {tab === "analytics" && <AnalyticsView deals={deals} roles={roles} goals={goals} onGoalsChange={setGoals} />}
-        {tab === "docs" && <DocumentsView userDocs={userDocs} onAddDoc={addUserDoc} onDeleteDoc={deleteUserDoc} showAddForm={modal === "addDoc"} onCloseForm={() => setModal(null)} />}
-        {tab === "roles" && <RolesView roles={roles} onAdd={() => setModal("addRole")} onEdit={(r) => { setEditItem(r); setModal("editRole"); }} onArchive={archiveRole} />}
+        {/* Content — animated tab transitions */}
+        <div key={tab} className="castle-tab-content">
+          {tab === "pipeline" && <PipelineView deals={deals} roles={activeRoles} onArchive={archiveDeal} onUpdate={updateDeal} onStageChange={changeStage} expandedId={expandedDealId} onExpand={setExpandedDealId} />}
+          {tab === "tasks" && <TasksView tasks={tasks} deals={deals.filter((d) => !d.archived)} roles={activeRoles} onEdit={(t) => { setEditItem(t); setModal("editTask"); }} onArchive={archiveTask} onStatusChange={changeTaskStatus} search={taskSearch} filter={taskFilter} />}
+          {tab === "bd" && <BDTrackerView leads={leads} roles={activeRoles} onEdit={(l) => { setEditItem(l); setModal("editLead"); }} onArchive={archiveLead} onConvert={convertLead} />}
+          {tab === "analytics" && <AnalyticsView deals={deals} roles={roles} goals={goals} onGoalsChange={setGoals} />}
+          {tab === "docs" && <DocumentsView userDocs={userDocs} onAddDoc={addUserDoc} onDeleteDoc={deleteUserDoc} showAddForm={modal === "addDoc"} onCloseForm={() => setModal(null)} />}
+          {tab === "roles" && <RolesView roles={roles} onAdd={() => setModal("addRole")} onEdit={(r) => { setEditItem(r); setModal("editRole"); }} onArchive={archiveRole} />}
+        </div>
       </div>
 
       {/* Modals */}
@@ -1988,7 +2075,7 @@ function CastleDashboard() {
 
       {/* Footer — pushed to bottom */}
       <div style={{ borderTop: `1px solid ${C.border}`, padding: mobile ? "14px 18px" : "18px 36px", textAlign: "center", marginTop: "auto" }}>
-        <span style={{ fontSize: 12, color: C.inkMuted }}>🏰 移動城堡指揮部 v6.0 — 規格外工作室 Beyond Spec</span>
+        <span style={{ fontSize: 12, color: C.inkMuted }}>🏰 移動城堡指揮部 v1.02 — 規格外工作室 Beyond Spec</span>
       </div>
     </div>
   );
