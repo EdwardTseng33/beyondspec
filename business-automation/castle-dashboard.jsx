@@ -417,7 +417,7 @@ const Modal = ({ title, onClose, children, wide }) => {
       <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: mobile ? "20px 20px 0 0" : 18, padding: mobile ? "28px 24px" : 32, width: mobile ? "100%" : (wide ? 600 : 520), maxHeight: mobile ? "92vh" : "85vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <h3 style={{ margin: 0, fontSize: mobile ? 18 : 20, fontWeight: 800, color: C.ink }}>{title}</h3>
-          <button onClick={onClose} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, transition: T, fontFamily: "inherit" }}>✕</button>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,.06)", border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, transition: T, fontFamily: "inherit" }}>✕</button>
         </div>
         {children}
       </div>
@@ -1445,7 +1445,7 @@ const AnalyticsView = ({ deals, roles, goals: savedGoals, onGoalsChange }) => {
         <div style={{ background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 14, padding: mobile ? 20 : 24, marginBottom: 24, animation: "drawerFadeIn .2s ease" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>🎯 調整業績目標</div>
-            <button onClick={() => setShowGoalEditor(false)} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, fontSize: 14, padding: "4px 10px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit" }}>✕</button>
+            <button onClick={() => setShowGoalEditor(false)} style={{ background: "rgba(255,255,255,.06)", border: "none", color: C.inkMuted, fontSize: 14, padding: "4px 10px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit" }}>✕</button>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr 1fr", gap: 16 }}>
             {[{ key: "month", label: "月目標" }, { key: "quarter", label: "季目標" }, { key: "year", label: "年目標" }].map(({ key, label }) => (
@@ -2052,21 +2052,22 @@ const CastleParade = () => {
   }, React.createElement(PixelSprite, { frames: CASTLE_FRAMES, size: 2, interval: 400 }));
 };
 
-// 🔥 Calcifer companion — floats near sync button, reacts to hover
-const CalciferCompanion = ({ syncing }) => {
+// 🔥 Calcifer companion — floats near sync button, reacts to hover, click shows changelog
+const CalciferCompanion = ({ syncing, onShowChangelog }) => {
   const [happy, setHappy] = useState(false);
   return React.createElement("div", {
-    style: { display: "inline-flex", alignItems: "center", cursor: "default", position: "relative" },
+    style: { display: "inline-flex", alignItems: "center", cursor: "pointer", position: "relative" },
     onMouseEnter: () => setHappy(true),
     onMouseLeave: () => setHappy(false),
-    title: syncing ? "卡西法正在燃燒同步中..." : "🔥 卡西法待命中",
+    onClick: onShowChangelog,
+    title: syncing ? "卡西法正在燃燒同步中..." : "🔥 點擊卡西法查看更版紀錄",
   },
     React.createElement("div", {
       style: { animation: syncing ? "float 0.6s ease-in-out infinite" : "float 3s ease-in-out infinite", filter: happy ? "brightness(1.3) drop-shadow(0 0 6px #FB923C)" : "none", transition: "filter .3s" },
     }, React.createElement(PixelSprite, { frames: CALCIFER_FRAMES, size: 2, interval: syncing ? 150 : 500 })),
     happy && !syncing && React.createElement("span", {
       style: { position: "absolute", top: -18, left: "50%", transform: "translateX(-50%)", fontSize: 10, color: C.orange, whiteSpace: "nowrap", animation: "fadeSlideUp .3s ease", pointerEvents: "none" },
-    }, "我在燒！別催！")
+    }, "點我看更新！🔥")
   );
 };
 
@@ -2152,8 +2153,21 @@ const AmbientStars = ({ width = 200, height = 120 }) => {
 };
 
 // ── Version Changelog ──
-const VERSION = "1.04";
+const VERSION = "1.05";
 const CHANGELOG = [
+  {
+    version: "1.05", date: "2026-03-01", title: "體驗精修 & 智慧登入",
+    features: [
+      { icon: "🔥", text: "卡西法更版入口 — 點擊右上角卡西法即可查看完整更版紀錄" },
+      { icon: "🔐", text: "登入自動清除示範資料 — 首次登入後自動清空 Demo 資料，讓你從零開始建立自己的業務" },
+      { icon: "📱", text: "RWD Header 優化 — 手機版標題精簡、按鈕尺寸適配、間距調整，小螢幕不再擁擠" },
+      { icon: "📱", text: "Tab 列表優化 — 手機版字體縮小、間距精調，六個 Tab 不再溢出" },
+    ],
+    fixes: [
+      { icon: "🐛", text: "修復活動紀錄關閉按鈕顯示為白色方塊的 CSS bug（rgba + hex 衝突）" },
+      { icon: "🐛", text: "修復帳號頭像圖片載入失敗時無 fallback 的問題，加入 onError 及 referrerPolicy" },
+    ],
+  },
   {
     version: "1.04", date: "2026-03-01", title: "像素魔法世界",
     features: [
@@ -2218,7 +2232,7 @@ const ChangelogModal = ({ open, onClose }) => {
             <div style={{ fontSize: 18, fontWeight: 800, color: C.ink }}>🏰 版本更新紀錄</div>
             <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 4 }}>移動城堡指揮部 — What's New</div>
           </div>
-          <button onClick={onClose} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit" }}>✕</button>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,.06)", border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit" }}>✕</button>
         </div>
         {/* Content */}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 28px" }}>
@@ -2333,7 +2347,7 @@ const ActivityLog = ({ log, open, onClose }) => {
         style={{ width: mobile ? "100%" : 380, height: "100%", background: C.card, borderLeft: `1px solid ${C.borderHover}`, padding: "24px 20px", overflowY: "auto", boxShadow: "-8px 0 30px rgba(0,0,0,.3)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: C.ink }}>📜 活動紀錄</h3>
-          <button onClick={onClose} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit" }}>✕</button>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,.06)", border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit" }}>✕</button>
         </div>
         {log.length === 0 ? (
           <div style={{ textAlign: "center", color: C.inkMuted, fontSize: 14, paddingTop: 40 }}>尚無活動紀錄</div>
@@ -2398,9 +2412,16 @@ export default function CastleDashboard() {
     // Try to load cloud data
     const cloud = await api.get("getAll", u.email);
     if (cloud && (cloud.deals?.length || cloud.tasks?.length || cloud.leads?.length)) {
+      // Load existing cloud data
       if (cloud.deals?.length) setDeals(cloud.deals);
       if (cloud.tasks?.length) setTasks(cloud.tasks);
       if (cloud.leads?.length) setLeads(cloud.leads);
+    } else {
+      // First login — clear demo data so user starts fresh
+      setDeals([]);
+      setTasks([]);
+      setLeads([]);
+      setActivityLog([]);
     }
   }, []);
 
@@ -2631,47 +2652,47 @@ export default function CastleDashboard() {
 *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.25)}
 `}</style>
       {/* Header */}
-      <div style={{ borderBottom: `1px solid ${C.border}`, padding: mobile ? "14px 18px" : "16px 36px", display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.surface}80`, backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: mobile ? 12 : 16 }}>
-          <span style={{ fontSize: mobile ? 22 : 26 }}>🏰</span>
-          <div>
-            <div style={{ fontSize: mobile ? 15 : 18, fontWeight: 800, letterSpacing: ".02em" }}>移動城堡指揮部</div>
+      <div style={{ borderBottom: `1px solid ${C.border}`, padding: mobile ? "12px 14px" : "16px 36px", display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.surface}80`, backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100, gap: mobile ? 8 : 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: mobile ? 8 : 16, minWidth: 0, flexShrink: 1 }}>
+          <span style={{ fontSize: mobile ? 20 : 26, flexShrink: 0 }}>🏰</span>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: mobile ? 14 : 18, fontWeight: 800, letterSpacing: ".02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{mobile ? "城堡指揮部" : "移動城堡指揮部"}</div>
             {!mobile && <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 2 }}>Beyond Spec 業務管理系統</div>}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: mobile ? 6 : 8, flexShrink: 0 }}>
           {!mobile && <span style={{ fontSize: 13, color: C.inkMuted }}>{now}</span>}
           {/* Cmd+K button */}
           <button onClick={() => setCmdOpen(true)} title="指令面板 (⌘K)"
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: T }}>
+            style={{ display: "flex", alignItems: "center", gap: mobile ? 0 : 6, padding: mobile ? "5px 8px" : "5px 12px", borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: T }}>
             🔍 {!mobile && "指令"} {!mobile && <span style={{ fontSize: 10, background: C.surface, padding: "1px 5px", borderRadius: 4, fontFamily: "monospace" }}>⌘K</span>}
           </button>
           {/* Export button */}
           {(tab === "pipeline" || tab === "tasks" || tab === "bd") && (
             <button onClick={() => { if (tab === "pipeline") doExportDeals(); else if (tab === "tasks") doExportTasks(); else doExportLeads(); }}
               title="匯出 CSV"
-              style={{ width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>⬇</button>
+              style={{ width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: mobile ? 12 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>⬇</button>
           )}
           {/* Activity log button */}
           <button onClick={() => setLogOpen(true)} title="活動紀錄"
-            style={{ position: "relative", width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>
+            style={{ position: "relative", width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: mobile ? 12 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>
             📜
             {activityLog.length > 0 && <span style={{ position: "absolute", top: -2, right: -2, width: 8, height: 8, borderRadius: "50%", background: C.accent }} />}
           </button>
           {/* Overdue badge */}
           {(() => { const overdue = tasks.filter((t) => !t.archived && t.status !== "done" && t.due < today()).length; return overdue > 0 ? (
             <button onClick={() => { setTab("tasks"); setTaskFilter("overdue"); }} title={`${overdue} 個逾期任務`} className="castle-pulse"
-              style={{ position: "relative", width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.rose}30`, background: `${C.rose}10`, color: C.rose, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}>
+              style={{ position: "relative", width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, border: `1px solid ${C.rose}30`, background: `${C.rose}10`, color: C.rose, cursor: "pointer", fontSize: mobile ? 12 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}>
               ⚠️<span style={{ position: "absolute", top: -4, right: -4, background: C.rose, color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{overdue}</span>
             </button>
           ) : null; })()}
           {/* Calcifer companion + Cloud sync */}
           {user && API_URL && React.createElement(React.Fragment, null,
-            !mobile && React.createElement(CalciferCompanion, { syncing }),
+            !mobile && React.createElement(CalciferCompanion, { syncing, onShowChangelog: () => setChangelogOpen(true) }),
             React.createElement("button", {
               onClick: syncToCloud,
               title: syncing ? "卡西法正在燃燒同步中..." : `☁️ 同步到雲端\n將案件、任務、BD 資料備份到 Google Sheets\n${lastSyncTime ? `上次同步：${new Date(lastSyncTime).toLocaleString("zh-TW")}` : "尚未同步過"}`,
-              style: { position: "relative", width: 34, height: 34, borderRadius: 10, border: `1px solid ${syncing ? C.emerald : C.border}`, background: syncing ? `${C.emerald}15` : "transparent", color: syncing ? C.emerald : C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" },
+              style: { position: "relative", width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, border: `1px solid ${syncing ? C.emerald : C.border}`, background: syncing ? `${C.emerald}15` : "transparent", color: syncing ? C.emerald : C.inkMuted, cursor: "pointer", fontSize: mobile ? 12 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" },
             },
               syncing ? "⏳" : "☁️",
               lastSyncTime && React.createElement("span", { style: { position: "absolute", bottom: -2, right: -2, width: 7, height: 7, borderRadius: "50%", background: C.emerald, border: `1.5px solid ${C.bg}` } })
@@ -2680,8 +2701,8 @@ export default function CastleDashboard() {
           {/* User avatar or login */}
           {user ? (
             <button onClick={handleLogout} title={`${user.name}\n點擊登出`}
-              style={{ width: 34, height: 34, borderRadius: 10, overflow: "hidden", border: `2px solid ${C.accent}`, cursor: "pointer", padding: 0 }}>
-              {user.picture ? <img src={user.picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 15 }}>👑</span>}
+              style={{ width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, overflow: "hidden", border: `2px solid ${C.accent}`, cursor: "pointer", padding: 0, background: C.accentSoft, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {user.picture ? <img src={user.picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; e.target.parentElement.innerHTML = '<span style="font-size:15px">👑</span>'; }} referrerPolicy="no-referrer" /> : <span style={{ fontSize: 15 }}>👑</span>}
             </button>
           ) : GOOGLE_CLIENT_ID ? (
             <div id="g_id_signin" style={{ borderRadius: 10, overflow: "hidden" }}></div>
@@ -2701,7 +2722,7 @@ export default function CastleDashboard() {
           <div style={{ display: "flex", gap: 4, background: C.surface, borderRadius: 12, padding: 4, overflowX: "auto" }}>
             {TABS.map((t) => (
               <button key={t.id} onClick={() => { setTab(t.id); setExpandedDealId(null); setTaskSearch(""); setTaskFilter("all"); }}
-                style={{ padding: mobile ? "8px 14px" : "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, whiteSpace: "nowrap", flex: mobile ? 1 : "none", transition: T }}>
+                style={{ padding: mobile ? "7px 10px" : "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: mobile ? 12 : 14, fontWeight: 600, fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, whiteSpace: "nowrap", flex: mobile ? 1 : "none", transition: T }}>
                 {t.label}
               </button>
             ))}
