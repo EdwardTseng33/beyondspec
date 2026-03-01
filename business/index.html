@@ -1,22 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🏰 移動城堡指揮部 — Beyond Spec 業務管理系統</title>
-<meta name="description" content="Beyond Spec 業務管理系統 — 業務漏斗、任務看板、BD 開發追蹤、數據分析">
-<meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏰</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🏰 移動城堡業務指揮 Dashboard</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body, #root { height: 100%; width: 100%; }
-  body { font-family: 'Noto Sans TC', -apple-system, sans-serif; background: #0f0f14; color: #e8e8ed; overflow-x: hidden; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #08080c; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+  ::selection { background: rgba(108,142,255,.3); }
 </style>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -40,8 +39,8 @@ const { useState, useRef, useEffect, useCallback } = React;
 // ══════════════════════════════════════════════
 // Data Layer — localStorage + Google Sheets API (Route C)
 // ══════════════════════════════════════════════
-const API_URL = ""; // ← 貼上你的 Google Apps Script Web App URL
-const GOOGLE_CLIENT_ID = ""; // ← 貼上你的 Google OAuth Client ID
+const API_URL = "https://script.google.com/macros/s/AKfycbyzmgzpzVtlIQeKnDhBQocVRDpxGxlSZvBGLgTy4aEl8yL5A6lwV2-qfO2n8IM96GU4/exec";
+const GOOGLE_CLIENT_ID = "870408555328-8vg2runp456id06aeen8vcplfbhl8c60.apps.googleusercontent.com";
 
 // localStorage helper
 const ls = {
@@ -1060,10 +1059,12 @@ const BDTrackerView = ({ leads, roles, onEdit, onArchive, onConvert }) => {
 };
 
 // ── Analytics View ──
-const AnalyticsView = ({ deals, roles }) => {
+const AnalyticsView = ({ deals, roles, goals: savedGoals, onGoalsChange }) => {
   const { mobile } = useWindowSize();
   const [period, setPeriod] = useState("month"); // month | quarter | year
   const [selectedRole, setSelectedRole] = useState("all");
+  const [showGoalEditor, setShowGoalEditor] = useState(false);
+  const [goalDraft, setGoalDraft] = useState(null);
   const activeRoles = roles.filter((r) => !r.archived);
 
   const now = new Date();
@@ -1086,8 +1087,9 @@ const AnalyticsView = ({ deals, roles }) => {
   const filtered = selectedRole === "all" ? periodDeals : periodDeals.filter((d) => d.role === selectedRole);
   const filteredWon = selectedRole === "all" ? periodWon : periodWon.filter((d) => d.role === selectedRole);
 
-  // Goals (example targets — can be customized)
-  const goals = { month: { deals: 5, revenue: 300000 }, quarter: { deals: 12, revenue: 800000 }, year: { deals: 40, revenue: 3000000 } };
+  // Goals — user-configurable, persisted to localStorage
+  const defaultGoals = { month: { deals: 5, revenue: 300000 }, quarter: { deals: 12, revenue: 800000 }, year: { deals: 40, revenue: 3000000 } };
+  const goals = savedGoals || defaultGoals;
   const goal = goals[period];
   const wonRevenue = filteredWon.reduce((s, d) => s + d.value, 0);
   const pipelineValue = filtered.filter((d) => !["won", "lost"].includes(d.stage)).reduce((s, d) => s + d.value, 0);
@@ -1128,7 +1130,7 @@ const AnalyticsView = ({ deals, roles }) => {
 
   return (
     <div>
-      {/* Period selector + role filter */}
+      {/* Period selector + role filter + goal settings */}
       <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", gap: 12, marginBottom: 24, alignItems: mobile ? "stretch" : "center" }}>
         <div style={{ display: "flex", gap: 4, background: C.surface, borderRadius: 10, padding: 4 }}>
           {["month", "quarter", "year"].map((p) => (
@@ -1138,7 +1140,7 @@ const AnalyticsView = ({ deals, roles }) => {
             </button>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", flex: 1 }}>
           <button onClick={() => setSelectedRole("all")}
             style={{ padding: "5px 14px", borderRadius: 20, border: selectedRole === "all" ? `1.5px solid ${C.accent}` : `1px solid ${C.border}`, background: selectedRole === "all" ? `${C.accent}15` : "transparent", color: selectedRole === "all" ? C.accent : C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T }}>全員</button>
           {activeRoles.map((r) => (
@@ -1148,7 +1150,44 @@ const AnalyticsView = ({ deals, roles }) => {
             </button>
           ))}
         </div>
+        <button onClick={() => { setGoalDraft(JSON.parse(JSON.stringify(goals))); setShowGoalEditor(!showGoalEditor); }}
+          style={{ padding: "7px 14px", borderRadius: 10, border: `1px solid ${showGoalEditor ? C.accent : C.border}`, background: showGoalEditor ? `${C.accent}15` : "transparent", color: showGoalEditor ? C.accent : C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }}>
+          ⚙️ 目標設定
+        </button>
       </div>
+
+      {/* Goal Editor Panel */}
+      {showGoalEditor && goalDraft && (
+        <div style={{ background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 14, padding: mobile ? 20 : 24, marginBottom: 24, animation: "drawerFadeIn .2s ease" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>🎯 調整業績目標</div>
+            <button onClick={() => setShowGoalEditor(false)} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, fontSize: 14, padding: "4px 10px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit" }}>✕</button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr 1fr", gap: 16 }}>
+            {[{ key: "month", label: "月目標" }, { key: "quarter", label: "季目標" }, { key: "year", label: "年目標" }].map(({ key, label }) => (
+              <div key={key} style={{ background: C.surface, borderRadius: 12, padding: 16, border: `1px solid ${C.border}` }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.gold, marginBottom: 12 }}>{label}</div>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ display: "block", fontSize: 12, color: C.inkMuted, marginBottom: 4 }}>簽約件數</label>
+                  <input type="number" min="0" step="1" value={goalDraft[key].deals}
+                    onChange={(e) => setGoalDraft({ ...goalDraft, [key]: { ...goalDraft[key], deals: Math.max(0, Number(e.target.value)) } })}
+                    style={{ ...inputStyle, padding: "8px 12px", fontSize: 15, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace" }} />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 12, color: C.inkMuted, marginBottom: 4 }}>營收目標 (NT$)</label>
+                  <input type="number" min="0" step="10000" value={goalDraft[key].revenue}
+                    onChange={(e) => setGoalDraft({ ...goalDraft, [key]: { ...goalDraft[key], revenue: Math.max(0, Number(e.target.value)) } })}
+                    style={{ ...inputStyle, padding: "8px 12px", fontSize: 15, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
+            <Btn outline color={C.inkMuted} small onClick={() => setShowGoalEditor(false)}>取消</Btn>
+            <Btn color={C.emerald} small onClick={() => { onGoalsChange(goalDraft); setShowGoalEditor(false); }}>儲存目標</Btn>
+          </div>
+        </div>
+      )}
 
       {/* Goal Progress */}
       <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 24 }}>
@@ -1443,7 +1482,7 @@ const ActivityLog = ({ log, open, onClose }) => {
   );
 };
 
-function CastleDashboard() {
+export default function CastleDashboard() {
   const { mobile } = useWindowSize();
   const [user, setUser] = useState(() => ls.getUser());
   const [tab, setTab] = useState("pipeline");
@@ -1461,6 +1500,7 @@ function CastleDashboard() {
   const [cmdOpen, setCmdOpen] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
   const [activityLog, setActivityLog] = usePersisted("log", []);
+  const [goals, setGoals] = usePersisted("goals", { month: { deals: 5, revenue: 300000 }, quarter: { deals: 12, revenue: 800000 }, year: { deals: 40, revenue: 3000000 } });
   const [syncing, setSyncing] = useState(false);
 
   const nDeal = useRef(Math.max(...(deals.length ? deals : INIT_DEALS).map((d) => d.id)) + 1);
@@ -1503,6 +1543,24 @@ function CastleDashboard() {
   const addLog = useCallback((icon, action, detail, color) => {
     setActivityLog((prev) => [{ icon, action, detail, color, time: new Date().toISOString() }, ...prev].slice(0, 50));
   }, []);
+
+  // ── Google Sign-In Initialization ──
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || typeof google === "undefined") return;
+    try {
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (response) => handleGoogleLogin(response.credential),
+        auto_select: true,
+      });
+      // Render sign-in button if not logged in
+      if (!user) {
+        const el = document.getElementById("g_id_signin");
+        if (el) google.accounts.id.renderButton(el, { theme: "filled_black", size: "medium", shape: "pill", text: "signin_with" });
+        google.accounts.id.prompt(); // One Tap
+      }
+    } catch (e) { console.warn("Google Sign-In init error:", e); }
+  }, [user, handleGoogleLogin]);
 
   // ── Keyboard Shortcuts ──
   useEffect(() => {
@@ -1678,6 +1736,8 @@ function CastleDashboard() {
               style={{ width: 34, height: 34, borderRadius: 10, overflow: "hidden", border: `2px solid ${C.accent}`, cursor: "pointer", padding: 0 }}>
               {user.picture ? <img src={user.picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 15 }}>👑</span>}
             </button>
+          ) : GOOGLE_CLIENT_ID ? (
+            <div id="g_id_signin" style={{ borderRadius: 10, overflow: "hidden" }}></div>
           ) : (
             <div style={{ width: 34, height: 34, borderRadius: 10, background: C.accentSoft, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>👑</div>
           )}
@@ -1719,7 +1779,7 @@ function CastleDashboard() {
         {tab === "pipeline" && <PipelineView deals={deals} roles={activeRoles} onArchive={archiveDeal} onUpdate={updateDeal} onStageChange={changeStage} expandedId={expandedDealId} onExpand={setExpandedDealId} />}
         {tab === "tasks" && <TasksView tasks={tasks} deals={deals.filter((d) => !d.archived)} roles={activeRoles} onEdit={(t) => { setEditItem(t); setModal("editTask"); }} onArchive={archiveTask} onStatusChange={changeTaskStatus} search={taskSearch} filter={taskFilter} />}
         {tab === "bd" && <BDTrackerView leads={leads} roles={activeRoles} onEdit={(l) => { setEditItem(l); setModal("editLead"); }} onArchive={archiveLead} onConvert={convertLead} />}
-        {tab === "analytics" && <AnalyticsView deals={deals} roles={roles} />}
+        {tab === "analytics" && <AnalyticsView deals={deals} roles={roles} goals={goals} onGoalsChange={setGoals} />}
         {tab === "docs" && <DocumentsView />}
         {tab === "roles" && <RolesView roles={roles} onAdd={() => setModal("addRole")} onEdit={(r) => { setEditItem(r); setModal("editRole"); }} onArchive={archiveRole} />}
       </div>
@@ -1748,13 +1808,13 @@ function CastleDashboard() {
 
       {/* Footer — pushed to bottom */}
       <div style={{ borderTop: `1px solid ${C.border}`, padding: mobile ? "14px 18px" : "18px 36px", textAlign: "center", marginTop: "auto" }}>
-        <span style={{ fontSize: 12, color: C.inkMuted }}>🏰 移動城堡指揮部 v5.3 — 規格外工作室 Beyond Spec</span>
+        <span style={{ fontSize: 12, color: C.inkMuted }}>🏰 移動城堡指揮部 v5.4 — 規格外工作室 Beyond Spec</span>
       </div>
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(CastleDashboard));
+ReactDOM.createRoot(document.getElementById("root")).render(<CastleDashboard />);
 </script>
 </body>
 </html>
