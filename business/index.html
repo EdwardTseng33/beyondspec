@@ -1482,7 +1482,7 @@ const ActivityLog = ({ log, open, onClose }) => {
   );
 };
 
-export default function CastleDashboard() {
+function CastleDashboard() {
   const { mobile } = useWindowSize();
   const [user, setUser] = useState(() => ls.getUser());
   const [tab, setTab] = useState("pipeline");
