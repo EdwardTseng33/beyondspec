@@ -15,7 +15,7 @@
 const { useState, useEffect, useCallback, useMemo, useRef } = React;
 
 // ══════════════════════════════════════════════════════════════
-// 🏰 移動城堡業務指揮 Dashboard v1.04
+// 🏰 移動城堡業務指揮 Dashboard v1.08
 // Beyond Spec 規格外工作室 — 業務管理系統
 //
 // 功能模組：
@@ -322,18 +322,67 @@ const PriorityDot = ({ priority }) => {
   return <span title={`優先級：${p.label}`} style={{ fontSize: 10 }}>{p.icon}</span>;
 };
 
-const Btn = ({ children, onClick, color = C.accent, outline, small, full, style: sx }) => {
+// ══════════════════════════════════════════════
+// 🎨 Design System — Button Component
+// ══════════════════════════════════════════════
+// Variants: primary (filled) / secondary (outline) / ghost (text only) / danger
+// Sizes: sm / md (default) / lg
+// Usage: <Btn>Primary</Btn>  <Btn variant="secondary">Cancel</Btn>  <Btn size="sm">Small</Btn>
+//        <Btn outline>...</Btn> is legacy alias for variant="secondary"
+
+const Btn = ({ children, onClick, color = C.accent, outline, variant, small, size, full, icon, style: sx }) => {
   const [hov, setHov] = useState(false);
+  // Resolve variant: legacy `outline` prop → "secondary"
+  const v = variant || (outline ? "secondary" : "primary");
+  // Resolve size: legacy `small` prop → "sm"
+  const s = size || (small ? "sm" : "md");
+
+  const sizeMap = {
+    sm:  { padding: "6px 14px", fontSize: 13, iconSize: 13, borderRadius: 8, gap: 5 },
+    md:  { padding: "9px 20px", fontSize: 14, iconSize: 14, borderRadius: 10, gap: 6 },
+    lg:  { padding: "11px 26px", fontSize: 15, iconSize: 15, borderRadius: 12, gap: 7 },
+  };
+
+  const variantStyles = {
+    primary: {
+      border: "none",
+      background: hov ? color : `${color}dd`,
+      color: "#fff",
+      boxShadow: hov ? `0 4px 14px ${color}40` : `0 2px 8px ${color}20`,
+    },
+    secondary: {
+      border: `1.5px solid ${hov ? color : `${color}50`}`,
+      background: hov ? `${color}12` : "transparent",
+      color: hov ? color : `${color}cc`,
+      boxShadow: "none",
+    },
+    ghost: {
+      border: "1.5px solid transparent",
+      background: hov ? "rgba(255,255,255,.06)" : "transparent",
+      color: hov ? C.ink : C.inkMuted,
+      boxShadow: "none",
+    },
+    danger: {
+      border: "none",
+      background: hov ? C.rose : `${C.rose}dd`,
+      color: "#fff",
+      boxShadow: hov ? `0 4px 14px ${C.rose}40` : `0 2px 8px ${C.rose}20`,
+    },
+  };
+
+  const sz = sizeMap[s];
+  const vs = variantStyles[v] || variantStyles.primary;
+
   return (
     <button onClick={onClick} className="castle-btn-pop"
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
       style={{
-        padding: small ? "6px 14px" : "9px 20px", borderRadius: 10,
-        border: outline ? `1px solid ${color}40` : "none",
-        background: outline ? (hov ? `${color}10` : "transparent") : (hov ? `${color}30` : `${color}20`),
-        color, fontSize: small ? 13 : 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+        padding: sz.padding, borderRadius: sz.borderRadius,
+        border: vs.border, background: vs.background, color: vs.color,
+        fontSize: sz.fontSize, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
         transition: T, width: full ? "100%" : "auto",
-        boxShadow: hov && !outline ? `0 4px 12px ${color}20` : "none",
+        boxShadow: vs.boxShadow, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: sz.gap,
+        letterSpacing: ".02em",
         ...sx
       }}>{children}</button>
   );
@@ -369,7 +418,7 @@ const ConfirmModal = ({ title, message, onConfirm, onCancel, danger }) => {
         <h3 style={{ margin: "0 0 10px", fontSize: 18, fontWeight: 800, color: C.ink }}>{title}</h3>
         <p style={{ margin: "0 0 24px", fontSize: 14, color: C.inkSoft, lineHeight: 1.7 }}>{message}</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-          <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+          <Btn variant="ghost" onClick={onCancel}>取消</Btn>
           <Btn color={danger ? C.rose : C.accent} onClick={onConfirm}>{danger ? "確定刪除" : "確定"}</Btn>
         </div>
       </div>
@@ -413,7 +462,7 @@ const LostReasonModal = ({ dealName, onConfirm, onCancel }) => {
           </div>
         )}
         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-          <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+          <Btn variant="ghost" onClick={onCancel}>取消</Btn>
           <Btn color={C.rose} onClick={() => { if (reason) onConfirm(reason, customNote); }}>
             {reason ? "確認標記未成案" : "請選擇原因"}
           </Btn>
@@ -431,7 +480,7 @@ const Modal = ({ title, onClose, children, wide }) => {
       <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: mobile ? "20px 20px 0 0" : 18, padding: mobile ? "28px 24px" : 32, width: mobile ? "100%" : (wide ? 600 : 520), maxHeight: mobile ? "92vh" : "85vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <h3 style={{ margin: 0, fontSize: mobile ? 18 : 20, fontWeight: 800, color: C.ink }}>{title}</h3>
-          <button onClick={onClose} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, transition: T, fontFamily: "inherit" }}>✕</button>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,.06)", border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, transition: T, fontFamily: "inherit" }}>✕</button>
         </div>
         {children}
       </div>
@@ -506,15 +555,15 @@ const DetailDrawer = ({ open, onClose, title, icon, accentColor, children, actio
     <div style={{ position: "fixed", inset: 0, zIndex: 9000, display: "flex", justifyContent: "flex-end" }}>
       {/* Backdrop */}
       <div onClick={onClose} style={{
-        position: "absolute", inset: 0, background: "rgba(0,0,0,.5)", backdropFilter: "blur(4px)",
+        position: "absolute", inset: 0, background: "rgba(0,0,0,.35)", backdropFilter: "blur(2px)",
         animation: "drawerFadeIn .2s ease"
       }} />
       {/* Panel */}
       <div style={{
         position: "relative", width: drawerW, maxWidth: "100%", height: "100%",
-        background: C.bg, borderLeft: mobile ? "none" : `1px solid ${C.border}`,
+        background: C.card, borderLeft: mobile ? "none" : `1.5px solid ${C.borderHover}`,
         display: "flex", flexDirection: "column",
-        boxShadow: "-20px 0 60px rgba(0,0,0,.3)",
+        boxShadow: `-24px 0 80px rgba(0,0,0,.5), -2px 0 20px ${accentColor || C.accent}15`,
         animation: "drawerSlideIn .28s cubic-bezier(.16,1,.3,1)"
       }}>
         {/* Header */}
@@ -606,7 +655,7 @@ const DealForm = ({ deal, roles, allDeals, onSave, onCancel }) => {
       )}
       <Field label="備註"><textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={f.notes} onChange={(e) => set("notes", e.target.value)} /></Field>
       <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 10 }}>
-        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn variant="ghost" onClick={onCancel}>取消</Btn>
         <Btn color={C.emerald} onClick={() => { if (f.name && f.company) onSave(f); }}>{deal ? "儲存" : "新增"}</Btn>
       </div>
     </div>
@@ -633,7 +682,7 @@ const TaskForm = ({ task, deals, roles, onSave, onCancel }) => {
         </select>
       </Field>
       <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 10 }}>
-        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn variant="ghost" onClick={onCancel}>取消</Btn>
         <Btn color={C.emerald} onClick={() => { if (f.text) onSave(f); }}>{task ? "儲存" : "新增"}</Btn>
       </div>
     </div>
@@ -656,7 +705,7 @@ const LeadForm = ({ lead, roles, onSave, onCancel }) => {
       </div>
       <Field label="備註"><textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={f.notes} onChange={(e) => set("notes", e.target.value)} /></Field>
       <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 10 }}>
-        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn variant="ghost" onClick={onCancel}>取消</Btn>
         <Btn color={C.emerald} onClick={() => { if (f.name && f.company) onSave(f); }}>{lead ? "儲存" : "新增"}</Btn>
       </div>
     </div>
@@ -698,7 +747,7 @@ const RoleForm = ({ role, onSave, onCancel }) => {
         <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 10, background: `${f.color}18`, color: f.color, fontSize: 15, fontWeight: 600 }}>{f.emoji} {f.name || "未命名"} <span style={{ fontSize: 12, opacity: .6 }}>({f.title || "無職稱"})</span></span>
       </div>
       <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 18 }}>
-        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn variant="ghost" onClick={onCancel}>取消</Btn>
         <Btn color={C.emerald} onClick={() => { if (f.name) onSave(f); }}>{role ? "儲存" : "新增角色"}</Btn>
       </div>
     </div>
@@ -852,11 +901,11 @@ const PipelineView = ({ deals, roles, onArchive, onUpdate, onStageChange, expand
       icon={editing ? "✏️" : selectedStage.icon}
       accentColor={selectedStage.color}
       actions={editing ? <>
-        <Btn small color={C.emerald} onClick={saveEdit}>💾 儲存變更</Btn>
-        <Btn small outline color={C.inkMuted} onClick={cancelEdit}>取消</Btn>
+        <Btn color={C.emerald} size="sm" onClick={saveEdit}>儲存變更</Btn>
+        <Btn variant="ghost" size="sm" onClick={cancelEdit}>取消</Btn>
       </> : <>
-        <Btn small color={C.accent} onClick={startEdit}>✏️ 編輯</Btn>
-        <Btn small outline color={C.rose} onClick={() => { onArchive(selectedDeal.id); onExpand(null); }}>📦 封存</Btn>
+        <Btn size="sm" color={C.accent} onClick={startEdit}>編輯</Btn>
+        <Btn variant="secondary" color={C.rose} size="sm" onClick={() => { onArchive(selectedDeal.id); onExpand(null); }}>封存</Btn>
       </>}
     >
       {/* Stage quick-switch — always visible */}
@@ -1132,8 +1181,8 @@ const TasksView = ({ tasks, deals, roles, onEdit, onArchive, onStatusChange, sea
       <DetailDrawer open={!!selectedTask} onClose={() => setSelectedId(null)}
         title={selectedTask.text} icon={pri?.icon || "📋"} accentColor={st?.color}
         actions={<>
-          <Btn small color={C.accent} onClick={() => onEdit(selectedTask)}>✏️ 編輯任務</Btn>
-          <Btn small outline color={C.rose} onClick={() => { onArchive(selectedTask.id); setSelectedId(null); }}>📦 封存</Btn>
+          <Btn size="sm" color={C.accent} onClick={() => onEdit(selectedTask)}>編輯任務</Btn>
+          <Btn variant="secondary" color={C.rose} size="sm" onClick={() => { onArchive(selectedTask.id); setSelectedId(null); }}>封存</Btn>
         </>}
       >
         {/* Status badge row */}
@@ -1265,9 +1314,9 @@ const BDTrackerView = ({ leads, roles, onEdit, onArchive, onConvert }) => {
     <DetailDrawer open={!!selectedLead} onClose={() => setSelectedId(null)}
       title={selectedLead.name} icon="🎯" accentColor={selectedStatus.color}
       actions={<>
-        <Btn small color={C.accent} onClick={() => onEdit(selectedLead)}>✏️ 編輯</Btn>
-        {selectedLead.status === "call_booked" && <Btn small color={C.emerald} onClick={() => { onConvert(selectedLead); setSelectedId(null); }}>🎯 轉入漏斗</Btn>}
-        <Btn small outline color={C.rose} onClick={() => { onArchive(selectedLead.id); setSelectedId(null); }}>📦 封存</Btn>
+        <Btn size="sm" color={C.accent} onClick={() => onEdit(selectedLead)}>編輯</Btn>
+        {selectedLead.status === "call_booked" && <Btn size="sm" color={C.emerald} onClick={() => { onConvert(selectedLead); setSelectedId(null); }}>轉入漏斗</Btn>}
+        <Btn variant="secondary" color={C.rose} size="sm" onClick={() => { onArchive(selectedLead.id); setSelectedId(null); }}>封存</Btn>
       </>}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
@@ -1459,7 +1508,7 @@ const AnalyticsView = ({ deals, roles, goals: savedGoals, onGoalsChange }) => {
         <div style={{ background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 14, padding: mobile ? 20 : 24, marginBottom: 24, animation: "drawerFadeIn .2s ease" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
             <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>🎯 調整業績目標</div>
-            <button onClick={() => setShowGoalEditor(false)} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, fontSize: 14, padding: "4px 10px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit" }}>✕</button>
+            <button onClick={() => setShowGoalEditor(false)} style={{ background: "rgba(255,255,255,.06)", border: "none", color: C.inkMuted, fontSize: 14, padding: "4px 10px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit" }}>✕</button>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr 1fr", gap: 16 }}>
             {[{ key: "month", label: "月目標" }, { key: "quarter", label: "季目標" }, { key: "year", label: "年目標" }].map(({ key, label }) => (
@@ -1481,8 +1530,8 @@ const AnalyticsView = ({ deals, roles, goals: savedGoals, onGoalsChange }) => {
             ))}
           </div>
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
-            <Btn outline color={C.inkMuted} small onClick={() => setShowGoalEditor(false)}>取消</Btn>
-            <Btn color={C.emerald} small onClick={() => { onGoalsChange(goalDraft); setShowGoalEditor(false); }}>儲存目標</Btn>
+            <Btn variant="ghost" size="sm" onClick={() => setShowGoalEditor(false)}>取消</Btn>
+            <Btn color={C.emerald} size="sm" onClick={() => { onGoalsChange(goalDraft); setShowGoalEditor(false); }}>儲存目標</Btn>
           </div>
         </div>
       )}
@@ -1530,7 +1579,10 @@ const AnalyticsView = ({ deals, roles, goals: savedGoals, onGoalsChange }) => {
       <div style={{ marginBottom: 24 }}>
         <h3 style={{ fontSize: 16, fontWeight: 800, color: C.ink, marginBottom: 14 }}>⚡ 案件速度分析</h3>
         {velocityDeals.length === 0 ? (
-          <div style={{ padding: 24, textAlign: "center", color: C.inkMuted, fontSize: 14, background: C.surface, borderRadius: 12 }}>尚無已簽約案件資料</div>
+          <div style={{ padding: 32, textAlign: "center", background: C.surface, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <HowlIdleCompanion message="還沒有簽約案件...來找靈魂吧。" />
+            <div style={{ fontSize: 13, color: C.inkMuted }}>尚無已簽約案件資料</div>
+          </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 4px" }}>
@@ -1809,8 +1861,8 @@ const DocumentsView = ({ userDocs, onAddDoc, onDeleteDoc, showAddForm, onCloseFo
               style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.ink, fontSize: 14, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <Btn color={C.emerald} small onClick={handleAddDoc}>✅ 新增</Btn>
-            <Btn outline color={C.inkMuted} small onClick={onCloseForm}>取消</Btn>
+            <Btn color={C.emerald} size="sm" onClick={handleAddDoc}>新增</Btn>
+            <Btn variant="ghost" size="sm" onClick={onCloseForm}>取消</Btn>
           </div>
         </div>
       )}
@@ -1829,11 +1881,11 @@ const DocumentsView = ({ userDocs, onAddDoc, onDeleteDoc, showAddForm, onCloseFo
                   </div>
                   {doc.desc && <div style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.6, marginBottom: 12 }}>{doc.desc}</div>}
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <Btn small color={C.accent} onClick={() => window.open(doc.url, "_blank")}>📂 開啟</Btn>
-                    <Btn small outline color={copied === doc.id ? C.emerald : C.inkMuted} onClick={() => copyLink(doc.id, doc.url)}>
-                      {copied === doc.id ? "✅ 已複製" : "🔗 複製連結"}
+                    <Btn color={C.accent} size="sm" onClick={() => window.open(doc.url, "_blank")}>開啟</Btn>
+                    <Btn variant="secondary" color={copied === doc.id ? C.emerald : C.inkMuted} size="sm" onClick={() => copyLink(doc.id, doc.url)}>
+                      {copied === doc.id ? "已複製" : "複製連結"}
                     </Btn>
-                    <Btn small outline color={C.rose} onClick={() => onDeleteDoc(doc.id)}>🗑 刪除</Btn>
+                    <Btn variant="secondary" color={C.rose} size="sm" onClick={() => onDeleteDoc(doc.id)}>刪除</Btn>
                   </div>
                 </div>
               </div>
@@ -1870,7 +1922,7 @@ const RolesView = ({ roles, onAdd, onEdit, onArchive }) => {
               </div>
               <div style={{ display: "flex", gap: 6 }}>
                 <Btn small color={C.accent} onClick={() => onEdit(r)}>編輯</Btn>
-                <Btn small outline color={C.rose} onClick={() => onArchive(r.id)}>封存</Btn>
+                <Btn variant="secondary" color={C.rose} size="sm" onClick={() => onArchive(r.id)}>封存</Btn>
               </div>
             </div>
           </HoverCard>
@@ -1894,98 +1946,275 @@ const px = (size, grid) => {
   const shadows = [];
   grid.forEach((row, y) => {
     [...row].forEach((ch, x) => {
-      const c = { "#": "#3a3a5c", "W": "#e8e8f0", "B": "#6C8EFF", "F": "#FB923C", "R": "#F472B6", "G": "#34D399", "Y": "#F5A623", "V": "#A78BFA", "D": "#1c1c28", "S": "#8888aa", "O": "#FB923C", "L": "#22D3EE", "C": "#cc5533" }[ch];
+      const c = {
+        "#": "#3a3a5c", "W": "#e8e8f0", "B": "#6C8EFF", "F": "#FB923C", "R": "#F472B6",
+        "G": "#34D399", "Y": "#F5A623", "V": "#A78BFA", "D": "#1c1c28", "S": "#8888aa",
+        "O": "#FB923C", "L": "#22D3EE", "C": "#cc5533",
+        // Extended palette for characters (matched to bead art reference)
+        "H": "#FFD700", // Howl's golden hair (bright)
+        "h": "#C4A000", // Howl hair shadow
+        "P": "#FDDCB5", // Skin/peach (warm)
+        "p": "#E8A090", // Skin shadow
+        "K": "#1a1a2a", // Black coat/clothes
+        "k": "#3a3a5c", // Dark grey fabric
+        "M": "#CD7F32", // Brown/orange hair
+        "m": "#A0522D", // Darker brown hair
+        "T": "#D2691E", // Tan/brown
+        "t": "#F4A460", // Sandy brown / straw hat
+        "e": "#4CAF50", // Markl green outfit (brighter)
+        "g": "#2E7D32", // Darker green
+        "b": "#4A90D9", // Sophie blue dress
+        "a": "#7BB8F0", // Sophie light blue
+        "r": "#CC3333", // Red accent / Howl coat lining
+        "w": "#DCDCDC", // Light grey / white gloves
+        "n": "#8B7355", // Wood/stick brown
+        "I": "#FFE4B5", // Light skin
+        "i": "#DEB887", // Darker skin
+        "E": "#C0C0C0", // Silver/metal
+        "Z": "#708090", // Slate grey (metal parts)
+        "q": "#8B0000", // Dark red (roof)
+        "u": "#CD853F", // Peru (building)
+        "1": "#FF6600", // Calcifer bright orange
+        "2": "#FF4400", // Calcifer deep orange
+        "3": "#FFaa00", // Calcifer yellow-orange
+        "4": "#663311", // Dark wood (log)
+        "5": "#995522", // Medium wood
+        "6": "#BB7744", // Light wood
+        "7": "#FFEE88", // Howl bright yellow hair
+        "8": "#DD8855", // Coat rust/tan highlight
+        "9": "#556688", // Dark blue-grey (Howl coat outer)
+      }[ch];
       if (c) shadows.push(`${x * size}px ${y * size}px 0 0 ${c}`);
     });
   });
   return shadows.join(",");
 };
 
-// 🏰 Moving Castle pixel sprite (12x14)
+// 🏰 Moving Castle pixel sprite (16x18) — enhanced with wings, chimneys, flags
 const CASTLE_FRAMES = [
   [
-    "    ##      ",
-    "   ####     ",
-    "  ##W###    ",
-    "  #WW#B#    ",
-    " ###W####   ",
-    " #WW##WW#   ",
-    "###WW##WW## ",
-    "#WWW####WW# ",
-    "#BWWWWWWWB# ",
-    "##WWWWWWWW##",
-    " ##W##W##W# ",
-    " #DDD#DDD#  ",
-    "  ## ## ##  ",
-    "  #  #  #   ",
+    "     E          ",
+    "    EZE    S    ",
+    "   EZZE   SS    ",
+    "  ##ZZ## SSS    ",
+    "  #qWq##RVRV   ",
+    " ##qWq###       ",
+    " #WWnWW##qqqq  ",
+    "##WWnWWW#quuq# ",
+    "#GGnnnGG#uuuu# ",
+    "#WWuuuWW##uu## ",
+    "##uBuBu####WW# ",
+    " #uuuuuuWWWW## ",
+    " ##uuBuuWWBW#  ",
+    "  ##uuuu###W#  ",
+    "  #ZZZZ#ZZZ#   ",
+    "  #Z  Z#Z Z#   ",
+    "   Z  Z Z Z    ",
+    "   Z    Z      ",
   ],
   [
-    "    ##      ",
-    "   ####     ",
-    "  ##W###    ",
-    "  #WW#B#    ",
-    " ###W####   ",
-    " #WW##WW#   ",
-    "###WW##WW## ",
-    "#WWW####WW# ",
-    "#BWWWWWWWB# ",
-    "##WWWWWWWW##",
-    " ##W##W##W# ",
-    " #DDD#DDD#  ",
-    "  ## ## ##  ",
-    "   # #  #   ",
+    "     E          ",
+    "    EZE    S    ",
+    "   EZZE   SS    ",
+    "  ##ZZ## SSS    ",
+    "  #qWq##VRVRV  ",
+    " ##qWq###       ",
+    " #WWnWW##qqqq  ",
+    "##WWnWWW#quuq# ",
+    "#GGnnnGG#uuuu# ",
+    "#WWuuuWW##uu## ",
+    "##uBuBu####WW# ",
+    " #uuuuuuWWWW## ",
+    " ##uuBuuWWBW#  ",
+    "  ##uuuu###W#  ",
+    "  #ZZZZ#ZZZ#   ",
+    "  #Z  Z#Z Z#   ",
+    "   Z  Z  Z Z   ",
+    "    Z    Z     ",
   ],
 ];
 
-// 🔥 Calcifer pixel sprite (8x8) — two animation frames
+// 🔥 Calcifer pixel sprite (10x9) — based on bead art: flame with face on logs
 const CALCIFER_FRAMES = [
   [
-    "  YYYY  ",
-    " YOFFOY ",
-    "YOFFFFO ",
-    "OFFFFFFO",
-    "OFFCCFFO",
-    " OFFFFO ",
-    "  BWBW  ",
-    "   DD   ",
+    "   3YY3   ",
+    "  31OO13  ",
+    " 3O1FF1O3 ",
+    " 1FFFFFF1 ",
+    "O1FFFFFF1O",
+    " 1FKFFKF1 ",
+    " 1FF22FF1 ",
+    "  456654  ",
+    "  44  44  ",
   ],
   [
-    "  YOYY  ",
-    " YOFFOY ",
-    " OFFFFO ",
-    "YFFFFFFO",
-    "OFFCCFFO",
-    " OFFFFO ",
-    "  WBBW  ",
-    "   DD   ",
+    "  3Y3YY   ",
+    "  31OO13  ",
+    "  O1FF1O3 ",
+    " 1FFFFFF1 ",
+    "31FFFFFF1O",
+    " 1FKFFKF1 ",
+    " 1FF22FF1 ",
+    "  456654  ",
+    "   44 44  ",
   ],
 ];
 
-// 🥕 Turnip Head pixel sprite (7x10)
+// 🥕 Turnip Head pixel sprite (11x16) — scarecrow with top hat, outstretched arms, stick
 const TURNIP_FRAMES = [
   [
-    "  GGG  ",
-    " GGGGG ",
-    "  GGG  ",
-    " WWWWW ",
-    "WWVWVWW",
-    "WWWRWWW",
-    "WWWWWWW",
-    " WWWWW ",
-    "  #W#  ",
-    "  # #  ",
+    "    KKK    ",
+    "   KKKKK   ",
+    "   KRRRK   ",
+    "   KKKKK   ",
+    "    PPP    ",
+    "   PkPkP   ",
+    "    PPP    ",
+    "  w KBKK w ",
+    " ww KKKK ww",
+    "    KKKK   ",
+    "    KKKK   ",
+    "    K  K   ",
+    "    K  K   ",
+    "     nn    ",
+    "     nn    ",
+    "     nn    ",
   ],
   [
-    "  GGG  ",
-    " GGGGG ",
-    "  GGG  ",
-    " WWWWW ",
-    "WWVWVWW",
-    "WWWRWWW",
-    "WWWWWWW",
-    " WWWWW ",
-    "  #W#  ",
-    "  #  # ",
+    "    KKK    ",
+    "   KKKKK   ",
+    "   KRRRK   ",
+    "   KKKKK   ",
+    "    PPP    ",
+    "   PkPkP   ",
+    "    PPP    ",
+    " w  KBKK  w",
+    "ww  KKKK  w",
+    "    KKKK   ",
+    "    KKKK   ",
+    "    K  K   ",
+    "    K  K   ",
+    "     nn    ",
+    "     nn    ",
+    "      nn   ",
+  ],
+];
+
+// 🧙 Howl pixel sprite (12x18) — based on bead art: golden hair, dark coat with red/rainbow lining, walking
+const HOWL_FRAMES = [
+  [
+    "    7HHH    ",
+    "   7HHHHH   ",
+    "   H7HHhH   ",
+    "   PPPPPH   ",
+    "   PkPkPh   ",
+    "    PPPP    ",
+    "   9rYr9K   ",
+    "  9KrFr9KK  ",
+    "  9Kr8r9K   ",
+    "  9KKKKK    ",
+    "   KKKKK    ",
+    "   K9K9K    ",
+    "   KK KK    ",
+    "   KK KK    ",
+    "   KK  KK   ",
+    "   KK  KK   ",
+    "   KK  KK   ",
+    "   ##  ##   ",
+  ],
+  [
+    "    7HHH    ",
+    "   7HHHHH   ",
+    "   H7HHhH   ",
+    "   PPPPPH   ",
+    "   PkPkPh   ",
+    "    PPPP    ",
+    "   9rYr9K   ",
+    "  9KrFr9KK  ",
+    "  9Kr8r9K   ",
+    "  9KKKKK    ",
+    "   KKKKK    ",
+    "   K9K9K    ",
+    "   KK KK    ",
+    "    KK KK   ",
+    "   KK   KK  ",
+    "   KK   KK  ",
+    "   ##    KK ",
+    "         ## ",
+  ],
+];
+
+// 🌸 Sophie pixel sprite (10x16) — based on bead art: straw hat with red band, brown hair, blue dress, walking stick
+const SOPHIE_FRAMES = [
+  [
+    "   ttttt   ",
+    "  ttttttt  ",
+    "  trrrrrt  ",
+    "  tttttt   ",
+    "   MmMm    ",
+    "  MMMMMM   ",
+    "   PPPPP   ",
+    "   PkPkP   ",
+    "    PPP    ",
+    "   bbbbb   ",
+    "  bbbbbbb  ",
+    "  bababbb  ",
+    "  bbbbbbb  ",
+    "   bbbbb   ",
+    "   PP PP n ",
+    "   ## ## n ",
+  ],
+  [
+    "   ttttt   ",
+    "  ttttttt  ",
+    "  trrrrrt  ",
+    "  tttttt   ",
+    "   MmMm    ",
+    "  MMMMMM   ",
+    "   PPPPP   ",
+    "   PkPkP   ",
+    "    PPP    ",
+    "   bbbbb   ",
+    "  bbbbbbb  ",
+    "  bababbb  ",
+    "  bbbbbbb  ",
+    "   bbbbb   ",
+    "    PP PP n",
+    "    ## ##n ",
+  ],
+];
+
+// 🌿 Markl pixel sprite (9x13) — based on bead art: small kid, messy orange-brown hair, green tunic
+const MARKL_FRAMES = [
+  [
+    "  mMMMm  ",
+    " MmMMMmM ",
+    " MMMMMM  ",
+    "  PPPPP  ",
+    "  PkPkP  ",
+    "   PPP   ",
+    "  eeeee  ",
+    " eeeeeee ",
+    " eegegee ",
+    "  eeeee  ",
+    "  ee ee  ",
+    "  PP PP  ",
+    "  #   #  ",
+  ],
+  [
+    "  mMMMm  ",
+    " MmMMMmM ",
+    " MMMMMM  ",
+    "  PPPPP  ",
+    "  PkPkP  ",
+    "   PPP   ",
+    "  eeeee  ",
+    " eeeeeee ",
+    " eegegee ",
+    "  eeeee  ",
+    "  ee ee  ",
+    "   PP PP ",
+    "   #   # ",
   ],
 ];
 
@@ -2025,70 +2254,139 @@ const PixelSprite = ({ frames, size = 2, interval = 500, style = {} }) => {
   }));
 };
 
-// 🏰 Footer walking castle — parades across the bottom
+// 🏰 Footer parade — castle + characters walking across the bottom
+const PARADE_GROUPS = [
+  { frames: CASTLE_FRAMES, size: 2, interval: 400, offsetY: -4, label: null },
+  { frames: HOWL_FRAMES, size: 2, interval: 500, offsetY: 0, label: "🧙 霍爾", gap: 36 },
+  { frames: CALCIFER_FRAMES, size: 2, interval: 300, offsetY: 18, label: "🔥 卡西法", gap: 12 },
+  { frames: SOPHIE_FRAMES, size: 2, interval: 500, offsetY: 4, label: "🌸 蘇菲", gap: 28 },
+  { frames: MARKL_FRAMES, size: 2, interval: 450, offsetY: 10, label: "🌿 馬魯克", gap: 22 },
+  { frames: TURNIP_FRAMES, size: 2, interval: 600, offsetY: 4, label: "🥕 蕪菁頭", gap: 26 },
+];
+
+// 🎭 Character dialogue scenes — random interactions between characters
+// Parade order: 0=Castle, 1=Howl, 2=Calcifer, 3=Sophie, 4=Markl, 5=Turnip
+const DIALOGUE_SCENES = [
+  { speaker: 1, text: "這產品需要更多靈魂...", color: C.accent },
+  { speaker: 3, text: "先確認用戶是誰！", color: C.rose },
+  { speaker: 2, text: "告訴我要什麼，交給我！", color: C.orange },
+  { speaker: 1, text: "讓我把故事說得無法抗拒", color: C.accent },
+  { speaker: 4, text: "截止日是什麼時候？", color: C.emerald },
+  { speaker: 5, text: "...數據不是這樣說的。", color: C.violet },
+  { speaker: 3, text: "ROI 算過了嗎？", color: C.rose },
+  { speaker: 2, text: "三天，但需求不能再改了！", color: C.orange },
+  { speaker: 1, text: "平庸的設計？重來。", color: C.accent },
+  { speaker: 4, text: "收到！整理成三個 action items", color: C.emerald },
+  { speaker: 5, text: "...先觀察。", color: C.violet },
+  { speaker: 3, text: "預算要抓緊啊！", color: C.rose },
+  { speaker: 2, text: "技術上沒問題，交給我燒", color: C.orange },
+  { speaker: 1, text: "我看到差異化了！", color: C.accent },
+  { speaker: 4, text: "進度我來追蹤！", color: C.emerald },
+  { speaker: 5, text: "用戶說的和做的不一樣", color: C.violet },
+  { speaker: 3, text: "這篇文案可以更有溫度", color: C.rose },
+  { speaker: 4, text: "Checklist 已更新！", color: C.emerald },
+  { speaker: 2, text: "又要加需求...我要燒光了", color: C.orange },
+];
+
 const CastleParade = () => {
-  const [pos, setPos] = useState(-60);
+  const [pos, setPos] = useState(-280);
   const [visible, setVisible] = useState(false);
+  const [hovered, setHovered] = useState(null);
+  const [dialogue, setDialogue] = useState(null);
   const timer = useRef(null);
+  const dialogueTimer = useRef(null);
+  const dialogueIdx = useRef(0);
 
   useEffect(() => {
-    // Start parade every 45 seconds
-    const schedule = () => {
-      timer.current = setTimeout(() => {
-        setPos(-60);
-        setVisible(true);
-      }, 45000);
-    };
-    // First appearance after 8 seconds
-    const first = setTimeout(() => { setPos(-60); setVisible(true); }, 8000);
-    return () => { clearTimeout(first); clearTimeout(timer.current); };
+    const first = setTimeout(() => { setPos(-280); setVisible(true); }, 6000);
+    return () => { clearTimeout(first); clearTimeout(timer.current); clearInterval(dialogueTimer.current); };
   }, []);
+
+  // Random dialogue bubbles while walking
+  useEffect(() => {
+    if (!visible) { setDialogue(null); return; }
+    const showNext = () => {
+      const scene = DIALOGUE_SCENES[dialogueIdx.current % DIALOGUE_SCENES.length];
+      dialogueIdx.current++;
+      setDialogue(scene);
+      setTimeout(() => setDialogue(null), 3000);
+    };
+    const delay = setTimeout(showNext, 3000);
+    dialogueTimer.current = setInterval(showNext, 8000);
+    return () => { clearTimeout(delay); clearInterval(dialogueTimer.current); };
+  }, [visible]);
 
   useEffect(() => {
     if (!visible) return;
     const id = setInterval(() => {
       setPos((p) => {
-        if (p > window.innerWidth + 60) {
+        if (p > window.innerWidth + 300) {
           setVisible(false);
-          // Schedule next parade
-          timer.current = setTimeout(() => { setPos(-60); setVisible(true); }, 45000);
-          return -60;
+          timer.current = setTimeout(() => { setPos(-280); setVisible(true); dialogueIdx.current = Math.floor(Math.random() * DIALOGUE_SCENES.length); }, 40000);
+          return -280;
         }
-        return p + 0.6;
+        return p + 0.5;
       });
     }, 30);
     return () => clearInterval(id);
   }, [visible]);
 
   if (!visible) return null;
+
   return React.createElement("div", {
-    style: { position: "fixed", bottom: 8, left: pos, zIndex: 50, pointerEvents: "none", opacity: 0.45, transition: "opacity .5s" },
-  }, React.createElement(PixelSprite, { frames: CASTLE_FRAMES, size: 2, interval: 400 }));
+    style: { position: "fixed", bottom: 44, left: pos, zIndex: 50, display: "flex", alignItems: "flex-end", opacity: hovered !== null ? 0.9 : 0.5, transition: "opacity .5s", pointerEvents: "auto" },
+  },
+    PARADE_GROUPS.map((g, i) => {
+      return React.createElement("div", {
+        key: i,
+        style: { marginLeft: g.gap || 0, marginBottom: g.offsetY || 0, position: "relative", cursor: "default" },
+        onMouseEnter: () => setHovered(i),
+        onMouseLeave: () => setHovered(null),
+      },
+        // Character name on hover
+        hovered === i && g.label && React.createElement("div", {
+          style: { position: "absolute", top: -22, left: "50%", transform: "translateX(-50%)", fontSize: 10, color: C.accent, whiteSpace: "nowrap", animation: "fadeSlideUp .3s ease", pointerEvents: "none", textShadow: "0 1px 4px rgba(0,0,0,.9)" },
+        }, g.label),
+        // Dialogue bubble — shows above the speaking character
+        dialogue && dialogue.speaker === i && React.createElement("div", {
+          style: {
+            position: "absolute", top: -40, left: "50%", transform: "translateX(-50%)",
+            background: `${C.card}ee`, border: `1px solid ${dialogue.color}40`,
+            borderRadius: 8, padding: "4px 10px", fontSize: 10, color: dialogue.color,
+            whiteSpace: "nowrap", animation: "fadeSlideUp .4s ease", pointerEvents: "none",
+            boxShadow: `0 2px 12px rgba(0,0,0,.5), 0 0 8px ${dialogue.color}15`,
+            fontWeight: 600, letterSpacing: ".01em",
+          },
+        }, dialogue.text),
+        React.createElement(PixelSprite, { frames: g.frames, size: g.size, interval: g.interval })
+      );
+    })
+  );
 };
 
-// 🔥 Calcifer companion — floats near sync button, reacts to hover
-const CalciferCompanion = ({ syncing }) => {
+// 🔥 Calcifer companion — floats near sync button, reacts to hover, click shows changelog
+const CalciferCompanion = ({ syncing, onShowChangelog }) => {
   const [happy, setHappy] = useState(false);
   return React.createElement("div", {
-    style: { display: "inline-flex", alignItems: "center", cursor: "default", position: "relative" },
+    style: { display: "inline-flex", alignItems: "center", cursor: "pointer", position: "relative" },
     onMouseEnter: () => setHappy(true),
     onMouseLeave: () => setHappy(false),
-    title: syncing ? "卡西法正在燃燒同步中..." : "🔥 卡西法待命中",
+    onClick: onShowChangelog,
+    title: syncing ? "卡西法正在燃燒同步中..." : "🔥 點擊卡西法查看更版紀錄",
   },
     React.createElement("div", {
       style: { animation: syncing ? "float 0.6s ease-in-out infinite" : "float 3s ease-in-out infinite", filter: happy ? "brightness(1.3) drop-shadow(0 0 6px #FB923C)" : "none", transition: "filter .3s" },
     }, React.createElement(PixelSprite, { frames: CALCIFER_FRAMES, size: 2, interval: syncing ? 150 : 500 })),
     happy && !syncing && React.createElement("span", {
       style: { position: "absolute", top: -18, left: "50%", transform: "translateX(-50%)", fontSize: 10, color: C.orange, whiteSpace: "nowrap", animation: "fadeSlideUp .3s ease", pointerEvents: "none" },
-    }, "我在燒！別催！")
+    }, "點我看更新！🔥")
   );
 };
 
-// 🥕 Turnip Head — appears on empty states or as idle companion
-const TurnipIdleCompanion = ({ message = "..." }) => {
+// 🎭 Character idle companion — generic for any character with quotes
+const CharacterIdleCompanion = ({ frames, interval = 500, label, color = C.violet, quotes = ["..."], defaultMsg = "..." }) => {
   const [clicked, setClicked] = useState(false);
-  const quotes = ["...（看了數據）...不對。", "用戶說的和做的不一樣。", "...需要更多數據。", "...（沉思中）...", "先觀察。", "...這值得測試。"];
-  const [quote, setQuote] = useState(message);
+  const [quote, setQuote] = useState(defaultMsg);
 
   const handleClick = () => {
     setClicked(true);
@@ -2101,14 +2399,38 @@ const TurnipIdleCompanion = ({ message = "..." }) => {
     onClick: handleClick,
   },
     clicked && React.createElement("div", {
-      style: { background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 10, padding: "6px 12px", fontSize: 11, color: C.violet, animation: "fadeSlideUp .3s ease", maxWidth: 140, textAlign: "center" },
+      style: { background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 10, padding: "6px 12px", fontSize: 11, color, animation: "fadeSlideUp .3s ease", maxWidth: 160, textAlign: "center" },
     }, quote),
     React.createElement("div", {
       style: { animation: "float 2.5s ease-in-out infinite" },
-    }, React.createElement(PixelSprite, { frames: TURNIP_FRAMES, size: 2, interval: 600 })),
-    React.createElement("span", { style: { fontSize: 10, color: C.inkMuted } }, "🥕 蕪菁頭")
+    }, React.createElement(PixelSprite, { frames, size: 2, interval })),
+    React.createElement("span", { style: { fontSize: 10, color: C.inkMuted } }, label)
   );
 };
+
+// 🥕 Turnip Head — appears on empty states
+const TurnipIdleCompanion = ({ message = "..." }) => React.createElement(CharacterIdleCompanion, {
+  frames: TURNIP_FRAMES, interval: 600, label: "🥕 蕪菁頭", color: C.violet, defaultMsg: message,
+  quotes: ["...（看了數據）...不對。", "用戶說的和做的不一樣。", "...需要更多數據。", "...（沉思中）...", "先觀察。", "...這值得測試。"],
+});
+
+// 🧙 Howl idle companion — appears on empty pipeline
+const HowlIdleCompanion = ({ message = "..." }) => React.createElement(CharacterIdleCompanion, {
+  frames: HOWL_FRAMES, interval: 500, label: "🧙 霍爾", color: C.accent, defaultMsg: message,
+  quotes: ["這個產品需要一個靈魂。", "讓我把這個故事說得無法抗拒。", "平庸的設計？不，重來。", "我看到潛力了......", "先找到差異化，其他的都是噪音。", "這個提案可以更迷人。"],
+});
+
+// 🌸 Sophie idle companion — appears on empty BD
+const SophieIdleCompanion = ({ message = "..." }) => React.createElement(CharacterIdleCompanion, {
+  frames: SOPHIE_FRAMES, interval: 500, label: "🌸 蘇菲", color: C.rose, defaultMsg: message,
+  quotes: ["先確認用戶是誰，再談怎麼說服他們。", "數字不會說謊，但會被誤讀。", "預算要抓緊，別花冤枉錢。", "這篇文案可以更有溫度。", "ROI 算過了嗎？", "客戶不會自己走進來。"],
+});
+
+// 🌿 Markl idle companion — appears on empty tasks
+const MarklIdleCompanion = ({ message = "..." }) => React.createElement(CharacterIdleCompanion, {
+  frames: MARKL_FRAMES, interval: 450, label: "🌿 馬魯克", color: C.emerald, defaultMsg: message,
+  quotes: ["收到！整理成三個 action items。", "截止日期是？", "這個需要拆更細。", "進度我來追蹤！", "Checklist 已更新。", "誰負責這個？標記一下。"],
+});
 
 // ✨ Magic sparkle burst — appears on successful actions
 const SparkleField = ({ count = 6, trigger }) => {
@@ -2166,8 +2488,55 @@ const AmbientStars = ({ width = 200, height = 120 }) => {
 };
 
 // ── Version Changelog ──
-const VERSION = "1.04";
+const VERSION = "1.08";
 const CHANGELOG = [
+  {
+    version: "1.08", date: "2026-03-01", title: "Bug 修復 & 互動升級",
+    features: [
+      { icon: "🏰", text: "角色互動場景 — Footer 上緣的像素角色對話動畫，霍爾 & 蘇菲 & 馬魯克 & 蕪菁頭隨機互動" },
+      { icon: "💬", text: "角色對話氣泡 — 角色巡遊時隨機冒出經典台詞，增加城堡生活感" },
+      { icon: "🎨", text: "Drawer 面板視覺升級 — 提高編輯面板亮度與對比，減少背景模糊干擾" },
+    ],
+    fixes: [
+      { icon: "🐛", text: "修復卡西法更版彈窗白屏 — CHANGELOG 缺少 fixes 屬性導致 .length crash" },
+      { icon: "🐛", text: "修復按鈕設計不一致 — 移除殘餘 emoji、統一使用 Design System Btn 組件" },
+      { icon: "🐛", text: "修復編輯面板被霧玻璃遮蔽 — 降低背景遮罩不透明度，提亮面板底色" },
+    ],
+  },
+  {
+    version: "1.07", date: "2026-03-01", title: "Design System 設計系統",
+    features: [
+      { icon: "🎨", text: "按鈕設計系統 — 建立統一的 Btn 組件：primary（實心填色）/ secondary（描邊）/ ghost（文字）/ danger 四種變體" },
+      { icon: "📐", text: "按鈕尺寸規範 — sm / md / lg 三種標準尺寸，統一 padding、fontSize、borderRadius" },
+      { icon: "✨", text: "按鈕視覺升級 — Primary 按鈕使用白色文字 + 彩色填充 + hover 陰影，更直覺清晰" },
+      { icon: "🧹", text: "移除按鈕內 emoji — 不再用 ✅💾📦🗑📂🔗 等 emoji 裝飾按鈕，讓設計更乾淨專業" },
+      { icon: "👻", text: "Ghost 按鈕取代取消 — 所有「取消」按鈕統一為 ghost 變體，視覺權重降低，主次分明" },
+    ],
+  },
+  {
+    version: "1.06", date: "2026-03-01", title: "像素世界大升級",
+    features: [
+      { icon: "🧙", text: "霍爾像素精靈 — 金髮黑袍的 10x14 像素角色，點擊說出產品策略語錄" },
+      { icon: "🌸", text: "蘇菲像素精靈 — 藍裙棕髮的 9x14 像素角色，點擊說出行銷與財務智慧" },
+      { icon: "🌿", text: "馬魯克像素精靈 — 綠衣小助手 8x12 像素角色，點擊說出 PM 名言" },
+      { icon: "🏰", text: "城堡像素大升級 — 16x18 尺寸，加入煙囪、翅膀、彩旗、屋頂、機械腿等細節" },
+      { icon: "🎭", text: "角色巡遊隊伍 — Footer 巡遊升級為全員出動：城堡 + 霍爾 + 蘇菲 + 馬魯克 + 蕪菁頭一起走過螢幕" },
+      { icon: "💬", text: "角色互動語錄 — Hover 角色巡遊顯示名字，空白狀態點擊角色可看隨機語錄" },
+    ],
+  },
+  {
+    version: "1.05", date: "2026-03-01", title: "體驗精修 & 智慧登入",
+    features: [
+      { icon: "🔥", text: "卡西法更版入口 — 點擊右上角卡西法即可查看完整更版紀錄" },
+      { icon: "🔐", text: "登入自動清除示範資料 — 首次登入後自動清空 Demo 資料，讓你從零開始建立自己的業務" },
+      { icon: "📱", text: "RWD Header 優化 — 手機版標題精簡、按鈕尺寸適配、間距調整，小螢幕不再擁擠" },
+      { icon: "📱", text: "Tab 列表優化 — 手機版字體縮小、間距精調，六個 Tab 不再溢出" },
+    ],
+    fixes: [
+      { icon: "🐛", text: "修復活動紀錄關閉按鈕顯示為白色方塊的 CSS bug（rgba + hex 衝突）" },
+      { icon: "🐛", text: "修復帳號頭像圖片載入失敗時無 fallback 的問題，加入 onError 及 referrerPolicy" },
+    ],
+  },
   {
     version: "1.04", date: "2026-03-01", title: "像素魔法世界",
     features: [
@@ -2232,7 +2601,7 @@ const ChangelogModal = ({ open, onClose }) => {
             <div style={{ fontSize: 18, fontWeight: 800, color: C.ink }}>🏰 版本更新紀錄</div>
             <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 4 }}>移動城堡指揮部 — What's New</div>
           </div>
-          <button onClick={onClose} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit" }}>✕</button>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,.06)", border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit" }}>✕</button>
         </div>
         {/* Content */}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 28px" }}>
@@ -2257,11 +2626,11 @@ const ChangelogModal = ({ open, onClose }) => {
                   </div>
                 </div>
               )}
-              {release.fixes.length > 0 && (
+              {(release.fixes || []).length > 0 && (
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: C.orange, letterSpacing: ".06em", marginBottom: 8 }}>BUG FIXES</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {release.fixes.map((f, i) => (
+                    {(release.fixes || []).map((f, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 12px", background: C.surface, borderRadius: 10, fontSize: 13, color: C.inkSoft, lineHeight: 1.6 }}>
                         <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{f.icon}</span>
                         <span>{f.text}</span>
@@ -2347,10 +2716,13 @@ const ActivityLog = ({ log, open, onClose }) => {
         style={{ width: mobile ? "100%" : 380, height: "100%", background: C.card, borderLeft: `1px solid ${C.borderHover}`, padding: "24px 20px", overflowY: "auto", boxShadow: "-8px 0 30px rgba(0,0,0,.3)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: C.ink }}>📜 活動紀錄</h3>
-          <button onClick={onClose} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit" }}>✕</button>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,.06)", border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit" }}>✕</button>
         </div>
         {log.length === 0 ? (
-          <div style={{ textAlign: "center", color: C.inkMuted, fontSize: 14, paddingTop: 40 }}>尚無活動紀錄</div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 30 }}>
+            <MarklIdleCompanion message="還沒有操作紀錄呢。" />
+            <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 8 }}>尚無活動紀錄</div>
+          </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {log.map((entry, i) => (
@@ -2412,9 +2784,16 @@ function CastleDashboard() {
     // Try to load cloud data
     const cloud = await api.get("getAll", u.email);
     if (cloud && (cloud.deals?.length || cloud.tasks?.length || cloud.leads?.length)) {
+      // Load existing cloud data
       if (cloud.deals?.length) setDeals(cloud.deals);
       if (cloud.tasks?.length) setTasks(cloud.tasks);
       if (cloud.leads?.length) setLeads(cloud.leads);
+    } else {
+      // First login — clear demo data so user starts fresh
+      setDeals([]);
+      setTasks([]);
+      setLeads([]);
+      setActivityLog([]);
     }
   }, []);
 
@@ -2645,47 +3024,47 @@ function CastleDashboard() {
 *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.25)}
 `}</style>
       {/* Header */}
-      <div style={{ borderBottom: `1px solid ${C.border}`, padding: mobile ? "14px 18px" : "16px 36px", display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.surface}80`, backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: mobile ? 12 : 16 }}>
-          <span style={{ fontSize: mobile ? 22 : 26 }}>🏰</span>
-          <div>
-            <div style={{ fontSize: mobile ? 15 : 18, fontWeight: 800, letterSpacing: ".02em" }}>移動城堡指揮部</div>
+      <div style={{ borderBottom: `1px solid ${C.border}`, padding: mobile ? "12px 14px" : "16px 36px", display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.surface}80`, backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100, gap: mobile ? 8 : 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: mobile ? 8 : 16, minWidth: 0, flexShrink: 1 }}>
+          <span style={{ fontSize: mobile ? 20 : 26, flexShrink: 0 }}>🏰</span>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: mobile ? 14 : 18, fontWeight: 800, letterSpacing: ".02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{mobile ? "城堡指揮部" : "移動城堡指揮部"}</div>
             {!mobile && <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 2 }}>Beyond Spec 業務管理系統</div>}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: mobile ? 6 : 8, flexShrink: 0 }}>
           {!mobile && <span style={{ fontSize: 13, color: C.inkMuted }}>{now}</span>}
           {/* Cmd+K button */}
           <button onClick={() => setCmdOpen(true)} title="指令面板 (⌘K)"
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: T }}>
+            style={{ display: "flex", alignItems: "center", gap: mobile ? 0 : 6, padding: mobile ? "5px 8px" : "5px 12px", borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: T }}>
             🔍 {!mobile && "指令"} {!mobile && <span style={{ fontSize: 10, background: C.surface, padding: "1px 5px", borderRadius: 4, fontFamily: "monospace" }}>⌘K</span>}
           </button>
           {/* Export button */}
           {(tab === "pipeline" || tab === "tasks" || tab === "bd") && (
             <button onClick={() => { if (tab === "pipeline") doExportDeals(); else if (tab === "tasks") doExportTasks(); else doExportLeads(); }}
               title="匯出 CSV"
-              style={{ width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>⬇</button>
+              style={{ width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: mobile ? 12 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>⬇</button>
           )}
           {/* Activity log button */}
           <button onClick={() => setLogOpen(true)} title="活動紀錄"
-            style={{ position: "relative", width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>
+            style={{ position: "relative", width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: mobile ? 12 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>
             📜
             {activityLog.length > 0 && <span style={{ position: "absolute", top: -2, right: -2, width: 8, height: 8, borderRadius: "50%", background: C.accent }} />}
           </button>
           {/* Overdue badge */}
           {(() => { const overdue = tasks.filter((t) => !t.archived && t.status !== "done" && t.due < today()).length; return overdue > 0 ? (
             <button onClick={() => { setTab("tasks"); setTaskFilter("overdue"); }} title={`${overdue} 個逾期任務`} className="castle-pulse"
-              style={{ position: "relative", width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.rose}30`, background: `${C.rose}10`, color: C.rose, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}>
+              style={{ position: "relative", width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, border: `1px solid ${C.rose}30`, background: `${C.rose}10`, color: C.rose, cursor: "pointer", fontSize: mobile ? 12 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}>
               ⚠️<span style={{ position: "absolute", top: -4, right: -4, background: C.rose, color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{overdue}</span>
             </button>
           ) : null; })()}
           {/* Calcifer companion + Cloud sync */}
           {user && API_URL && React.createElement(React.Fragment, null,
-            !mobile && React.createElement(CalciferCompanion, { syncing }),
+            !mobile && React.createElement(CalciferCompanion, { syncing, onShowChangelog: () => setChangelogOpen(true) }),
             React.createElement("button", {
               onClick: syncToCloud,
               title: syncing ? "卡西法正在燃燒同步中..." : `☁️ 同步到雲端\n將案件、任務、BD 資料備份到 Google Sheets\n${lastSyncTime ? `上次同步：${new Date(lastSyncTime).toLocaleString("zh-TW")}` : "尚未同步過"}`,
-              style: { position: "relative", width: 34, height: 34, borderRadius: 10, border: `1px solid ${syncing ? C.emerald : C.border}`, background: syncing ? `${C.emerald}15` : "transparent", color: syncing ? C.emerald : C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" },
+              style: { position: "relative", width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, border: `1px solid ${syncing ? C.emerald : C.border}`, background: syncing ? `${C.emerald}15` : "transparent", color: syncing ? C.emerald : C.inkMuted, cursor: "pointer", fontSize: mobile ? 12 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" },
             },
               syncing ? "⏳" : "☁️",
               lastSyncTime && React.createElement("span", { style: { position: "absolute", bottom: -2, right: -2, width: 7, height: 7, borderRadius: "50%", background: C.emerald, border: `1.5px solid ${C.bg}` } })
@@ -2694,8 +3073,8 @@ function CastleDashboard() {
           {/* User avatar or login */}
           {user ? (
             <button onClick={handleLogout} title={`${user.name}\n點擊登出`}
-              style={{ width: 34, height: 34, borderRadius: 10, overflow: "hidden", border: `2px solid ${C.accent}`, cursor: "pointer", padding: 0 }}>
-              {user.picture ? <img src={user.picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 15 }}>👑</span>}
+              style={{ width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, overflow: "hidden", border: `2px solid ${C.accent}`, cursor: "pointer", padding: 0, background: C.accentSoft, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {user.picture ? <img src={user.picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; e.target.parentElement.innerHTML = '<span style="font-size:15px">👑</span>'; }} referrerPolicy="no-referrer" /> : <span style={{ fontSize: 15 }}>👑</span>}
             </button>
           ) : GOOGLE_CLIENT_ID ? (
             <div id="g_id_signin" style={{ borderRadius: 10, overflow: "hidden" }}></div>
@@ -2715,7 +3094,7 @@ function CastleDashboard() {
           <div style={{ display: "flex", gap: 4, background: C.surface, borderRadius: 12, padding: 4, overflowX: "auto" }}>
             {TABS.map((t) => (
               <button key={t.id} onClick={() => { setTab(t.id); setExpandedDealId(null); setTaskSearch(""); setTaskFilter("all"); }}
-                style={{ padding: mobile ? "8px 14px" : "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, whiteSpace: "nowrap", flex: mobile ? 1 : "none", transition: T }}>
+                style={{ padding: mobile ? "7px 10px" : "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: mobile ? 12 : 14, fontWeight: 600, fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, whiteSpace: "nowrap", flex: mobile ? 1 : "none", transition: T }}>
                 {t.label}
               </button>
             ))}
@@ -2789,6 +3168,7 @@ function CastleDashboard() {
     </div>
   );
 }
+
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(CastleDashboard));
 </script>
 </body>
