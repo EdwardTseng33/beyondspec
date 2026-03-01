@@ -1516,7 +1516,10 @@ const AnalyticsView = ({ deals, roles, goals: savedGoals, onGoalsChange }) => {
       <div style={{ marginBottom: 24 }}>
         <h3 style={{ fontSize: 16, fontWeight: 800, color: C.ink, marginBottom: 14 }}>⚡ 案件速度分析</h3>
         {velocityDeals.length === 0 ? (
-          <div style={{ padding: 24, textAlign: "center", color: C.inkMuted, fontSize: 14, background: C.surface, borderRadius: 12 }}>尚無已簽約案件資料</div>
+          <div style={{ padding: 32, textAlign: "center", background: C.surface, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <HowlIdleCompanion message="還沒有簽約案件...來找靈魂吧。" />
+            <div style={{ fontSize: 13, color: C.inkMuted }}>尚無已簽約案件資料</div>
+          </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 4px" }}>
@@ -1880,46 +1883,82 @@ const px = (size, grid) => {
   const shadows = [];
   grid.forEach((row, y) => {
     [...row].forEach((ch, x) => {
-      const c = { "#": "#3a3a5c", "W": "#e8e8f0", "B": "#6C8EFF", "F": "#FB923C", "R": "#F472B6", "G": "#34D399", "Y": "#F5A623", "V": "#A78BFA", "D": "#1c1c28", "S": "#8888aa", "O": "#FB923C", "L": "#22D3EE", "C": "#cc5533" }[ch];
+      const c = {
+        "#": "#3a3a5c", "W": "#e8e8f0", "B": "#6C8EFF", "F": "#FB923C", "R": "#F472B6",
+        "G": "#34D399", "Y": "#F5A623", "V": "#A78BFA", "D": "#1c1c28", "S": "#8888aa",
+        "O": "#FB923C", "L": "#22D3EE", "C": "#cc5533",
+        // Extended palette for characters
+        "H": "#FFD700", // Howl's golden hair
+        "h": "#C4A000", // Howl hair shadow
+        "P": "#F8C8DC", // Skin/peach
+        "p": "#E8A090", // Skin shadow
+        "K": "#2a2a3c", // Dark coat/black
+        "k": "#444466", // Dark grey
+        "M": "#8B4513", // Brown (Markl hair)
+        "m": "#A0522D", // Light brown
+        "T": "#D2691E", // Tan/brown
+        "t": "#F4A460", // Sandy brown
+        "e": "#556B2F", // Dark green (Markl outfit)
+        "g": "#2E8B57", // Medium green
+        "b": "#4169E1", // Sophie blue dress
+        "a": "#6495ED", // Sophie light blue
+        "r": "#B22222", // Red accent
+        "w": "#DCDCDC", // Light grey
+        "n": "#8B7355", // Wood/brown
+        "I": "#FFE4B5", // Light skin
+        "i": "#DEB887", // Darker skin
+        "E": "#C0C0C0", // Silver/metal
+        "Z": "#708090", // Slate grey (metal parts)
+        "q": "#8B0000", // Dark red (roof)
+        "u": "#CD853F", // Peru (building)
+      }[ch];
       if (c) shadows.push(`${x * size}px ${y * size}px 0 0 ${c}`);
     });
   });
   return shadows.join(",");
 };
 
-// 🏰 Moving Castle pixel sprite (12x14)
+// 🏰 Moving Castle pixel sprite (16x18) — enhanced with wings, chimneys, flags
 const CASTLE_FRAMES = [
   [
-    "    ##      ",
-    "   ####     ",
-    "  ##W###    ",
-    "  #WW#B#    ",
-    " ###W####   ",
-    " #WW##WW#   ",
-    "###WW##WW## ",
-    "#WWW####WW# ",
-    "#BWWWWWWWB# ",
-    "##WWWWWWWW##",
-    " ##W##W##W# ",
-    " #DDD#DDD#  ",
-    "  ## ## ##  ",
-    "  #  #  #   ",
+    "     E          ",
+    "    EZE    S    ",
+    "   EZZE   SS    ",
+    "  ##ZZ## SSS    ",
+    "  #qWq##RVRV   ",
+    " ##qWq###       ",
+    " #WWnWW##qqqq  ",
+    "##WWnWWW#quuq# ",
+    "#GGnnnGG#uuuu# ",
+    "#WWuuuWW##uu## ",
+    "##uBuBu####WW# ",
+    " #uuuuuuWWWW## ",
+    " ##uuBuuWWBW#  ",
+    "  ##uuuu###W#  ",
+    "  #ZZZZ#ZZZ#   ",
+    "  #Z  Z#Z Z#   ",
+    "   Z  Z Z Z    ",
+    "   Z    Z      ",
   ],
   [
-    "    ##      ",
-    "   ####     ",
-    "  ##W###    ",
-    "  #WW#B#    ",
-    " ###W####   ",
-    " #WW##WW#   ",
-    "###WW##WW## ",
-    "#WWW####WW# ",
-    "#BWWWWWWWB# ",
-    "##WWWWWWWW##",
-    " ##W##W##W# ",
-    " #DDD#DDD#  ",
-    "  ## ## ##  ",
-    "   # #  #   ",
+    "     E          ",
+    "    EZE    S    ",
+    "   EZZE   SS    ",
+    "  ##ZZ## SSS    ",
+    "  #qWq##VRVRV  ",
+    " ##qWq###       ",
+    " #WWnWW##qqqq  ",
+    "##WWnWWW#quuq# ",
+    "#GGnnnGG#uuuu# ",
+    "#WWuuuWW##uu## ",
+    "##uBuBu####WW# ",
+    " #uuuuuuWWWW## ",
+    " ##uuBuuWWBW#  ",
+    "  ##uuuu###W#  ",
+    "  #ZZZZ#ZZZ#   ",
+    "  #Z  Z#Z Z#   ",
+    "   Z  Z  Z Z   ",
+    "    Z    Z     ",
   ],
 ];
 
@@ -1975,6 +2014,110 @@ const TURNIP_FRAMES = [
   ],
 ];
 
+// 🧙 Howl pixel sprite (10x14) — blonde hair, dark coat, confident pose
+const HOWL_FRAMES = [
+  [
+    "   HHHH   ",
+    "  HHHHHH  ",
+    "  HhHHhH  ",
+    "  PPPPPP  ",
+    "  PBWBWp  ",
+    "  PPpRPp  ",
+    "  KPPPPK  ",
+    " KKKKKKK  ",
+    " KKBkBKK  ",
+    " KK#KK#K  ",
+    "  KKKKKK  ",
+    "  KK  KK  ",
+    "  KK  KK  ",
+    "  ##  ##  ",
+  ],
+  [
+    "   HHHH   ",
+    "  HHHHHH  ",
+    "  HhHHhH  ",
+    "  PPPPPP  ",
+    "  PBWBWp  ",
+    "  PPpRPp  ",
+    "  KPPPPK  ",
+    " KKKKKKK  ",
+    " KKBkBKK  ",
+    " KK#KK#K  ",
+    "  KKKKKK  ",
+    "  KK  KK  ",
+    "   KK KK  ",
+    "   ## ##  ",
+  ],
+];
+
+// 🌸 Sophie pixel sprite (9x14) — blue dress, brown hair, warm presence
+const SOPHIE_FRAMES = [
+  [
+    "   MMM   ",
+    "  MMMMM  ",
+    "  MmMmM  ",
+    "  PPPPP  ",
+    "  PBPBp  ",
+    "  PPRPp  ",
+    "  bbbbb  ",
+    " bbbbbbb ",
+    " bbabbbb ",
+    " bbbbbbb ",
+    "  bbbbb  ",
+    "  bb bb  ",
+    "  PP PP  ",
+    "  ## ##  ",
+  ],
+  [
+    "   MMM   ",
+    "  MMMMM  ",
+    "  MmMmM  ",
+    "  PPPPP  ",
+    "  PBPBp  ",
+    "  PPRPp  ",
+    "  bbbbb  ",
+    " bbbbbbb ",
+    " bbabbbb ",
+    " bbbbbbb ",
+    "  bbbbb  ",
+    "  bb bb  ",
+    "   PPPP  ",
+    "   ####  ",
+  ],
+];
+
+// 🌿 Markl pixel sprite (8x12) — small, green outfit, messy hair
+const MARKL_FRAMES = [
+  [
+    "  MMMM  ",
+    " MmMMmM ",
+    "  PPPP  ",
+    "  PBBp  ",
+    "  PPPp  ",
+    "  eeee  ",
+    " eeeeee ",
+    " eegege ",
+    "  eeee  ",
+    "  ee ee ",
+    "  PP PP ",
+    "  #  #  ",
+  ],
+  [
+    "  MMMM  ",
+    " MmMMmM ",
+    "  PPPP  ",
+    "  PBBp  ",
+    "  PPPp  ",
+    "  eeee  ",
+    " eeeeee ",
+    " eegege ",
+    "  eeee  ",
+    "  ee ee ",
+    "   PP PP",
+    "   #  # ",
+  ],
+];
+
 // ✨ Magic sparkle frames (5x5)
 const SPARKLE_FRAMES = [
   [
@@ -2011,22 +2154,23 @@ const PixelSprite = ({ frames, size = 2, interval = 500, style = {} }) => {
   }));
 };
 
-// 🏰 Footer walking castle — parades across the bottom
+// 🏰 Footer parade — castle + characters walking across the bottom
+const PARADE_GROUPS = [
+  { frames: CASTLE_FRAMES, size: 2, interval: 400, offsetY: -8, label: null },
+  { frames: HOWL_FRAMES, size: 2, interval: 500, offsetY: 4, label: "🧙 霍爾", gap: 40 },
+  { frames: SOPHIE_FRAMES, size: 2, interval: 500, offsetY: 6, label: "🌸 蘇菲", gap: 30 },
+  { frames: MARKL_FRAMES, size: 2, interval: 450, offsetY: 8, label: "🌿 馬魯克", gap: 26 },
+  { frames: TURNIP_FRAMES, size: 2, interval: 600, offsetY: 6, label: "🥕 蕪菁頭", gap: 28 },
+];
+
 const CastleParade = () => {
-  const [pos, setPos] = useState(-60);
+  const [pos, setPos] = useState(-260);
   const [visible, setVisible] = useState(false);
+  const [hovered, setHovered] = useState(null);
   const timer = useRef(null);
 
   useEffect(() => {
-    // Start parade every 45 seconds
-    const schedule = () => {
-      timer.current = setTimeout(() => {
-        setPos(-60);
-        setVisible(true);
-      }, 45000);
-    };
-    // First appearance after 8 seconds
-    const first = setTimeout(() => { setPos(-60); setVisible(true); }, 8000);
+    const first = setTimeout(() => { setPos(-260); setVisible(true); }, 8000);
     return () => { clearTimeout(first); clearTimeout(timer.current); };
   }, []);
 
@@ -2034,22 +2178,38 @@ const CastleParade = () => {
     if (!visible) return;
     const id = setInterval(() => {
       setPos((p) => {
-        if (p > window.innerWidth + 60) {
+        if (p > window.innerWidth + 280) {
           setVisible(false);
-          // Schedule next parade
-          timer.current = setTimeout(() => { setPos(-60); setVisible(true); }, 45000);
-          return -60;
+          timer.current = setTimeout(() => { setPos(-260); setVisible(true); }, 50000);
+          return -260;
         }
-        return p + 0.6;
+        return p + 0.5;
       });
     }, 30);
     return () => clearInterval(id);
   }, [visible]);
 
   if (!visible) return null;
+
+  let cursorX = 0;
   return React.createElement("div", {
-    style: { position: "fixed", bottom: 8, left: pos, zIndex: 50, pointerEvents: "none", opacity: 0.45, transition: "opacity .5s" },
-  }, React.createElement(PixelSprite, { frames: CASTLE_FRAMES, size: 2, interval: 400 }));
+    style: { position: "fixed", bottom: 6, left: pos, zIndex: 50, display: "flex", alignItems: "flex-end", opacity: hovered !== null ? 0.85 : 0.4, transition: "opacity .5s", pointerEvents: "auto" },
+  },
+    PARADE_GROUPS.map((g, i) => {
+      cursorX += g.gap || 0;
+      return React.createElement("div", {
+        key: i,
+        style: { marginLeft: g.gap || 0, marginBottom: g.offsetY || 0, position: "relative", cursor: "default" },
+        onMouseEnter: () => setHovered(i),
+        onMouseLeave: () => setHovered(null),
+      },
+        hovered === i && g.label && React.createElement("div", {
+          style: { position: "absolute", top: -20, left: "50%", transform: "translateX(-50%)", fontSize: 10, color: C.accent, whiteSpace: "nowrap", animation: "fadeSlideUp .3s ease", pointerEvents: "none", textShadow: "0 1px 3px rgba(0,0,0,.8)" },
+        }, g.label),
+        React.createElement(PixelSprite, { frames: g.frames, size: g.size, interval: g.interval })
+      );
+    })
+  );
 };
 
 // 🔥 Calcifer companion — floats near sync button, reacts to hover, click shows changelog
@@ -2071,11 +2231,10 @@ const CalciferCompanion = ({ syncing, onShowChangelog }) => {
   );
 };
 
-// 🥕 Turnip Head — appears on empty states or as idle companion
-const TurnipIdleCompanion = ({ message = "..." }) => {
+// 🎭 Character idle companion — generic for any character with quotes
+const CharacterIdleCompanion = ({ frames, interval = 500, label, color = C.violet, quotes = ["..."], defaultMsg = "..." }) => {
   const [clicked, setClicked] = useState(false);
-  const quotes = ["...（看了數據）...不對。", "用戶說的和做的不一樣。", "...需要更多數據。", "...（沉思中）...", "先觀察。", "...這值得測試。"];
-  const [quote, setQuote] = useState(message);
+  const [quote, setQuote] = useState(defaultMsg);
 
   const handleClick = () => {
     setClicked(true);
@@ -2088,14 +2247,38 @@ const TurnipIdleCompanion = ({ message = "..." }) => {
     onClick: handleClick,
   },
     clicked && React.createElement("div", {
-      style: { background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 10, padding: "6px 12px", fontSize: 11, color: C.violet, animation: "fadeSlideUp .3s ease", maxWidth: 140, textAlign: "center" },
+      style: { background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 10, padding: "6px 12px", fontSize: 11, color, animation: "fadeSlideUp .3s ease", maxWidth: 160, textAlign: "center" },
     }, quote),
     React.createElement("div", {
       style: { animation: "float 2.5s ease-in-out infinite" },
-    }, React.createElement(PixelSprite, { frames: TURNIP_FRAMES, size: 2, interval: 600 })),
-    React.createElement("span", { style: { fontSize: 10, color: C.inkMuted } }, "🥕 蕪菁頭")
+    }, React.createElement(PixelSprite, { frames, size: 2, interval })),
+    React.createElement("span", { style: { fontSize: 10, color: C.inkMuted } }, label)
   );
 };
+
+// 🥕 Turnip Head — appears on empty states
+const TurnipIdleCompanion = ({ message = "..." }) => React.createElement(CharacterIdleCompanion, {
+  frames: TURNIP_FRAMES, interval: 600, label: "🥕 蕪菁頭", color: C.violet, defaultMsg: message,
+  quotes: ["...（看了數據）...不對。", "用戶說的和做的不一樣。", "...需要更多數據。", "...（沉思中）...", "先觀察。", "...這值得測試。"],
+});
+
+// 🧙 Howl idle companion — appears on empty pipeline
+const HowlIdleCompanion = ({ message = "..." }) => React.createElement(CharacterIdleCompanion, {
+  frames: HOWL_FRAMES, interval: 500, label: "🧙 霍爾", color: C.accent, defaultMsg: message,
+  quotes: ["這個產品需要一個靈魂。", "讓我把這個故事說得無法抗拒。", "平庸的設計？不，重來。", "我看到潛力了......", "先找到差異化，其他的都是噪音。", "這個提案可以更迷人。"],
+});
+
+// 🌸 Sophie idle companion — appears on empty BD
+const SophieIdleCompanion = ({ message = "..." }) => React.createElement(CharacterIdleCompanion, {
+  frames: SOPHIE_FRAMES, interval: 500, label: "🌸 蘇菲", color: C.rose, defaultMsg: message,
+  quotes: ["先確認用戶是誰，再談怎麼說服他們。", "數字不會說謊，但會被誤讀。", "預算要抓緊，別花冤枉錢。", "這篇文案可以更有溫度。", "ROI 算過了嗎？", "客戶不會自己走進來。"],
+});
+
+// 🌿 Markl idle companion — appears on empty tasks
+const MarklIdleCompanion = ({ message = "..." }) => React.createElement(CharacterIdleCompanion, {
+  frames: MARKL_FRAMES, interval: 450, label: "🌿 馬魯克", color: C.emerald, defaultMsg: message,
+  quotes: ["收到！整理成三個 action items。", "截止日期是？", "這個需要拆更細。", "進度我來追蹤！", "Checklist 已更新。", "誰負責這個？標記一下。"],
+});
 
 // ✨ Magic sparkle burst — appears on successful actions
 const SparkleField = ({ count = 6, trigger }) => {
@@ -2153,8 +2336,19 @@ const AmbientStars = ({ width = 200, height = 120 }) => {
 };
 
 // ── Version Changelog ──
-const VERSION = "1.05";
+const VERSION = "1.06";
 const CHANGELOG = [
+  {
+    version: "1.06", date: "2026-03-01", title: "像素世界大升級",
+    features: [
+      { icon: "🧙", text: "霍爾像素精靈 — 金髮黑袍的 10x14 像素角色，點擊說出產品策略語錄" },
+      { icon: "🌸", text: "蘇菲像素精靈 — 藍裙棕髮的 9x14 像素角色，點擊說出行銷與財務智慧" },
+      { icon: "🌿", text: "馬魯克像素精靈 — 綠衣小助手 8x12 像素角色，點擊說出 PM 名言" },
+      { icon: "🏰", text: "城堡像素大升級 — 16x18 尺寸，加入煙囪、翅膀、彩旗、屋頂、機械腿等細節" },
+      { icon: "🎭", text: "角色巡遊隊伍 — Footer 巡遊升級為全員出動：城堡 + 霍爾 + 蘇菲 + 馬魯克 + 蕪菁頭一起走過螢幕" },
+      { icon: "💬", text: "角色互動語錄 — Hover 角色巡遊顯示名字，空白狀態點擊角色可看隨機語錄" },
+    ],
+  },
   {
     version: "1.05", date: "2026-03-01", title: "體驗精修 & 智慧登入",
     features: [
@@ -2350,7 +2544,10 @@ const ActivityLog = ({ log, open, onClose }) => {
           <button onClick={onClose} style={{ background: "rgba(255,255,255,.06)", border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit" }}>✕</button>
         </div>
         {log.length === 0 ? (
-          <div style={{ textAlign: "center", color: C.inkMuted, fontSize: 14, paddingTop: 40 }}>尚無活動紀錄</div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 30 }}>
+            <MarklIdleCompanion message="還沒有操作紀錄呢。" />
+            <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 8 }}>尚無活動紀錄</div>
+          </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {log.map((entry, i) => (
