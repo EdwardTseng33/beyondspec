@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏰 移動城堡指揮部 — Beyond Spec 業務管理系統</title>
+<meta name="description" content="Beyond Spec 業務管理系統 — 業務漏斗、任務看板、BD 開發追蹤、數據分析">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏰</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body, #root { height: 100%; width: 100%; }
+  body { font-family: 'Noto Sans TC', -apple-system, sans-serif; background: #0f0f14; color: #e8e8ed; overflow-x: hidden; }
+</style>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useEffect, useCallback } = React;
+
+// ══════════════════════════════════════════════════════════════
+// 🏰 移動城堡業務指揮 Dashboard v5.0 — 完整業務工作站
+// Beyond Spec — 業務漏斗 + 任務看板 + BD Tracker + 數據分析 + 文件資源 + 角色管理 + 活動紀錄 + 指令面板
+//
+// v4.2 改版重點：
+// ✅ 字體全面放大 — 工作直觀不費眼力
+// ✅ UI 精緻化 — hover 效果、過渡動畫、微互動
+// ✅ 卡片展開模式 — 點擊展開詳情，內含編輯 / 狀態切換
+// ✅ 全寬佈局 — 移除 maxWidth 限制，BD 欄位不再截斷
+// ✅ 📈 數據分析 — 月/季/年目標達成度 + 案件速度（進件→簽約天數）
+// ✅ 📁 文件資源 — 合約範本、提案模板，可下載/複製連結
+// ✅ 全頁面 RWD 響應式
+// ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════
+// Data Layer — localStorage + Google Sheets API (Route C)
+// ══════════════════════════════════════════════
+const API_URL = ""; // ← 貼上你的 Google Apps Script Web App URL
+const GOOGLE_CLIENT_ID = ""; // ← 貼上你的 Google OAuth Client ID
+
+// localStorage helper
+const ls = {
+  get: (key, fallback) => { try { const v = localStorage.getItem(`castle_${key}`); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
+  set: (key, val) => { try { localStorage.setItem(`castle_${key}`, JSON.stringify(val)); } catch {} },
+  getUser: () => ls.get("user", null),
+  setUser: (u) => ls.set("user", u),
+};
+
+// API caller (fire-and-forget for writes, await for reads)
+const api = {
+  get: async (action, userId) => {
+    if (!API_URL) return null;
+    try {
+      const res = await fetch(`${API_URL}?action=${action}&userId=${encodeURIComponent(userId)}`);
+      const json = await res.json();
+      return json.ok ? json.data : null;
+    } catch { return null; }
+  },
+  post: async (action, userId, data) => {
+    if (!API_URL) return null;
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, userId, data }),
+      });
+      const json = await res.json();
+      return json.ok ? json.data : null;
+    } catch { return null; }
+  },
+};
+
+// Persist hook — saves to localStorage on every change, syncs to API
+const usePersisted = (key, initial) => {
+  const [val, setVal] = useState(() => ls.get(key, initial));
+  useEffect(() => { ls.set(key, val); }, [val]);
+  return [val, setVal];
+};
+
+// ── Responsive Hook ──
+const useWindowSize = () => {
+  const [w, setW] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+  useEffect(() => {
+    const h = () => setW(window.innerWidth);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  }, []);
+  return { w, mobile: w < 640, tablet: w < 1024, desktop: w >= 1024 };
+};
+
+// ── Colors ──
+const C = {
+  bg: "#08080c", surface: "#111118", card: "#16161f", cardHover: "#1c1c28",
+  border: "rgba(255,255,255,.08)", borderHover: "rgba(255,255,255,.18)",
+  ink: "#e8e8f0", inkSoft: "rgba(255,255,255,.65)", inkMuted: "rgba(255,255,255,.38)",
+  accent: "#6C8EFF", accentSoft: "rgba(108,142,255,.12)",
+  gold: "#F5A623", goldSoft: "rgba(245,166,35,.12)",
+  emerald: "#34D399", emeraldSoft: "rgba(52,211,153,.12)",
+  rose: "#F472B6", roseSoft: "rgba(244,114,182,.12)",
+  violet: "#A78BFA", violetSoft: "rgba(167,139,250,.12)",
+  cyan: "#22D3EE", cyanSoft: "rgba(34,211,238,.12)",
+  orange: "#FB923C", orangeSoft: "rgba(251,146,60,.12)",
+  glow: (c) => `0 0 20px ${c}30, 0 4px 16px rgba(0,0,0,.3)`,
+};
+
+// ── Constants ──
+const STAGES = [
+  { id: "inquiry", label: "洽詢中", color: C.cyan, icon: "📥" },
+  { id: "exploring", label: "探索會議", color: C.accent, icon: "🗓" },
+  { id: "proposal", label: "提案中", color: C.gold, icon: "📋" },
+  { id: "negotiation", label: "議價中", color: C.orange, icon: "🤝" },
+  { id: "won", label: "已簽約", color: C.emerald, icon: "🎉" },
+  { id: "lost", label: "未成案", color: C.rose, icon: "—" },
+];
+
+const TASK_STATUS = [
+  { id: "todo", label: "待辦", color: C.cyan, icon: "📋" },
+  { id: "doing", label: "進行中", color: C.gold, icon: "🔥" },
+  { id: "done", label: "已完成", color: C.emerald, icon: "✅" },
+];
+
+const PRIORITY = [
+  { id: "high", label: "高", color: C.rose, icon: "🔴" },
+  { id: "mid", label: "中", color: C.gold, icon: "🟡" },
+  { id: "low", label: "低", color: C.inkMuted, icon: "⚪" },
+];
+
+const DEFAULT_ROLES = [
+  { id: "howl", name: "霍爾", title: "CPO", emoji: "🧙", color: C.accent },
+  { id: "calcifer", name: "卡西法", title: "CTO", emoji: "🔥", color: C.orange },
+  { id: "markl", name: "馬魯克", title: "COO", emoji: "🌿", color: C.emerald },
+  { id: "sophie", name: "蘇菲", title: "CMO", emoji: "🌸", color: C.rose },
+  { id: "turnip", name: "蕪菁頭", title: "CDO", emoji: "🥕", color: C.violet },
+];
+
+const TIERS = ["Tier 1", "Tier 2", "Tier 3"];
+
+const BD_STATUS = [
+  { id: "identified", label: "已鎖定", color: C.inkSoft, icon: "🔍" },
+  { id: "warming", label: "暖身中", color: C.cyan, icon: "👋" },
+  { id: "connected", label: "已連接", color: C.accent, icon: "🔗" },
+  { id: "chatting", label: "對話中", color: C.gold, icon: "💬" },
+  { id: "call_booked", label: "已約訪", color: C.emerald, icon: "📞" },
+  { id: "converted", label: "已轉入漏斗", color: C.violet, icon: "🎯" },
+  { id: "dormant", label: "暫緩", color: C.rose, icon: "💤" },
+];
+const BD_CHANNELS = ["LinkedIn", "AppWorks", "AAMA", "TTA", "Startup Island", "COSCUP / g0v", "活動認識", "朋友推薦", "其他"];
+
+// ── Document Templates ──
+const DOC_TEMPLATES = [
+  { id: "contract-tier1", name: "Tier 1 服務合約（產品健檢）", category: "合約", icon: "📝", format: "DOCX", url: "/templates/contract-tier1.docx", desc: "單次產品健檢合約範本，含服務範圍、交付物、付款條件" },
+  { id: "contract-tier2", name: "Tier 2 服務合約（Sprint）", category: "合約", icon: "📝", format: "DOCX", url: "/templates/contract-tier2.docx", desc: "2~4 週 Sprint 合約範本，含里程碑、驗收標準" },
+  { id: "contract-tier3", name: "Tier 3 服務合約（長期顧問）", category: "合約", icon: "📝", format: "DOCX", url: "/templates/contract-tier3.docx", desc: "月費制顧問合約，含 SLA、變更流程" },
+  { id: "proposal-template", name: "提案簡報模板", category: "提案", icon: "📊", format: "PPTX", url: "/templates/proposal-template.pptx", desc: "標準提案簡報，含公司介紹、方法論、案例、報價" },
+  { id: "discovery-deck", name: "探索會議簡報模板", category: "提案", icon: "🗓", format: "PPTX", url: "/templates/discovery-deck.pptx", desc: "探索會議用簡報，含產業研究框架、問題清單" },
+  { id: "health-check", name: "產品健檢報告模板", category: "報告", icon: "🩺", format: "DOCX", url: "/templates/health-check-report.docx", desc: "產品健檢標準報告格式，含評分矩陣、建議清單" },
+  { id: "nda", name: "NDA 保密協議", category: "合約", icon: "🔒", format: "PDF", url: "/templates/nda.pdf", desc: "雙方保密協議範本" },
+  { id: "quotation", name: "報價單模板", category: "提案", icon: "💰", format: "XLSX", url: "/templates/quotation.xlsx", desc: "標準報價單，含項目、工時、單價、合計" },
+  { id: "invoice", name: "請款單模板", category: "財務", icon: "🧾", format: "XLSX", url: "/templates/invoice.xlsx", desc: "請款單範本，含匯款資訊、稅務欄位" },
+  { id: "case-study", name: "案例研究模板", category: "行銷", icon: "📖", format: "DOCX", url: "/templates/case-study.docx", desc: "客戶案例撰寫模板，含挑戰、方案、成果結構" },
+];
+
+const DOC_CATEGORIES = ["全部", "合約", "提案", "報告", "財務", "行銷"];
+
+// ── Demo Data ──
+const INIT_DEALS = [
+  { id: 1, name: "FitTrack 健身 App", company: "FitLife Inc.", contact: "陳小明", email: "ming@fitlife.tw", stage: "exploring", value: 250000, tier: "Tier 2", notes: "有興趣做 0→1 Sprint，下週三探索會議", created: "2026-02-20", signedDate: null, role: "howl", archived: false },
+  { id: 2, name: "寵物社群平台", company: "PawPaw 寵寵", contact: "林小花", email: "flower@pawpaw.tw", stage: "proposal", value: 120000, tier: "Tier 3", notes: "已送提案，等待回覆", created: "2026-02-15", signedDate: null, role: "sophie", archived: false },
+  { id: 3, name: "餐飲 POS 系統優化", company: "食光科技", contact: "王大明", email: "wang@foodtime.tw", stage: "inquiry", value: 30000, tier: "Tier 1", notes: "從表單進來，需要產品健檢", created: "2026-02-27", signedDate: null, role: "markl", archived: false },
+  { id: 4, name: "線上教育平台 MVP", company: "學堂科技", contact: "張小美", email: "mei@xuetang.tw", stage: "negotiation", value: 250000, tier: "Tier 2", notes: "價格已談到 22 萬，接近簽約", created: "2026-02-10", signedDate: null, role: "howl", archived: false },
+  { id: 5, name: "B2B SaaS Landing Page", company: "雲端方案", contact: "李大哥", email: "li@cloudsol.tw", stage: "won", value: 30000, tier: "Tier 1", notes: "已完成健檢報告，客戶滿意", created: "2026-01-28", signedDate: "2026-02-15", role: "turnip", archived: false },
+];
+
+const INIT_TASKS = [
+  { id: 1, text: "完成 FitTrack 探索會議簡報", role: "howl", dealId: 1, due: "2026-03-05", status: "doing", priority: "high", archived: false },
+  { id: 2, text: "PawPaw 提案報價單修改", role: "sophie", dealId: 2, due: "2026-03-03", status: "todo", priority: "high", archived: false },
+  { id: 3, text: "食光科技產品健檢初步分析", role: "turnip", dealId: 3, due: "2026-03-04", status: "todo", priority: "mid", archived: false },
+  { id: 4, text: "學堂科技合約草稿", role: "markl", dealId: 4, due: "2026-03-02", status: "doing", priority: "high", archived: false },
+  { id: 5, text: "雲端方案健檢報告 QA", role: "markl", dealId: 5, due: "2026-02-28", status: "done", priority: "low", archived: false },
+  { id: 6, text: "FitTrack 技術可行性評估", role: "calcifer", dealId: 1, due: "2026-03-06", status: "todo", priority: "mid", archived: false },
+  { id: 7, text: "LinkedIn 本週貼文（案例分享）", role: "sophie", dealId: null, due: "2026-03-01", status: "todo", priority: "low", archived: false },
+];
+
+const INIT_LEADS = [
+  { id: 1, name: "陳柏翰", title: "Co-founder & CEO", company: "旅遊新創 TripBuddy", channel: "LinkedIn", status: "warming", notes: "已按讚 3 篇貼文，準備發連接", lastTouch: "2026-02-27", role: "sophie", archived: false },
+  { id: 2, name: "林雅婷", title: "Product Manager", company: "金融科技 FinFlow", channel: "AppWorks", status: "connected", notes: "AppWorks Demo Day 認識，對產品規格有興趣", lastTouch: "2026-02-25", role: "howl", archived: false },
+  { id: 3, name: "張凱文", title: "CTO", company: "健康科技 MedPlus", channel: "LinkedIn", status: "chatting", notes: "已分享 PRD 文章，回覆有興趣了解更多", lastTouch: "2026-02-26", role: "calcifer", archived: false },
+  { id: 4, name: "王思涵", title: "創辦人", company: "教育平台 LearnWell", channel: "AAMA", status: "call_booked", notes: "3/5 下午 3 點 Discovery Call", lastTouch: "2026-02-28", role: "howl", archived: false },
+  { id: 5, name: "劉建宏", title: "營運長", company: "物流科技 PackGo", channel: "活動認識", status: "identified", notes: "MOPCON 講者，做物流數位轉型", lastTouch: "2026-02-20", role: "markl", archived: false },
+];
+
+// ── Helpers ──
+const fmt = (n) => "NT$ " + n.toLocaleString();
+const stageOf = (id) => STAGES.find((s) => s.id === id);
+const today = () => new Date().toISOString().split("T")[0];
+const timeAgo = (dateStr) => {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "剛剛";
+  if (mins < 60) return `${mins} 分鐘前`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} 小時前`;
+  const days = Math.floor(hours / 24);
+  return `${days} 天前`;
+};
+
+// ── CSV Export Utility ──
+const exportCSV = (filename, headers, rows) => {
+  const bom = "\uFEFF"; // UTF-8 BOM for Excel
+  const csv = bom + [headers.join(","), ...rows.map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+};
+
+// ── Transition helper ──
+const T = "all .2s cubic-bezier(.4,0,.2,1)";
+const T_SPRING = "all .35s cubic-bezier(.34,1.56,.64,1)";
+
+// ══════════════════════════════════════════════
+// Reusable UI Components
+// ══════════════════════════════════════════════
+
+const Badge = ({ color, bg, children, small }) => (
+  <span style={{ display: "inline-block", padding: small ? "3px 9px" : "4px 12px", borderRadius: 8, fontSize: small ? 11 : 13, fontWeight: 600, color, background: bg, whiteSpace: "nowrap", letterSpacing: ".02em" }}>{children}</span>
+);
+
+const RolePill = ({ roleId, roles }) => {
+  const r = roles.find((x) => x.id === roleId);
+  if (!r) return null;
+  return <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 8, fontSize: 13, fontWeight: 600, background: `${r.color}18`, color: r.color, whiteSpace: "nowrap" }}>{r.emoji} {r.name}</span>;
+};
+
+const PriorityDot = ({ priority }) => {
+  const p = PRIORITY.find((x) => x.id === priority);
+  if (!p) return null;
+  return <span title={`優先級：${p.label}`} style={{ fontSize: 10 }}>{p.icon}</span>;
+};
+
+const Btn = ({ children, onClick, color = C.accent, outline, small, full, style: sx }) => {
+  const [hov, setHov] = useState(false);
+  return (
+    <button onClick={onClick}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{
+        padding: small ? "6px 14px" : "9px 20px", borderRadius: 10,
+        border: outline ? `1px solid ${color}40` : "none",
+        background: outline ? (hov ? `${color}10` : "transparent") : (hov ? `${color}30` : `${color}20`),
+        color, fontSize: small ? 13 : 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+        transition: T, width: full ? "100%" : "auto",
+        transform: hov ? "translateY(-1px)" : "none",
+        boxShadow: hov && !outline ? `0 4px 12px ${color}20` : "none",
+        ...sx
+      }}>{children}</button>
+  );
+};
+
+const Field = ({ label, children }) => (
+  <div style={{ marginBottom: 16 }}>
+    <label style={{ display: "block", fontSize: 13, color: C.inkMuted, marginBottom: 6, letterSpacing: ".04em", fontWeight: 500 }}>{label}</label>
+    {children}
+  </div>
+);
+
+const inputStyle = { width: "100%", padding: "10px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.surface, color: C.ink, fontSize: 14, fontFamily: "inherit", boxSizing: "border-box", outline: "none", transition: T };
+const selectStyle = { ...inputStyle, cursor: "pointer" };
+
+// ── Undo Toast ──
+const UndoToast = ({ message, onUndo, onDismiss }) => {
+  useEffect(() => { const t = setTimeout(onDismiss, 5000); return () => clearTimeout(t); }, []);
+  return (
+    <div style={{ position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)", background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 14, padding: "14px 24px", display: "flex", alignItems: "center", gap: 16, zIndex: 2000, boxShadow: "0 12px 40px rgba(0,0,0,.6)", backdropFilter: "blur(12px)" }}>
+      <span style={{ fontSize: 14, color: C.ink }}>{message}</span>
+      <button onClick={onUndo} style={{ background: `${C.accent}20`, border: "none", color: C.accent, fontSize: 13, fontWeight: 700, borderRadius: 8, padding: "5px 14px", cursor: "pointer", fontFamily: "inherit", transition: T }}>復原</button>
+    </div>
+  );
+};
+
+// ── Confirm Modal ──
+const ConfirmModal = ({ title, message, onConfirm, onCancel, danger }) => {
+  const { mobile } = useWindowSize();
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: mobile ? "flex-end" : "center", justifyContent: "center", zIndex: 1100 }} onClick={onCancel}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: mobile ? "20px 20px 0 0" : 18, padding: mobile ? "28px 24px" : 32, width: mobile ? "100%" : 420 }}>
+        <h3 style={{ margin: "0 0 10px", fontSize: 18, fontWeight: 800, color: C.ink }}>{title}</h3>
+        <p style={{ margin: "0 0 24px", fontSize: 14, color: C.inkSoft, lineHeight: 1.7 }}>{message}</p>
+        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+          <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+          <Btn color={danger ? C.rose : C.accent} onClick={onConfirm}>{danger ? "確定刪除" : "確定"}</Btn>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Modal Overlay ──
+const Modal = ({ title, onClose, children, wide }) => {
+  const { mobile } = useWindowSize();
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: mobile ? "flex-end" : "center", justifyContent: "center", zIndex: 1000 }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: mobile ? "20px 20px 0 0" : 18, padding: mobile ? "28px 24px" : 32, width: mobile ? "100%" : (wide ? 600 : 520), maxHeight: mobile ? "92vh" : "85vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <h3 style={{ margin: 0, fontSize: mobile ? 18 : 20, fontWeight: 800, color: C.ink }}>{title}</h3>
+          <button onClick={onClose} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, transition: T, fontFamily: "inherit" }}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// ── Search Bar ──
+const SearchBar = ({ value, onChange, placeholder }) => {
+  const { mobile } = useWindowSize();
+  const [focus, setFocus] = useState(false);
+  return (
+    <div style={{ position: "relative", flex: 1, maxWidth: mobile ? "100%" : 320 }}>
+      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 15, color: C.inkMuted }}>🔍</span>
+      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder || "搜尋..."}
+        onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}
+        style={{ ...inputStyle, paddingLeft: 36, fontSize: 14, background: C.surface, borderColor: focus ? C.accent : C.border, boxShadow: focus ? `0 0 0 3px ${C.accent}15` : "none" }} />
+    </div>
+  );
+};
+
+// ── Quick Filter Pills ──
+const FilterPills = ({ options, active, onSelect }) => (
+  <div style={{ display: "flex", gap: 6, overflowX: "auto", WebkitOverflowScrolling: "touch", paddingBottom: 2 }}>
+    {options.map((o) => (
+      <button key={o.id} onClick={() => onSelect(o.id)}
+        style={{ padding: "5px 14px", borderRadius: 20, border: active === o.id ? `1.5px solid ${o.color || C.accent}` : `1px solid ${C.border}`, background: active === o.id ? `${o.color || C.accent}15` : "transparent", color: active === o.id ? (o.color || C.accent) : C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0, transition: T }}>
+        {o.label}
+      </button>
+    ))}
+  </div>
+);
+
+// ── Hoverable Card wrapper ──
+const HoverCard = ({ children, onClick, selected, accentColor, style: sx, expanded }) => {
+  const [hov, setHov] = useState(false);
+  return (
+    <div onClick={onClick}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{
+        background: hov ? C.cardHover : C.card,
+        border: `1px solid ${selected ? (accentColor || C.ink) : (hov ? C.borderHover : C.border)}`,
+        borderLeft: accentColor ? `3px solid ${accentColor}` : undefined,
+        borderRadius: 12, padding: 16, cursor: onClick ? "pointer" : "default",
+        transition: T,
+        transform: hov && onClick && !expanded ? "translateY(-2px)" : "none",
+        boxShadow: hov && onClick ? "0 8px 24px rgba(0,0,0,.25)" : "none",
+        ...sx
+      }}>
+      {children}
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════
+// Detail Drawer — Slide-over panel (v5.2)
+// ══════════════════════════════════════════════
+const DetailDrawer = ({ open, onClose, title, icon, accentColor, children, actions, width }) => {
+  const { mobile } = useWindowSize();
+  const drawerW = mobile ? "100%" : (width || 480);
+
+  useEffect(() => {
+    if (!open) return;
+    const h = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9000, display: "flex", justifyContent: "flex-end" }}>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{
+        position: "absolute", inset: 0, background: "rgba(0,0,0,.5)", backdropFilter: "blur(4px)",
+        animation: "drawerFadeIn .2s ease"
+      }} />
+      {/* Panel */}
+      <div style={{
+        position: "relative", width: drawerW, maxWidth: "100%", height: "100%",
+        background: C.bg, borderLeft: mobile ? "none" : `1px solid ${C.border}`,
+        display: "flex", flexDirection: "column",
+        boxShadow: "-20px 0 60px rgba(0,0,0,.3)",
+        animation: "drawerSlideIn .28s cubic-bezier(.16,1,.3,1)"
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: mobile ? "18px 20px" : "22px 28px", borderBottom: `1px solid ${C.border}`,
+          display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+          background: accentColor ? `linear-gradient(135deg, ${accentColor}08, transparent)` : undefined
+        }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+              {icon && <span style={{ fontSize: 20 }}>{icon}</span>}
+              <div style={{ fontSize: 18, fontWeight: 800, color: C.ink, lineHeight: 1.3 }}>{title}</div>
+            </div>
+            {accentColor && <div style={{ width: 40, height: 3, borderRadius: 2, background: accentColor, marginTop: 8 }} />}
+          </div>
+          <button onClick={onClose} style={{
+            width: 36, height: 36, borderRadius: 10, border: `1px solid ${C.border}`,
+            background: C.surface, color: C.inkMuted, fontSize: 16, cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: T, fontFamily: "inherit", flexShrink: 0, marginLeft: 12
+          }}
+            onMouseEnter={(e) => { e.target.style.background = C.cardHover; e.target.style.color = C.ink; }}
+            onMouseLeave={(e) => { e.target.style.background = C.surface; e.target.style.color = C.inkMuted; }}
+          >✕</button>
+        </div>
+        {/* Content */}
+        <div style={{
+          flex: 1, overflowY: "auto", padding: mobile ? "20px 20px" : "24px 28px"
+        }}>
+          {children}
+        </div>
+        {/* Footer actions */}
+        {actions && (
+          <div style={{
+            padding: mobile ? "16px 20px" : "18px 28px",
+            borderTop: `1px solid ${C.border}`, background: `${C.surface}80`,
+            display: "flex", gap: 10, flexWrap: "wrap"
+          }}>
+            {actions}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Detail section helper
+const DrawerSection = ({ label, children, style: sx }) => (
+  <div style={{ marginBottom: 20, ...sx }}>
+    <div style={{ fontSize: 11, fontWeight: 600, color: C.inkMuted, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+    {children}
+  </div>
+);
+const DrawerField = ({ label, value, mono, color, children }) => (
+  <div style={{ marginBottom: 12 }}>
+    <div style={{ fontSize: 11, color: C.inkMuted, marginBottom: 3, fontWeight: 500 }}>{label}</div>
+    {children || <div style={{ fontSize: 14, color: color || C.ink, fontWeight: 500, fontFamily: mono ? "'JetBrains Mono',monospace" : "inherit" }}>{value || "—"}</div>}
+  </div>
+);
+
+// ══════════════════════════════════════════════
+// Forms
+// ══════════════════════════════════════════════
+
+const DealForm = ({ deal, roles, onSave, onCancel }) => {
+  const { mobile } = useWindowSize();
+  const [f, setF] = useState(deal || { name: "", company: "", contact: "", email: "", stage: "inquiry", value: 30000, tier: "Tier 1", notes: "", role: roles[0]?.id || "howl", created: today(), signedDate: null, archived: false });
+  const set = (k, v) => setF({ ...f, [k]: v });
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: "0 18px" }}>
+        <Field label="案件名稱 *"><input style={inputStyle} value={f.name} onChange={(e) => set("name", e.target.value)} placeholder="例：FitTrack 健身 App" /></Field>
+        <Field label="公司 / 團隊 *"><input style={inputStyle} value={f.company} onChange={(e) => set("company", e.target.value)} placeholder="例：FitLife Inc." /></Field>
+        <Field label="聯繫人"><input style={inputStyle} value={f.contact} onChange={(e) => set("contact", e.target.value)} /></Field>
+        <Field label="Email"><input style={inputStyle} value={f.email} onChange={(e) => set("email", e.target.value)} /></Field>
+        <Field label="階段"><select style={selectStyle} value={f.stage} onChange={(e) => set("stage", e.target.value)}>{STAGES.map((s) => <option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}</select></Field>
+        <Field label="金額 (NT$)"><input style={inputStyle} type="number" step="10000" value={f.value} onChange={(e) => set("value", Number(e.target.value))} /></Field>
+        <Field label="方案"><select style={selectStyle} value={f.tier} onChange={(e) => set("tier", e.target.value)}>{TIERS.map((t) => <option key={t} value={t}>{t}</option>)}</select></Field>
+        <Field label="負責角色"><select style={selectStyle} value={f.role} onChange={(e) => set("role", e.target.value)}>{roles.map((r) => <option key={r.id} value={r.id}>{r.emoji} {r.name} ({r.title})</option>)}</select></Field>
+      </div>
+      <Field label="備註"><textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={f.notes} onChange={(e) => set("notes", e.target.value)} /></Field>
+      <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 10 }}>
+        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn color={C.emerald} onClick={() => { if (f.name && f.company) onSave(f); }}>{deal ? "儲存" : "新增"}</Btn>
+      </div>
+    </div>
+  );
+};
+
+const TaskForm = ({ task, deals, roles, onSave, onCancel }) => {
+  const { mobile } = useWindowSize();
+  const [f, setF] = useState(task || { text: "", role: roles[0]?.id || "howl", dealId: null, due: today(), status: "todo", priority: "mid", archived: false });
+  const set = (k, v) => setF({ ...f, [k]: v });
+  return (
+    <div>
+      <Field label="任務內容 *"><input style={inputStyle} value={f.text} onChange={(e) => set("text", e.target.value)} placeholder="例：完成探索會議簡報" /></Field>
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: "0 18px" }}>
+        <Field label="負責角色"><select style={selectStyle} value={f.role} onChange={(e) => set("role", e.target.value)}>{roles.map((r) => <option key={r.id} value={r.id}>{r.emoji} {r.name}</option>)}</select></Field>
+        <Field label="截止日期"><input style={inputStyle} type="date" value={f.due} onChange={(e) => set("due", e.target.value)} /></Field>
+        <Field label="狀態"><select style={selectStyle} value={f.status} onChange={(e) => set("status", e.target.value)}>{TASK_STATUS.map((s) => <option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}</select></Field>
+        <Field label="優先級"><select style={selectStyle} value={f.priority} onChange={(e) => set("priority", e.target.value)}>{PRIORITY.map((p) => <option key={p.id} value={p.id}>{p.icon} {p.label}</option>)}</select></Field>
+      </div>
+      <Field label="關聯案件">
+        <select style={selectStyle} value={f.dealId || ""} onChange={(e) => set("dealId", e.target.value ? Number(e.target.value) : null)}>
+          <option value="">— 不關聯 —</option>
+          {deals.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </select>
+      </Field>
+      <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 10 }}>
+        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn color={C.emerald} onClick={() => { if (f.text) onSave(f); }}>{task ? "儲存" : "新增"}</Btn>
+      </div>
+    </div>
+  );
+};
+
+const LeadForm = ({ lead, roles, onSave, onCancel }) => {
+  const { mobile } = useWindowSize();
+  const [f, setF] = useState(lead || { name: "", title: "", company: "", channel: "LinkedIn", status: "identified", notes: "", lastTouch: today(), role: roles[0]?.id || "sophie", archived: false });
+  const set = (k, v) => setF({ ...f, [k]: v });
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: "0 18px" }}>
+        <Field label="姓名 *"><input style={inputStyle} value={f.name} onChange={(e) => set("name", e.target.value)} /></Field>
+        <Field label="職稱"><input style={inputStyle} value={f.title} onChange={(e) => set("title", e.target.value)} /></Field>
+        <Field label="公司 *"><input style={inputStyle} value={f.company} onChange={(e) => set("company", e.target.value)} /></Field>
+        <Field label="管道"><select style={selectStyle} value={f.channel} onChange={(e) => set("channel", e.target.value)}>{BD_CHANNELS.map((c) => <option key={c} value={c}>{c}</option>)}</select></Field>
+        <Field label="狀態"><select style={selectStyle} value={f.status} onChange={(e) => set("status", e.target.value)}>{BD_STATUS.map((s) => <option key={s.id} value={s.id}>{s.icon} {s.label}</option>)}</select></Field>
+        <Field label="負責角色"><select style={selectStyle} value={f.role} onChange={(e) => set("role", e.target.value)}>{roles.map((r) => <option key={r.id} value={r.id}>{r.emoji} {r.name}</option>)}</select></Field>
+      </div>
+      <Field label="備註"><textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={f.notes} onChange={(e) => set("notes", e.target.value)} /></Field>
+      <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 10 }}>
+        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn color={C.emerald} onClick={() => { if (f.name && f.company) onSave(f); }}>{lead ? "儲存" : "新增"}</Btn>
+      </div>
+    </div>
+  );
+};
+
+// ── Role Form ──
+const EMOJI_OPTIONS = ["🧙","🔥","🌿","🌸","🥕","⚡","🎯","🦊","🐻","🎨","📐","🛡️","💎","🌊","🏔️","🦅"];
+const COLOR_OPTIONS = [C.accent, C.orange, C.emerald, C.rose, C.violet, C.cyan, C.gold, "#FF6B6B", "#4ECDC4", "#45B7D1"];
+
+const RoleForm = ({ role, onSave, onCancel }) => {
+  const { mobile } = useWindowSize();
+  const [f, setF] = useState(role || { name: "", title: "", emoji: "⚡", color: C.cyan });
+  const set = (k, v) => setF({ ...f, [k]: v });
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: "0 18px" }}>
+        <Field label="角色名稱 *"><input style={inputStyle} value={f.name} onChange={(e) => set("name", e.target.value)} placeholder="例：助理" /></Field>
+        <Field label="職稱"><input style={inputStyle} value={f.title} onChange={(e) => set("title", e.target.value)} placeholder="例：PM" /></Field>
+      </div>
+      <Field label="圖示">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {EMOJI_OPTIONS.map((e) => (
+            <button key={e} onClick={() => set("emoji", e)}
+              style={{ width: 40, height: 40, borderRadius: 10, border: f.emoji === e ? `2px solid ${C.accent}` : `1px solid ${C.border}`, background: f.emoji === e ? C.accentSoft : "transparent", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>{e}</button>
+          ))}
+        </div>
+      </Field>
+      <Field label="顏色">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {COLOR_OPTIONS.map((c) => (
+            <button key={c} onClick={() => set("color", c)}
+              style={{ width: 36, height: 36, borderRadius: 10, border: f.color === c ? "2px solid white" : "2px solid transparent", background: c, cursor: "pointer", transition: T }} />
+          ))}
+        </div>
+      </Field>
+      <div style={{ marginTop: 18, padding: 16, background: C.surface, borderRadius: 12 }}>
+        <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 8 }}>預覽</div>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 10, background: `${f.color}18`, color: f.color, fontSize: 15, fontWeight: 600 }}>{f.emoji} {f.name || "未命名"} <span style={{ fontSize: 12, opacity: .6 }}>({f.title || "無職稱"})</span></span>
+      </div>
+      <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 18 }}>
+        <Btn outline color={C.inkMuted} onClick={onCancel}>取消</Btn>
+        <Btn color={C.emerald} onClick={() => { if (f.name) onSave(f); }}>{role ? "儲存" : "新增角色"}</Btn>
+      </div>
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════
+// View Components
+// ══════════════════════════════════════════════
+
+// ── Stats Row (North Star Metrics) ──
+const StatsRow = ({ deals, tasks, leads, onHealthClick }) => {
+  const { mobile } = useWindowSize();
+  const active = deals.filter((d) => !d.archived && !["won", "lost"].includes(d.stage));
+  const won = deals.filter((d) => !d.archived && d.stage === "won");
+  const all = deals.filter((d) => !d.archived);
+  const stageWeights = { inquiry: 0.1, exploring: 0.25, proposal: 0.5, negotiation: 0.75, won: 1, lost: 0 };
+  const weightedPipeline = active.reduce((s, d) => s + d.value * (stageWeights[d.stage] || 0.1), 0);
+
+  const wonTotal = won.reduce((s, d) => s + d.value, 0);
+  const lost = deals.filter((d) => !d.archived && d.stage === "lost");
+  const closed = won.length + lost.length;
+  const winRate = closed > 0 ? Math.round((won.length / closed) * 100) : 0;
+  const wonWithDates = won.filter(d => d.signedDate && d.created);
+  const avgCycle = wonWithDates.length > 0 ? Math.round(wonWithDates.reduce((s, d) => s + (new Date(d.signedDate) - new Date(d.created)) / 86400000, 0) / wonWithDates.length) : null;
+
+  const stats = [
+    { label: "🎉 已簽約營收", value: fmt(wonTotal), color: C.emerald, sub: `${won.length} 件成交 · 北極星指標 ⭐` },
+    { label: "🏆 贏單率", value: `${winRate}%`, color: winRate >= 50 ? C.emerald : winRate >= 30 ? C.gold : C.rose, sub: closed > 0 ? `已結案 ${closed} 案（贏 ${won.length} / 輸 ${lost.length}）` : "尚無已結案案件" },
+    { label: "📊 加權管線值", value: fmt(Math.round(weightedPipeline)), color: C.gold, sub: `${active.length} 進行中 · 預估轉換收入` },
+    { label: "⏱ 成交週期", value: avgCycle !== null ? `${avgCycle} 天` : "—", color: avgCycle !== null ? (avgCycle <= 14 ? C.emerald : avgCycle <= 30 ? C.gold : C.orange) : C.inkMuted, sub: avgCycle !== null ? `洽詢→簽約平均 ${avgCycle} 天` : "尚無成交數據" },
+  ];
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4,1fr)", gap: mobile ? 10 : 16, marginBottom: mobile ? 20 : 28, position: "relative" }}>
+      {stats.map((s, i) => (
+        <HoverCard key={i}
+          style={{ padding: mobile ? "14px 16px" : "20px 24px" }}>
+          <div style={{ fontSize: 12, color: C.inkMuted, marginBottom: 6, fontWeight: 500, letterSpacing: ".04em" }}>{s.label}</div>
+          <div style={{ fontSize: mobile ? 22 : 28, fontWeight: 800, color: s.color, fontFamily: "'JetBrains Mono',monospace" }}>{s.value}</div>
+          {s.sub && <div style={{ fontSize: 11, color: C.inkMuted, marginTop: 4 }}>{s.sub}</div>}
+        </HoverCard>
+      ))}
+    </div>
+  );
+};
+
+// ── Pipeline (Deals) with Detail Drawer ──
+const PipelineView = ({ deals, roles, onArchive, onUpdate, onStageChange, expandedId, onExpand }) => {
+  const { mobile, tablet } = useWindowSize();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(null);
+  const active = deals.filter((d) => !d.archived);
+  const selectedDeal = active.find((d) => d.id === expandedId);
+  const displayStage = editing && draft ? draft.stage : selectedDeal?.stage;
+  const selectedStage = displayStage ? STAGES.find((s) => s.id === displayStage) : null;
+
+  useEffect(() => { setEditing(false); setDraft(null); }, [expandedId]);
+  const startEdit = () => { setDraft({...selectedDeal}); setEditing(true); };
+  const cancelEdit = () => { setDraft(null); setEditing(false); };
+  const saveEdit = () => { if (draft && draft.name && draft.company) { onUpdate(draft); setEditing(false); setDraft(null); } };
+  const setD = (k, v) => setDraft(prev => ({...prev, [k]: v}));
+
+  const DealCard = ({ d, stage }) => {
+    const isSelected = expandedId === d.id;
+    return (
+      <div style={{ marginBottom: 8 }}>
+        <HoverCard onClick={() => onExpand(isSelected ? null : d.id)} selected={isSelected} accentColor={stage.color}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, lineHeight: 1.4, flex: 1 }}>{d.name}</div>
+            <span style={{ fontSize: 13, color: C.inkMuted, opacity: .6 }}>→</span>
+          </div>
+          <div style={{ fontSize: 12, color: C.inkMuted, margin: "6px 0 8px" }}>{d.company}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Badge color={C.gold} bg={C.goldSoft} small>{fmt(d.value)}</Badge>
+            <RolePill roleId={d.role} roles={roles} />
+          </div>
+        </HoverCard>
+      </div>
+    );
+  };
+
+  // Deal Detail Drawer — inline editable (v5.3)
+  const dealDrawer = selectedDeal && selectedStage && (
+    <DetailDrawer open={!!selectedDeal} onClose={() => { cancelEdit(); onExpand(null); }}
+      title={editing ? "編輯案件" : selectedDeal.name}
+      icon={editing ? "✏️" : selectedStage.icon}
+      accentColor={selectedStage.color}
+      actions={editing ? <>
+        <Btn small color={C.emerald} onClick={saveEdit}>💾 儲存變更</Btn>
+        <Btn small outline color={C.inkMuted} onClick={cancelEdit}>取消</Btn>
+      </> : <>
+        <Btn small color={C.accent} onClick={startEdit}>✏️ 編輯</Btn>
+        <Btn small outline color={C.rose} onClick={() => { onArchive(selectedDeal.id); onExpand(null); }}>📦 封存</Btn>
+      </>}
+    >
+      {/* Stage quick-switch — always visible */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: C.inkMuted, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 8 }}>階段</div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {STAGES.map((s) => {
+            const current = editing && draft ? draft.stage : selectedDeal.stage;
+            return (
+              <button key={s.id} onClick={() => {
+                if (editing) setD("stage", s.id);
+                else onStageChange(selectedDeal.id, s.id);
+              }}
+                style={{ padding: "6px 14px", borderRadius: 9, border: current === s.id ? `1.5px solid ${s.color}` : `1px solid ${C.border}`, background: current === s.id ? `${s.color}20` : "transparent", color: current === s.id ? s.color : C.inkMuted, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", transition: T }}>
+                {s.icon} {s.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {editing && draft ? (
+        <>
+          <DrawerSection label="案件資訊">
+            <Field label="案件名稱"><input style={inputStyle} value={draft.name} onChange={(e) => setD("name", e.target.value)} /></Field>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 14px" }}>
+              <Field label="金額 (NT$)"><input style={inputStyle} type="number" step="10000" value={draft.value} onChange={(e) => setD("value", Number(e.target.value))} /></Field>
+              <Field label="方案"><select style={selectStyle} value={draft.tier} onChange={(e) => setD("tier", e.target.value)}>{TIERS.map((t) => <option key={t} value={t}>{t}</option>)}</select></Field>
+            </div>
+            <Field label="負責角色"><select style={selectStyle} value={draft.role} onChange={(e) => setD("role", e.target.value)}>{roles.map((r) => <option key={r.id} value={r.id}>{r.emoji} {r.name} ({r.title})</option>)}</select></Field>
+          </DrawerSection>
+          <DrawerSection label="客戶資訊">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 14px" }}>
+              <Field label="公司"><input style={inputStyle} value={draft.company} onChange={(e) => setD("company", e.target.value)} /></Field>
+              <Field label="聯繫人"><input style={inputStyle} value={draft.contact} onChange={(e) => setD("contact", e.target.value)} /></Field>
+            </div>
+            <Field label="Email"><input style={inputStyle} type="email" value={draft.email} onChange={(e) => setD("email", e.target.value)} /></Field>
+          </DrawerSection>
+          <DrawerSection label="備註">
+            <textarea style={{ ...inputStyle, minHeight: 100, resize: "vertical" }} value={draft.notes} onChange={(e) => setD("notes", e.target.value)} placeholder="案件備忘錄..." />
+          </DrawerSection>
+        </>
+      ) : (
+        <>
+          {/* View mode */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+            <Badge color={C.gold} bg={C.goldSoft}>{fmt(selectedDeal.value)}</Badge>
+            <Badge color={C.accent} bg={C.accentSoft}>{selectedDeal.tier}</Badge>
+          </div>
+          <DrawerSection label="客戶資訊">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+              <DrawerField label="公司" value={selectedDeal.company} />
+              <DrawerField label="聯繫人" value={selectedDeal.contact} />
+              <DrawerField label="Email" value={selectedDeal.email} />
+              <DrawerField label="建立日期" value={selectedDeal.created} mono />
+            </div>
+          </DrawerSection>
+          {selectedDeal.signedDate && (
+            <DrawerSection label="簽約資訊">
+              <DrawerField label="簽約日期" value={selectedDeal.signedDate} mono color={C.emerald} />
+            </DrawerSection>
+          )}
+          <DrawerSection label="負責人">
+            <RolePill roleId={selectedDeal.role} roles={roles} />
+          </DrawerSection>
+          {selectedDeal.notes && (
+            <DrawerSection label="備註">
+              <div style={{ background: C.surface, borderRadius: 10, padding: 14, fontSize: 14, color: C.inkSoft, lineHeight: 1.8, border: `1px solid ${C.border}` }}>{selectedDeal.notes}</div>
+            </DrawerSection>
+          )}
+        </>
+      )}
+    </DetailDrawer>
+  );
+
+  if (mobile) {
+    return (
+      <>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {STAGES.map((stage) => {
+            const sd = active.filter((d) => d.stage === stage.id);
+            if (sd.length === 0) return null;
+            return (
+              <div key={stage.id}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: stage.color }}>{stage.icon} {stage.label}</span>
+                  <span style={{ fontSize: 12, color: C.inkMuted, background: C.surface, padding: "1px 8px", borderRadius: 10 }}>{sd.length}</span>
+                </div>
+                {sd.map((d) => <DealCard key={d.id} d={d} stage={stage} />)}
+              </div>
+            );
+          })}
+        </div>
+        {dealDrawer}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div style={{ overflowX: "auto", paddingBottom: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${STAGES.length}, minmax(200px, 1fr))`, gap: 12, minWidth: tablet ? STAGES.length * 210 : "auto" }}>
+          {STAGES.map((stage) => {
+            const sd = active.filter((d) => d.stage === stage.id);
+            return (
+              <div key={stage.id}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: stage.color }}>{stage.icon} {stage.label}</span>
+                  <span style={{ fontSize: 12, color: C.inkMuted, background: C.surface, padding: "1px 8px", borderRadius: 10 }}>{sd.length}</span>
+                </div>
+                <div style={{ height: 3, background: `${stage.color}15`, borderRadius: 2, marginBottom: 10 }}>
+                  <div style={{ height: "100%", width: sd.length ? "100%" : 0, background: stage.color, borderRadius: 2, transition: "width .4s ease" }} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {sd.map((d) => <DealCard key={d.id} d={d} stage={stage} />)}
+                  {sd.length === 0 && <div style={{ padding: 24, textAlign: "center", color: C.inkMuted, fontSize: 12, border: `1px dashed ${C.border}`, borderRadius: 10 }}>暫無案件</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {dealDrawer}
+    </>
+  );
+};
+
+// ── Tasks View (v5.2: Detail Drawer) ──
+const TasksView = ({ tasks, deals, roles, onEdit, onArchive, onStatusChange, search, filter }) => {
+  const { mobile, tablet } = useWindowSize();
+  const [selectedId, setSelectedId] = useState(null);
+
+  let visible = tasks.filter((t) => !t.archived);
+  if (search) { const q = search.toLowerCase(); visible = visible.filter((t) => t.text.toLowerCase().includes(q)); }
+  if (filter === "overdue") visible = visible.filter((t) => t.status !== "done" && t.due < today());
+  else if (filter === "high") visible = visible.filter((t) => t.priority === "high");
+  else if (filter && filter !== "all") visible = visible.filter((t) => t.role === filter);
+
+  const selectedTask = visible.find((t) => t.id === selectedId) || tasks.find((t) => t.id === selectedId);
+
+  const TaskCard = ({ t }) => {
+    const dl = deals.find((d) => d.id === t.dealId);
+    const isOverdue = t.status !== "done" && t.due < today();
+    const isSelected = selectedId === t.id;
+    const st = TASK_STATUS.find((s) => s.id === t.status);
+
+    return (
+      <div style={{ marginBottom: 6 }}>
+        <HoverCard onClick={() => setSelectedId(isSelected ? null : t.id)} selected={isSelected}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flex: 1 }}>
+              <PriorityDot priority={t.priority} />
+              <span style={{ fontSize: 14, color: C.ink, lineHeight: 1.5, flex: 1 }}>{t.text}</span>
+            </div>
+            <span style={{ fontSize: 13, color: C.inkMuted, opacity: .6 }}>→</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+            <RolePill roleId={t.role} roles={roles} />
+            <span style={{ fontSize: 11, color: isOverdue ? C.rose : C.inkMuted, fontWeight: isOverdue ? 700 : 400, fontFamily: "monospace" }}>{isOverdue ? "⚠️ " : ""}{t.due}</span>
+          </div>
+        </HoverCard>
+      </div>
+    );
+  };
+
+  // Task Detail Drawer
+  const taskDrawer = selectedTask && (() => {
+    const dl = deals.find((d) => d.id === selectedTask.dealId);
+    const st = TASK_STATUS.find((s) => s.id === selectedTask.status);
+    const pri = PRIORITY.find((p) => p.id === selectedTask.priority);
+    const isOverdue = selectedTask.status !== "done" && selectedTask.due < today();
+    return (
+      <DetailDrawer open={!!selectedTask} onClose={() => setSelectedId(null)}
+        title={selectedTask.text} icon={pri?.icon || "📋"} accentColor={st?.color}
+        actions={<>
+          <Btn small color={C.accent} onClick={() => onEdit(selectedTask)}>✏️ 編輯任務</Btn>
+          <Btn small outline color={C.rose} onClick={() => { onArchive(selectedTask.id); setSelectedId(null); }}>📦 封存</Btn>
+        </>}
+      >
+        {/* Status badge row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+          <Badge color={st?.color} bg={`${st?.color}18`}>{st?.icon} {st?.label}</Badge>
+          <Badge color={pri?.color || C.inkMuted} bg={`${(pri?.color || C.inkMuted)}18`}>{pri?.icon} {pri?.label}</Badge>
+          {isOverdue && <Badge color={C.rose} bg={`${C.rose}18`}>⚠️ 逾期</Badge>}
+        </div>
+        {/* Status quick-switch */}
+        <DrawerSection label="變更狀態">
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {TASK_STATUS.map((s) => (
+              <button key={s.id} onClick={() => onStatusChange(selectedTask.id, s.id)}
+                style={{ padding: "8px 16px", borderRadius: 10, border: selectedTask.status === s.id ? `2px solid ${s.color}` : `1px solid ${C.border}`, background: selectedTask.status === s.id ? `${s.color}15` : C.surface, color: selectedTask.status === s.id ? s.color : C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T }}>
+                {s.icon} {s.label}
+              </button>
+            ))}
+          </div>
+        </DrawerSection>
+        <DrawerSection label="詳細資訊">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+            <DrawerField label="到期日" value={selectedTask.due} mono color={isOverdue ? C.rose : undefined} />
+            <DrawerField label="負責人"><RolePill roleId={selectedTask.role} roles={roles} /></DrawerField>
+          </div>
+        </DrawerSection>
+        {dl && (
+          <DrawerSection label="關聯案件">
+            <div style={{ background: C.surface, borderRadius: 10, padding: 14, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 16 }}>📎</span>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: C.ink }}>{dl.name}</div>
+                <div style={{ fontSize: 12, color: C.inkMuted }}>{dl.company} · {fmt(dl.value)}</div>
+              </div>
+            </div>
+          </DrawerSection>
+        )}
+      </DetailDrawer>
+    );
+  })();
+
+  if (mobile) {
+    return (
+      <>
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        {TASK_STATUS.map((st) => {
+          const items = visible.filter((t) => t.status === st.id);
+          return (
+            <div key={st.id}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, paddingBottom: 10, borderBottom: `1px solid ${C.border}` }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: st.color }}>{st.icon} {st.label}</span>
+                <span style={{ fontSize: 12, color: C.inkMuted, background: C.surface, padding: "1px 8px", borderRadius: 10 }}>{items.length}</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {items.map((t) => <TaskCard key={t.id} t={t} />)}
+                {items.length === 0 && <div style={{ padding: 16, textAlign: "center", color: C.inkMuted, fontSize: 13 }}>暫無任務</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {taskDrawer}
+      </>
+    );
+  }
+
+  return (
+    <>
+    <div style={{ display: "grid", gridTemplateColumns: tablet ? "1fr 1fr" : "repeat(3,1fr)", gap: 16 }}>
+      {TASK_STATUS.map((st) => {
+        const items = visible.filter((t) => t.status === st.id);
+        return (
+          <div key={st.id}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: st.color }}>{st.icon} {st.label}</span>
+              <span style={{ fontSize: 12, color: C.inkMuted, background: C.surface, padding: "1px 8px", borderRadius: 10 }}>{items.length}</span>
+            </div>
+            <div style={{ height: 3, background: `${st.color}15`, borderRadius: 2, marginBottom: 12 }}>
+              <div style={{ height: "100%", width: items.length ? "100%" : 0, background: st.color, borderRadius: 2, transition: "width .4s ease" }} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {items.map((t) => <TaskCard key={t.id} t={t} />)}
+              {items.length === 0 && <div style={{ padding: 24, textAlign: "center", color: C.inkMuted, fontSize: 13, border: `1px dashed ${C.border}`, borderRadius: 10 }}>暫無任務</div>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+    {taskDrawer}
+    </>
+  );
+};
+
+// ── BD Tracker View (v5.2: Detail Drawer) ──
+const BDTrackerView = ({ leads, roles, onEdit, onArchive, onConvert }) => {
+  const { mobile, tablet } = useWindowSize();
+  const [selectedId, setSelectedId] = useState(null);
+  const active = leads.filter((l) => !l.archived);
+
+  const total = active.length;
+  const inProgress = active.filter((l) => !["converted", "dormant"].includes(l.status)).length;
+  const booked = active.filter((l) => l.status === "call_booked").length;
+  const converted = active.filter((l) => l.status === "converted").length;
+
+  const selectedLead = active.find((l) => l.id === selectedId);
+  const selectedStatus = selectedLead ? BD_STATUS.find((s) => s.id === selectedLead.status) : null;
+
+  const LeadCard = ({ lead, status }) => {
+    const isSelected = selectedId === lead.id;
+    return (
+      <div style={{ marginBottom: 6 }}>
+        <HoverCard onClick={() => setSelectedId(isSelected ? null : lead.id)} accentColor={status.color} selected={isSelected}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>{lead.name}</div>
+            <span style={{ fontSize: 13, color: C.inkMuted, opacity: .6 }}>→</span>
+          </div>
+          <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 2 }}>{lead.title}</div>
+          <div style={{ fontSize: 13, color: C.inkSoft, margin: "4px 0 8px" }}>{lead.company}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: C.inkMuted, background: C.surface, padding: "2px 8px", borderRadius: 6 }}>{lead.channel}</span>
+            <RolePill roleId={lead.role} roles={roles} />
+          </div>
+        </HoverCard>
+      </div>
+    );
+  };
+
+  // Lead Detail Drawer
+  const leadDrawer = selectedLead && selectedStatus && (
+    <DetailDrawer open={!!selectedLead} onClose={() => setSelectedId(null)}
+      title={selectedLead.name} icon="🎯" accentColor={selectedStatus.color}
+      actions={<>
+        <Btn small color={C.accent} onClick={() => onEdit(selectedLead)}>✏️ 編輯</Btn>
+        {selectedLead.status === "call_booked" && <Btn small color={C.emerald} onClick={() => { onConvert(selectedLead); setSelectedId(null); }}>🎯 轉入漏斗</Btn>}
+        <Btn small outline color={C.rose} onClick={() => { onArchive(selectedLead.id); setSelectedId(null); }}>📦 封存</Btn>
+      </>}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+        <Badge color={selectedStatus.color} bg={`${selectedStatus.color}18`}>{selectedStatus.icon} {selectedStatus.label}</Badge>
+        <span style={{ fontSize: 12, color: C.inkMuted, fontFamily: "monospace" }}>最後互動 {selectedLead.lastTouch}</span>
+      </div>
+      <DrawerSection label="聯繫人資訊">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
+          <DrawerField label="姓名" value={selectedLead.name} />
+          <DrawerField label="職稱" value={selectedLead.title} />
+          <DrawerField label="公司" value={selectedLead.company} />
+          <DrawerField label="來源管道" value={selectedLead.channel} />
+        </div>
+      </DrawerSection>
+      <DrawerSection label="負責人">
+        <RolePill roleId={selectedLead.role} roles={roles} />
+      </DrawerSection>
+      {selectedLead.notes && (
+        <DrawerSection label="備註與互動紀錄">
+          <div style={{ background: C.surface, borderRadius: 10, padding: 14, fontSize: 14, color: C.inkSoft, lineHeight: 1.8, border: `1px solid ${C.border}` }}>{selectedLead.notes}</div>
+        </DrawerSection>
+      )}
+    </DetailDrawer>
+  );
+
+  return (
+    <>
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4,1fr)", gap: mobile ? 10 : 16, marginBottom: 24 }}>
+        {[
+          { label: "總追蹤", value: total, color: C.accent },
+          { label: "進行中", value: inProgress, color: C.cyan },
+          { label: "已約訪", value: booked, color: C.emerald },
+          { label: "已轉入", value: converted, color: C.violet },
+        ].map((s, i) => (
+          <HoverCard key={i} style={{ padding: mobile ? "12px 14px" : "18px 22px" }}>
+            <div style={{ fontSize: 12, color: C.inkMuted, marginBottom: 6, fontWeight: 500 }}>{s.label}</div>
+            <div style={{ fontSize: mobile ? 22 : 26, fontWeight: 800, color: s.color, fontFamily: "'JetBrains Mono',monospace" }}>{s.value}</div>
+          </HoverCard>
+        ))}
+      </div>
+
+      {mobile ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {BD_STATUS.map((st) => {
+            const sl = active.filter((l) => l.status === st.id);
+            if (!sl.length) return null;
+            return (
+              <div key={st.id}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: st.color }}>{st.icon} {st.label}</span>
+                  <span style={{ fontSize: 12, color: C.inkMuted, background: C.surface, padding: "1px 8px", borderRadius: 10 }}>{sl.length}</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>{sl.map((l) => <LeadCard key={l.id} lead={l} status={st} />)}</div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div style={{ overflowX: "auto", paddingBottom: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${BD_STATUS.length}, minmax(180px, 1fr))`, gap: 12, minWidth: BD_STATUS.length * 190 }}>
+            {BD_STATUS.map((st) => {
+              const sl = active.filter((l) => l.status === st.id);
+              return (
+                <div key={st.id}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: st.color }}>{st.icon} {st.label}</span>
+                    <span style={{ fontSize: 12, color: C.inkMuted, background: C.surface, padding: "1px 8px", borderRadius: 10 }}>{sl.length}</span>
+                  </div>
+                  <div style={{ height: 3, background: `${st.color}15`, borderRadius: 2, marginBottom: 10 }}>
+                    <div style={{ height: "100%", width: sl.length ? "100%" : 0, background: st.color, borderRadius: 2, transition: "width .4s ease" }} />
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {sl.map((l) => <LeadCard key={l.id} lead={l} status={st} />)}
+                    {!sl.length && <div style={{ padding: 24, textAlign: "center", color: C.inkMuted, fontSize: 13, border: `1px dashed ${C.border}`, borderRadius: 10 }}>暫無</div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+    {leadDrawer}
+    </>
+  );
+};
+
+// ── Analytics View ──
+const AnalyticsView = ({ deals, roles }) => {
+  const { mobile } = useWindowSize();
+  const [period, setPeriod] = useState("month"); // month | quarter | year
+  const [selectedRole, setSelectedRole] = useState("all");
+  const activeRoles = roles.filter((r) => !r.archived);
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const currentQuarter = Math.floor(currentMonth / 3);
+
+  // Filter deals by period
+  const inPeriod = (dateStr) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (period === "month") return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+    if (period === "quarter") return d.getFullYear() === currentYear && Math.floor(d.getMonth() / 3) === currentQuarter;
+    return d.getFullYear() === currentYear;
+  };
+
+  const allDeals = deals.filter((d) => !d.archived);
+  const periodDeals = allDeals.filter((d) => inPeriod(d.created));
+  const periodWon = allDeals.filter((d) => d.stage === "won" && inPeriod(d.signedDate || d.created));
+  const filtered = selectedRole === "all" ? periodDeals : periodDeals.filter((d) => d.role === selectedRole);
+  const filteredWon = selectedRole === "all" ? periodWon : periodWon.filter((d) => d.role === selectedRole);
+
+  // Goals (example targets — can be customized)
+  const goals = { month: { deals: 5, revenue: 300000 }, quarter: { deals: 12, revenue: 800000 }, year: { deals: 40, revenue: 3000000 } };
+  const goal = goals[period];
+  const wonRevenue = filteredWon.reduce((s, d) => s + d.value, 0);
+  const pipelineValue = filtered.filter((d) => !["won", "lost"].includes(d.stage)).reduce((s, d) => s + d.value, 0);
+
+  const pctDeals = goal.deals > 0 ? Math.round((filteredWon.length / goal.deals) * 100) : 0;
+  const pctRevenue = goal.revenue > 0 ? Math.round((wonRevenue / goal.revenue) * 100) : 0;
+
+  // Deal Velocity — days from created to signedDate for won deals
+  const velocityDeals = allDeals.filter((d) => d.stage === "won" && d.signedDate && d.created);
+  const velocities = velocityDeals.map((d) => {
+    const start = new Date(d.created);
+    const end = new Date(d.signedDate);
+    return Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
+  });
+  const avgVelocity = velocities.length > 0 ? Math.round(velocities.reduce((a, b) => a + b, 0) / velocities.length) : 0;
+
+  // Role performance
+  const rolePerf = activeRoles.map((r) => {
+    const rd = allDeals.filter((d) => d.role === r.id);
+    const rWon = rd.filter((d) => d.stage === "won" && inPeriod(d.signedDate || d.created));
+    const rActive = rd.filter((d) => !d.archived && !["won", "lost"].includes(d.stage) && inPeriod(d.created));
+    const rv = rd.filter((d) => d.stage === "won" && d.signedDate && d.created);
+    const rVelocities = rv.map((d) => Math.max(1, Math.round((new Date(d.signedDate) - new Date(d.created)) / 86400000)));
+    const rAvgV = rVelocities.length > 0 ? Math.round(rVelocities.reduce((a, b) => a + b, 0) / rVelocities.length) : 0;
+    return { ...r, wonCount: rWon.length, wonRevenue: rWon.reduce((s, d) => s + d.value, 0), activeCount: rActive.length, avgVelocity: rAvgV, totalDeals: rd.filter((d) => inPeriod(d.created)).length };
+  });
+
+  const periodLabels = { month: "本月", quarter: "本季", year: "本年" };
+
+  const ProgressBar = ({ value, max, color }) => {
+    const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+    return (
+      <div style={{ position: "relative", height: 10, background: C.surface, borderRadius: 6, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 6, transition: "width .6s cubic-bezier(.4,0,.2,1)" }} />
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      {/* Period selector + role filter */}
+      <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", gap: 12, marginBottom: 24, alignItems: mobile ? "stretch" : "center" }}>
+        <div style={{ display: "flex", gap: 4, background: C.surface, borderRadius: 10, padding: 4 }}>
+          {["month", "quarter", "year"].map((p) => (
+            <button key={p} onClick={() => setPeriod(p)}
+              style={{ padding: "7px 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit", background: period === p ? C.card : "transparent", color: period === p ? C.ink : C.inkMuted, transition: T }}>
+              {periodLabels[p]}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <button onClick={() => setSelectedRole("all")}
+            style={{ padding: "5px 14px", borderRadius: 20, border: selectedRole === "all" ? `1.5px solid ${C.accent}` : `1px solid ${C.border}`, background: selectedRole === "all" ? `${C.accent}15` : "transparent", color: selectedRole === "all" ? C.accent : C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T }}>全員</button>
+          {activeRoles.map((r) => (
+            <button key={r.id} onClick={() => setSelectedRole(r.id)}
+              style={{ padding: "5px 14px", borderRadius: 20, border: selectedRole === r.id ? `1.5px solid ${r.color}` : `1px solid ${C.border}`, background: selectedRole === r.id ? `${r.color}15` : "transparent", color: selectedRole === r.id ? r.color : C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T }}>
+              {r.emoji} {r.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Goal Progress */}
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 24 }}>
+        <HoverCard style={{ padding: 24 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>🎯 {periodLabels[period]}簽約目標</div>
+            <span style={{ fontSize: 22, fontWeight: 800, color: pctDeals >= 100 ? C.emerald : C.gold, fontFamily: "monospace" }}>{pctDeals}%</span>
+          </div>
+          <ProgressBar value={filteredWon.length} max={goal.deals} color={pctDeals >= 100 ? C.emerald : C.accent} />
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 12, color: C.inkMuted }}>
+            <span>已簽約 {filteredWon.length} 件</span><span>目標 {goal.deals} 件</span>
+          </div>
+        </HoverCard>
+        <HoverCard style={{ padding: 24 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>💰 {periodLabels[period]}營收目標</div>
+            <span style={{ fontSize: 22, fontWeight: 800, color: pctRevenue >= 100 ? C.emerald : C.gold, fontFamily: "monospace" }}>{pctRevenue}%</span>
+          </div>
+          <ProgressBar value={wonRevenue} max={goal.revenue} color={pctRevenue >= 100 ? C.emerald : C.gold} />
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 12, color: C.inkMuted }}>
+            <span>已簽約 {fmt(wonRevenue)}</span><span>目標 {fmt(goal.revenue)}</span>
+          </div>
+        </HoverCard>
+      </div>
+
+      {/* Key Metrics */}
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
+        {[
+          { label: `${periodLabels[period]}進件`, value: filtered.length, color: C.accent },
+          { label: "管線總值", value: fmt(pipelineValue), color: C.gold },
+          { label: "平均簽約速度", value: avgVelocity > 0 ? `${avgVelocity} 天` : "—", color: C.cyan },
+          { label: "簽約率", value: filtered.length > 0 ? `${Math.round((filteredWon.length / filtered.length) * 100)}%` : "—", color: C.emerald },
+        ].map((s, i) => (
+          <HoverCard key={i} style={{ padding: mobile ? "14px 16px" : "18px 22px" }}>
+            <div style={{ fontSize: 12, color: C.inkMuted, marginBottom: 6, fontWeight: 500 }}>{s.label}</div>
+            <div style={{ fontSize: mobile ? 20 : 24, fontWeight: 800, color: s.color, fontFamily: "'JetBrains Mono',monospace" }}>{s.value}</div>
+          </HoverCard>
+        ))}
+      </div>
+
+      {/* Deal Velocity Table */}
+      <div style={{ marginBottom: 24 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 800, color: C.ink, marginBottom: 14 }}>⚡ 案件速度分析</h3>
+        {velocityDeals.length === 0 ? (
+          <div style={{ padding: 24, textAlign: "center", color: C.inkMuted, fontSize: 14, background: C.surface, borderRadius: 12 }}>尚無已簽約案件資料</div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 4px" }}>
+              <thead>
+                <tr>{["案件", "公司", "進件日", "簽約日", "天數", "金額", "評級"].map((h) => <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 600, color: C.inkMuted, borderBottom: `1px solid ${C.border}` }}>{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {velocityDeals.map((d) => {
+                  const days = Math.max(1, Math.round((new Date(d.signedDate) - new Date(d.created)) / 86400000));
+                  const speed = days <= 14 ? { label: "🚀 快速", color: C.emerald } : days <= 30 ? { label: "✅ 正常", color: C.accent } : { label: "🐢 偏慢", color: C.orange };
+                  return (
+                    <tr key={d.id}>
+                      <td style={{ padding: "10px 14px", fontSize: 14, fontWeight: 600, color: C.ink, background: C.card, borderRadius: "8px 0 0 8px" }}>{d.name}</td>
+                      <td style={{ padding: "10px 14px", fontSize: 13, color: C.inkSoft, background: C.card }}>{d.company}</td>
+                      <td style={{ padding: "10px 14px", fontSize: 12, color: C.inkMuted, fontFamily: "monospace", background: C.card }}>{d.created}</td>
+                      <td style={{ padding: "10px 14px", fontSize: 12, color: C.inkMuted, fontFamily: "monospace", background: C.card }}>{d.signedDate}</td>
+                      <td style={{ padding: "10px 14px", fontSize: 14, fontWeight: 700, color: speed.color, fontFamily: "monospace", background: C.card }}>{days}</td>
+                      <td style={{ padding: "10px 14px", fontSize: 13, color: C.gold, fontFamily: "monospace", background: C.card }}>{fmt(d.value)}</td>
+                      <td style={{ padding: "10px 14px", background: C.card, borderRadius: "0 8px 8px 0" }}><Badge color={speed.color} bg={`${speed.color}15`} small>{speed.label}</Badge></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Role Performance */}
+      <div>
+        <h3 style={{ fontSize: 16, fontWeight: 800, color: C.ink, marginBottom: 14 }}>👥 {periodLabels[period]}角色業績排行</h3>
+        <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+          {rolePerf.sort((a, b) => b.wonRevenue - a.wonRevenue).map((r) => (
+            <HoverCard key={r.id} style={{ padding: 20, borderTop: `3px solid ${r.color}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                <span style={{ fontSize: 26 }}>{r.emoji}</span>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: r.color }}>{r.name}</div>
+                  <div style={{ fontSize: 12, color: C.inkMuted }}>{r.title}</div>
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div style={{ background: C.surface, borderRadius: 8, padding: "8px 12px" }}>
+                  <div style={{ fontSize: 10, color: C.inkMuted }}>進件</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: C.accent, fontFamily: "monospace" }}>{r.totalDeals}</div>
+                </div>
+                <div style={{ background: C.surface, borderRadius: 8, padding: "8px 12px" }}>
+                  <div style={{ fontSize: 10, color: C.inkMuted }}>簽約</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: C.emerald, fontFamily: "monospace" }}>{r.wonCount}</div>
+                </div>
+                <div style={{ background: C.surface, borderRadius: 8, padding: "8px 12px" }}>
+                  <div style={{ fontSize: 10, color: C.inkMuted }}>簽約金額</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.gold, fontFamily: "monospace" }}>{fmt(r.wonRevenue)}</div>
+                </div>
+                <div style={{ background: C.surface, borderRadius: 8, padding: "8px 12px" }}>
+                  <div style={{ fontSize: 10, color: C.inkMuted }}>平均速度</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.cyan, fontFamily: "monospace" }}>{r.avgVelocity > 0 ? `${r.avgVelocity} 天` : "—"}</div>
+                </div>
+              </div>
+            </HoverCard>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Documents / Templates View ──
+const DocumentsView = () => {
+  const { mobile } = useWindowSize();
+  const [catFilter, setCatFilter] = useState("全部");
+  const [copied, setCopied] = useState(null);
+
+  const filtered = catFilter === "全部" ? DOC_TEMPLATES : DOC_TEMPLATES.filter((d) => d.category === catFilter);
+
+  const copyLink = (url) => {
+    const fullUrl = window.location.origin + url;
+    navigator.clipboard?.writeText(fullUrl).then(() => {
+      setCopied(url);
+      setTimeout(() => setCopied(null), 2000);
+    });
+  };
+
+  const formatColors = { DOCX: C.accent, PPTX: C.orange, PDF: C.rose, XLSX: C.emerald };
+
+  return (
+    <div>
+      <div style={{ fontSize: 15, color: C.inkSoft, marginBottom: 20, lineHeight: 1.7 }}>業務提案、合約範本與文件資源。點擊下載或複製連結分享給客戶。</div>
+
+      {/* Category filter */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+        {DOC_CATEGORIES.map((cat) => (
+          <button key={cat} onClick={() => setCatFilter(cat)}
+            style={{ padding: "6px 16px", borderRadius: 20, border: catFilter === cat ? `1.5px solid ${C.accent}` : `1px solid ${C.border}`, background: catFilter === cat ? `${C.accent}15` : "transparent", color: catFilter === cat ? C.accent : C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T }}>
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "repeat(auto-fill, minmax(340px, 1fr))", gap: 12 }}>
+        {filtered.map((doc) => (
+          <HoverCard key={doc.id} style={{ padding: 20 }}>
+            <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+              <span style={{ fontSize: 28, flexShrink: 0 }}>{doc.icon}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>{doc.name}</div>
+                  <Badge color={formatColors[doc.format] || C.inkMuted} bg={`${formatColors[doc.format] || C.inkMuted}15`} small>{doc.format}</Badge>
+                </div>
+                <div style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.6, marginBottom: 12 }}>{doc.desc}</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn small color={C.accent} onClick={() => window.open(doc.url, "_blank")}>⬇ 下載</Btn>
+                  <Btn small outline color={copied === doc.url ? C.emerald : C.inkMuted} onClick={() => copyLink(doc.url)}>
+                    {copied === doc.url ? "✅ 已複製" : "🔗 複製連結"}
+                  </Btn>
+                </div>
+              </div>
+            </div>
+          </HoverCard>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ── Roles Management View ──
+const RolesView = ({ roles, onAdd, onEdit, onArchive }) => {
+  const { mobile } = useWindowSize();
+  return (
+    <div>
+      <div style={{ fontSize: 15, color: C.inkSoft, marginBottom: 20, lineHeight: 1.7 }}>管理城堡角色。新增自訂角色、修改名稱與圖示，或封存不再使用的角色。</div>
+      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "repeat(3,1fr)", gap: 14 }}>
+        {roles.filter((r) => !r.archived).map((r) => (
+          <HoverCard key={r.id} style={{ padding: 24, borderTop: `3px solid ${r.color}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 32 }}>{r.emoji}</span>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: r.color }}>{r.name}</div>
+                  <div style={{ fontSize: 13, color: C.inkMuted }}>{r.title}</div>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <Btn small color={C.accent} onClick={() => onEdit(r)}>編輯</Btn>
+                <Btn small outline color={C.rose} onClick={() => onArchive(r.id)}>封存</Btn>
+              </div>
+            </div>
+          </HoverCard>
+        ))}
+        {/* Add new role card */}
+        <button onClick={onAdd} style={{ background: "transparent", border: `2px dashed ${C.border}`, borderRadius: 12, padding: 24, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, minHeight: 110, transition: T }}>
+          <span style={{ fontSize: 28, color: C.inkMuted }}>+</span>
+          <span style={{ fontSize: 14, color: C.inkMuted, fontFamily: "inherit" }}>新增角色</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ══════════════════════════════════════════════
+// Main App
+// ══════════════════════════════════════════════
+// ── Command Palette (Cmd+K) ──
+const CommandPalette = ({ open, onClose, onAction }) => {
+  const [q, setQ] = useState("");
+  const inputRef = useRef(null);
+  const { mobile } = useWindowSize();
+
+  useEffect(() => { if (open && inputRef.current) setTimeout(() => inputRef.current.focus(), 50); }, [open]);
+
+  const commands = [
+    { id: "addDeal", label: "新增案件", icon: "📊", shortcut: "D" },
+    { id: "addTask", label: "新增任務", icon: "📋", shortcut: "T" },
+    { id: "addLead", label: "新增 BD 對象", icon: "🎯", shortcut: "B" },
+    { id: "addRole", label: "新增角色", icon: "👥", shortcut: "R" },
+    { id: "goToPipeline", label: "前往業務漏斗", icon: "📊", shortcut: "1" },
+    { id: "goToTasks", label: "前往任務看板", icon: "📋", shortcut: "2" },
+    { id: "goToBD", label: "前往 BD 開發", icon: "🎯", shortcut: "3" },
+    { id: "goToAnalytics", label: "前往數據分析", icon: "📈", shortcut: "4" },
+    { id: "goToDocs", label: "前往文件資源", icon: "📁", shortcut: "5" },
+    { id: "goToRoles", label: "前往角色管理", icon: "👥", shortcut: "6" },
+    { id: "exportDeals", label: "匯出案件 CSV", icon: "⬇", shortcut: null },
+    { id: "exportTasks", label: "匯出任務 CSV", icon: "⬇", shortcut: null },
+    { id: "exportLeads", label: "匯出 BD 對象 CSV", icon: "⬇", shortcut: null },
+  ];
+
+  const filtered = q ? commands.filter((c) => c.label.toLowerCase().includes(q.toLowerCase())) : commands;
+
+  if (!open) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", backdropFilter: "blur(8px)", display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: mobile ? 60 : 120, zIndex: 1200 }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, border: `1px solid ${C.borderHover}`, borderRadius: 16, width: mobile ? "92%" : 480, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,.5)" }}>
+        <div style={{ padding: "16px 18px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ color: C.inkMuted, fontSize: 16 }}>🔍</span>
+          <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="輸入指令... (新增、前往、匯出)"
+            onKeyDown={(e) => { if (e.key === "Escape") onClose(); if (e.key === "Enter" && filtered.length > 0) { onAction(filtered[0].id); onClose(); } }}
+            style={{ flex: 1, background: "transparent", border: "none", color: C.ink, fontSize: 15, outline: "none", fontFamily: "inherit" }} />
+          <span style={{ fontSize: 11, color: C.inkMuted, background: C.surface, padding: "2px 8px", borderRadius: 6 }}>ESC</span>
+        </div>
+        <div style={{ maxHeight: 320, overflowY: "auto", padding: "6px 0" }}>
+          {filtered.map((cmd) => (
+            <button key={cmd.id} onClick={() => { onAction(cmd.id); onClose(); }}
+              style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 18px", border: "none", background: "transparent", color: C.ink, fontSize: 14, cursor: "pointer", fontFamily: "inherit", transition: T, textAlign: "left" }}
+              onMouseEnter={(e) => e.currentTarget.style.background = C.surface}
+              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+              <span style={{ fontSize: 16 }}>{cmd.icon}</span>
+              <span style={{ flex: 1 }}>{cmd.label}</span>
+              {cmd.shortcut && <span style={{ fontSize: 11, color: C.inkMuted, background: C.surface, padding: "2px 8px", borderRadius: 6, fontFamily: "monospace" }}>{cmd.shortcut}</span>}
+            </button>
+          ))}
+          {filtered.length === 0 && <div style={{ padding: 20, textAlign: "center", color: C.inkMuted, fontSize: 13 }}>找不到指令</div>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Activity Log Sidebar ──
+const ActivityLog = ({ log, open, onClose }) => {
+  const { mobile } = useWindowSize();
+  if (!open) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1050, display: "flex", justifyContent: "flex-end" }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()}
+        style={{ width: mobile ? "100%" : 380, height: "100%", background: C.card, borderLeft: `1px solid ${C.borderHover}`, padding: "24px 20px", overflowY: "auto", boxShadow: "-8px 0 30px rgba(0,0,0,.3)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: C.ink }}>📜 活動紀錄</h3>
+          <button onClick={onClose} style={{ background: `${C.inkMuted}15`, border: "none", color: C.inkMuted, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, fontFamily: "inherit" }}>✕</button>
+        </div>
+        {log.length === 0 ? (
+          <div style={{ textAlign: "center", color: C.inkMuted, fontSize: 14, paddingTop: 40 }}>尚無活動紀錄</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {log.map((entry, i) => (
+              <div key={i} style={{ padding: "12px 14px", background: i === 0 ? `${C.accent}08` : "transparent", borderRadius: 10, borderLeft: `3px solid ${entry.color || C.accent}`, transition: T }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{entry.icon} {entry.action}</span>
+                  <span style={{ fontSize: 11, color: C.inkMuted }}>{timeAgo(entry.time)}</span>
+                </div>
+                <div style={{ fontSize: 12, color: C.inkSoft }}>{entry.detail}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+function CastleDashboard() {
+  const { mobile } = useWindowSize();
+  const [user, setUser] = useState(() => ls.getUser());
+  const [tab, setTab] = useState("pipeline");
+  const [deals, setDeals] = usePersisted("deals", INIT_DEALS);
+  const [tasks, setTasks] = usePersisted("tasks", INIT_TASKS);
+  const [leads, setLeads] = usePersisted("leads", INIT_LEADS);
+  const [roles, setRoles] = usePersisted("roles", DEFAULT_ROLES);
+  const [modal, setModal] = useState(null);
+  const [editItem, setEditItem] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [taskSearch, setTaskSearch] = useState("");
+  const [taskFilter, setTaskFilter] = useState("all");
+  const [expandedDealId, setExpandedDealId] = useState(null);
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [logOpen, setLogOpen] = useState(false);
+  const [activityLog, setActivityLog] = usePersisted("log", []);
+  const [syncing, setSyncing] = useState(false);
+
+  const nDeal = useRef(Math.max(...(deals.length ? deals : INIT_DEALS).map((d) => d.id)) + 1);
+  const nTask = useRef(Math.max(...(tasks.length ? tasks : INIT_TASKS).map((t) => t.id)) + 1);
+  const nLead = useRef(Math.max(...(leads.length ? leads : INIT_LEADS).map((l) => l.id)) + 1);
+  const nRole = useRef(100);
+
+  // ── Google Login Handler ──
+  const handleGoogleLogin = useCallback(async (credential) => {
+    // Decode JWT from Google Sign-In
+    const payload = JSON.parse(atob(credential.split(".")[1]));
+    const u = { email: payload.email, name: payload.name, picture: payload.picture };
+    setUser(u);
+    ls.setUser(u);
+    // Notify API
+    api.post("login", u.email, u);
+    // Try to load cloud data
+    const cloud = await api.get("getAll", u.email);
+    if (cloud && (cloud.deals?.length || cloud.tasks?.length || cloud.leads?.length)) {
+      if (cloud.deals?.length) setDeals(cloud.deals);
+      if (cloud.tasks?.length) setTasks(cloud.tasks);
+      if (cloud.leads?.length) setLeads(cloud.leads);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    setUser(null);
+    ls.setUser(null);
+  };
+
+  // ── Cloud Sync (manual) ──
+  const syncToCloud = useCallback(async () => {
+    if (!user || !API_URL) return;
+    setSyncing(true);
+    await api.post("syncAll", user.email, { deals, tasks, leads });
+    setSyncing(false);
+  }, [user, deals, tasks, leads]);
+
+  // ── Activity Logger ──
+  const addLog = useCallback((icon, action, detail, color) => {
+    setActivityLog((prev) => [{ icon, action, detail, color, time: new Date().toISOString() }, ...prev].slice(0, 50));
+  }, []);
+
+  // ── Keyboard Shortcuts ──
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setCmdOpen(true); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  // ── Archive with Undo + Activity Log ──
+  const archiveDeal = (id) => {
+    const d = deals.find((x) => x.id === id);
+    setDeals((p) => p.map((d) => d.id === id ? { ...d, archived: true } : d));
+    setExpandedDealId(null);
+    addLog("📦", "封存案件", d?.name || "", C.rose);
+    setToast({ message: "案件已封存", undo: () => setDeals((p) => p.map((d) => d.id === id ? { ...d, archived: false } : d)) });
+  };
+  const archiveTask = (id) => {
+    const t = tasks.find((x) => x.id === id);
+    setTasks((p) => p.map((t) => t.id === id ? { ...t, archived: true } : t));
+    addLog("📦", "封存任務", t?.text || "", C.rose);
+    setToast({ message: "任務已封存", undo: () => setTasks((p) => p.map((t) => t.id === id ? { ...t, archived: false } : t)) });
+  };
+  const archiveLead = (id) => {
+    const l = leads.find((x) => x.id === id);
+    setLeads((p) => p.map((l) => l.id === id ? { ...l, archived: true } : l));
+    addLog("📦", "封存 BD 對象", l?.name || "", C.rose);
+    setToast({ message: "BD 對象已封存", undo: () => setLeads((p) => p.map((l) => l.id === id ? { ...l, archived: false } : l)) });
+  };
+  const archiveRole = (id) => {
+    setConfirmAction({
+      title: "封存角色", message: "封存後此角色不會出現在選項中，但已指派的任務不受影響。確定嗎？",
+      onConfirm: () => {
+        setRoles((p) => p.map((r) => r.id === id ? { ...r, archived: true } : r));
+        setToast({ message: "角色已封存", undo: () => setRoles((p) => p.map((r) => r.id === id ? { ...r, archived: false } : r)) });
+        setConfirmAction(null);
+      }
+    });
+  };
+
+  // ── CRUD + Activity Log ──
+  const addDeal = (d) => { setDeals([...deals, { ...d, id: nDeal.current++ }]); setModal(null); addLog("📊", "新增案件", d.name, C.emerald); };
+  const updateDeal = (d) => { setDeals(deals.map((x) => x.id === d.id ? d : x)); setModal(null); setEditItem(null); addLog("✏️", "編輯案件", d.name, C.accent); };
+  const changeStage = (id, stage) => {
+    const d = deals.find((x) => x.id === id);
+    const st = STAGES.find((s) => s.id === stage);
+    setDeals(deals.map((d) => d.id === id ? { ...d, stage, signedDate: stage === "won" ? (d.signedDate || today()) : d.signedDate } : d));
+    addLog(st?.icon || "🔄", "切換階段", `${d?.name} → ${st?.label}`, st?.color || C.accent);
+  };
+
+  const addTask = (t) => { setTasks([...tasks, { ...t, id: nTask.current++ }]); setModal(null); addLog("📋", "新增任務", t.text, C.cyan); };
+  const updateTask = (t) => { setTasks(tasks.map((x) => x.id === t.id ? t : x)); setModal(null); setEditItem(null); addLog("✏️", "編輯任務", t.text, C.accent); };
+  const changeTaskStatus = (id, status) => {
+    const t = tasks.find((x) => x.id === id);
+    const st = TASK_STATUS.find((s) => s.id === status);
+    setTasks(tasks.map((t) => t.id === id ? { ...t, status } : t));
+    addLog(st?.icon || "🔄", "更新任務狀態", `${t?.text} → ${st?.label}`, st?.color || C.accent);
+  };
+
+  const addLead = (l) => { setLeads([...leads, { ...l, id: nLead.current++ }]); setModal(null); addLog("🎯", "新增 BD 對象", `${l.name} (${l.company})`, C.cyan); };
+  const updateLead = (l) => { setLeads(leads.map((x) => x.id === l.id ? l : x)); setModal(null); setEditItem(null); addLog("✏️", "編輯 BD 對象", l.name, C.accent); };
+  const convertLead = (lead) => {
+    const nd = { id: nDeal.current++, name: `${lead.company} 專案`, company: lead.company, contact: lead.name, email: "", stage: "inquiry", value: 30000, tier: "Tier 1", notes: `從 BD 轉入 (${lead.channel})\n${lead.notes}`, created: today(), role: lead.role, archived: false };
+    setDeals([...deals, nd]);
+    setLeads(leads.map((l) => l.id === lead.id ? { ...l, status: "converted" } : l));
+    addLog("🎯", "BD 轉入漏斗", `${lead.name} → ${lead.company} 專案`, C.violet);
+  };
+
+  const addRole = (r) => { setRoles([...roles, { ...r, id: `role_${nRole.current++}`, archived: false }]); setModal(null); addLog("👥", "新增角色", r.name, C.violet); };
+  const updateRole = (r) => { setRoles(roles.map((x) => x.id === r.id ? r : x)); setModal(null); setEditItem(null); addLog("✏️", "編輯角色", r.name, C.accent); };
+
+  // ── CSV Export ──
+  const doExportDeals = () => {
+    const headers = ["案件名稱", "公司", "聯繫人", "Email", "階段", "金額", "方案", "建立日期", "簽約日期", "備註"];
+    const rows = deals.filter((d) => !d.archived).map((d) => [d.name, d.company, d.contact, d.email, stageOf(d.stage)?.label || d.stage, d.value, d.tier, d.created, d.signedDate || "", d.notes]);
+    exportCSV("beyond-spec-deals.csv", headers, rows);
+    addLog("⬇", "匯出案件 CSV", `${rows.length} 筆`, C.gold);
+  };
+  const doExportTasks = () => {
+    const headers = ["任務", "狀態", "優先級", "負責角色", "截止日期"];
+    const rows = tasks.filter((t) => !t.archived).map((t) => [t.text, TASK_STATUS.find((s) => s.id === t.status)?.label || t.status, PRIORITY.find((p) => p.id === t.priority)?.label || t.priority, roles.find((r) => r.id === t.role)?.name || t.role, t.due]);
+    exportCSV("beyond-spec-tasks.csv", headers, rows);
+    addLog("⬇", "匯出任務 CSV", `${rows.length} 筆`, C.gold);
+  };
+  const doExportLeads = () => {
+    const headers = ["姓名", "職稱", "公司", "管道", "狀態", "備註", "最後互動"];
+    const rows = leads.filter((l) => !l.archived).map((l) => [l.name, l.title, l.company, l.channel, BD_STATUS.find((s) => s.id === l.status)?.label || l.status, l.notes, l.lastTouch]);
+    exportCSV("beyond-spec-bd-leads.csv", headers, rows);
+    addLog("⬇", "匯出 BD 對象 CSV", `${rows.length} 筆`, C.gold);
+  };
+
+  // ── Command Palette Actions ──
+  const handleCommand = (cmdId) => {
+    const goMap = { goToPipeline: "pipeline", goToTasks: "tasks", goToBD: "bd", goToAnalytics: "analytics", goToDocs: "docs", goToRoles: "roles" };
+    if (goMap[cmdId]) { setTab(goMap[cmdId]); return; }
+    if (cmdId === "addDeal") setModal("addDeal");
+    else if (cmdId === "addTask") setModal("addTask");
+    else if (cmdId === "addLead") setModal("addLead");
+    else if (cmdId === "addRole") setModal("addRole");
+    else if (cmdId === "exportDeals") doExportDeals();
+    else if (cmdId === "exportTasks") doExportTasks();
+    else if (cmdId === "exportLeads") doExportLeads();
+  };
+
+  const activeRoles = roles.filter((r) => !r.archived);
+  const now = new Date().toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: mobile ? undefined : "long" });
+
+  const TABS = [
+    { id: "pipeline", label: mobile ? "📊 漏斗" : "📊 業務漏斗" },
+    { id: "tasks", label: mobile ? "📋 任務" : "📋 任務看板" },
+    { id: "bd", label: mobile ? "🎯 BD" : "🎯 BD 開發" },
+    { id: "analytics", label: mobile ? "📈 分析" : "📈 數據分析" },
+    { id: "docs", label: mobile ? "📁 文件" : "📁 文件資源" },
+    { id: "roles", label: mobile ? "👥 角色" : "👥 角色管理" },
+  ];
+
+  const TASK_FILTERS = [
+    { id: "all", label: "全部", color: C.accent },
+    { id: "high", label: "🔴 高優先", color: C.rose },
+    { id: "overdue", label: "⚠️ 逾期", color: C.orange },
+    ...activeRoles.map((r) => ({ id: r.id, label: `${r.emoji} ${r.name}`, color: r.color })),
+  ];
+
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: C.bg, color: C.ink, fontFamily: "'Noto Sans TC',-apple-system,sans-serif", fontSize: 15 }}>
+      <style>{`@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}@keyframes drawerSlideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}@keyframes drawerFadeIn{from{opacity:0}to{opacity:1}}*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.12) transparent}::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px}::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.25)}`}</style>
+      {/* Header */}
+      <div style={{ borderBottom: `1px solid ${C.border}`, padding: mobile ? "14px 18px" : "16px 36px", display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.surface}80`, backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: mobile ? 12 : 16 }}>
+          <span style={{ fontSize: mobile ? 22 : 26 }}>🏰</span>
+          <div>
+            <div style={{ fontSize: mobile ? 15 : 18, fontWeight: 800, letterSpacing: ".02em" }}>移動城堡指揮部</div>
+            {!mobile && <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 2 }}>Beyond Spec 業務管理系統</div>}
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {!mobile && <span style={{ fontSize: 13, color: C.inkMuted }}>{now}</span>}
+          {/* Cmd+K button */}
+          <button onClick={() => setCmdOpen(true)} title="指令面板 (⌘K)"
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: T }}>
+            🔍 {!mobile && "指令"} <span style={{ fontSize: 10, background: C.surface, padding: "1px 5px", borderRadius: 4, fontFamily: "monospace" }}>⌘K</span>
+          </button>
+          {/* Export button */}
+          {(tab === "pipeline" || tab === "tasks" || tab === "bd") && (
+            <button onClick={() => { if (tab === "pipeline") doExportDeals(); else if (tab === "tasks") doExportTasks(); else doExportLeads(); }}
+              title="匯出 CSV"
+              style={{ width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>⬇</button>
+          )}
+          {/* Activity log button */}
+          <button onClick={() => setLogOpen(true)} title="活動紀錄"
+            style={{ position: "relative", width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>
+            📜
+            {activityLog.length > 0 && <span style={{ position: "absolute", top: -2, right: -2, width: 8, height: 8, borderRadius: "50%", background: C.accent }} />}
+          </button>
+          {/* Overdue badge */}
+          {(() => { const overdue = tasks.filter((t) => !t.archived && t.status !== "done" && t.due < today()).length; return overdue > 0 ? (
+            <button onClick={() => { setTab("tasks"); setTaskFilter("overdue"); }} title={`${overdue} 個逾期任務`}
+              style={{ position: "relative", width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.rose}30`, background: `${C.rose}10`, color: C.rose, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}>
+              ⚠️<span style={{ position: "absolute", top: -4, right: -4, background: C.rose, color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{overdue}</span>
+            </button>
+          ) : null; })()}
+          {/* Cloud sync button */}
+          {user && API_URL && (
+            <button onClick={syncToCloud} title={syncing ? "同步中..." : "同步到雲端"}
+              style={{ width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.border}`, background: syncing ? `${C.emerald}15` : "transparent", color: syncing ? C.emerald : C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}>
+              {syncing ? "⏳" : "☁️"}
+            </button>
+          )}
+          {/* User avatar or login */}
+          {user ? (
+            <button onClick={handleLogout} title={`${user.name}\n點擊登出`}
+              style={{ width: 34, height: 34, borderRadius: 10, overflow: "hidden", border: `2px solid ${C.accent}`, cursor: "pointer", padding: 0 }}>
+              {user.picture ? <img src={user.picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 15 }}>👑</span>}
+            </button>
+          ) : (
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: C.accentSoft, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15 }}>👑</div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Remove maxWidth for full-width layout ── */}
+      <div style={{ padding: mobile ? "20px 18px" : "28px 36px", flex: 1 }}>
+        <StatsRow deals={deals} tasks={tasks} leads={leads} onHealthClick={() => { setTab("tasks"); setTaskFilter("overdue"); }} />
+
+        {/* Tab bar */}
+        <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "stretch" : "center", gap: mobile ? 12 : 0, marginBottom: 20 }}>
+          <div style={{ display: "flex", gap: 4, background: C.surface, borderRadius: 12, padding: 4, overflowX: "auto" }}>
+            {TABS.map((t) => (
+              <button key={t.id} onClick={() => { setTab(t.id); setExpandedDealId(null); setTaskSearch(""); setTaskFilter("all"); }}
+                style={{ padding: mobile ? "8px 14px" : "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, whiteSpace: "nowrap", flex: mobile ? 1 : "none", transition: T }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            {tab === "pipeline" && <Btn color={C.emerald} onClick={() => setModal("addDeal")} full={mobile}>+ 新增案件</Btn>}
+            {tab === "tasks" && <Btn color={C.accent} onClick={() => setModal("addTask")} full={mobile}>+ 新增任務</Btn>}
+            {tab === "bd" && <Btn color={C.cyan} onClick={() => setModal("addLead")} full={mobile}>+ 新增 BD 對象</Btn>}
+            {tab === "docs" && <Btn color={C.gold} onClick={() => window.open("/templates/", "_blank")} full={mobile}>📂 開啟文件庫</Btn>}
+            {tab === "roles" && <Btn color={C.violet} onClick={() => setModal("addRole")} full={mobile}>+ 新增角色</Btn>}
+          </div>
+        </div>
+
+        {/* Task sub-bar: search + filters */}
+        {tab === "tasks" && (
+          <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", gap: 12, marginBottom: 20 }}>
+            <SearchBar value={taskSearch} onChange={setTaskSearch} placeholder="搜尋任務..." />
+            <FilterPills options={TASK_FILTERS} active={taskFilter} onSelect={setTaskFilter} />
+          </div>
+        )}
+
+        {/* Content */}
+        {tab === "pipeline" && <PipelineView deals={deals} roles={activeRoles} onArchive={archiveDeal} onUpdate={updateDeal} onStageChange={changeStage} expandedId={expandedDealId} onExpand={setExpandedDealId} />}
+        {tab === "tasks" && <TasksView tasks={tasks} deals={deals.filter((d) => !d.archived)} roles={activeRoles} onEdit={(t) => { setEditItem(t); setModal("editTask"); }} onArchive={archiveTask} onStatusChange={changeTaskStatus} search={taskSearch} filter={taskFilter} />}
+        {tab === "bd" && <BDTrackerView leads={leads} roles={activeRoles} onEdit={(l) => { setEditItem(l); setModal("editLead"); }} onArchive={archiveLead} onConvert={convertLead} />}
+        {tab === "analytics" && <AnalyticsView deals={deals} roles={roles} />}
+        {tab === "docs" && <DocumentsView />}
+        {tab === "roles" && <RolesView roles={roles} onAdd={() => setModal("addRole")} onEdit={(r) => { setEditItem(r); setModal("editRole"); }} onArchive={archiveRole} />}
+      </div>
+
+      {/* Modals */}
+      {modal === "addDeal" && <Modal title="新增案件" onClose={() => setModal(null)}><DealForm roles={activeRoles} onSave={addDeal} onCancel={() => setModal(null)} /></Modal>}
+      {modal === "editDeal" && editItem && <Modal title="編輯案件" onClose={() => { setModal(null); setEditItem(null); }}><DealForm deal={editItem} roles={activeRoles} onSave={updateDeal} onCancel={() => { setModal(null); setEditItem(null); }} /></Modal>}
+      {modal === "addTask" && <Modal title="新增任務" onClose={() => setModal(null)}><TaskForm deals={deals.filter((d) => !d.archived)} roles={activeRoles} onSave={addTask} onCancel={() => setModal(null)} /></Modal>}
+      {modal === "editTask" && editItem && <Modal title="編輯任務" onClose={() => { setModal(null); setEditItem(null); }}><TaskForm task={editItem} deals={deals.filter((d) => !d.archived)} roles={activeRoles} onSave={updateTask} onCancel={() => { setModal(null); setEditItem(null); }} /></Modal>}
+      {modal === "addLead" && <Modal title="新增 BD 對象" onClose={() => setModal(null)}><LeadForm roles={activeRoles} onSave={addLead} onCancel={() => setModal(null)} /></Modal>}
+      {modal === "editLead" && editItem && <Modal title="編輯 BD 對象" onClose={() => { setModal(null); setEditItem(null); }}><LeadForm lead={editItem} roles={activeRoles} onSave={updateLead} onCancel={() => { setModal(null); setEditItem(null); }} /></Modal>}
+      {modal === "addRole" && <Modal title="新增角色" onClose={() => setModal(null)}><RoleForm onSave={addRole} onCancel={() => setModal(null)} /></Modal>}
+      {modal === "editRole" && editItem && <Modal title="編輯角色" onClose={() => { setModal(null); setEditItem(null); }}><RoleForm role={editItem} onSave={updateRole} onCancel={() => { setModal(null); setEditItem(null); }} /></Modal>}
+
+      {/* Confirm Modal */}
+      {confirmAction && <ConfirmModal title={confirmAction.title} message={confirmAction.message} onConfirm={confirmAction.onConfirm} onCancel={() => setConfirmAction(null)} danger />}
+
+      {/* Undo Toast */}
+      {toast && <UndoToast message={toast.message} onUndo={() => { toast.undo(); setToast(null); }} onDismiss={() => setToast(null)} />}
+
+      {/* Command Palette */}
+      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} onAction={handleCommand} />
+
+      {/* Activity Log Sidebar */}
+      <ActivityLog log={activityLog} open={logOpen} onClose={() => setLogOpen(false)} />
+
+      {/* Footer — pushed to bottom */}
+      <div style={{ borderTop: `1px solid ${C.border}`, padding: mobile ? "14px 18px" : "18px 36px", textAlign: "center", marginTop: "auto" }}>
+        <span style={{ fontSize: 12, color: C.inkMuted }}>🏰 移動城堡指揮部 v5.3 — 規格外工作室 Beyond Spec</span>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(CastleDashboard));
+</script>
+</body>
+</html>
