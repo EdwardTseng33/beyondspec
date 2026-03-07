@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" width="480" height="120">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&amp;family=Outfit:wght@700&amp;family=Noto+Sans+TC:wght@400&amp;display=swap');
+    </style>
+  </defs>
+  <!-- Light background version -->
+  <text x="20" y="68" font-family="'Playfair Display', serif" font-weight="600" font-size="50" fill="#1A1A2E" letter-spacing="-0.5">Beyond</text>
+  <text x="248" y="68" font-family="'Outfit', sans-serif" font-weight="700" font-size="50" fill="#2D5BFF" letter-spacing="1">Spec</text>
+  <text x="20" y="100" font-family="'Noto Sans TC', sans-serif" font-weight="400" font-size="13" fill="#8888A0" letter-spacing="6">規格外工作室</text>
+</svg>
