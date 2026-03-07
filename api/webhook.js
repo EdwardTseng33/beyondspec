@@ -1,5 +1,4 @@
 import admin from "firebase-admin";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import Busboy from "busboy";
 
 // ── Vercel 設定：關閉預設 bodyParser，改由 Busboy 手動解析 multipart/form-data ──
@@ -14,8 +13,8 @@ try {
         const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
         console.log("[webhook:init] FIREBASE_PROJECT_ID:", process.env.FIREBASE_PROJECT_ID ? "SET" : "MISSING");
         console.log("[webhook:init] FIREBASE_CLIENT_EMAIL:", process.env.FIREBASE_CLIENT_EMAIL ? "SET" : "MISSING");
-        console.log("[webhook:init] FIREBASE_PRIVATE_KEY:", privateKey ? `SET (${privateKey.length} chars, starts with ${privateKey.substring(0, 20)}...)` : "MISSING");
-        console.log("[webhook:init] GEMINI_API_KEY:", process.env.GEMINI_API_KEY ? "SET" : "MISSING");
+        console.log("[webhook:init] FIREBASE_PRIVATE_KEY:", privateKey ? `SET (${privateKey.length} chars)` : "MISSING");
+        console.log("[webhook:init] ANTHROPIC_API_KEY:", process.env.ANTHROPIC_API_KEY ? "SET" : "MISSING");
         admin.initializeApp({
             credential: admin.credential.cert({
                 projectId: process.env.FIREBASE_PROJECT_ID,
@@ -30,10 +29,7 @@ try {
 }
 const db = firebaseInitError ? null : admin.firestore();
 
-// 2. 初始化 Gemini
-const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// 3. 將 multipart/form-data 請求解析為 key-value 物件
+// 2. 將 multipart/form-data 請求解析為 key-value 物件
 function parseMultipart(req) {
     return new Promise((resolve, reject) => {
         const fields = {};
@@ -45,9 +41,61 @@ function parseMultipart(req) {
     });
 }
 
+// 3. Claude AI 判讀函式
+async function analyzeWithClaude(emailText) {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "x-api-key": process.env.ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 512,
+            messages: [{
+                role: "user",
+                content: `你是一位專業的應收帳款催收助理，請分析以下客戶回信並回覆純 JSON（不加任何說明文字）：
+{
+  "risk": "low" 或 "medium" 或 "high",
+  "summary": "回信重點摘要（25字以內）",
+  "paymentCommitted": true 或 false,
+  "commitDate": "YYYY-MM-DD 或 null（若客戶有明確提到付款日期）",
+  "disputeDetected": true 或 false,
+  "suggestedAction": "建議下一步行動（30字以內，例如：確認付款日期、發送 T2 正式催告、轉法務程序）"
+}
+
+判斷原則：
+- risk=low：客戶明確承諾付款且態度配合
+- risk=medium：態度模糊、給出藉口、未明確承諾
+- risk=high：拒絕付款、提出爭議、無回應跡象、超過 30 天
+- paymentCommitted=true：信中有明確付款承諾或日期
+- disputeDetected=true：信中提到合約爭議、品質問題、拒絕承認欠款
+
+只回覆 JSON，不要加任何其他文字。
+
+客戶回信內容：
+${emailText.substring(0, 2000)}`
+            }],
+        }),
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Claude API ${response.status}: ${errText}`);
+    }
+
+    const data = await response.json();
+    const text = data.content[0].text;
+    // 提取 JSON（可能被包在 markdown code block 裡）
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Claude response has no JSON: " + text.substring(0, 200));
+    return JSON.parse(jsonMatch[0]);
+}
+
 // 4. Vercel Serverless 核心處理出口
 export default async function handler(req, res) {
-    // ── CORS（允許前端跨域診斷呼叫）──
+    // ── CORS ──
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -87,36 +135,10 @@ export default async function handler(req, res) {
         const caseId      = match[2];
         console.log(`[webhook] STEP B done. workspaceId=${workspaceId} caseId=${caseId}`);
 
-        // ── STEP C: Gemini AI 判讀 ──
-        console.log("[webhook] STEP C: Calling Gemini...");
-        const model = ai.getGenerativeModel({
-            model: "gemini-2.0-flash",
-            generationConfig: { responseMimeType: "application/json" },
-        });
-        const prompt = `你是一位專業的應收帳款催收助理，請分析以下客戶回信並回覆純 JSON（不加任何說明文字）：
-{
-  "risk": "low" 或 "medium" 或 "high",
-  "summary": "回信重點摘要（25字以內）",
-  "paymentCommitted": true 或 false,
-  "commitDate": "YYYY-MM-DD 或 null（若客戶有明確提到付款日期）",
-  "disputeDetected": true 或 false,
-  "suggestedAction": "建議下一步行動（30字以內，例如：確認付款日期、發送 T2 正式催告、轉法務程序）"
-}
-
-判斷原則：
-- risk=low：客戶明確承諾付款且態度配合
-- risk=medium：態度模糊、給出藉口、未明確承諾
-- risk=high：拒絕付款、提出爭議、無回應跡象、超過 30 天
-- paymentCommitted=true：信中有明確付款承諾或日期
-- disputeDetected=true：信中提到合約爭議、品質問題、拒絕承認欠款
-
-客戶回信內容：
-${emailText.substring(0, 2000)}`;
-        const aiResponse = await model.generateContent(prompt);
-        const aiText = aiResponse.response.text();
-        console.log("[webhook] STEP C done. Gemini raw:", aiText.substring(0, 200));
-        const aiResult = JSON.parse(aiText);
-        console.log("[webhook] STEP C parsed. risk=", aiResult.risk);
+        // ── STEP C: Claude AI 判讀 ──
+        console.log("[webhook] STEP C: Calling Claude Haiku...");
+        const aiResult = await analyzeWithClaude(emailText);
+        console.log("[webhook] STEP C done. risk=", aiResult.risk, "summary=", aiResult.summary);
 
         // ── STEP D: 讀取 Firestore arCases ──
         console.log("[webhook] STEP D: Reading Firestore...");
