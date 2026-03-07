@@ -7335,14 +7335,7 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                               <button onClick={handleAIAction} style={{ width: "100%", padding: "12px", borderRadius: 8, border: "none", background: C.accent, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T }}>
                                 {aiGenerating ? "⏳ 讀取範本引擎中..." : "✨ 展開生成 AI 草稿"}
                               </button>
-                              {/* Legal wizard shortcut for T1+ cases */}
-                              {days > sets.t1Days && (
-                                <button onClick={() => { setLegalStep(0); setLegalWizardOpen(true); }}
-                                  style={{ width: "100%", padding: "10px", borderRadius: 8, border: `1px solid ${days > sets.t2Days ? C.rose : C.gold}`, background: days > sets.t2Days ? `${C.rose}12` : `${C.gold}12`, color: days > sets.t2Days ? C.rose : C.gold, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T }}
-                                  onMouseEnter={e => e.currentTarget.style.opacity = "0.8"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                                  ⚖️ 啟動存證信函助手
-                                </button>
-                              )}
+                              {/* Legal wizard ONLY available in legal stage (方案A — 階段感設計) */}
                             </div>
                           ) : (
                             <div style={{ animation: "fadeIn .5s ease" }}>
