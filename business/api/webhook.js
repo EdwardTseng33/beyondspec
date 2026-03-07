@@ -1,7 +1,7 @@
 import admin from "firebase-admin";
 import Busboy from "busboy";
 
-// ── Vercel 設定：關閉預設 bodyParser，改由 Busboy 手動解析 multipart/form-data ──
+// ── Vercel 設定：關閉預設 bodyParser，改由 Busboy 手動解析 multipart/form-data ── // v2
 export const config = {
     api: { bodyParser: false },
 };
