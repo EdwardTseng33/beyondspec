@@ -1133,10 +1133,12 @@
       const hotDeals = active.filter(d => d.stage === "negotiation");
       const todayTasks = tasks.filter(t => !t.archived && t.status !== "done" && t.due === today());
       const contactableArs = (arCases || []).filter(c => c.status && c.status.startsWith("overdue_"));
+      const unreadReplies = (arCases || []).filter(c => c.unreadReply === true);
 
       // Generate smart brief
       const lines = [];
       if (overdueTasks.length > 0) lines.push({ icon: "🔴", text: `${overdueTasks.length} 個逾期任務需要處理`, color: C.rose });
+      if (unreadReplies.length > 0) lines.push({ icon: "🔔", text: `${unreadReplies.length} 筆應收帳款有客戶新回覆待查看（${unreadReplies.map(c => c.clientName).join("、")}）`, color: C.gold });
       if (contactableArs.length > 0) lines.push({ icon: "❗", text: `今日有 ${contactableArs.length} 筆應收帳款需聯繫（含${contactableArs[0]?.clientName}等）`, color: C.rose });
       if (todayTasks.length > 0) lines.push({ icon: "📋", text: `今天有 ${todayTasks.length} 個任務到期`, color: C.gold });
       if (hotDeals.length > 0) lines.push({ icon: "🔥", text: `${hotDeals.length} 個案件在議價階段，接近簽約！`, color: C.emerald });
@@ -4045,14 +4047,13 @@
     ];
 
     // Auto-aggregate contacts from deals, proposals, invoices, leads, partners
-    const useAggregatedContacts = (deals, proposals, invoices, leads, partners, manualContacts) => {
+    const useAggregatedContacts = (deals, proposals, invoices, leads, partners, manualContacts, arCases) => {
       return useMemo(() => {
-        const map = new Map(); // key = normalized company name or email
+        const map = new Map();
         const norm = (s) => (s || "").trim().toLowerCase();
         const merge = (key, source) => {
           if (!key) return;
-          const existing = map.get(key) || { company: "", contact: "", email: "", phone: "", address: "", tags: [], notes: "", deals: [], proposals: [], invoices: [], leads: [], sources: [], manualId: null };
-          // Merge company name (prefer longer/non-empty)
+          const existing = map.get(key) || { company: "", contact: "", email: "", phone: "", address: "", tags: [], notes: "", deals: [], proposals: [], invoices: [], leads: [], arCaseIds: [], sources: [], manualId: null };
           if (source.company && source.company.length > (existing.company || "").length) existing.company = source.company;
           if (source.contact && !existing.contact) existing.contact = source.contact;
           if (source.email && !existing.email) existing.email = source.email;
@@ -4065,32 +4066,26 @@
           if (source.src && !existing.sources.includes(source.src)) existing.sources.push(source.src);
           map.set(key, existing);
         };
-        // Deals
         deals.filter(d => !d.archived).forEach(d => {
           const key = norm(d.company) || norm(d.email);
           if (key) merge(key, { company: d.company, contact: d.contact, email: d.email, dealId: d.id, src: "deal" });
         });
-        // Proposals
         proposals.forEach(p => {
           const key = norm(p.client?.name) || norm(p.client?.email);
           if (key) merge(key, { company: p.client.name, contact: p.client.contact, email: p.client.email, address: p.client.address, proposalId: p.id, src: "proposal" });
         });
-        // Invoices
         invoices.forEach(inv => {
           const key = norm(inv.client?.name) || norm(inv.client?.email);
           if (key) merge(key, { company: inv.client.name, contact: inv.client.contact, email: inv.client.email, invoiceId: inv.id, src: "invoice" });
         });
-        // Leads
         leads.filter(l => !l.archived).forEach(l => {
           const key = norm(l.company) || norm(l.email);
           if (key) merge(key, { company: l.company, contact: l.name, email: l.email || "", leadId: l.id, src: "lead" });
         });
-        // Partners
         (partners || []).forEach(pt => {
           const key = norm(pt.company) || norm(pt.email);
           if (key) merge(key, { company: pt.company, contact: pt.contact, email: pt.email, src: "partner" });
         });
-        // Manual contacts — merge or add
         (manualContacts || []).forEach(mc => {
           const key = norm(mc.company) || norm(mc.email);
           if (key && map.has(key)) {
@@ -4102,16 +4097,65 @@
             e.manualId = mc.id;
             map.set(key, e);
           } else if (key) {
-            map.set(key, { ...mc, deals: [], proposals: [], invoices: [], leads: [], sources: ["manual"], manualId: mc.id });
+            map.set(key, { ...mc, deals: [], proposals: [], invoices: [], leads: [], arCaseIds: [], sources: ["manual"], manualId: mc.id });
           }
         });
-        // Convert to array with generated id
+        // AR Cases — link to contact by clientName / contactEmail match
+        (arCases || []).forEach(arc => {
+          const key = norm(arc.clientName) || norm(arc.contactEmail);
+          if (!key) return;
+          if (map.has(key)) {
+            const e = map.get(key);
+            if (!e.arCaseIds) e.arCaseIds = [];
+            if (!e.arCaseIds.includes(arc.id)) e.arCaseIds.push(arc.id);
+            if (!e.email && arc.contactEmail) e.email = arc.contactEmail;
+            if (!e.contact && arc.contactName) e.contact = arc.contactName;
+            if (!e.phone && arc.contactPhone) e.phone = arc.contactPhone;
+            map.set(key, e);
+          } else {
+            map.set(key, {
+              company: arc.clientName || "", contact: arc.contactName || "", email: arc.contactEmail || "",
+              phone: arc.contactPhone || "", address: "", tags: [], notes: "",
+              deals: [], proposals: [], invoices: [], leads: [], arCaseIds: [arc.id],
+              sources: ["ar"], manualId: null,
+            });
+          }
+        });
+        // Build final array with AR health score
+        const AR_RISK_ORDER = { legal: 4, overdue_t3: 3, overdue_t2: 2, overdue_t1: 1, upcoming: 0, resolved: -1 };
         let idx = 0;
-        return Array.from(map.entries()).map(([key, c]) => ({
-          ...c, _key: key, id: c.manualId || `auto_${idx++}`,
-          totalTransactions: c.deals.length + c.proposals.length + c.invoices.length,
-        })).sort((a, b) => b.totalTransactions - a.totalTransactions);
-      }, [deals, proposals, invoices, leads, partners, manualContacts]);
+        return Array.from(map.entries()).map(([key, c]) => {
+          const linkedAr = (arCases || []).filter(a => (c.arCaseIds || []).includes(a.id));
+          const activeAr = linkedAr.filter(a => a.status !== "resolved");
+          const worstStatus = activeAr.reduce((w, a) => (AR_RISK_ORDER[a.status] || 0) > (AR_RISK_ORDER[w] || 0) ? a.status : w, null);
+          // Client health: "vip" > "good" > "watch" > "risk" > "critical"
+          const paidInvoices = (invoices || []).filter(inv => {
+            const iKey = norm(inv.client?.name) || norm(inv.client?.email);
+            return iKey === key && inv.status === "paid";
+          });
+          let clientHealth;
+          if (activeAr.length === 0 && linkedAr.length === 0) {
+            clientHealth = paidInvoices.length >= 2 ? "vip" : "good";
+          } else if (worstStatus === "overdue_t1" || worstStatus === "upcoming") {
+            clientHealth = "watch";
+          } else if (worstStatus === "overdue_t2") {
+            clientHealth = "risk";
+          } else if (worstStatus === "overdue_t3" || worstStatus === "legal") {
+            clientHealth = "critical";
+          } else {
+            clientHealth = "good";
+          }
+          return {
+            ...c, _key: key, id: c.manualId || `auto_${idx++}`,
+            totalTransactions: c.deals.length + c.proposals.length + c.invoices.length,
+            arCaseIds: c.arCaseIds || [],
+            activeArCount: activeAr.length,
+            activeArAmount: activeAr.reduce((s, a) => s + (a.amount || 0), 0),
+            arWorstStatus: worstStatus,
+            clientHealth,
+          };
+        }).sort((a, b) => b.totalTransactions - a.totalTransactions);
+      }, [deals, proposals, invoices, leads, partners, manualContacts, arCases]);
     };
 
     // Contact Form (add / edit manual contact)
@@ -4192,8 +4236,17 @@
       return results;
     };
 
+    // Client health config — used in card badges and list sort
+    const CLIENT_HEALTH = {
+      vip:      { label: "優質客戶", icon: "⭐", color: "#F5A623", bg: "rgba(245,166,35,.15)" },
+      good:     { label: "付款正常", icon: "✅", color: "#34D399", bg: "rgba(52,211,153,.12)" },
+      watch:    { label: "待追蹤",   icon: "👀", color: "#22D3EE", bg: "rgba(34,211,238,.12)" },
+      risk:     { label: "逾期警示", icon: "⚠️",  color: "#FB923C", bg: "rgba(251,146,60,.15)" },
+      critical: { label: "高風險",   icon: "🚨", color: "#F472B6", bg: "rgba(244,114,182,.18)" },
+    };
+
     // Contacts View
-    const ContactsView = ({ contacts, deals, proposals, invoices, leads, manualContacts, onAddManual, onEditManual, onDeleteManual, onImportCSV, search, filter }) => {
+    const ContactsView = ({ contacts, deals, proposals, invoices, leads, manualContacts, arCases, onAddManual, onEditManual, onDeleteManual, onImportCSV, search, filter }) => {
       const [expandedId, setExpandedId] = useState(null);
       const fileRef = useRef(null);
 
@@ -4203,9 +4256,16 @@
           if (!(c.company || "").toLowerCase().includes(q) && !(c.contact || "").toLowerCase().includes(q) && !(c.email || "").toLowerCase().includes(q)) return false;
         }
         if (filter && filter !== "all") {
-          if (!c.tags?.includes(filter) && filter !== "has_deals" && filter !== "no_deals") return false;
+          // 健康度快速篩選
+          if (filter === "health_vip")      return c.clientHealth === "vip";
+          if (filter === "health_risk")     return c.clientHealth === "risk";
+          if (filter === "health_critical") return c.clientHealth === "critical";
+          if (filter === "has_ar")          return (c.activeArCount || 0) > 0;
+          // 交易量篩選
           if (filter === "has_deals" && c.totalTransactions === 0) return false;
           if (filter === "no_deals" && c.totalTransactions > 0) return false;
+          // 標籤篩選（非以上 id 才走這裡）
+          if (!["has_deals", "no_deals"].includes(filter) && !c.tags?.includes(filter)) return false;
         }
         return true;
       });
@@ -4238,8 +4298,21 @@
           const l = leads.find(x => x.id === lid);
           if (l) items.push({ type: "lead", date: l.lastTouch, title: `BD: ${l.name}`, status: l.status, icon: "🎯" });
         });
+        // AR Cases — show each active case and its latest history entry
+        (expanded.arCaseIds || []).forEach(aid => {
+          const arc = (arCases || []).find(x => x.id === aid);
+          if (!arc) return;
+          const arStatus = AR_STATUSES.find(s => s.id === arc.status);
+          const latestAction = [...(arc.history || [])].reverse()[0];
+          items.push({
+            type: "ar", date: arc.dueDate, icon: arStatus?.icon || "💰",
+            title: `催收：${arc.invoiceId || arc.clientName} — NT$ ${(arc.amount || 0).toLocaleString()}`,
+            status: arc.status, arStatus,
+            note: latestAction ? latestAction.action : "",
+          });
+        });
         return items.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-      }, [expanded, deals, proposals, invoices, leads]);
+      }, [expanded, deals, proposals, invoices, leads, arCases]);
 
       const handleCSVUpload = (e) => {
         const file = e.target.files?.[0];
@@ -4281,6 +4354,15 @@
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                             <span style={{ fontSize: 16, fontWeight: 700, color: C.ink }}>{c.company || c.email || "未命名"}</span>
+                            {/* 客戶健康度識別標籤 */}
+                            {(() => {
+                              const h = CLIENT_HEALTH[c.clientHealth || "good"];
+                              return (
+                                <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 10, color: h.color, background: h.bg, letterSpacing: 0.3, flexShrink: 0 }}>
+                                  {h.icon} {h.label}
+                                </span>
+                              );
+                            })()}
                             {c.tags?.map(tagId => {
                               const tag = CONTACT_TAGS.find(t => t.id === tagId);
                               return tag ? <Badge key={tagId} color={tag.color} bg={`${tag.color}18`} small>{tag.icon} {tag.label}</Badge> : null;
@@ -4289,6 +4371,15 @@
                           {c.contact && <div style={{ fontSize: 13, color: C.inkSoft }}>👤 {c.contact}</div>}
                           {c.email && <div style={{ fontSize: 13, color: C.inkMuted }}>{c.email}</div>}
                           {c.phone && <div style={{ fontSize: 13, color: C.inkMuted }}>📞 {c.phone}</div>}
+                          {/* 主動催收警示列 */}
+                          {c.activeArCount > 0 && (
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, padding: "3px 8px", borderRadius: 6, background: "rgba(251,146,60,.12)", border: "1px solid rgba(251,146,60,.3)" }}>
+                              <span style={{ fontSize: 12 }}>⚠️</span>
+                              <span style={{ fontSize: 12, color: "#FB923C", fontWeight: 600 }}>
+                                {c.activeArCount} 筆催收中 · NT$ {(c.activeArAmount || 0).toLocaleString()}
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <div style={{ textAlign: "right", flexShrink: 0 }}>
                           {c.totalTransactions > 0 && <div style={{ fontSize: 13, color: C.accent, fontWeight: 700 }}>{c.totalTransactions} 筆交易</div>}
@@ -5440,8 +5531,56 @@
     };
 
     // ── Version Changelog ──
-    const VERSION = "2.8";
+    const VERSION = "2.86";
     const CHANGELOG = [
+      {
+        version: "2.86", date: "2026-03-07", title: "📤 SendGrid 真實寄信整合",
+        features: [
+          { icon: "📤", text: "SendGrid Outbound API — 以 /api/send 後端端點取代 mailto: 連結，確保每封催款信都能正確設定 Reply-To 追蹤位址" },
+          { icon: "🔁", text: "Reply-To 自動追蹤 — 每封寄出的催款信都帶有 reply+wsId_caseId@reply.beyondspec.tw，客戶回信後 Webhook 即時觸發" },
+          { icon: "🟢", text: "寄送狀態 UI — 按鈕顯示「寄送中…」動態狀態；寄出成功後顯示「催款通知已寄出・AI 監聽已啟動」綠色確認卡" },
+          { icon: "⚠️", text: "錯誤回饋提示 — SendGrid 寄送失敗時，在按鈕下方顯示清晰的紅色錯誤說明，方便排查問題" },
+        ],
+        fixes: [
+          { icon: "🔧", text: "修正 Gmail 無視 mailto reply-to 參數的安全限制問題 — 改用後端寄信確保 Reply-To header 正確傳遞" },
+        ],
+      },
+      {
+        version: "2.85", date: "2026-03-07", title: "🧠 AI 來信智能判讀升級",
+        features: [
+          { icon: "🧠", text: "AI 來信判讀卡片 — 客戶回信後，Gemini 自動分析並在案件詳情頁顯示：風險等級、摘要、付款承諾偵測、爭議旗標" },
+          { icon: "💡", text: "建議下一步行動 — AI 直接給出「發 T2 催告」「確認付款日期」「轉法務」等具體行動建議，無需人工判斷" },
+          { icon: "💳", text: "付款承諾自動擷取 — 客戶信中提及付款日期時，AI 自動解析並標記承諾日期" },
+          { icon: "⚠️", text: "合約爭議偵測 — 信中出現品質異議、拒認欠款等關鍵詞時，自動觸發爭議警示標籤" },
+        ],
+        fixes: [
+          { icon: "🔧", text: "產品方向確認：外發催款信維持範本即可，AI 核心價值聚焦在「讀懂客戶來信」而非生成發送文案" },
+        ],
+      },
+      {
+        version: "2.84", date: "2026-03-07", title: "🔔 客戶回覆即時通知系統",
+        features: [
+          { icon: "🔔", text: "Nav tab 紅點 badge — 帳務催收 tab 在有未讀客戶回覆時，顯示紅色小圓點提示（桌面版 + 手機版）" },
+          { icon: "📊", text: "AR 看板「新客戶回覆」統計卡 — 有未讀回覆時出現閃爍金色卡片，顯示待查件數" },
+          { icon: "🏷️", text: "案件列表即時 badge — 有新回覆的案件名稱旁出現 🔔 新回覆 pulse 動畫標籤" },
+          { icon: "✅", text: "自動清除已讀 — 開啟案件詳情時，系統自動將 unreadReply 旗標清除，badge 同步消失" },
+          { icon: "📋", text: "晨間簡報提醒 — 有未讀回覆時，MorningBrief 自動列出「X 筆應收帳款有客戶新回覆待查看」" },
+        ],
+        fixes: [],
+      },
+      {
+        version: "2.83", date: "2026-03-07", title: "⚖️ 法務程序 UX 全面重構",
+        features: [
+          { icon: "⚖️", text: "存證信函助手二步驟流程 — Step 1 完整收集債權人/債務人資料，Step 2 預覽全文草稿後再匯出，不再一次性盲輸出" },
+          { icon: "📦", text: "律師案件包一鍵匯出 — 包含案件摘要、雙方聯絡資訊、催收歷程、存證信函草稿的完整 .txt 包裹，直接交給律師事務所" },
+          { icon: "📧", text: "直接寄送律師 — 填妥律師信箱後一鍵 mailto，自動帶入完整案件包內容" },
+          { icon: "🎯", text: "Playbook 法務路徑分流 — 進入法務階段時顯示專屬面板，與一般催款流程完全區隔" },
+          { icon: "📐", text: "RWD 表單修復 — 法務助手表單欄位與操作按鈕完整支援手機版響應式排版" },
+        ],
+        fixes: [
+          { icon: "🗑️", text: "完全移除 Mock Reply 假回信功能 — 4 處模擬測試按鈕 / 資料全數清除，避免干擾正式環境" },
+        ],
+      },
       {
         version: "2.8", date: "2026-03-07", title: "💰 帳務催收自動化矩陣",
         features: [
@@ -6414,38 +6553,155 @@
       );
     };
 
-    const ArCaseForm = ({ onSave, onCancel }) => {
-      const [local, setLocal] = useState({ clientName: "", contactName: "", contactEmail: "", contactPhone: "", invoiceId: "", amount: "", dueDate: "", status: "ar_t1_reminder", aiStage: "t1" });
+    const ArCaseForm = ({ onSave, onCancel, contacts, invoices }) => {
+      const [mode, setMode] = useState("from_invoice");
+      const [local, setLocal] = useState({
+        clientName: "", contactName: "", contactEmail: "", contactPhone: "",
+        address: "", invoiceId: "", invoiceRef: null, contactRef: null,
+        amount: "", dueDate: "", status: "upcoming", aiStage: "t1", notes: ""
+      });
+      const setL = (k, v) => setLocal(p => ({ ...p, [k]: v }));
+
+      // 從發票自動帶入
+      const handleInvoiceSelect = (invId) => {
+        const inv = (invoices || []).find(i => String(i.id) === invId);
+        if (!inv) return;
+        const subtotal = (inv.items || []).reduce((s, i) => s + (i.qty || 0) * (i.unitPrice || i.price || 0), 0);
+        const total = Math.round(subtotal * (1 + (inv.tax || 0)) * (1 - (inv.discount || 0)));
+        setLocal(p => ({
+          ...p,
+          clientName: inv.client?.name || "",
+          contactName: inv.client?.contact || "",
+          contactEmail: inv.client?.email || "",
+          invoiceId: inv.number || String(inv.id),
+          invoiceRef: inv.id,
+          amount: String(total),
+          dueDate: inv.dueDate || "",
+        }));
+      };
+
+      // 從客戶自動帶入
+      const handleContactSelect = (cid) => {
+        const c = (contacts || []).find(x => String(x.id) === cid);
+        if (!c) return;
+        setLocal(p => ({
+          ...p,
+          clientName: c.company || c.contact || "",
+          contactName: c.contact || "",
+          contactEmail: c.email || "",
+          contactPhone: c.phone || "",
+          address: c.address || "",
+          contactRef: c.id,
+        }));
+      };
 
       const saveObj = () => {
-        if (!local.clientName) {
-          alert("請填寫客戶名稱");
-          return;
-        }
+        if (!local.clientName.trim()) { alert("請填寫公司名稱"); return; }
         onSave({
           ...local,
           id: `ARC-${Date.now().toString(36)}`,
           amount: parseFloat(local.amount) || 0,
-          history: [{ date: new Date().toISOString().split("T")[0], action: "📥 案件成立", note: "手動建立催收案件" }]
+          history: [{ date: new Date().toISOString().split("T")[0], action: "📥 案件成立", note: mode === "from_invoice" ? `從發票 ${local.invoiceId} 建立` : mode === "from_contact" ? `從客戶 ${local.clientName} 建立` : "手動建立催收案件" }]
         });
       };
 
+      const unpaidInvoices = (invoices || []).filter(i => i.status !== "paid" && i.status !== "cancelled");
+      const sectionStyle = { background: C.surface, borderRadius: 10, padding: 14, border: `1px solid ${C.border}`, display: "flex", flexDirection: "column", gap: 12 };
+      const sectionLabel = { fontSize: 11, fontWeight: 700, color: C.inkMuted, letterSpacing: "0.08em", marginBottom: 2 };
+
       return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <Field label="客戶名稱"><input type="text" style={inputStyle} value={local.clientName} onChange={e => setLocal({ ...local, clientName: e.target.value })} placeholder="輸入欠款公司或聯絡人名稱" /></Field>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <Field label="聯絡窗口 (選填)"><input type="text" style={inputStyle} value={local.contactName} onChange={e => setLocal({ ...local, contactName: e.target.value })} placeholder="例如：王經理" /></Field>
-            <Field label="連絡電話 (選填)"><input type="text" style={inputStyle} value={local.contactPhone} onChange={e => setLocal({ ...local, contactPhone: e.target.value })} placeholder="例如：0912-345-678" /></Field>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* 模式選擇 */}
+          <div style={{ display: "flex", gap: 8 }}>
+            {[
+              { id: "from_invoice", label: "從發票建立", icon: "🧾" },
+              { id: "from_contact", label: "從客戶選取", icon: "👤" },
+              { id: "manual", label: "手動輸入", icon: "✏️" },
+            ].map(m => (
+              <button key={m.id} onClick={() => setMode(m.id)} style={{
+                flex: 1, padding: "8px 10px", borderRadius: 8,
+                border: `1.5px solid ${mode === m.id ? C.accent : C.border}`,
+                background: mode === m.id ? `${C.accent}18` : "transparent",
+                color: mode === m.id ? C.accent : C.inkMuted,
+                fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: T,
+              }}>{m.icon} {m.label}</button>
+            ))}
           </div>
-          <Field label="聯絡 Email (選填)"><input type="email" style={inputStyle} value={local.contactEmail} onChange={e => setLocal({ ...local, contactEmail: e.target.value })} placeholder="例如：service@example.com" /></Field>
-          <Field label="發票 / 憑證編號"><input type="text" style={inputStyle} value={local.invoiceId} onChange={e => setLocal({ ...local, invoiceId: e.target.value })} placeholder="例如：INV-2024-001" /></Field>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <Field label="應收總額"><input type="number" style={inputStyle} value={local.amount} onChange={e => setLocal({ ...local, amount: e.target.value })} placeholder="0" min="0" /></Field>
-            <Field label="原始約定付款日"><input type="date" style={inputStyle} value={local.dueDate} onChange={e => setLocal({ ...local, dueDate: e.target.value })} /></Field>
+
+          {/* 發票選擇器 */}
+          {mode === "from_invoice" && (
+            <div style={sectionStyle}>
+              <div style={sectionLabel}>選擇未收款發票</div>
+              {unpaidInvoices.length === 0
+                ? <div style={{ fontSize: 13, color: C.inkMuted, textAlign: "center", padding: "8px 0" }}>目前沒有未收款發票，請改用手動輸入</div>
+                : <select style={{ ...inputStyle, background: C.bg }} defaultValue="" onChange={e => handleInvoiceSelect(e.target.value)}>
+                    <option value="" disabled>— 請選擇發票 —</option>
+                    {unpaidInvoices.map(inv => {
+                      const total = (inv.items || []).reduce((s, i) => s + (i.qty || 0) * (i.unitPrice || 0), 0) * (1 + (inv.tax || 0));
+                      return <option key={inv.id} value={inv.id}>{inv.number} · {inv.client?.name} · NT$ {Math.round(total).toLocaleString()}</option>;
+                    })}
+                  </select>
+              }
+            </div>
+          )}
+
+          {/* 客戶選擇器 */}
+          {mode === "from_contact" && (
+            <div style={sectionStyle}>
+              <div style={sectionLabel}>選擇客戶</div>
+              {(contacts || []).length === 0
+                ? <div style={{ fontSize: 13, color: C.inkMuted, textAlign: "center", padding: "8px 0" }}>目前沒有客戶資料，請改用手動輸入</div>
+                : <select style={{ ...inputStyle, background: C.bg }} defaultValue="" onChange={e => handleContactSelect(e.target.value)}>
+                    <option value="" disabled>— 請選擇客戶 —</option>
+                    {(contacts || []).map(c => (
+                      <option key={c.id} value={c.id}>{c.company || c.contact}{c.email ? ` · ${c.email}` : ""}</option>
+                    ))}
+                  </select>
+              }
+            </div>
+          )}
+
+          {/* 客戶資訊區塊 — 對齊 ContactForm 欄位 */}
+          <div style={sectionStyle}>
+            <div style={sectionLabel}>客戶資訊</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <Field label="公司名稱 *">
+                <input type="text" style={inputStyle} value={local.clientName} onChange={e => setL("clientName", e.target.value)} placeholder="欠款公司名稱" />
+              </Field>
+              <Field label="聯絡人">
+                <input type="text" style={inputStyle} value={local.contactName} onChange={e => setL("contactName", e.target.value)} placeholder="姓名" />
+              </Field>
+              <Field label="Email">
+                <input type="email" style={inputStyle} value={local.contactEmail} onChange={e => setL("contactEmail", e.target.value)} placeholder="email@example.com" />
+              </Field>
+              <Field label="電話">
+                <input type="text" style={inputStyle} value={local.contactPhone} onChange={e => setL("contactPhone", e.target.value)} placeholder="02-xxxx-xxxx" />
+              </Field>
+            </div>
           </div>
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
+
+          {/* 帳款資訊 */}
+          <div style={sectionStyle}>
+            <div style={sectionLabel}>帳款資訊</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <Field label="發票 / 憑證編號">
+                <input type="text" style={inputStyle} value={local.invoiceId} onChange={e => setL("invoiceId", e.target.value)} placeholder="INV-2026-001" />
+              </Field>
+              <Field label="應收總額 (NT$)">
+                <input type="number" style={inputStyle} value={local.amount} onChange={e => setL("amount", e.target.value)} placeholder="0" min="0" />
+              </Field>
+              <Field label="原始約定付款日">
+                <input type="date" style={inputStyle} value={local.dueDate} onChange={e => setL("dueDate", e.target.value)} />
+              </Field>
+              <Field label="備註">
+                <input type="text" style={inputStyle} value={local.notes || ""} onChange={e => setL("notes", e.target.value)} placeholder="補充說明..." />
+              </Field>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 4 }}>
             <Btn variant="ghost" onClick={onCancel}>取消</Btn>
-            <Btn onClick={saveObj}>建立案件</Btn>
+            <Btn color={C.rose} onClick={saveObj}>建立催收案件</Btn>
           </div>
         </div>
       );
@@ -6470,6 +6726,7 @@
 
       const totalAmount = (arCases || []).reduce((sum, c) => sum + (c.status !== "resolved" ? (c.amount || 0) : 0), 0);
       const overdueAmount = (arCases || []).reduce((sum, c) => sum + (c.status && c.status.startsWith("overdue_") ? (c.amount || 0) : 0), 0);
+      const unreadReplyCount = (arCases || []).filter(c => c.unreadReply === true).length;
 
       const dynamicAI = (c) => {
         const days = Math.floor((new Date() - new Date(c.dueDate)) / (1000 * 60 * 60 * 24));
@@ -6498,6 +6755,16 @@
                   <div style={{ fontSize: 12, color: C.inkSoft }}>共 {(arCases || []).filter(c => c.status && c.status.startsWith("overdue_")).length} 筆</div>
                 </div>
               </div>
+              {unreadReplyCount > 0 && (
+                <div className="castle-pulse" style={{ background: C.card, borderRadius: 12, border: `2px solid ${C.gold}60`, padding: "16px 20px", position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${C.gold}00, ${C.gold}80, ${C.gold}00)` }} />
+                  <div style={{ fontSize: 13, color: C.gold, fontWeight: 600, letterSpacing: 1 }}>🔔 新客戶回覆</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: C.ink, marginTop: 4 }}>{unreadReplyCount}</div>
+                    <div style={{ fontSize: 12, color: C.inkSoft }}>件待查看</div>
+                  </div>
+                </div>
+              )}
             </div>
             <button onClick={onSettings} style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: "transparent", color: C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: T, display: "flex", alignItems: "center", gap: 6 }} onMouseEnter={(e) => { e.target.style.background = C.surface; e.target.style.color = C.ink; }} onMouseLeave={(e) => { e.target.style.background = "transparent"; e.target.style.color = C.inkMuted; }}>
               ⚙️ 催收規則設定
@@ -6527,7 +6794,14 @@
                       onMouseEnter={(e) => e.currentTarget.style.background = C.surface}
                       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>{c.clientName}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, display: "flex", alignItems: "center", gap: 6 }}>
+                          {c.clientName}
+                          {c.unreadReply && (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 700, color: C.gold, background: `${C.gold}18`, border: `1px solid ${C.gold}40`, borderRadius: 6, padding: "2px 6px", animation: "pulseGlow 2s ease-in-out infinite" }}>
+                              🔔 新回覆
+                            </span>
+                          )}
+                        </div>
                         <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 4 }}>發票: {c.invoiceId}</div>
                       </div>
                       <div style={{ fontSize: 14, fontWeight: 600, color: C.ink }}>NT$ {(c.amount || 0).toLocaleString()}</div>
@@ -6560,16 +6834,32 @@
       );
     };
 
-    const ArDetailDrawer = ({ arCase, companyProfile, arSettings, emailTemplates, onClose, onUpdate, addLog, onSettings }) => {
+    // 催收階段對應的 Playbook 行動策略
+    const PLAYBOOK_STAGE = {
+      upcoming:   { title: "T0 預防提醒",  color: "#22D3EE", desc: "發票即將到期，主動友善提醒，防患未然。",           advice: "語氣：輕鬆友善，保護客戶關係" },
+      overdue_t1: { title: "T1 溫和催收",  color: "#F5A623", desc: "逾期初期，以體諒語氣追蹤付款狀況。",             advice: "語氣：體諒理解，詢問是否有困難" },
+      overdue_t2: { title: "T2 積極跟進",  color: "#FB923C", desc: "逾期超過 2 週，明確要求付款時程與書面承諾。",     advice: "語氣：堅定明確，要求具體還款日" },
+      overdue_t3: { title: "T3 最後通牒",  color: "#F87171", desc: "逾期逾 1 個月，正式書面催告，預告法律行動。",    advice: "語氣：嚴正正式，說明後續法律後果" },
+      legal:      { title: "⚖️ 法務程序",  color: "#A78BFA", desc: "進入法律追討，請配合存證信函或小額訴訟程序。",   advice: "行動：使用下方法務助手產生存證信函" },
+      resolved:   { title: "✅ 已結案",    color: "#34D399", desc: "帳款已收回，案件圓滿結束。",                     advice: "案件已結案，無需發送催款通知" },
+    };
+
+    const ArDetailDrawer = ({ arCase, companyProfile, arSettings, emailTemplates, onClose, onUpdate, addLog, onSettings, workspaceId }) => {
       const [aiGenerating, setAiGenerating] = useState(false);
       const [generatedDraft, setGeneratedDraft] = useState(null);
       const [emailTemplate, setEmailTemplate] = useState("direct");
       const [pbChannels, setPbChannels] = useState({ email: true });
       const [pbRunning, setPbRunning] = useState(false);
-      const [mockReplyOpen, setMockReplyOpen] = useState(false);
-      const [mockReplyText, setMockReplyText] = useState("");
-      const [mockAnalyzing, setMockAnalyzing] = useState(false);
+      const [pbSent, setPbSent] = useState(false);
+      const [pbError, setPbError] = useState(null);
       const { mobile } = useWindowSize();
+
+      // 開啟 drawer 時自動清除「新回覆」未讀旗標
+      useEffect(() => {
+        if (arCase?.unreadReply) {
+          onUpdate?.(arCase.id, { unreadReply: false });
+        }
+      }, [arCase?.id]);
 
       if (!arCase) return null;
       const sObj = AR_STATUSES.find(s => s.id === arCase.status);
@@ -6601,54 +6891,58 @@
         }, 1200);
       };
 
-      const handleMockReplySubmit = () => {
-        if (!mockReplyText.trim()) return;
-        setMockAnalyzing(true);
-        setTimeout(() => {
-          setMockAnalyzing(false);
-          const txt = mockReplyText;
-          const isPositive = /下週|匯款|對帳|馬上|抱歉|確認|這幾天/i.test(txt);
-          const aiAction = isPositive ? "語意研判客戶具備還款誠意與具體時程。AI 建議：暫緩催收，設定於承諾時間點後追蹤入帳情形。" : "語意研判客戶試圖拖延或閃避確切還款日。AI 建議：切換至強硬態勢，準備進入法務通牒階段。";
-          const newStatus = isPositive ? "low" : "high";
 
-          onUpdate(arCase.id, {
-            mockRisk: newStatus,
-            history: [...(arCase.history || []), {
-              date: new Date().toISOString().split("T")[0],
-              action: `📩 收到客戶聯絡人回覆 (${isPositive ? '正面承諾' : '負面拖延'})`,
-              note: `客戶回信：「${txt}」\n\n👉 AI 策略判定：${aiAction}`
-            }]
-          });
-          addLog?.("📩", "AI 回信解析", `已分析客戶語意並更新應對策略`, isPositive ? C.emerald : C.rose);
-          setMockReplyOpen(false);
-          setMockReplyText("");
-        }, 1500);
-      };
-
-      const handleStartPlaybook = () => {
+      const handleStartPlaybook = async () => {
+        if (!generatedDraft) { alert("請先在上方生成 AI 草稿！"); return; }
+        if (!arCase.contactEmail) { alert("此案件尚未填寫聯絡 Email，無法寄送。"); return; }
         setPbRunning(true);
-        setTimeout(() => {
-          setPbRunning(false);
-          const activeChannels = Object.entries(pbChannels).filter(([_, v]) => v).map(([k]) => k.toUpperCase()).join("、");
-          if (!activeChannels) {
-            alert("請至少選擇一個推送管道！");
-            return;
+        setPbError(null);
+        const _wsId = workspaceId || "default";
+        const subject = `【帳務通知】關於 ${arCase.invoiceId || arCase.clientName} 溝通事宜`;
+        try {
+          const res = await fetch("/api/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to: arCase.contactEmail,
+              subject,
+              body: generatedDraft,
+              workspaceId: _wsId,
+              caseId: String(arCase.id),
+              fromName: companyProfile?.name || "帳務催收中心",
+            }),
+          });
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail ? JSON.stringify(errData.detail) : `HTTP ${res.status}`);
           }
+          const data = await res.json();
+          setPbRunning(false);
+          setPbSent(true);
           onUpdate(arCase.id, {
             history: [...(arCase.history || []), {
               date: new Date().toISOString().split("T")[0],
-              action: `🚀 觸發自動化劇本寄送`,
-              note: `已透過 ${activeChannels} 同步發送催款訊息，AI 將自動追蹤讀取狀態。`
-            }]
+              action: `📧 催款通知已寄出 (Email)`,
+              note: `SendGrid 寄出成功。AI 回覆監聽啟動，追蹤位址：${data.replyTo}`,
+            }],
           });
-          addLog?.("🚀", "全通路觸發", `為 ${arCase.clientName} 啟動自動化劇本`, C.accent);
-        }, 1500);
+          addLog?.("📧", "催款通知", `為 ${arCase.clientName} 發出催款信，AI 監聽啟動`, C.accent);
+        } catch (err) {
+          setPbRunning(false);
+          setPbError(err.message || "寄送失敗，請稍後再試");
+        }
       };
 
       const [legalWizardOpen, setLegalWizardOpen] = useState(false);
+      const [legalStep, setLegalStep] = useState(0); // 0=資料填寫, 1=預覽草稿
       const [legalForm, setLegalForm] = useState({
         senderAddress: companyProfile?.address || "",
+        senderRepresentative: companyProfile?.representativeName || "",
+        bankAccount: companyProfile?.bankAccount || "",
         recipientAddress: "",
+        debtorRepresentative: "",
+        debtorId: "",
+        contractRef: arCase?.contractRef || "",
         penalty: "",
         extraNotes: ""
       });
@@ -6659,52 +6953,164 @@
           .map(h => `- ${h.date}: ${h.action} ${h.note ? `(${h.note})` : ""}`)
           .join("\n");
         const sender = companyProfile?.name || "本公司";
+        const senderRep = legalForm.senderRepresentative ? `（代表人：${legalForm.senderRepresentative}）` : "";
+        const debtorRep = legalForm.debtorRepresentative ? `（負責人：${legalForm.debtorRepresentative}）` : "";
+        const debtorIdLine = legalForm.debtorId ? `統一編號/身分證：${legalForm.debtorId}` : "";
+        const contractLine = legalForm.contractRef ? `合約/訂單編號：${legalForm.contractRef}` : "";
+        const bankLine = legalForm.bankAccount ? `\n請匯款至：${legalForm.bankAccount}` : "";
+        const overdueDays = arCase.dueDate
+          ? Math.floor((new Date() - new Date(arCase.dueDate)) / 86400000)
+          : 0;
 
-        let content = `存證信函草稿 (供律師事務所參考)\n\n寄件人：${sender}\n收件人：${arCase.clientName}\n\n主旨：催告清償借款新臺幣 ${(arCase.amount || 0).toLocaleString()} 元整，請查照。\n\n說明：\n一、 台端向本公司購買服務/商品，依約應給付新臺幣 ${(arCase.amount || 0).toLocaleString()} 元整，原約定付款日為 ${arCase.dueDate}。有電子發票（號碼：${arCase.invoiceId}）為憑。\n二、 然迄今已逾約定還款期限，台端仍未依約清償，經本公司多次催討，台端均未予置理，顯已違約在先。`;
+        let itemNum = 3;
+        let content =
+`============================================================
+存 證 信 函 草 稿
+（供律師事務所審閱修潤後正式發文）
+============================================================
+
+寄件人：${sender}${senderRep}
+地  址：${legalForm.senderAddress || "（請填入公司地址）"}
+
+收件人：${arCase.clientName}${debtorRep}
+地  址：${legalForm.recipientAddress || "（請填入債務人地址）"}
+${debtorIdLine ? debtorIdLine + "\n" : ""}
+發文日期：中華民國 ${todayStr}
+
+------------------------------------------------------------
+主  旨：催告台端清償積欠款項新臺幣 ${(arCase.amount || 0).toLocaleString()} 元整，請台端於期限內清償，否則本公司將依法追訴。
+
+說  明：
+一、 台端（${arCase.clientName}）與本公司（${sender}）因買賣/服務契約，台端應給付本公司新臺幣 ${(arCase.amount || 0).toLocaleString()} 元整，有發票號碼：${arCase.invoiceId}${contractLine ? "、" + contractLine : ""}為憑，約定付款日為 ${arCase.dueDate}。
+
+二、 然迄今已逾約定付款期限 ${overdueDays > 0 ? overdueDays + " 天" : "數日"}，台端仍未依約清償，本公司已多次以書面、電子郵件催討（詳如後附歷程紀錄），台端均未予置理，顯已違約在先。`;
 
         if (legalForm.penalty) {
-          content += `\n三、 依雙方合約約定，台端另應給付違約金：${legalForm.penalty}。`;
-          content += `\n四、 茲依民法相關規定，特此催告台端於本信函送達之日起七日內，將前述款項及違約金，一併匯入本公司指定帳戶。`;
-        } else {
-          content += `\n三、 茲依民法相關規定，特此催告台端於本信函送達之日起七日內，將前述款項新臺幣 ${(arCase.amount || 0).toLocaleString()} 元整，一併匯入本公司指定帳戶。`;
+          content += `\n\n${itemNum++}、 依雙方合約約定，台端另應給付違約金：${legalForm.penalty}。`;
         }
 
-        content += `\n${legalForm.penalty ? "五" : "四"}、 若台端未於前述期限內履行清償義務，本公司將不再另行通知，逕行依法提起民事訴訟，請求返還本金及遲延利息，屆時訴訟所生之費用，亦將一併由台端負擔，請台端切勿自誤。`;
+        content += `\n\n${itemNum++}、 茲依民法第 229 條、第 233 條等相關規定，特此以本存證信函催告台端，於本函送達之日起 七（7）日內，將前述全部款項一次性清償完畢。${bankLine}`;
+
+        content += `\n\n${itemNum}、 若台端未於前述期限內履行清償義務，本公司將不再另行通知，逕行依法向管轄法院提起民事訴訟，請求返還本金及遲延利息，訴訟所生費用亦將一併請求由台端負擔，請台端切勿自誤。`;
 
         if (legalForm.extraNotes) {
-          content += `\n\n【補充說明】\n${legalForm.extraNotes}`;
+          content += `\n\n------------------------------------------------------------\n【補充聲明 / 特殊約定事項】\n${legalForm.extraNotes}`;
         }
 
-        content += `\n\n【歷程紀錄參考】\n${historyText}\n\n此致\n${arCase.clientName}\n\n中華民國 ${todayStr}\n`;
+        content += `\n\n------------------------------------------------------------\n【催收歷程紀錄】（供律師參考）\n${historyText}`;
+
+        content += `\n\n============================================================\n此致\n${arCase.clientName} 台鑒\n\n${sender}\n代表人：${legalForm.senderRepresentative || "___________"}\n中華民國 ${todayStr}\n============================================================\n\n※ 本草稿由 Beyond Business 系統自動整合案件資料生成，\n   請律師事務所審閱後依法發文，本草稿不具正式法律效力。\n`;
         return content;
       };
 
-      const handleExportLegalLetter = () => {
-        const content = generateLegalDraft();
+      const generateCasePackage = () => {
+        const draft = generateLegalDraft();
+        const historyText = (arCase.history || [])
+          .map(h => `[${h.date}] ${h.action}${h.note ? " ── " + h.note : ""}`)
+          .join("\n");
+        const overdueDays = arCase.dueDate
+          ? Math.floor((new Date() - new Date(arCase.dueDate)) / 86400000)
+          : 0;
+        const riskLabel = arCase.mockRisk === "low" ? "善意低風險" : arCase.mockRisk === "medium" ? "態度模糊" : "高風險拖延";
 
-        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        return `================================================================
+逾期帳款催收案件完整移交包
+（供律師事務所建案用）
+系統：Beyond Business AR Module
+匯出時間：${new Date().toLocaleString("zh-TW")}
+================================================================
+
+【一、案件基本資訊】
+債務人：${arCase.clientName}
+發票號碼：${arCase.invoiceId}
+應收金額：NT$ ${(arCase.amount || 0).toLocaleString()}
+約定付款日：${arCase.dueDate}
+目前逾期天數：${overdueDays > 0 ? overdueDays + " 天" : "未逾期"}
+AI 風險評估：${riskLabel}
+最後回覆日：${arCase.lastReplyAt || "無回覆記錄"}
+
+【二、聯絡窗口】
+主要聯絡人：${arCase.contactName || "未提供"}
+聯絡電話：${arCase.contactPhone || "未提供"}
+聯絡 Email：${arCase.contactEmail || "未提供"}
+
+【三、完整催收歷程】
+${historyText}
+
+【四、債權人（本公司）資訊】
+公司名稱：${companyProfile?.name || "未提供"}
+公司地址：${legalForm.senderAddress || "未提供"}
+代表人：${legalForm.senderRepresentative || "未提供"}
+收款帳戶：${legalForm.bankAccount || "未提供"}
+
+【五、債務人補充資訊】
+登記地址：${legalForm.recipientAddress || "未提供"}
+負責人姓名：${legalForm.debtorRepresentative || "未提供"}
+統一編號/身分證：${legalForm.debtorId || "未提供"}
+合約/訂單編號：${legalForm.contractRef || "未提供"}
+
+================================================================
+【六、存證信函草稿全文】
+================================================================
+
+${draft}`;
+      };
+
+      const handleExportLegalLetter = (type = "draft") => {
+        const content = type === "package" ? generateCasePackage() : generateLegalDraft();
+        const filename = type === "package"
+          ? `律師案件包_${arCase.clientName}_${new Date().toISOString().split("T")[0]}.txt`
+          : `存證信函草稿_${arCase.clientName}.txt`;
+        const blob = new Blob(["\uFEFF" + content], { type: "text/plain;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `存證信函草稿_${arCase.clientName}.txt`;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        addLog?.("📥", "存證信函匯出", `為 ${arCase.clientName} 產出草稿`, C.violet);
+        onUpdate?.(arCase.id, {
+          history: [...(arCase.history || []), {
+            date: new Date().toISOString().split("T")[0],
+            action: type === "package" ? "📦 律師案件包已匯出" : "📥 存證信函草稿已匯出",
+            note: `檔名：${filename}`
+          }]
+        });
+        addLog?.("📥", type === "package" ? "律師案件包匯出" : "存證信函匯出", `為 ${arCase.clientName} 產出${type === "package" ? "完整案件包" : "草稿"}`, C.violet);
         setLegalWizardOpen(false);
+        setLegalStep(0);
       };
 
       const handleEmailLawFirm = () => {
-        const draft = generateLegalDraft();
-        const historyText = (arCase.history || [])
-          .map(h => `- ${h.date}: ${h.action} ${h.note ? `(${h.note})` : ""}`)
-          .join("\n");
-        const body = `律師 您好，\n\n這是一筆我們公司系統自動整理的逾期帳款案件，因為客戶屢催不繳，希望委託貴所協助發出存證信函並進行後續法務程序。\n\n【案件摘要】\n債務人：${arCase.clientName}\n欠款金額：NT$ ${(arCase.amount || 0).toLocaleString()}\n發票號碼：${arCase.invoiceId}\n約定付款日：${arCase.dueDate}\n\n【雙方往來歷程紀錄】\n${historyText}\n\n【其他補充約定事項】\n${legalForm.extraNotes || "無"}\n\n------------------------------\n以下為系統擷取上述資訊之存證信函初稿，供貴所潤飾與發文參考：\n\n${draft}`;
+        const content = generateCasePackage();
         const subject = `【法務委託】逾期帳款催收案件 - 債務人：${arCase.clientName}`;
-        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        const emailBody = `律師 您好，
+
+這是我們公司透過 Beyond Business 系統整理的逾期帳款案件，債務人屢催不繳，懇請委託貴所協助發出正式存證信函並進行後續法務程序。
+
+案件詳情與存證信函草稿請見附件（請將下方文字複製另存為 .txt 後附上）。
+
+---
+【案件快覽】
+債務人：${arCase.clientName}
+欠款金額：NT$ ${(arCase.amount || 0).toLocaleString()}
+發票號碼：${arCase.invoiceId}
+約定付款日：${arCase.dueDate}
+---
+
+${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請見匯出之 .txt 附件）" : ""}`;
+        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+        onUpdate?.(arCase.id, {
+          history: [...(arCase.history || []), {
+            date: new Date().toISOString().split("T")[0],
+            action: "📧 案件已寄送律師",
+            note: `寄送法務委託信至律師事務所`
+          }]
+        });
         addLog?.("📧", "寄送案件予律師", `將 ${arCase.clientName} 案件打包發送`, C.gold);
         setLegalWizardOpen(false);
+        setLegalStep(0);
       };
 
       return (
@@ -6741,7 +7147,7 @@
               </div>
 
               {/* Contact Information Box */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 24 }}>
+              <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr 1fr" : "1fr 1fr 1fr", gap: 12, marginBottom: 24 }}>
                 <div style={{ background: C.surface, padding: "12px 16px", borderRadius: 12, border: `1px solid ${C.border}` }}>
                   <div style={{ fontSize: 11, color: C.inkSoft, marginBottom: 4 }}>主聯絡窗口</div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: arCase.contactName ? C.ink : C.inkMuted }}>{arCase.contactName || "未提供"}</div>
@@ -6755,6 +7161,56 @@
                   <div style={{ fontSize: 13, fontWeight: 600, color: arCase.contactEmail ? C.ink : C.inkMuted }}>{arCase.contactEmail || "未提供"}</div>
                 </div>
               </div>
+
+              {/* AI 來信判讀卡：有收到客戶回信且 Gemini 已分析時顯示 */}
+              {arCase.aiSummary && (
+                <div style={{ background: C.card, border: `1.5px solid ${arCase.mockRisk === "high" ? C.rose : arCase.mockRisk === "medium" ? C.gold : C.emerald}40`, borderRadius: 14, padding: 18, marginBottom: 18, animation: "fadeIn 0.4s ease" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 16 }}>🧠</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>AI 來信判讀</span>
+                      <span style={{ fontSize: 11, color: C.inkMuted }}>{arCase.lastReplyAt}</span>
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 8px", borderRadius: 6,
+                      color: arCase.mockRisk === "high" ? C.rose : arCase.mockRisk === "medium" ? C.gold : C.emerald,
+                      background: arCase.mockRisk === "high" ? `${C.rose}15` : arCase.mockRisk === "medium" ? `${C.gold}15` : `${C.emerald}15` }}>
+                      {arCase.mockRisk === "high" ? "🚨 高風險" : arCase.mockRisk === "medium" ? "⚠️ 態度模糊" : "✅ 善意回覆"}
+                    </span>
+                  </div>
+
+                  {/* 摘要 */}
+                  <div style={{ fontSize: 13, color: C.inkSoft, marginBottom: 10, padding: "8px 12px", background: C.surface, borderRadius: 8, lineHeight: 1.6 }}>
+                    「{arCase.aiSummary}」
+                  </div>
+
+                  {/* 結構化標籤 */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                    {arCase.aiPaymentCommitted && (
+                      <span style={{ fontSize: 12, padding: "3px 8px", borderRadius: 6, background: `${C.emerald}15`, color: C.emerald, fontWeight: 600 }}>
+                        💳 承諾付款{arCase.aiCommitDate ? `（${arCase.aiCommitDate}）` : ""}
+                      </span>
+                    )}
+                    {arCase.aiDisputeDetected && (
+                      <span style={{ fontSize: 12, padding: "3px 8px", borderRadius: 6, background: `${C.rose}15`, color: C.rose, fontWeight: 600 }}>
+                        ⚠️ 偵測到爭議
+                      </span>
+                    )}
+                    {!arCase.aiPaymentCommitted && !arCase.aiDisputeDetected && (
+                      <span style={{ fontSize: 12, padding: "3px 8px", borderRadius: 6, background: `${C.gold}15`, color: C.gold, fontWeight: 600 }}>
+                        🔍 無明確承諾
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 建議行動 */}
+                  {arCase.aiSuggestedAction && (
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "8px 12px", background: `${C.accent}10`, border: `1px solid ${C.accent}30`, borderRadius: 8 }}>
+                      <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>💡</span>
+                      <span style={{ fontSize: 13, color: C.accent, fontWeight: 600 }}>{arCase.aiSuggestedAction}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* AI Assistant Box */}
               <div style={{ background: `linear-gradient(135deg, ${C.surface}, ${C.bg})`, border: `2px solid ${C.accent}40`, borderRadius: 16, padding: 20, marginBottom: 24, position: "relative", overflow: "hidden" }}>
@@ -6772,8 +7228,9 @@
                         : days > sets.t1Days ? { level: "medium", text: "🟡 中度風險，強烈警告階段" }
                           : { level: "low", text: "🟢 良好可控，維持溫和提醒" };
 
-                      if (arCase.mockRisk === "low") aiRisk = { level: "low", text: "🟢 AI 動態策略：客戶回應良好，暫緩行動" };
-                      if (arCase.mockRisk === "high") aiRisk = { level: "high", text: "🔴 AI 動態策略：客戶閃避推託，強烈建議法務升級" };
+                      if (arCase.mockRisk === "low")    aiRisk = { level: "low",    text: "🟢 AI 來信判讀：客戶回應良好，暫緩行動" };
+                      if (arCase.mockRisk === "medium") aiRisk = { level: "medium", text: "🟡 AI 來信判讀：態度模糊，建議再次跟進確認" };
+                      if (arCase.mockRisk === "high")   aiRisk = { level: "high",   text: "🔴 AI 來信判讀：客戶閃避推託，強烈建議法務升級" };
 
                       return (
                         <strong style={{ color: aiRisk.level === "high" ? C.rose : aiRisk.level === "medium" ? C.gold : C.emerald, fontSize: 14, background: aiRisk.level === "high" ? `${C.rose}15` : aiRisk.level === "medium" ? `${C.gold}15` : `${C.emerald}15`, padding: "4px 8px", borderRadius: 6, display: "inline-block", transition: T }}>
@@ -6803,10 +7260,10 @@
                       if (days > sets.t1Days) {
                         const isHigh = days > sets.t2Days;
                         return (
-                          <button onClick={() => setLegalWizardOpen(true)} style={{ width: "100%", padding: "12px", borderRadius: 8, border: `1px solid ${isHigh ? C.rose : C.gold}`, background: isHigh ? `${C.rose}15` : `${C.gold}15`, color: isHigh ? C.rose : C.gold, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T, animation: "fadeIn 0.5s ease" }}
+                          <button onClick={() => { setLegalStep(0); setLegalWizardOpen(true); }} style={{ width: "100%", padding: "12px", borderRadius: 8, border: `1px solid ${isHigh ? C.rose : C.gold}`, background: isHigh ? `${C.rose}15` : `${C.gold}15`, color: isHigh ? C.rose : C.gold, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T, animation: "fadeIn 0.5s ease" }}
                             onMouseEnter={(e) => e.currentTarget.style.background = isHigh ? `${C.rose}25` : `${C.gold}25`} onMouseLeave={(e) => e.currentTarget.style.background = isHigh ? `${C.rose}15` : `${C.gold}15`}
                           >
-                            ⚖️ 啟動合規存證信函精靈
+                            ⚖️ 啟動存證信函助手・律師案件包
                           </button>
                         );
                       }
@@ -6820,55 +7277,141 @@
                       style={{ width: "100%", height: 200, padding: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit" }} />
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
                       <button onClick={() => { navigator.clipboard?.writeText(generatedDraft); alert("已複製信件內容！"); }} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: C.emerald, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>📋 複製草稿</button>
-                      <button onClick={() => {
-                        const subject = encodeURIComponent(`【帳務通知】關於 ${arCase.invoiceId} 溝通事宜`);
-                        const body = encodeURIComponent(generatedDraft);
-                        // SaaS Tracking: Inject the case ID into the Reply-To address
-                        // Format: reply+TENANTID_CASEID@reply.beyondspec.tw (Assuming Tenant=TA001 for now)
-                        const replyTo = encodeURIComponent(`reply+TA001_${arCase.id}@reply.beyondspec.tw`);
-                        window.location.href = `mailto:?subject=${subject}&body=${body}&reply-to=${replyTo}`;
-                      }} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.accent}`, background: `${C.accent}15`, color: C.accent, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>📧 於信箱直接開啟</button>
                       <button onClick={() => setGeneratedDraft(null)} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 13, cursor: "pointer" }}>↺ 重新生成</button>
+                      <div style={{ width: "100%", fontSize: 12, color: C.inkMuted, marginTop: 2 }}>✏️ 可直接編輯草稿後，至下方「催款行動方案」確認寄出</div>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Playbook Automation Box */}
-              <div style={{ background: C.surface, borderRadius: 16, padding: "20px 24px", marginBottom: 24, border: `1px solid ${C.border}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 22 }}>🚀</span>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>全通路自動化劇本 (Playbook)</div>
-                      <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 4 }}>勾選管道後將同步發送上方編輯好的文案。系統將自動即時監聽客戶回覆 (基於 Webhook API)。</div>
+              {/* Playbook — Stage-aware Action Hub */}
+              {(() => {
+                const stage = PLAYBOOK_STAGE[arCase.status] || PLAYBOOK_STAGE.upcoming;
+                const canSend = !!generatedDraft && pbChannels.email && arCase.status !== "resolved";
+                return (
+                  <div style={{ background: C.surface, borderRadius: 16, padding: "20px 24px", marginBottom: 24, border: `1px solid ${C.border}` }}>
+                    {/* Header */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                      <span style={{ fontSize: 20 }}>📬</span>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>催款行動方案</div>
+                        <div style={{ fontSize: 12, color: C.inkSoft }}>根據催收階段推薦最佳行動・發出後自動監聽客戶回覆</div>
+                      </div>
                     </div>
+
+                    {/* Stage recommendation strip */}
+                    <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 14px", borderRadius: 10, background: `${stage.color}12`, border: `1.5px solid ${stage.color}45`, marginBottom: 14 }}>
+                      <div style={{ width: 4, borderRadius: 2, background: stage.color, alignSelf: "stretch", flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: stage.color, marginBottom: 2 }}>{stage.title}</div>
+                        <div style={{ fontSize: 12, color: C.inkSoft }}>{stage.desc}</div>
+                        <div style={{ fontSize: 11, color: C.inkMuted, marginTop: 3 }}>💡 {stage.advice}</div>
+                      </div>
+                    </div>
+
+                    {/* ── Legal Stage: 法務程序專屬 CTA ── */}
+                    {arCase.status === "legal" ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        <div style={{ display: "flex", gap: 12, alignItems: "center", padding: "14px 16px", borderRadius: 10, background: `${C.violet}10`, border: `1.5px solid ${C.violet}40` }}>
+                          <span style={{ fontSize: 28 }}>⚖️</span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: C.violet }}>進入法務程序模式</div>
+                            <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 3 }}>系統將協助你整理存證信函所需資料，並產出律師事務所可直接使用的完整案件包。</div>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          <div style={{ fontSize: 11, color: C.inkMuted, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", padding: "0 2px" }}>流程說明</div>
+                          {["① 點擊下方按鈕，開啟存證信函助手", "② 補充債務人地址、代表人等資訊", "③ 預覽草稿確認後，一鍵匯出律師案件包（.txt）", "④ 可選擇直接用信箱寄送至律師事務所"].map((step, i) => (
+                            <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0" }}>
+                              <div style={{ fontSize: 12, color: C.violet, fontWeight: 600, flexShrink: 0 }}>{step}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <button onClick={() => { setLegalStep(0); setLegalWizardOpen(true); }}
+                          style={{ width: "100%", padding: "14px", borderRadius: 10, border: `2px solid ${C.violet}`,
+                            background: `linear-gradient(135deg, ${C.violet}20, ${C.violet}10)`,
+                            color: C.violet, fontSize: 15, fontWeight: 800, cursor: "pointer",
+                            display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T }}
+                          onMouseEnter={e => e.currentTarget.style.background = `${C.violet}25`}
+                          onMouseLeave={e => e.currentTarget.style.background = `linear-gradient(135deg, ${C.violet}20, ${C.violet}10)`}>
+                          ⚖️ 開啟存證信函助手・整理律師案件包
+                        </button>
+                      </div>
+                    ) : arCase.status === "resolved" ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 8, background: `${C.emerald}10`, border: `1px solid ${C.emerald}40` }}>
+                        <span style={{ fontSize: 16 }}>✅</span>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.emerald }}>案件已結案，無需發送催款通知</div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Channel list */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+                          {/* Email — active */}
+                          <div style={{ display: "flex", alignItems: "center", padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px solid ${pbChannels.email ? C.accent + "55" : C.border}` }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", flex: 1 }}>
+                              <input type="checkbox" checked={pbChannels.email} onChange={e => setPbChannels({ ...pbChannels, email: e.target.checked })} />
+                              <span style={{ fontSize: 16 }}>📧</span>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>Email</div>
+                                <div style={{ fontSize: 11, color: pbSent ? C.emerald : C.inkMuted }}>
+                                  {pbSent ? "✅ 已寄出 · AI 正在監聽回覆" : generatedDraft ? "草稿已就緒，可確認寄出" : "請先在上方生成 AI 草稿"}
+                                </div>
+                              </div>
+                            </label>
+                            {pbSent && <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: `${C.emerald}15`, color: C.emerald, fontWeight: 700, flexShrink: 0 }}>🟢 監聽中</span>}
+                          </div>
+                          {/* LINE — coming soon */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px dashed ${C.border}`, opacity: 0.5 }}>
+                            <span style={{ fontSize: 16 }}>💬</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft }}>LINE 官方帳號</div>
+                              <div style={{ fontSize: 11, color: C.inkMuted }}>整合中，即將推出</div>
+                            </div>
+                            <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, border: `1px solid ${C.border}`, color: C.inkMuted }}>即將推出</span>
+                          </div>
+                          {/* SMS — coming soon */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px dashed ${C.border}`, opacity: 0.5 }}>
+                            <span style={{ fontSize: 16 }}>📱</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft }}>簡訊 SMS</div>
+                              <div style={{ fontSize: 11, color: C.inkMuted }}>整合中，即將推出</div>
+                            </div>
+                            <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, border: `1px solid ${C.border}`, color: C.inkMuted }}>即將推出</span>
+                          </div>
+                        </div>
+
+                        {/* CTA */}
+                        {!pbSent ? (
+                          <button onClick={handleStartPlaybook} disabled={pbRunning || !canSend}
+                            style={{ width: "100%", padding: "13px", borderRadius: 8, border: "none",
+                              background: !canSend ? C.inkMuted : pbRunning ? C.inkMuted : C.accent,
+                              color: "#fff", fontSize: 14, fontWeight: 800,
+                              cursor: (!canSend || pbRunning) ? "not-allowed" : "pointer", transition: T,
+                              display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
+                            {pbRunning ? "📤 寄送中，請稍候..." : !generatedDraft ? "📝 請先生成 AI 草稿" : "📤 確認寄出・啟動 AI 回覆監聽"}
+                          </button>
+                          {pbError && (
+                            <div style={{ marginTop: 8, padding: "10px 14px", borderRadius: 8, background: `${C.rose}12`, border: `1px solid ${C.rose}40`, color: C.rose, fontSize: 12, fontWeight: 600 }}>
+                              ⚠️ 寄送失敗：{pbError}
+                            </div>
+                          )}
+                        ) : (
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 8, background: `${C.emerald}10`, border: `1px solid ${C.emerald}40` }}>
+                            <span style={{ fontSize: 16 }}>🟢</span>
+                            <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: C.emerald }}>催款通知已發出・AI 監聽已啟動</div>
+                            <button onClick={() => { setPbSent(false); setGeneratedDraft(null); setPbError(null); }}
+                              style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.emerald}40`, background: "transparent", color: C.emerald, cursor: "pointer", fontWeight: 600 }}>重新發送</button>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
-                </div>
-
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginBottom: 20, background: C.card, padding: "12px 16px", borderRadius: 8, border: `1px solid ${C.borderHover}` }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: C.ink, cursor: "pointer" }}>
-                    <input type="checkbox" checked={pbChannels.email} onChange={e => setPbChannels({ ...pbChannels, email: e.target.checked })} /> 📧 Email 主體
-                  </label>
-                </div>
-
-                <button onClick={handleStartPlaybook} disabled={pbRunning} style={{ width: "100%", padding: "12px", borderRadius: 8, border: "none", background: pbRunning ? C.inkMuted : C.ink, color: "#fff", fontSize: 14, fontWeight: 800, cursor: pbRunning ? "not-allowed" : "pointer", transition: T, display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
-                  {pbRunning ? "🚀 啟動中，發射任務至各節點..." : "⚡ 啟動全通路推播排程"}
-                </button>
-              </div>
+                );
+              })()}
 
               {/* History Timeline */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
                 <h4 style={{ fontSize: 14, color: C.ink, fontWeight: 700, margin: 0 }}>📜 案件歷程</h4>
-                <button
-                  onClick={() => setMockReplyOpen(true)}
-                  style={{ padding: "5px 12px", borderRadius: 6, border: `1px dashed ${C.violet}80`, background: "transparent", color: C.violet, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: T, display: "flex", alignItems: "center", gap: 6 }}
-                  onMouseEnter={e => { e.target.style.background = `${C.violet}10`; e.target.style.borderColor = C.violet; }}
-                  onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.borderColor = `${C.violet}80`; }}
-                  title="開發測試專用：手動輸入客戶回覆，觸發 AI 語意分析與策略雷達展演"
-                >
-                  <span style={{ fontSize: 14 }}>🧪</span> 模擬測試收信
-                </button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
                 {arCase.history && [...arCase.history].reverse().map((h, i) => (
@@ -6901,62 +7444,145 @@
               <button onClick={() => onUpdate(arCase.id, { status: "resolved" })} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: C.emerald, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>✅ 標記已結案</button>
             </div>
 
-            {/* Overlays inside Drawer (Legal Wizard & Mock Reply) */}
+            {/* Overlays inside Drawer — Legal Wizard (多步驟：資料填寫 → 預覽草稿) */}
             {legalWizardOpen && (
               <div style={{ position: "absolute", inset: 0, zIndex: 1110, display: "flex", justifyContent: "center", alignItems: "center" }}>
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)", animation: "fadeIn .2s ease" }} onClick={() => setLegalWizardOpen(false)} />
-                <div style={{ position: "relative", width: "90%", background: C.card, borderRadius: 16, border: `1px solid ${C.border}`, boxShadow: "0 20px 40px rgba(0,0,0,0.3)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "scaleUp .3s cubic-bezier(.175, .885, .32, 1.275)", maxHeight: "90%" }}>
-                  <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.borderHover}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.gold}05` }}>
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)", animation: "fadeIn .2s ease" }} onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }} />
+                <div style={{ position: "relative", width: "92%", background: C.card, borderRadius: 16, border: `1px solid ${C.violet}40`, boxShadow: "0 20px 60px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "scaleUp .3s cubic-bezier(.175, .885, .32, 1.275)", maxHeight: "92%" }}>
+
+                  {/* Modal Header */}
+                  <div style={{ padding: "18px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.violet}08` }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 24 }}>⚖️</span>
+                      <span style={{ fontSize: 22 }}>⚖️</span>
                       <div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>存證信函參數設定</div>
-                        <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 4 }}>系統將整合歷史催收紀錄，產出具有法務效力公文書草稿</div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>存證信函助手・律師案件包</div>
+                        <div style={{ fontSize: 11, color: C.inkSoft, marginTop: 2 }}>整合催收紀錄，產出可直接送律師事務所的完整案件包</div>
                       </div>
                     </div>
-                    <button onClick={() => setLegalWizardOpen(false)} style={{ background: C.surface, border: "none", color: C.inkSoft, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, transition: T }}>✕</button>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      {/* Step indicator */}
+                      <div style={{ display: "flex", gap: 6 }}>
+                        {["資料填寫", "預覽確認"].map((label, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20,
+                            background: legalStep === i ? `${C.violet}20` : "transparent",
+                            border: `1px solid ${legalStep === i ? C.violet : C.border}`,
+                            fontSize: 11, fontWeight: legalStep === i ? 700 : 400,
+                            color: legalStep === i ? C.violet : C.inkMuted }}>
+                            <span style={{ width: 16, height: 16, borderRadius: "50%", background: legalStep === i ? C.violet : C.border, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700 }}>{i + 1}</span>
+                            {label}
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }} style={{ background: C.surface, border: "none", color: C.inkSoft, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8 }}>✕</button>
+                    </div>
                   </div>
-                  <div style={{ padding: "24px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
-                    <Field label="寄件人地址 (你的公司)"><input type="text" style={{ width: "100%", padding: 12, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }} value={legalForm.senderAddress} onChange={e => setLegalForm({ ...legalForm, senderAddress: e.target.value })} placeholder="例如：台北市信義區信義路五段7號" /></Field>
-                    <Field label="收件人地址 (債務人)"><input type="text" style={{ width: "100%", padding: 12, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }} value={legalForm.recipientAddress} onChange={e => setLegalForm({ ...legalForm, recipientAddress: e.target.value })} placeholder="輸入對方營業登記或聯絡地址" /></Field>
-                    <Field label="違約金/滯納金訴求 (選填)"><input type="text" style={{ width: "100%", padding: 12, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }} value={legalForm.penalty} onChange={e => setLegalForm({ ...legalForm, penalty: e.target.value })} placeholder="例如：依合約每日加計千分之五遲延利息" /></Field>
-                    <Field label="其他補充聲明 (選填)"><textarea style={{ width: "100%", height: 80, padding: 12, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none", resize: "vertical" }} value={legalForm.extraNotes} onChange={e => setLegalForm({ ...legalForm, extraNotes: e.target.value })} placeholder="有無其他需向律師或對方註明的特約事項..." /></Field>
-                  </div>
-                  <div style={{ padding: "20px 24px", borderTop: `1px solid ${C.borderHover}`, background: C.surface, display: "flex", justifyContent: "flex-end", gap: 12 }}>
-                    <Btn variant="ghost" onClick={() => setLegalWizardOpen(false)}>取消</Btn>
-                    <button onClick={handleEmailLawFirm} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.violet}`, background: `${C.violet}15`, color: C.violet, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>📧 用信箱寄送法務案件包給律師</button>
-                    <Btn onClick={handleExportLegalLetter} color={C.gold}>📥 僅匯出 .txt 草稿</Btn>
+
+                  {/* Step 0: 資料填寫 */}
+                  {legalStep === 0 && (
+                    <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
+                      {/* Auto-filled case summary */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20, padding: 14, background: C.surface, borderRadius: 10, border: `1px solid ${C.border}` }}> {/* 3 col always — cells are compact enough */}
+                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 2 }}>債務人</div><div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{arCase.clientName}</div></div>
+                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 2 }}>欠款金額</div><div style={{ fontSize: 13, fontWeight: 700, color: C.rose }}>NT$ {(arCase.amount || 0).toLocaleString()}</div></div>
+                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 2 }}>催收歷程</div><div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{(arCase.history || []).length} 筆</div></div>
+                      </div>
+
+                      {/* Section: 債權人資訊 */}
+                      <div style={{ fontSize: 12, fontWeight: 800, color: C.violet, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>🏢 債權人（你的公司）資訊</div>
+                      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                        <Field label="公司地址 *">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.senderAddress} onChange={e => setLegalForm({ ...legalForm, senderAddress: e.target.value })} placeholder="台北市○○區○○路○號" />
+                        </Field>
+                        <Field label="代表人姓名 *">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.senderRepresentative} onChange={e => setLegalForm({ ...legalForm, senderRepresentative: e.target.value })} placeholder="代表人/負責人姓名" />
+                        </Field>
+                        <Field label="收款銀行帳號（供存證信函載明）">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.bankAccount} onChange={e => setLegalForm({ ...legalForm, bankAccount: e.target.value })} placeholder="例：中國信託 822-1234567890" />
+                        </Field>
+                        <Field label="合約/訂單編號">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.contractRef} onChange={e => setLegalForm({ ...legalForm, contractRef: e.target.value })} placeholder="如有合約號可填入" />
+                        </Field>
+                      </div>
+
+                      {/* Section: 債務人資訊 */}
+                      <div style={{ fontSize: 12, fontWeight: 800, color: C.rose, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>👤 債務人補充資訊</div>
+                      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                        <Field label="債務人登記地址 *">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.recipientAddress} onChange={e => setLegalForm({ ...legalForm, recipientAddress: e.target.value })} placeholder="對方營業登記或聯絡地址" />
+                        </Field>
+                        <Field label="負責人/當事人姓名">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.debtorRepresentative} onChange={e => setLegalForm({ ...legalForm, debtorRepresentative: e.target.value })} placeholder="公司負責人或個人姓名" />
+                        </Field>
+                        <Field label="統一編號 / 身分證字號">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.debtorId} onChange={e => setLegalForm({ ...legalForm, debtorId: e.target.value })} placeholder="法人統編或自然人身分證號" />
+                        </Field>
+                      </div>
+
+                      {/* Section: 違約/補充 */}
+                      <div style={{ fontSize: 12, fontWeight: 800, color: C.gold, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>📋 違約條款與補充說明</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        <Field label="違約金/滯納金訴求（選填）">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.penalty} onChange={e => setLegalForm({ ...legalForm, penalty: e.target.value })} placeholder="例：依合約第X條，每日加計千分之五遲延利息" />
+                        </Field>
+                        <Field label="補充聲明（選填）">
+                          <textarea style={{ width: "100%", height: 72, padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "inherit" }}
+                            value={legalForm.extraNotes} onChange={e => setLegalForm({ ...legalForm, extraNotes: e.target.value })} placeholder="有無其他約定、特殊情況需向律師說明的事項..." />
+                        </Field>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 1: 預覽草稿 */}
+                  {legalStep === 1 && (
+                    <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1 }}>
+                      <div style={{ fontSize: 12, color: C.inkMuted, marginBottom: 12, padding: "8px 12px", borderRadius: 8, background: `${C.violet}08`, border: `1px solid ${C.violet}20` }}>
+                        📋 以下為系統自動生成的存證信函草稿全文，供你確認後再匯出。請確認資訊正確後選擇匯出方式。
+                      </div>
+                      <pre style={{ fontSize: 12, lineHeight: 1.7, color: C.ink, background: C.surface, padding: 16, borderRadius: 10, border: `1px solid ${C.border}`, whiteSpace: "pre-wrap", wordBreak: "break-word", margin: 0, fontFamily: "monospace" }}>
+                        {generateLegalDraft()}
+                      </pre>
+                    </div>
+                  )}
+
+                  {/* Modal Footer */}
+                  <div style={{ padding: mobile ? "12px 16px" : "16px 24px", borderTop: `1px solid ${C.border}`, background: C.surface, display: "flex", flexDirection: mobile && legalStep === 1 ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "stretch" : "center", gap: 10 }}>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {legalStep === 1 && <Btn variant="ghost" onClick={() => setLegalStep(0)}>← 返回修改</Btn>}
+                      <Btn variant="ghost" onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }}>取消</Btn>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: mobile ? "column" : "row", gap: 8 }}>
+                      {legalStep === 0 ? (
+                        <Btn onClick={() => setLegalStep(1)} color={C.violet}>預覽草稿 →</Btn>
+                      ) : (
+                        <>
+                          <button onClick={() => handleExportLegalLetter("draft")}
+                            style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${C.gold}`, background: `${C.gold}15`, color: C.gold, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                            📄 匯出信函草稿 .txt
+                          </button>
+                          <button onClick={() => handleExportLegalLetter("package")}
+                            style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${C.emerald}`, background: `${C.emerald}15`, color: C.emerald, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                            📦 匯出完整律師案件包 .txt
+                          </button>
+                          <button onClick={handleEmailLawFirm}
+                            style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${C.violet}`, background: `${C.violet}15`, color: C.violet, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                            📧 用信箱寄送給律師
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {mockReplyOpen && (
-              <div style={{ position: "absolute", inset: 0, zIndex: 1110, display: "flex", justifyContent: "center", alignItems: "center", pointerEvents: "auto" }}>
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)", animation: "fadeIn .2s ease" }} onClick={() => setMockReplyOpen(false)} />
-                <div style={{ position: "relative", width: "90%", background: C.card, borderRadius: 16, border: `1px solid ${C.border}`, boxShadow: "0 20px 40px rgba(0,0,0,0.3)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "scaleUp .3s cubic-bezier(.175, .885, .32, 1.275)", zIndex: 1120 }}>
-                  <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.borderHover}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.violet}05` }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 24 }}>📩</span>
-                      <div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>模擬：接收客戶回信與 AI 判讀</div>
-                        <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 4 }}>輸入任意模擬情境，體驗 Webhook 接回文字後 AI 的動態策略判定</div>
-                      </div>
-                    </div>
-                    <button onClick={() => setMockReplyOpen(false)} style={{ background: C.surface, border: "none", color: C.inkSoft, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, transition: T }}>✕</button>
-                  </div>
-                  <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 16 }}>
-                    <textarea autoFocus style={{ width: "100%", height: 120, padding: 12, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 14, outline: "none", resize: "none", lineHeight: 1.5 }} value={mockReplyText} onChange={e => setMockReplyText(e.target.value)} placeholder={`例如：\n「不好意思這幾天會計休假，我們下週三前一定匯款！」(系統將判讀為善意，亮綠燈)\n「目前公司週轉比較緊缺，能不能再寬限兩個月...」(系統將判讀為拖延，亮紅燈)`} />
-                  </div>
-                  <div style={{ padding: "20px 24px", borderTop: `1px solid ${C.borderHover}`, background: C.surface, display: "flex", justifyContent: "flex-end", gap: 12 }}>
-                    <Btn variant="ghost" onClick={() => setMockReplyOpen(false)}>取消</Btn>
-                    <button onClick={handleMockReplySubmit} disabled={!mockReplyText.trim() || mockAnalyzing} style={{ padding: "10px 20px", borderRadius: 8, border: "none", background: mockAnalyzing || !mockReplyText.trim() ? C.inkMuted : C.violet, color: "#fff", fontSize: 14, fontWeight: 800, cursor: (!mockReplyText.trim() || mockAnalyzing) ? "not-allowed" : "pointer", transition: T, display: "flex", alignItems: "center", gap: 8 }}>
-                      {mockAnalyzing ? "🧠 AI 語意解析中..." : "送出測試，啟動 AI 解析"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       );
@@ -7544,7 +8170,7 @@
 
       // ── Contacts CRUD ──
       const nContact = useRef(Math.max(0, ...(manualContacts || []).map(c => c.id || 0)) + 1);
-      const aggregatedContacts = useAggregatedContacts(deals, proposals, invoices, leads, partners, manualContacts);
+      const aggregatedContacts = useAggregatedContacts(deals, proposals, invoices, leads, partners, manualContacts, arCases);
       const addManualContact = (c) => { const nc = editStamp({ ...c, id: nContact.current++, createdAt: new Date().toISOString() }); setManualContacts(prev => [...prev, nc]); setModal(null); addLog("👤", "新增客戶", c.company || c.email, C.emerald); };
       const editManualContact = (c) => {
         // If it's an auto-derived contact being edited for first time, create manual record
@@ -7612,6 +8238,8 @@
       const activeRoles = roles.filter((r) => !r.archived);
       const now = new Date().toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: mobile ? undefined : "long" });
 
+      const unreadArCount = (arCases || []).filter(c => c.unreadReply === true).length;
+
       const TABS = [
         { id: "pipeline", label: "📊 業務漏斗", mLabel: "漏斗", mIcon: "📊" },
         { id: "tasks", label: "📋 任務看板", mLabel: "任務", mIcon: "📋" },
@@ -7642,6 +8270,11 @@
       ];
       const CONTACT_FILTERS = [
         { id: "all", label: "全部", color: C.accent },
+        // 客戶健康度快速篩選
+        { id: "health_vip",      label: "⭐ 優質客戶", color: "#F5A623" },
+        { id: "health_risk",     label: "⚠️ 逾期警示", color: "#FB923C" },
+        { id: "health_critical", label: "🚨 高風險",   color: "#F472B6" },
+        { id: "has_ar",          label: "💰 催收中",   color: "#FB923C" },
         ...CONTACT_TAGS.map(t => ({ id: t.id, label: `${t.icon} ${t.label}`, color: t.color })),
         { id: "has_deals", label: "📊 有交易", color: C.gold },
         { id: "no_deals", label: "🆕 無交易", color: C.inkMuted },
@@ -7777,7 +8410,10 @@
                   {TABS.map((t) => (
                     <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { setTab(t.id); setExpandedDealId(null); setTaskSearch(""); setTaskFilter("all"); }}
                       style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "10px 12px 8px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, transition: T, WebkitTapHighlightColor: "transparent", flexShrink: 0, minWidth: 56 }}>
-                      <span style={{ fontSize: 18 }}>{t.mIcon}</span>
+                      <span style={{ fontSize: 18, position: "relative", display: "inline-block" }}>
+                        {t.mIcon}
+                        {t.id === "ar" && unreadArCount > 0 && <span style={{ position: "absolute", top: -2, right: -2, width: 8, height: 8, borderRadius: "50%", background: C.rose, border: `2px solid ${C.bg}` }} />}
+                      </span>
                       <span style={{ fontSize: 11, fontWeight: tab === t.id ? 700 : 500, letterSpacing: ".01em", whiteSpace: "nowrap" }}>{t.mLabel}</span>
                     </button>
                   ))}
@@ -7787,8 +8423,9 @@
                 <div role="tablist" style={{ display: "flex", gap: 4, background: C.surface, borderRadius: 12, padding: 4, overflowX: "auto" }}>
                   {TABS.map((t) => (
                     <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { setTab(t.id); setExpandedDealId(null); setTaskSearch(""); setTaskFilter("all"); }}
-                      style={{ padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, whiteSpace: "nowrap", transition: T }}>
+                      style={{ padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, whiteSpace: "nowrap", transition: T, position: "relative" }}>
                       {t.label}
+                      {t.id === "ar" && unreadArCount > 0 && <span style={{ position: "absolute", top: 7, right: 7, width: 7, height: 7, borderRadius: "50%", background: C.rose, border: `2px solid ${C.bg}` }} />}
                     </button>
                   ))}
                 </div>
@@ -7857,7 +8494,7 @@
               {tab === "proposals" && <ProposalsView proposals={proposals} deals={deals.filter((d) => !d.archived)} onAdd={() => setModal("addProposal")} onEdit={(p) => { setEditItem(p); setModal("editProposal"); }} onPreview={(p) => setPreviewProposal(p)} onDelete={deleteProposal} onStatusChange={changeProposalStatus} search={proposalSearch} filter={proposalFilter} />}
               {tab === "invoices" && <InvoicesView invoices={invoices} deals={deals.filter((d) => !d.archived)} proposals={proposals} onAdd={() => setModal("addInvoice")} onEdit={(inv) => { setEditItem(inv); setModal("editInvoice"); }} onStatusChange={changeInvoiceStatus} onDelete={deleteInvoice} search={invoiceSearch} filter={invoiceFilter} />}
               {tab === "ar" && <ArDashboard arCases={arCases} search={arSearch} filter={arFilter} onSelectCase={(c) => setActiveArCase(c)} onSettings={() => setModal("arSettings")} arSettings={arSettings} />}
-              {tab === "contacts" && <ContactsView contacts={aggregatedContacts} deals={deals} proposals={proposals} invoices={invoices} leads={leads} manualContacts={manualContacts} onAddManual={() => setModal("addContact")} onEditManual={(c) => { setEditItem(c); setModal("editContact"); }} onDeleteManual={deleteManualContact} onImportCSV={importContactsCSV} search={contactSearch} filter={contactFilter} />}
+              {tab === "contacts" && <ContactsView contacts={aggregatedContacts} deals={deals} proposals={proposals} invoices={invoices} leads={leads} manualContacts={manualContacts} arCases={arCases} onAddManual={() => setModal("addContact")} onEditManual={(c) => { setEditItem(c); setModal("editContact"); }} onDeleteManual={deleteManualContact} onImportCSV={importContactsCSV} search={contactSearch} filter={contactFilter} />}
               {tab === "meetings" && <MeetingsView meetings={meetings} deals={deals.filter((d) => !d.archived)} onAdd={() => setModal("addMeeting")} onEdit={(m) => { setEditItem(m); setModal("editMeeting"); }} onComplete={completeMeeting} onCreateTasks={createTasksFromMeeting} search={meetingSearch} />}
               {tab === "analytics" && <AnalyticsView deals={deals} roles={roles} goals={goals} onGoalsChange={setGoals} />}
               {tab === "docs" && <DocumentsView userDocs={userDocs} onAddDoc={addUserDoc} onDeleteDoc={deleteUserDoc} onEditDoc={editUserDoc} showAddForm={modal === "addDoc"} onCloseForm={() => setModal(null)} search={docSearch} />}
@@ -7878,7 +8515,7 @@
           {modal === "editLead" && editItem && <Modal title="編輯 BD 對象" onClose={() => { setModal(null); setEditItem(null); }}><LeadForm lead={editItem} roles={activeRoles} onSave={updateLead} onCancel={() => { setModal(null); setEditItem(null); }} /></Modal>}
           {modal === "addRole" && <Modal title="新增角色" onClose={() => setModal(null)}><RoleForm onSave={addRole} onCancel={() => setModal(null)} /></Modal>}
           {modal === "editRole" && editItem && <Modal title="編輯角色" onClose={() => { setModal(null); setEditItem(null); }}><RoleForm role={editItem} onSave={updateRole} onCancel={() => { setModal(null); setEditItem(null); }} /></Modal>}
-          {modal === "addArCase" && <Modal title="💰 手動新增呆帳/催收" onClose={() => setModal(null)}><ArCaseForm onSave={addArCase} onCancel={() => setModal(null)} /></Modal>}
+          {modal === "addArCase" && <Modal title="💰 新增催收案件" onClose={() => setModal(null)}><ArCaseForm contacts={aggregatedContacts} invoices={invoices} onSave={addArCase} onCancel={() => setModal(null)} /></Modal>}
           {modal === "arSettings" && <Modal title="⚙️ 催收系統設定" onClose={() => setModal(null)}><ArSettingsForm settings={arSettings} emailTemplates={emailTemplates} onSave={(s, newTpls) => { setArSettings(s); setEmailTemplates(newTpls); setModal(null); addLog("⚙️", "更新設定", "催收階段規則與範本已更新", C.accent); }} onCancel={() => setModal(null)} /></Modal>}
           {/* P0: Proposal Modals */}
           {modal === "addProposal" && <Modal title="新增報價單" wide={780} onClose={() => setModal(null)}><ProposalForm deals={deals.filter((d) => !d.archived)} leads={leads} partners={partners} onPartnersChange={setPartners} onLeadsImport={(newLeads) => { const mapped = newLeads.map((l, i) => ({ ...l, id: nLead.current++ })); setLeads((p) => [...p, ...mapped]); addLog("📁", "CSV 匯入 BD", `新增 ${mapped.length} 筆`, C.violet); }} companyProfile={companyProfile} onCompanyProfileChange={setCompanyProfile} serviceTemplates={serviceTemplates} onServiceTemplatesChange={setServiceTemplates} noteTemplates={noteTemplates} onNoteTemplatesChange={setNoteTemplates} onSave={addProposal} onCancel={() => setModal(null)} /></Modal>}
@@ -7901,7 +8538,7 @@
           {lostReasonModal && <LostReasonModal dealName={lostReasonModal.dealName} onConfirm={confirmLostDeal} onCancel={() => setLostReasonModal(null)} />}
 
           {/* AR Detail Drawer */}
-          {activeArCase && <ArDetailDrawer arCase={activeArCase} companyProfile={companyProfile} arSettings={arSettings} emailTemplates={emailTemplates} addLog={addLog} onClose={() => setActiveArCase(null)} onUpdate={updateArCase} onSettings={() => setModal("arSettings")} />}
+          {activeArCase && <ArDetailDrawer arCase={activeArCase} companyProfile={companyProfile} arSettings={arSettings} emailTemplates={emailTemplates} addLog={addLog} onClose={() => setActiveArCase(null)} onUpdate={updateArCase} onSettings={() => setModal("arSettings")} workspaceId={_currentWorkspaceId} />}
 
           {/* v2.5: Workspace Picker Modal — shown when user belongs to multiple workspaces */}
           {wsPicker && (

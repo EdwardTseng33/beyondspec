@@ -1,14 +1,19 @@
 import admin from "firebase-admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import Busboy from "busboy";
 
-// 1. 初始化 Firebase Admin (用環境變數防護金鑰)
+// ── Vercel 設定：關閉預設 bodyParser，改由 Busboy 手動解析 multipart/form-data ──
+export const config = {
+    api: { bodyParser: false },
+};
+
+// 1. 初始化 Firebase Admin
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert({
             projectId: process.env.FIREBASE_PROJECT_ID,
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            // 處理換行字元的問題
-            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
         }),
     });
 }
@@ -17,69 +22,140 @@ const db = admin.firestore();
 // 2. 初始化 Gemini
 const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// 3. Vercel Serverless 核心處理出口
+// 3. 將 multipart/form-data 請求解析為 key-value 物件
+function parseMultipart(req) {
+    return new Promise((resolve, reject) => {
+        const fields = {};
+        const busboy = Busboy({ headers: req.headers });
+        busboy.on("field", (name, val) => { fields[name] = val; });
+        busboy.on("finish", () => resolve(fields));
+        busboy.on("error", reject);
+        req.pipe(busboy);
+    });
+}
+
+// 4. Vercel Serverless 核心處理出口
 export default async function handler(req, res) {
-    // 檢查是否為 SendGrid 丟過來的 POST 請求
     if (req.method !== "POST") {
         return res.status(405).json({ error: "Method Not Allowed" });
     }
 
     try {
-        const fromEmail = req.body.from;
-        const toEmail = req.body.to;
-        const emailText = req.body.text;
+        // SendGrid Inbound Parse 以 multipart/form-data 傳送
+        const fields = await parseMultipart(req);
 
-        // 從收件人 (To) 裡面精準切出 租戶ID 跟 案件ID (例如: reply+TA001_c123@reply.beyondspec.tw)
-        const match = toEmail.match(/\+([^_]+)_([^@]+)@/);
+        const fromEmail = fields.from || "";
+        const toEmail   = fields.to   || "";
+        const emailText = fields.text || fields.html || "";
 
-        // 如果找不到標籤，退回 200 (SendGrid 才會停止重試)
+        console.log(`[webhook] from=${fromEmail} to=${toEmail}`);
+
+        // 從收件人解析 workspaceId + caseId
+        // Format: reply+{workspaceId}_{caseId}@reply.beyondspec.tw
+        const match = toEmail.match(/reply\+([^_]+)_([^@]+)@/);
         if (!match) {
-            console.log("No valid tenant or case ID found in the toEmail address:", toEmail);
-            return res.status(200).send("No matching Tenant or Case ID");
+            console.log("[webhook] No valid workspaceId/caseId in:", toEmail);
+            return res.status(200).send("No matching Workspace or Case ID");
         }
 
-        const tenantId = match[1]; // 拿到 TA001
-        const caseId = match[2];   // 拿到 c123
+        const workspaceId = match[1];
+        const caseId      = match[2];
+        console.log(`[webhook] workspaceId=${workspaceId} caseId=${caseId}`);
 
-        // 呼叫 AI 判讀意圖
+        // 5. Gemini AI 判讀客戶回信意圖
         const model = ai.getGenerativeModel({
-            model: "gemini-2.5-flash",
-            generationConfig: { responseMimeType: "application/json" }
+            model: "gemini-1.5-flash",
+            generationConfig: { responseMimeType: "application/json" },
         });
-        const prompt = `你是一位催收助理。分析客戶回信判斷風險。請確保只回覆純 JSON：{"risk": "low"或"high"或"medium", "summary": "回信重点"}\n\n客戶回信內容：\n${emailText}`;
-        const aiResponse = await model.generateContent(prompt);
+        const prompt = `你是一位專業的應收帳款催收助理，請分析以下客戶回信並回覆純 JSON（不加任何說明文字）：
+{
+  "risk": "low" 或 "medium" 或 "high",
+  "summary": "回信重點摘要（25字以內）",
+  "paymentCommitted": true 或 false,
+  "commitDate": "YYYY-MM-DD 或 null（若客戶有明確提到付款日期）",
+  "disputeDetected": true 或 false,
+  "suggestedAction": "建議下一步行動（30字以內，例如：確認付款日期、發送 T2 正式催告、轉法務程序）"
+}
 
+判斷原則：
+- risk=low：客戶明確承諾付款且態度配合
+- risk=medium：態度模糊、給出藉口、未明確承諾
+- risk=high：拒絕付款、提出爭議、無回應跡象、超過 30 天
+- paymentCommitted=true：信中有明確付款承諾或日期
+- disputeDetected=true：信中提到合約爭議、品質問題、拒絕承認欠款
+
+客戶回信內容：
+${emailText.substring(0, 2000)}`;
+        const aiResponse = await model.generateContent(prompt);
         const aiResult = JSON.parse(aiResponse.response.text());
 
-        // 寫入對應租戶的子集合
-        const caseRef = db.collection("tenants").doc(tenantId).collection("arCases").doc(caseId);
-        const caseDoc = await caseRef.get();
+        // 6. 讀取並更新 workspaces/{workspaceId}/data/arCases（usePersisted 格式）
+        const arCasesRef = db
+            .collection("workspaces")
+            .doc(workspaceId)
+            .collection("data")
+            .doc("arCases");
 
-        if (caseDoc.exists) {
-            const history = caseDoc.data().history || [];
-            history.push({
-                date: new Date().toISOString().split("T")[0],
-                action: `📩 收到客戶回覆 (${fromEmail})`,
-                note: emailText.substring(0, 100) + "..."
-            });
-            history.push({
-                date: new Date().toISOString().split("T")[0],
-                action: `🧠 AI 判讀完成`,
-                note: `判定結果：${aiResult.risk === 'low' ? '善意' : '拖延'}。摘要：${aiResult.summary}`
-            });
-
-            await caseRef.update({
-                history: history,
-                mockRisk: aiResult.risk,
-                updatedAt: admin.firestore.FieldValue.serverTimestamp()
-            });
+        const arCasesDoc = await arCasesRef.get();
+        if (!arCasesDoc.exists) {
+            console.warn(`[webhook] arCases doc not found for workspace: ${workspaceId}`);
+            return res.status(200).send("Workspace or arCases document not found");
         }
 
+        const cases = arCasesDoc.data().value || [];
+        const idx = cases.findIndex(c => String(c.id) === String(caseId));
+        if (idx === -1) {
+            console.warn(`[webhook] caseId ${caseId} not found in workspace ${workspaceId}`);
+            return res.status(200).send("Case not found in workspace");
+        }
+
+        // 7. 附加回信歷史記錄 + AI 判讀結果
+        const today = new Date().toISOString().split("T")[0];
+        const history = [...(cases[idx].history || [])];
+        history.push({
+            date: today,
+            action: `📩 收到客戶回覆 (${fromEmail})`,
+            note: emailText.substring(0, 120) + (emailText.length > 120 ? "…" : ""),
+        });
+        const riskLabel = aiResult.risk === "low" ? "✅ 善意回覆" : aiResult.risk === "medium" ? "⚠️ 態度模糊" : "🚨 高風險拖延";
+        let aiNoteLine = `判定：${riskLabel}｜${aiResult.summary}`;
+        if (aiResult.paymentCommitted) aiNoteLine += `｜💳 承諾付款${aiResult.commitDate ? `（${aiResult.commitDate}）` : ""}`;
+        if (aiResult.disputeDetected)  aiNoteLine += `｜⚠️ 偵測到爭議`;
+        aiNoteLine += `｜建議：${aiResult.suggestedAction}`;
+
+        history.push({
+            date: today,
+            action: `🧠 AI 判讀完成`,
+            note: aiNoteLine,
+        });
+
+        cases[idx] = {
+            ...cases[idx],
+            history,
+            mockRisk: aiResult.risk,
+            lastReplyAt: today,
+            lastReplyFrom: fromEmail,
+            lastReplyText: emailText.substring(0, 300),
+            aiSummary: aiResult.summary,
+            aiPaymentCommitted: aiResult.paymentCommitted || false,
+            aiCommitDate: aiResult.commitDate || null,
+            aiDisputeDetected: aiResult.disputeDetected || false,
+            aiSuggestedAction: aiResult.suggestedAction || "",
+            unreadReply: true,
+        };
+
+        // 8. 寫回 Firestore（與 usePersisted 相同格式）
+        await arCasesRef.update({
+            value: cases,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedBy: { email: "webhook@system", name: "AI 自動回信判讀" },
+        });
+
+        console.log(`[webhook] Case ${caseId} updated — risk=${aiResult.risk}`);
         return res.status(200).send("Processed successfully");
 
     } catch (error) {
-        console.error("Vercel Webhook Error:", error);
-        // 回傳 500 代表錯誤，SendGrid 會在稍後重試
+        console.error("[webhook] Error:", error);
         return res.status(500).json({ error: "Internal Server Error" });
     }
 }
