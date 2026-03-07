@@ -291,11 +291,27 @@ export default async function handler(req, res) {
         const emailText = fields.text || fields.html || "";
         console.log(`[webhook] from=${fromEmail} to=${toEmail} textLen=${emailText.length}`);
 
+        // SendGrid 也會傳 envelope（JSON 格式），可能更可靠
+        let envelopeTo = "";
+        if (fields.envelope) {
+            try {
+                const env = JSON.parse(fields.envelope);
+                envelopeTo = Array.isArray(env.to) ? env.to.join(", ") : (env.to || "");
+                console.log(`[webhook] envelope.to=${envelopeTo}`);
+            } catch (e) {
+                console.log("[webhook] envelope parse failed:", e.message);
+            }
+        }
+
         // ── STEP B: 解析 workspaceId + caseId ──
-        const match = toEmail.match(/reply\+([^_]+)_([^@]+)@/);
+        // 先嘗試 to 欄位，再嘗試 envelope.to
+        let match = toEmail.match(/reply\+([^_]+)_([^@]+)@/);
+        if (!match && envelopeTo) {
+            match = envelopeTo.match(/reply\+([^_]+)_([^@]+)@/);
+        }
         if (!match) {
-            console.log("[webhook] STEP B: No valid ID in:", toEmail);
-            return res.status(200).json({ status: "skipped", reason: "No matching address pattern", to: toEmail });
+            console.log("[webhook] STEP B: No valid ID in to:", toEmail, "envelope:", envelopeTo);
+            return res.status(200).json({ status: "skipped", reason: "No matching address pattern", to: toEmail, envelopeTo });
         }
         const workspaceId = match[1];
         const caseId      = match[2];
@@ -330,34 +346,51 @@ export default async function handler(req, res) {
 
         const riskLabel = aiResult.risk === "low" ? "✅ 善意回覆"
             : aiResult.risk === "medium" ? "⚠️ 態度模糊" : "🚨 高風險拖延";
-        let aiNoteLine = `判定：${riskLabel}｜${aiResult.summary}`;
+        let aiNoteLine = `判定：${riskLabel}｜${aiResult.summary || "無"}`;
         if (aiResult.paymentCommitted) aiNoteLine += `｜💳 承諾付款${aiResult.commitDate ? `（${aiResult.commitDate}）` : ""}`;
         if (aiResult.disputeDetected) aiNoteLine += `｜⚠️ 偵測到爭議`;
-        aiNoteLine += `｜建議：${aiResult.suggestedAction}`;
-        aiNoteLine += `｜引擎：${aiResult._engine}`;
+        aiNoteLine += `｜建議：${aiResult.suggestedAction || "無"}`;
+        aiNoteLine += `｜引擎：${aiResult._engine || "unknown"}`;
 
         history.push({ date: today, action: "🧠 AI 判讀完成", note: aiNoteLine });
 
-        cases[idx] = {
+        // ── 清除所有 undefined 值（Firestore 不接受 undefined）──
+        function sanitize(obj) {
+            if (obj === null || obj === undefined) return null;
+            if (Array.isArray(obj)) return obj.map(sanitize);
+            if (typeof obj === "object" && obj !== null) {
+                const clean = {};
+                for (const [k, v] of Object.entries(obj)) {
+                    clean[k] = sanitize(v);
+                }
+                return clean;
+            }
+            return obj;
+        }
+
+        const updatedCase = sanitize({
             ...cases[idx],
             history,
-            mockRisk: aiResult.risk,
+            mockRisk: aiResult.risk || "medium",
             lastReplyAt: today,
-            lastReplyFrom: fromEmail,
-            lastReplyText: emailText.substring(0, 300),
-            aiSummary: aiResult.summary,
+            lastReplyFrom: fromEmail || "",
+            lastReplyText: emailText.substring(0, 300) || "",
+            aiSummary: aiResult.summary || "",
             aiPaymentCommitted: aiResult.paymentCommitted || false,
             aiCommitDate: aiResult.commitDate || null,
             aiDisputeDetected: aiResult.disputeDetected || false,
             aiSuggestedAction: aiResult.suggestedAction || "",
-            aiEngine: aiResult._engine,
+            aiEngine: aiResult._engine || "unknown",
             unreadReply: true,
-        };
+        });
+
+        cases[idx] = updatedCase;
+        console.log("[webhook] STEP E done. Updated case keys:", Object.keys(updatedCase).join(", "));
 
         // ── STEP F: 寫回 Firestore ──
         console.log("[webhook] STEP F: Writing to Firestore...");
         await arCasesRef.update({
-            value: cases,
+            value: sanitize(cases),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedBy: { email: "webhook@system", name: "AI 自動回信判讀" },
         });
