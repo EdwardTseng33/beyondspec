@@ -435,8 +435,9 @@ export default async function handler(req, res) {
                 updatedBy: { email: "webhook@system", name: "AI 自動回信判讀" },
             }, { merge: true });
         } catch (fsErr) {
+            fsErr._step = "F-firestore-write";
+            fsErr._debugDump = JSON.stringify(sanitizedCases?.[idx]).substring(0, 800);
             console.error("[webhook] STEP F Firestore write error:", fsErr.code, fsErr.message);
-            console.error("[webhook] STEP F: Dumping case[idx]:", JSON.stringify(sanitizedCases?.[idx]).substring(0, 500));
             throw fsErr;
         }
 
@@ -452,6 +453,12 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error("[webhook] Error:", error.message, error.stack);
-        return res.status(500).json({ error: "Internal Server Error", detail: error.message });
+        return res.status(500).json({
+            error: "Internal Server Error",
+            detail: error.message,
+            code: error.code || null,
+            step: error._step || null,
+            dump: error._debugDump || null,
+        });
     }
 }
