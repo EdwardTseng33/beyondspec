@@ -1,0 +1,11 @@
+{
+  "name": "beyondspec",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@sendgrid/mail": "^8.1.3",
+    "busboy": "^1.6.0",
+    "firebase-admin": "^12.0.0"
+  }
+}
