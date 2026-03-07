@@ -6783,9 +6783,6 @@
       const [pbChannels, setPbChannels] = useState({ email: true });
       const [pbRunning, setPbRunning] = useState(false);
       const [pbSent, setPbSent] = useState(false);
-      const [mockReplyOpen, setMockReplyOpen] = useState(false);
-      const [mockReplyText, setMockReplyText] = useState("");
-      const [mockAnalyzing, setMockAnalyzing] = useState(false);
       const { mobile } = useWindowSize();
 
       if (!arCase) return null;
@@ -6818,29 +6815,6 @@
         }, 1200);
       };
 
-      const handleMockReplySubmit = () => {
-        if (!mockReplyText.trim()) return;
-        setMockAnalyzing(true);
-        setTimeout(() => {
-          setMockAnalyzing(false);
-          const txt = mockReplyText;
-          const isPositive = /下週|匯款|對帳|馬上|抱歉|確認|這幾天/i.test(txt);
-          const aiAction = isPositive ? "語意研判客戶具備還款誠意與具體時程。AI 建議：暫緩催收，設定於承諾時間點後追蹤入帳情形。" : "語意研判客戶試圖拖延或閃避確切還款日。AI 建議：切換至強硬態勢，準備進入法務通牒階段。";
-          const newStatus = isPositive ? "low" : "high";
-
-          onUpdate(arCase.id, {
-            mockRisk: newStatus,
-            history: [...(arCase.history || []), {
-              date: new Date().toISOString().split("T")[0],
-              action: `📩 收到客戶聯絡人回覆 (${isPositive ? '正面承諾' : '負面拖延'})`,
-              note: `客戶回信：「${txt}」\n\n👉 AI 策略判定：${aiAction}`
-            }]
-          });
-          addLog?.("📩", "AI 回信解析", `已分析客戶語意並更新應對策略`, isPositive ? C.emerald : C.rose);
-          setMockReplyOpen(false);
-          setMockReplyText("");
-        }, 1500);
-      };
 
       const handleStartPlaybook = () => {
         if (!generatedDraft) { alert("請先在上方生成 AI 草稿！"); return; }
@@ -6868,9 +6842,15 @@
       };
 
       const [legalWizardOpen, setLegalWizardOpen] = useState(false);
+      const [legalStep, setLegalStep] = useState(0); // 0=資料填寫, 1=預覽草稿
       const [legalForm, setLegalForm] = useState({
         senderAddress: companyProfile?.address || "",
+        senderRepresentative: companyProfile?.representativeName || "",
+        bankAccount: companyProfile?.bankAccount || "",
         recipientAddress: "",
+        debtorRepresentative: "",
+        debtorId: "",
+        contractRef: arCase?.contractRef || "",
         penalty: "",
         extraNotes: ""
       });
@@ -6881,52 +6861,164 @@
           .map(h => `- ${h.date}: ${h.action} ${h.note ? `(${h.note})` : ""}`)
           .join("\n");
         const sender = companyProfile?.name || "本公司";
+        const senderRep = legalForm.senderRepresentative ? `（代表人：${legalForm.senderRepresentative}）` : "";
+        const debtorRep = legalForm.debtorRepresentative ? `（負責人：${legalForm.debtorRepresentative}）` : "";
+        const debtorIdLine = legalForm.debtorId ? `統一編號/身分證：${legalForm.debtorId}` : "";
+        const contractLine = legalForm.contractRef ? `合約/訂單編號：${legalForm.contractRef}` : "";
+        const bankLine = legalForm.bankAccount ? `\n請匯款至：${legalForm.bankAccount}` : "";
+        const overdueDays = arCase.dueDate
+          ? Math.floor((new Date() - new Date(arCase.dueDate)) / 86400000)
+          : 0;
 
-        let content = `存證信函草稿 (供律師事務所參考)\n\n寄件人：${sender}\n收件人：${arCase.clientName}\n\n主旨：催告清償借款新臺幣 ${(arCase.amount || 0).toLocaleString()} 元整，請查照。\n\n說明：\n一、 台端向本公司購買服務/商品，依約應給付新臺幣 ${(arCase.amount || 0).toLocaleString()} 元整，原約定付款日為 ${arCase.dueDate}。有電子發票（號碼：${arCase.invoiceId}）為憑。\n二、 然迄今已逾約定還款期限，台端仍未依約清償，經本公司多次催討，台端均未予置理，顯已違約在先。`;
+        let itemNum = 3;
+        let content =
+`============================================================
+存 證 信 函 草 稿
+（供律師事務所審閱修潤後正式發文）
+============================================================
+
+寄件人：${sender}${senderRep}
+地  址：${legalForm.senderAddress || "（請填入公司地址）"}
+
+收件人：${arCase.clientName}${debtorRep}
+地  址：${legalForm.recipientAddress || "（請填入債務人地址）"}
+${debtorIdLine ? debtorIdLine + "\n" : ""}
+發文日期：中華民國 ${todayStr}
+
+------------------------------------------------------------
+主  旨：催告台端清償積欠款項新臺幣 ${(arCase.amount || 0).toLocaleString()} 元整，請台端於期限內清償，否則本公司將依法追訴。
+
+說  明：
+一、 台端（${arCase.clientName}）與本公司（${sender}）因買賣/服務契約，台端應給付本公司新臺幣 ${(arCase.amount || 0).toLocaleString()} 元整，有發票號碼：${arCase.invoiceId}${contractLine ? "、" + contractLine : ""}為憑，約定付款日為 ${arCase.dueDate}。
+
+二、 然迄今已逾約定付款期限 ${overdueDays > 0 ? overdueDays + " 天" : "數日"}，台端仍未依約清償，本公司已多次以書面、電子郵件催討（詳如後附歷程紀錄），台端均未予置理，顯已違約在先。`;
 
         if (legalForm.penalty) {
-          content += `\n三、 依雙方合約約定，台端另應給付違約金：${legalForm.penalty}。`;
-          content += `\n四、 茲依民法相關規定，特此催告台端於本信函送達之日起七日內，將前述款項及違約金，一併匯入本公司指定帳戶。`;
-        } else {
-          content += `\n三、 茲依民法相關規定，特此催告台端於本信函送達之日起七日內，將前述款項新臺幣 ${(arCase.amount || 0).toLocaleString()} 元整，一併匯入本公司指定帳戶。`;
+          content += `\n\n${itemNum++}、 依雙方合約約定，台端另應給付違約金：${legalForm.penalty}。`;
         }
 
-        content += `\n${legalForm.penalty ? "五" : "四"}、 若台端未於前述期限內履行清償義務，本公司將不再另行通知，逕行依法提起民事訴訟，請求返還本金及遲延利息，屆時訴訟所生之費用，亦將一併由台端負擔，請台端切勿自誤。`;
+        content += `\n\n${itemNum++}、 茲依民法第 229 條、第 233 條等相關規定，特此以本存證信函催告台端，於本函送達之日起 七（7）日內，將前述全部款項一次性清償完畢。${bankLine}`;
+
+        content += `\n\n${itemNum}、 若台端未於前述期限內履行清償義務，本公司將不再另行通知，逕行依法向管轄法院提起民事訴訟，請求返還本金及遲延利息，訴訟所生費用亦將一併請求由台端負擔，請台端切勿自誤。`;
 
         if (legalForm.extraNotes) {
-          content += `\n\n【補充說明】\n${legalForm.extraNotes}`;
+          content += `\n\n------------------------------------------------------------\n【補充聲明 / 特殊約定事項】\n${legalForm.extraNotes}`;
         }
 
-        content += `\n\n【歷程紀錄參考】\n${historyText}\n\n此致\n${arCase.clientName}\n\n中華民國 ${todayStr}\n`;
+        content += `\n\n------------------------------------------------------------\n【催收歷程紀錄】（供律師參考）\n${historyText}`;
+
+        content += `\n\n============================================================\n此致\n${arCase.clientName} 台鑒\n\n${sender}\n代表人：${legalForm.senderRepresentative || "___________"}\n中華民國 ${todayStr}\n============================================================\n\n※ 本草稿由 Beyond Business 系統自動整合案件資料生成，\n   請律師事務所審閱後依法發文，本草稿不具正式法律效力。\n`;
         return content;
       };
 
-      const handleExportLegalLetter = () => {
-        const content = generateLegalDraft();
+      const generateCasePackage = () => {
+        const draft = generateLegalDraft();
+        const historyText = (arCase.history || [])
+          .map(h => `[${h.date}] ${h.action}${h.note ? " ── " + h.note : ""}`)
+          .join("\n");
+        const overdueDays = arCase.dueDate
+          ? Math.floor((new Date() - new Date(arCase.dueDate)) / 86400000)
+          : 0;
+        const riskLabel = arCase.mockRisk === "low" ? "善意低風險" : arCase.mockRisk === "medium" ? "態度模糊" : "高風險拖延";
 
-        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        return `================================================================
+逾期帳款催收案件完整移交包
+（供律師事務所建案用）
+系統：Beyond Business AR Module
+匯出時間：${new Date().toLocaleString("zh-TW")}
+================================================================
+
+【一、案件基本資訊】
+債務人：${arCase.clientName}
+發票號碼：${arCase.invoiceId}
+應收金額：NT$ ${(arCase.amount || 0).toLocaleString()}
+約定付款日：${arCase.dueDate}
+目前逾期天數：${overdueDays > 0 ? overdueDays + " 天" : "未逾期"}
+AI 風險評估：${riskLabel}
+最後回覆日：${arCase.lastReplyAt || "無回覆記錄"}
+
+【二、聯絡窗口】
+主要聯絡人：${arCase.contactName || "未提供"}
+聯絡電話：${arCase.contactPhone || "未提供"}
+聯絡 Email：${arCase.contactEmail || "未提供"}
+
+【三、完整催收歷程】
+${historyText}
+
+【四、債權人（本公司）資訊】
+公司名稱：${companyProfile?.name || "未提供"}
+公司地址：${legalForm.senderAddress || "未提供"}
+代表人：${legalForm.senderRepresentative || "未提供"}
+收款帳戶：${legalForm.bankAccount || "未提供"}
+
+【五、債務人補充資訊】
+登記地址：${legalForm.recipientAddress || "未提供"}
+負責人姓名：${legalForm.debtorRepresentative || "未提供"}
+統一編號/身分證：${legalForm.debtorId || "未提供"}
+合約/訂單編號：${legalForm.contractRef || "未提供"}
+
+================================================================
+【六、存證信函草稿全文】
+================================================================
+
+${draft}`;
+      };
+
+      const handleExportLegalLetter = (type = "draft") => {
+        const content = type === "package" ? generateCasePackage() : generateLegalDraft();
+        const filename = type === "package"
+          ? `律師案件包_${arCase.clientName}_${new Date().toISOString().split("T")[0]}.txt`
+          : `存證信函草稿_${arCase.clientName}.txt`;
+        const blob = new Blob(["\uFEFF" + content], { type: "text/plain;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `存證信函草稿_${arCase.clientName}.txt`;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        addLog?.("📥", "存證信函匯出", `為 ${arCase.clientName} 產出草稿`, C.violet);
+        onUpdate?.(arCase.id, {
+          history: [...(arCase.history || []), {
+            date: new Date().toISOString().split("T")[0],
+            action: type === "package" ? "📦 律師案件包已匯出" : "📥 存證信函草稿已匯出",
+            note: `檔名：${filename}`
+          }]
+        });
+        addLog?.("📥", type === "package" ? "律師案件包匯出" : "存證信函匯出", `為 ${arCase.clientName} 產出${type === "package" ? "完整案件包" : "草稿"}`, C.violet);
         setLegalWizardOpen(false);
+        setLegalStep(0);
       };
 
       const handleEmailLawFirm = () => {
-        const draft = generateLegalDraft();
-        const historyText = (arCase.history || [])
-          .map(h => `- ${h.date}: ${h.action} ${h.note ? `(${h.note})` : ""}`)
-          .join("\n");
-        const body = `律師 您好，\n\n這是一筆我們公司系統自動整理的逾期帳款案件，因為客戶屢催不繳，希望委託貴所協助發出存證信函並進行後續法務程序。\n\n【案件摘要】\n債務人：${arCase.clientName}\n欠款金額：NT$ ${(arCase.amount || 0).toLocaleString()}\n發票號碼：${arCase.invoiceId}\n約定付款日：${arCase.dueDate}\n\n【雙方往來歷程紀錄】\n${historyText}\n\n【其他補充約定事項】\n${legalForm.extraNotes || "無"}\n\n------------------------------\n以下為系統擷取上述資訊之存證信函初稿，供貴所潤飾與發文參考：\n\n${draft}`;
+        const content = generateCasePackage();
         const subject = `【法務委託】逾期帳款催收案件 - 債務人：${arCase.clientName}`;
-        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        const emailBody = `律師 您好，
+
+這是我們公司透過 Beyond Business 系統整理的逾期帳款案件，債務人屢催不繳，懇請委託貴所協助發出正式存證信函並進行後續法務程序。
+
+案件詳情與存證信函草稿請見附件（請將下方文字複製另存為 .txt 後附上）。
+
+---
+【案件快覽】
+債務人：${arCase.clientName}
+欠款金額：NT$ ${(arCase.amount || 0).toLocaleString()}
+發票號碼：${arCase.invoiceId}
+約定付款日：${arCase.dueDate}
+---
+
+${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請見匯出之 .txt 附件）" : ""}`;
+        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+        onUpdate?.(arCase.id, {
+          history: [...(arCase.history || []), {
+            date: new Date().toISOString().split("T")[0],
+            action: "📧 案件已寄送律師",
+            note: `寄送法務委託信至律師事務所`
+          }]
+        });
         addLog?.("📧", "寄送案件予律師", `將 ${arCase.clientName} 案件打包發送`, C.gold);
         setLegalWizardOpen(false);
+        setLegalStep(0);
       };
 
       return (
@@ -7025,10 +7117,10 @@
                       if (days > sets.t1Days) {
                         const isHigh = days > sets.t2Days;
                         return (
-                          <button onClick={() => setLegalWizardOpen(true)} style={{ width: "100%", padding: "12px", borderRadius: 8, border: `1px solid ${isHigh ? C.rose : C.gold}`, background: isHigh ? `${C.rose}15` : `${C.gold}15`, color: isHigh ? C.rose : C.gold, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T, animation: "fadeIn 0.5s ease" }}
+                          <button onClick={() => { setLegalStep(0); setLegalWizardOpen(true); }} style={{ width: "100%", padding: "12px", borderRadius: 8, border: `1px solid ${isHigh ? C.rose : C.gold}`, background: isHigh ? `${C.rose}15` : `${C.gold}15`, color: isHigh ? C.rose : C.gold, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T, animation: "fadeIn 0.5s ease" }}
                             onMouseEnter={(e) => e.currentTarget.style.background = isHigh ? `${C.rose}25` : `${C.gold}25`} onMouseLeave={(e) => e.currentTarget.style.background = isHigh ? `${C.rose}15` : `${C.gold}15`}
                           >
-                            ⚖️ 啟動合規存證信函精靈
+                            ⚖️ 啟動存證信函助手・律師案件包
                           </button>
                         );
                       }
@@ -7074,76 +7166,104 @@
                       </div>
                     </div>
 
-                    {/* Channel list */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-                      {/* Email — active */}
-                      <div style={{ display: "flex", alignItems: "center", padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px solid ${pbChannels.email ? C.accent + "55" : C.border}` }}>
-                        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", flex: 1 }}>
-                          <input type="checkbox" checked={pbChannels.email} onChange={e => setPbChannels({ ...pbChannels, email: e.target.checked })} />
-                          <span style={{ fontSize: 16 }}>📧</span>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>Email</div>
-                            <div style={{ fontSize: 11, color: pbSent ? C.emerald : C.inkMuted }}>
-                              {pbSent ? "✅ 已寄出 · AI 正在監聽回覆" : generatedDraft ? "草稿已就緒，可確認寄出" : "請先在上方生成 AI 草稿"}
-                            </div>
+                    {/* ── Legal Stage: 法務程序專屬 CTA ── */}
+                    {arCase.status === "legal" ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        <div style={{ display: "flex", gap: 12, alignItems: "center", padding: "14px 16px", borderRadius: 10, background: `${C.violet}10`, border: `1.5px solid ${C.violet}40` }}>
+                          <span style={{ fontSize: 28 }}>⚖️</span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: C.violet }}>進入法務程序模式</div>
+                            <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 3 }}>系統將協助你整理存證信函所需資料，並產出律師事務所可直接使用的完整案件包。</div>
                           </div>
-                        </label>
-                        {pbSent && <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: `${C.emerald}15`, color: C.emerald, fontWeight: 700, flexShrink: 0 }}>🟢 監聽中</span>}
-                      </div>
-                      {/* LINE — coming soon */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px dashed ${C.border}`, opacity: 0.5 }}>
-                        <span style={{ fontSize: 16 }}>💬</span>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft }}>LINE 官方帳號</div>
-                          <div style={{ fontSize: 11, color: C.inkMuted }}>整合中，即將推出</div>
                         </div>
-                        <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, border: `1px solid ${C.border}`, color: C.inkMuted }}>即將推出</span>
-                      </div>
-                      {/* SMS — coming soon */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px dashed ${C.border}`, opacity: 0.5 }}>
-                        <span style={{ fontSize: 16 }}>📱</span>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft }}>簡訊 SMS</div>
-                          <div style={{ fontSize: 11, color: C.inkMuted }}>整合中，即將推出</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          <div style={{ fontSize: 11, color: C.inkMuted, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", padding: "0 2px" }}>流程說明</div>
+                          {["① 點擊下方按鈕，開啟存證信函助手", "② 補充債務人地址、代表人等資訊", "③ 預覽草稿確認後，一鍵匯出律師案件包（.txt）", "④ 可選擇直接用信箱寄送至律師事務所"].map((step, i) => (
+                            <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0" }}>
+                              <div style={{ fontSize: 12, color: C.violet, fontWeight: 600, flexShrink: 0 }}>{step}</div>
+                            </div>
+                          ))}
                         </div>
-                        <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, border: `1px solid ${C.border}`, color: C.inkMuted }}>即將推出</span>
+                        <button onClick={() => { setLegalStep(0); setLegalWizardOpen(true); }}
+                          style={{ width: "100%", padding: "14px", borderRadius: 10, border: `2px solid ${C.violet}`,
+                            background: `linear-gradient(135deg, ${C.violet}20, ${C.violet}10)`,
+                            color: C.violet, fontSize: 15, fontWeight: 800, cursor: "pointer",
+                            display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T }}
+                          onMouseEnter={e => e.currentTarget.style.background = `${C.violet}25`}
+                          onMouseLeave={e => e.currentTarget.style.background = `linear-gradient(135deg, ${C.violet}20, ${C.violet}10)`}>
+                          ⚖️ 開啟存證信函助手・整理律師案件包
+                        </button>
                       </div>
-                    </div>
-
-                    {/* CTA */}
-                    {!pbSent ? (
-                      <button onClick={handleStartPlaybook} disabled={pbRunning || !canSend}
-                        style={{ width: "100%", padding: "13px", borderRadius: 8, border: "none",
-                          background: !canSend ? C.inkMuted : pbRunning ? C.inkMuted : C.accent,
-                          color: "#fff", fontSize: 14, fontWeight: 800,
-                          cursor: (!canSend || pbRunning) ? "not-allowed" : "pointer", transition: T,
-                          display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
-                        {pbRunning ? "📤 開啟信箱中..." : !generatedDraft ? "📝 請先生成 AI 草稿" : arCase.status === "resolved" ? "✅ 案件已結案" : "📤 確認寄出・啟動 AI 回覆監聽"}
-                      </button>
-                    ) : (
+                    ) : arCase.status === "resolved" ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 8, background: `${C.emerald}10`, border: `1px solid ${C.emerald}40` }}>
-                        <span style={{ fontSize: 16 }}>🟢</span>
-                        <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: C.emerald }}>催款通知已發出・AI 監聽已啟動</div>
-                        <button onClick={() => { setPbSent(false); setGeneratedDraft(null); }}
-                          style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.emerald}40`, background: "transparent", color: C.emerald, cursor: "pointer", fontWeight: 600 }}>重新發送</button>
+                        <span style={{ fontSize: 16 }}>✅</span>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.emerald }}>案件已結案，無需發送催款通知</div>
                       </div>
+                    ) : (
+                      <>
+                        {/* Channel list */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+                          {/* Email — active */}
+                          <div style={{ display: "flex", alignItems: "center", padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px solid ${pbChannels.email ? C.accent + "55" : C.border}` }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", flex: 1 }}>
+                              <input type="checkbox" checked={pbChannels.email} onChange={e => setPbChannels({ ...pbChannels, email: e.target.checked })} />
+                              <span style={{ fontSize: 16 }}>📧</span>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>Email</div>
+                                <div style={{ fontSize: 11, color: pbSent ? C.emerald : C.inkMuted }}>
+                                  {pbSent ? "✅ 已寄出 · AI 正在監聽回覆" : generatedDraft ? "草稿已就緒，可確認寄出" : "請先在上方生成 AI 草稿"}
+                                </div>
+                              </div>
+                            </label>
+                            {pbSent && <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: `${C.emerald}15`, color: C.emerald, fontWeight: 700, flexShrink: 0 }}>🟢 監聽中</span>}
+                          </div>
+                          {/* LINE — coming soon */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px dashed ${C.border}`, opacity: 0.5 }}>
+                            <span style={{ fontSize: 16 }}>💬</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft }}>LINE 官方帳號</div>
+                              <div style={{ fontSize: 11, color: C.inkMuted }}>整合中，即將推出</div>
+                            </div>
+                            <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, border: `1px solid ${C.border}`, color: C.inkMuted }}>即將推出</span>
+                          </div>
+                          {/* SMS — coming soon */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px dashed ${C.border}`, opacity: 0.5 }}>
+                            <span style={{ fontSize: 16 }}>📱</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft }}>簡訊 SMS</div>
+                              <div style={{ fontSize: 11, color: C.inkMuted }}>整合中，即將推出</div>
+                            </div>
+                            <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, border: `1px solid ${C.border}`, color: C.inkMuted }}>即將推出</span>
+                          </div>
+                        </div>
+
+                        {/* CTA */}
+                        {!pbSent ? (
+                          <button onClick={handleStartPlaybook} disabled={pbRunning || !canSend}
+                            style={{ width: "100%", padding: "13px", borderRadius: 8, border: "none",
+                              background: !canSend ? C.inkMuted : pbRunning ? C.inkMuted : C.accent,
+                              color: "#fff", fontSize: 14, fontWeight: 800,
+                              cursor: (!canSend || pbRunning) ? "not-allowed" : "pointer", transition: T,
+                              display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
+                            {pbRunning ? "📤 開啟信箱中..." : !generatedDraft ? "📝 請先生成 AI 草稿" : "📤 確認寄出・啟動 AI 回覆監聽"}
+                          </button>
+                        ) : (
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 8, background: `${C.emerald}10`, border: `1px solid ${C.emerald}40` }}>
+                            <span style={{ fontSize: 16 }}>🟢</span>
+                            <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: C.emerald }}>催款通知已發出・AI 監聽已啟動</div>
+                            <button onClick={() => { setPbSent(false); setGeneratedDraft(null); }}
+                              style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.emerald}40`, background: "transparent", color: C.emerald, cursor: "pointer", fontWeight: 600 }}>重新發送</button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 );
               })()}
 
               {/* History Timeline */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
                 <h4 style={{ fontSize: 14, color: C.ink, fontWeight: 700, margin: 0 }}>📜 案件歷程</h4>
-                <button
-                  onClick={() => setMockReplyOpen(true)}
-                  style={{ padding: "5px 12px", borderRadius: 6, border: `1px dashed ${C.violet}80`, background: "transparent", color: C.violet, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: T, display: "flex", alignItems: "center", gap: 6 }}
-                  onMouseEnter={e => { e.target.style.background = `${C.violet}10`; e.target.style.borderColor = C.violet; }}
-                  onMouseLeave={e => { e.target.style.background = "transparent"; e.target.style.borderColor = `${C.violet}80`; }}
-                  title="開發測試專用：手動輸入客戶回覆，觸發 AI 語意分析與策略雷達展演"
-                >
-                  <span style={{ fontSize: 14 }}>🧪</span> 模擬測試收信
-                </button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
                 {arCase.history && [...arCase.history].reverse().map((h, i) => (
@@ -7176,62 +7296,145 @@
               <button onClick={() => onUpdate(arCase.id, { status: "resolved" })} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: C.emerald, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>✅ 標記已結案</button>
             </div>
 
-            {/* Overlays inside Drawer (Legal Wizard & Mock Reply) */}
+            {/* Overlays inside Drawer — Legal Wizard (多步驟：資料填寫 → 預覽草稿) */}
             {legalWizardOpen && (
               <div style={{ position: "absolute", inset: 0, zIndex: 1110, display: "flex", justifyContent: "center", alignItems: "center" }}>
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)", animation: "fadeIn .2s ease" }} onClick={() => setLegalWizardOpen(false)} />
-                <div style={{ position: "relative", width: "90%", background: C.card, borderRadius: 16, border: `1px solid ${C.border}`, boxShadow: "0 20px 40px rgba(0,0,0,0.3)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "scaleUp .3s cubic-bezier(.175, .885, .32, 1.275)", maxHeight: "90%" }}>
-                  <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.borderHover}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.gold}05` }}>
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)", animation: "fadeIn .2s ease" }} onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }} />
+                <div style={{ position: "relative", width: "92%", background: C.card, borderRadius: 16, border: `1px solid ${C.violet}40`, boxShadow: "0 20px 60px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "scaleUp .3s cubic-bezier(.175, .885, .32, 1.275)", maxHeight: "92%" }}>
+
+                  {/* Modal Header */}
+                  <div style={{ padding: "18px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.violet}08` }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 24 }}>⚖️</span>
+                      <span style={{ fontSize: 22 }}>⚖️</span>
                       <div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>存證信函參數設定</div>
-                        <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 4 }}>系統將整合歷史催收紀錄，產出具有法務效力公文書草稿</div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>存證信函助手・律師案件包</div>
+                        <div style={{ fontSize: 11, color: C.inkSoft, marginTop: 2 }}>整合催收紀錄，產出可直接送律師事務所的完整案件包</div>
                       </div>
                     </div>
-                    <button onClick={() => setLegalWizardOpen(false)} style={{ background: C.surface, border: "none", color: C.inkSoft, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, transition: T }}>✕</button>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      {/* Step indicator */}
+                      <div style={{ display: "flex", gap: 6 }}>
+                        {["資料填寫", "預覽確認"].map((label, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20,
+                            background: legalStep === i ? `${C.violet}20` : "transparent",
+                            border: `1px solid ${legalStep === i ? C.violet : C.border}`,
+                            fontSize: 11, fontWeight: legalStep === i ? 700 : 400,
+                            color: legalStep === i ? C.violet : C.inkMuted }}>
+                            <span style={{ width: 16, height: 16, borderRadius: "50%", background: legalStep === i ? C.violet : C.border, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700 }}>{i + 1}</span>
+                            {label}
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }} style={{ background: C.surface, border: "none", color: C.inkSoft, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8 }}>✕</button>
+                    </div>
                   </div>
-                  <div style={{ padding: "24px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
-                    <Field label="寄件人地址 (你的公司)"><input type="text" style={{ width: "100%", padding: 12, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }} value={legalForm.senderAddress} onChange={e => setLegalForm({ ...legalForm, senderAddress: e.target.value })} placeholder="例如：台北市信義區信義路五段7號" /></Field>
-                    <Field label="收件人地址 (債務人)"><input type="text" style={{ width: "100%", padding: 12, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }} value={legalForm.recipientAddress} onChange={e => setLegalForm({ ...legalForm, recipientAddress: e.target.value })} placeholder="輸入對方營業登記或聯絡地址" /></Field>
-                    <Field label="違約金/滯納金訴求 (選填)"><input type="text" style={{ width: "100%", padding: 12, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }} value={legalForm.penalty} onChange={e => setLegalForm({ ...legalForm, penalty: e.target.value })} placeholder="例如：依合約每日加計千分之五遲延利息" /></Field>
-                    <Field label="其他補充聲明 (選填)"><textarea style={{ width: "100%", height: 80, padding: 12, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none", resize: "vertical" }} value={legalForm.extraNotes} onChange={e => setLegalForm({ ...legalForm, extraNotes: e.target.value })} placeholder="有無其他需向律師或對方註明的特約事項..." /></Field>
-                  </div>
-                  <div style={{ padding: "20px 24px", borderTop: `1px solid ${C.borderHover}`, background: C.surface, display: "flex", justifyContent: "flex-end", gap: 12 }}>
-                    <Btn variant="ghost" onClick={() => setLegalWizardOpen(false)}>取消</Btn>
-                    <button onClick={handleEmailLawFirm} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.violet}`, background: `${C.violet}15`, color: C.violet, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>📧 用信箱寄送法務案件包給律師</button>
-                    <Btn onClick={handleExportLegalLetter} color={C.gold}>📥 僅匯出 .txt 草稿</Btn>
+
+                  {/* Step 0: 資料填寫 */}
+                  {legalStep === 0 && (
+                    <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
+                      {/* Auto-filled case summary */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20, padding: 14, background: C.surface, borderRadius: 10, border: `1px solid ${C.border}` }}>
+                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 2 }}>債務人</div><div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{arCase.clientName}</div></div>
+                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 2 }}>欠款金額</div><div style={{ fontSize: 13, fontWeight: 700, color: C.rose }}>NT$ {(arCase.amount || 0).toLocaleString()}</div></div>
+                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 2 }}>催收歷程</div><div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{(arCase.history || []).length} 筆</div></div>
+                      </div>
+
+                      {/* Section: 債權人資訊 */}
+                      <div style={{ fontSize: 12, fontWeight: 800, color: C.violet, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>🏢 債權人（你的公司）資訊</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                        <Field label="公司地址 *">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.senderAddress} onChange={e => setLegalForm({ ...legalForm, senderAddress: e.target.value })} placeholder="台北市○○區○○路○號" />
+                        </Field>
+                        <Field label="代表人姓名 *">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.senderRepresentative} onChange={e => setLegalForm({ ...legalForm, senderRepresentative: e.target.value })} placeholder="代表人/負責人姓名" />
+                        </Field>
+                        <Field label="收款銀行帳號（供存證信函載明）">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.bankAccount} onChange={e => setLegalForm({ ...legalForm, bankAccount: e.target.value })} placeholder="例：中國信託 822-1234567890" />
+                        </Field>
+                        <Field label="合約/訂單編號">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.contractRef} onChange={e => setLegalForm({ ...legalForm, contractRef: e.target.value })} placeholder="如有合約號可填入" />
+                        </Field>
+                      </div>
+
+                      {/* Section: 債務人資訊 */}
+                      <div style={{ fontSize: 12, fontWeight: 800, color: C.rose, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>👤 債務人補充資訊</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                        <Field label="債務人登記地址 *">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.recipientAddress} onChange={e => setLegalForm({ ...legalForm, recipientAddress: e.target.value })} placeholder="對方營業登記或聯絡地址" />
+                        </Field>
+                        <Field label="負責人/當事人姓名">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.debtorRepresentative} onChange={e => setLegalForm({ ...legalForm, debtorRepresentative: e.target.value })} placeholder="公司負責人或個人姓名" />
+                        </Field>
+                        <Field label="統一編號 / 身分證字號">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.debtorId} onChange={e => setLegalForm({ ...legalForm, debtorId: e.target.value })} placeholder="法人統編或自然人身分證號" />
+                        </Field>
+                      </div>
+
+                      {/* Section: 違約/補充 */}
+                      <div style={{ fontSize: 12, fontWeight: 800, color: C.gold, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>📋 違約條款與補充說明</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        <Field label="違約金/滯納金訴求（選填）">
+                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
+                            value={legalForm.penalty} onChange={e => setLegalForm({ ...legalForm, penalty: e.target.value })} placeholder="例：依合約第X條，每日加計千分之五遲延利息" />
+                        </Field>
+                        <Field label="補充聲明（選填）">
+                          <textarea style={{ width: "100%", height: 72, padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "inherit" }}
+                            value={legalForm.extraNotes} onChange={e => setLegalForm({ ...legalForm, extraNotes: e.target.value })} placeholder="有無其他約定、特殊情況需向律師說明的事項..." />
+                        </Field>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 1: 預覽草稿 */}
+                  {legalStep === 1 && (
+                    <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1 }}>
+                      <div style={{ fontSize: 12, color: C.inkMuted, marginBottom: 12, padding: "8px 12px", borderRadius: 8, background: `${C.violet}08`, border: `1px solid ${C.violet}20` }}>
+                        📋 以下為系統自動生成的存證信函草稿全文，供你確認後再匯出。請確認資訊正確後選擇匯出方式。
+                      </div>
+                      <pre style={{ fontSize: 12, lineHeight: 1.7, color: C.ink, background: C.surface, padding: 16, borderRadius: 10, border: `1px solid ${C.border}`, whiteSpace: "pre-wrap", wordBreak: "break-word", margin: 0, fontFamily: "monospace" }}>
+                        {generateLegalDraft()}
+                      </pre>
+                    </div>
+                  )}
+
+                  {/* Modal Footer */}
+                  <div style={{ padding: "16px 24px", borderTop: `1px solid ${C.border}`, background: C.surface, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <Btn variant="ghost" onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }}>取消</Btn>
+                      {legalStep === 1 && <Btn variant="ghost" onClick={() => setLegalStep(0)}>← 返回修改</Btn>}
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {legalStep === 0 ? (
+                        <Btn onClick={() => setLegalStep(1)} color={C.violet}>預覽草稿 →</Btn>
+                      ) : (
+                        <>
+                          <button onClick={() => handleExportLegalLetter("draft")}
+                            style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${C.gold}`, background: `${C.gold}15`, color: C.gold, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                            📄 匯出信函草稿 .txt
+                          </button>
+                          <button onClick={() => handleExportLegalLetter("package")}
+                            style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${C.emerald}`, background: `${C.emerald}15`, color: C.emerald, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                            📦 匯出完整律師案件包 .txt
+                          </button>
+                          <button onClick={handleEmailLawFirm}
+                            style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${C.violet}`, background: `${C.violet}15`, color: C.violet, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                            📧 用信箱寄送給律師
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {mockReplyOpen && (
-              <div style={{ position: "absolute", inset: 0, zIndex: 1110, display: "flex", justifyContent: "center", alignItems: "center", pointerEvents: "auto" }}>
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)", animation: "fadeIn .2s ease" }} onClick={() => setMockReplyOpen(false)} />
-                <div style={{ position: "relative", width: "90%", background: C.card, borderRadius: 16, border: `1px solid ${C.border}`, boxShadow: "0 20px 40px rgba(0,0,0,0.3)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "scaleUp .3s cubic-bezier(.175, .885, .32, 1.275)", zIndex: 1120 }}>
-                  <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.borderHover}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.violet}05` }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 24 }}>📩</span>
-                      <div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: C.ink }}>模擬：接收客戶回信與 AI 判讀</div>
-                        <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 4 }}>輸入任意模擬情境，體驗 Webhook 接回文字後 AI 的動態策略判定</div>
-                      </div>
-                    </div>
-                    <button onClick={() => setMockReplyOpen(false)} style={{ background: C.surface, border: "none", color: C.inkSoft, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8, transition: T }}>✕</button>
-                  </div>
-                  <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 16 }}>
-                    <textarea autoFocus style={{ width: "100%", height: 120, padding: 12, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 14, outline: "none", resize: "none", lineHeight: 1.5 }} value={mockReplyText} onChange={e => setMockReplyText(e.target.value)} placeholder={`例如：\n「不好意思這幾天會計休假，我們下週三前一定匯款！」(系統將判讀為善意，亮綠燈)\n「目前公司週轉比較緊缺，能不能再寬限兩個月...」(系統將判讀為拖延，亮紅燈)`} />
-                  </div>
-                  <div style={{ padding: "20px 24px", borderTop: `1px solid ${C.borderHover}`, background: C.surface, display: "flex", justifyContent: "flex-end", gap: 12 }}>
-                    <Btn variant="ghost" onClick={() => setMockReplyOpen(false)}>取消</Btn>
-                    <button onClick={handleMockReplySubmit} disabled={!mockReplyText.trim() || mockAnalyzing} style={{ padding: "10px 20px", borderRadius: 8, border: "none", background: mockAnalyzing || !mockReplyText.trim() ? C.inkMuted : C.violet, color: "#fff", fontSize: 14, fontWeight: 800, cursor: (!mockReplyText.trim() || mockAnalyzing) ? "not-allowed" : "pointer", transition: T, display: "flex", alignItems: "center", gap: 8 }}>
-                      {mockAnalyzing ? "🧠 AI 語意解析中..." : "送出測試，啟動 AI 解析"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       );
