@@ -1133,10 +1133,12 @@
       const hotDeals = active.filter(d => d.stage === "negotiation");
       const todayTasks = tasks.filter(t => !t.archived && t.status !== "done" && t.due === today());
       const contactableArs = (arCases || []).filter(c => c.status && c.status.startsWith("overdue_"));
+      const unreadReplies = (arCases || []).filter(c => c.unreadReply === true);
 
       // Generate smart brief
       const lines = [];
       if (overdueTasks.length > 0) lines.push({ icon: "🔴", text: `${overdueTasks.length} 個逾期任務需要處理`, color: C.rose });
+      if (unreadReplies.length > 0) lines.push({ icon: "🔔", text: `${unreadReplies.length} 筆應收帳款有客戶新回覆待查看（${unreadReplies.map(c => c.clientName).join("、")}）`, color: C.gold });
       if (contactableArs.length > 0) lines.push({ icon: "❗", text: `今日有 ${contactableArs.length} 筆應收帳款需聯繫（含${contactableArs[0]?.clientName}等）`, color: C.rose });
       if (todayTasks.length > 0) lines.push({ icon: "📋", text: `今天有 ${todayTasks.length} 個任務到期`, color: C.gold });
       if (hotDeals.length > 0) lines.push({ icon: "🔥", text: `${hotDeals.length} 個案件在議價階段，接近簽約！`, color: C.emerald });
@@ -6676,6 +6678,7 @@
 
       const totalAmount = (arCases || []).reduce((sum, c) => sum + (c.status !== "resolved" ? (c.amount || 0) : 0), 0);
       const overdueAmount = (arCases || []).reduce((sum, c) => sum + (c.status && c.status.startsWith("overdue_") ? (c.amount || 0) : 0), 0);
+      const unreadReplyCount = (arCases || []).filter(c => c.unreadReply === true).length;
 
       const dynamicAI = (c) => {
         const days = Math.floor((new Date() - new Date(c.dueDate)) / (1000 * 60 * 60 * 24));
@@ -6704,6 +6707,16 @@
                   <div style={{ fontSize: 12, color: C.inkSoft }}>共 {(arCases || []).filter(c => c.status && c.status.startsWith("overdue_")).length} 筆</div>
                 </div>
               </div>
+              {unreadReplyCount > 0 && (
+                <div className="castle-pulse" style={{ background: C.card, borderRadius: 12, border: `2px solid ${C.gold}60`, padding: "16px 20px", position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${C.gold}00, ${C.gold}80, ${C.gold}00)` }} />
+                  <div style={{ fontSize: 13, color: C.gold, fontWeight: 600, letterSpacing: 1 }}>🔔 新客戶回覆</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: C.ink, marginTop: 4 }}>{unreadReplyCount}</div>
+                    <div style={{ fontSize: 12, color: C.inkSoft }}>件待查看</div>
+                  </div>
+                </div>
+              )}
             </div>
             <button onClick={onSettings} style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: "transparent", color: C.inkMuted, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: T, display: "flex", alignItems: "center", gap: 6 }} onMouseEnter={(e) => { e.target.style.background = C.surface; e.target.style.color = C.ink; }} onMouseLeave={(e) => { e.target.style.background = "transparent"; e.target.style.color = C.inkMuted; }}>
               ⚙️ 催收規則設定
@@ -6733,7 +6746,14 @@
                       onMouseEnter={(e) => e.currentTarget.style.background = C.surface}
                       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>{c.clientName}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, display: "flex", alignItems: "center", gap: 6 }}>
+                          {c.clientName}
+                          {c.unreadReply && (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 700, color: C.gold, background: `${C.gold}18`, border: `1px solid ${C.gold}40`, borderRadius: 6, padding: "2px 6px", animation: "pulseGlow 2s ease-in-out infinite" }}>
+                              🔔 新回覆
+                            </span>
+                          )}
+                        </div>
                         <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 4 }}>發票: {c.invoiceId}</div>
                       </div>
                       <div style={{ fontSize: 14, fontWeight: 600, color: C.ink }}>NT$ {(c.amount || 0).toLocaleString()}</div>
@@ -6784,6 +6804,13 @@
       const [pbRunning, setPbRunning] = useState(false);
       const [pbSent, setPbSent] = useState(false);
       const { mobile } = useWindowSize();
+
+      // 開啟 drawer 時自動清除「新回覆」未讀旗標
+      useEffect(() => {
+        if (arCase?.unreadReply) {
+          onUpdate?.(arCase.id, { unreadReply: false });
+        }
+      }, [arCase?.id]);
 
       if (!arCase) return null;
       const sObj = AR_STATUSES.find(s => s.id === arCase.status);
@@ -8090,6 +8117,8 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
       const activeRoles = roles.filter((r) => !r.archived);
       const now = new Date().toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: mobile ? undefined : "long" });
 
+      const unreadArCount = (arCases || []).filter(c => c.unreadReply === true).length;
+
       const TABS = [
         { id: "pipeline", label: "📊 業務漏斗", mLabel: "漏斗", mIcon: "📊" },
         { id: "tasks", label: "📋 任務看板", mLabel: "任務", mIcon: "📋" },
@@ -8260,7 +8289,10 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                   {TABS.map((t) => (
                     <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { setTab(t.id); setExpandedDealId(null); setTaskSearch(""); setTaskFilter("all"); }}
                       style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "10px 12px 8px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, transition: T, WebkitTapHighlightColor: "transparent", flexShrink: 0, minWidth: 56 }}>
-                      <span style={{ fontSize: 18 }}>{t.mIcon}</span>
+                      <span style={{ fontSize: 18, position: "relative", display: "inline-block" }}>
+                        {t.mIcon}
+                        {t.id === "ar" && unreadArCount > 0 && <span style={{ position: "absolute", top: -2, right: -2, width: 8, height: 8, borderRadius: "50%", background: C.rose, border: `2px solid ${C.bg}` }} />}
+                      </span>
                       <span style={{ fontSize: 11, fontWeight: tab === t.id ? 700 : 500, letterSpacing: ".01em", whiteSpace: "nowrap" }}>{t.mLabel}</span>
                     </button>
                   ))}
@@ -8270,8 +8302,9 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                 <div role="tablist" style={{ display: "flex", gap: 4, background: C.surface, borderRadius: 12, padding: 4, overflowX: "auto" }}>
                   {TABS.map((t) => (
                     <button key={t.id} role="tab" aria-selected={tab === t.id} onClick={() => { setTab(t.id); setExpandedDealId(null); setTaskSearch(""); setTaskFilter("all"); }}
-                      style={{ padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, whiteSpace: "nowrap", transition: T }}>
+                      style={{ padding: "9px 20px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit", background: tab === t.id ? C.card : "transparent", color: tab === t.id ? C.ink : C.inkMuted, whiteSpace: "nowrap", transition: T, position: "relative" }}>
                       {t.label}
+                      {t.id === "ar" && unreadArCount > 0 && <span style={{ position: "absolute", top: 7, right: 7, width: 7, height: 7, borderRadius: "50%", background: C.rose, border: `2px solid ${C.bg}` }} />}
                     </button>
                   ))}
                 </div>

@@ -111,6 +111,7 @@ export default async function handler(req, res) {
             mockRisk: aiResult.risk,
             lastReplyAt: today,
             lastReplyFrom: fromEmail,
+            unreadReply: true,
         };
 
         // 8. 寫回 Firestore（與 usePersisted 相同格式）
