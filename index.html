@@ -4254,9 +4254,16 @@
           if (!(c.company || "").toLowerCase().includes(q) && !(c.contact || "").toLowerCase().includes(q) && !(c.email || "").toLowerCase().includes(q)) return false;
         }
         if (filter && filter !== "all") {
-          if (!c.tags?.includes(filter) && filter !== "has_deals" && filter !== "no_deals") return false;
+          // 健康度快速篩選
+          if (filter === "health_vip")      return c.clientHealth === "vip";
+          if (filter === "health_risk")     return c.clientHealth === "risk";
+          if (filter === "health_critical") return c.clientHealth === "critical";
+          if (filter === "has_ar")          return (c.activeArCount || 0) > 0;
+          // 交易量篩選
           if (filter === "has_deals" && c.totalTransactions === 0) return false;
           if (filter === "no_deals" && c.totalTransactions > 0) return false;
+          // 標籤篩選（非以上 id 才走這裡）
+          if (!["has_deals", "no_deals"].includes(filter) && !c.tags?.includes(filter)) return false;
         }
         return true;
       });
@@ -6759,12 +6766,23 @@
       );
     };
 
+    // 催收階段對應的 Playbook 行動策略
+    const PLAYBOOK_STAGE = {
+      upcoming:   { title: "T0 預防提醒",  color: "#22D3EE", desc: "發票即將到期，主動友善提醒，防患未然。",           advice: "語氣：輕鬆友善，保護客戶關係" },
+      overdue_t1: { title: "T1 溫和催收",  color: "#F5A623", desc: "逾期初期，以體諒語氣追蹤付款狀況。",             advice: "語氣：體諒理解，詢問是否有困難" },
+      overdue_t2: { title: "T2 積極跟進",  color: "#FB923C", desc: "逾期超過 2 週，明確要求付款時程與書面承諾。",     advice: "語氣：堅定明確，要求具體還款日" },
+      overdue_t3: { title: "T3 最後通牒",  color: "#F87171", desc: "逾期逾 1 個月，正式書面催告，預告法律行動。",    advice: "語氣：嚴正正式，說明後續法律後果" },
+      legal:      { title: "⚖️ 法務程序",  color: "#A78BFA", desc: "進入法律追討，請配合存證信函或小額訴訟程序。",   advice: "行動：使用下方法務助手產生存證信函" },
+      resolved:   { title: "✅ 已結案",    color: "#34D399", desc: "帳款已收回，案件圓滿結束。",                     advice: "案件已結案，無需發送催款通知" },
+    };
+
     const ArDetailDrawer = ({ arCase, companyProfile, arSettings, emailTemplates, onClose, onUpdate, addLog, onSettings, workspaceId }) => {
       const [aiGenerating, setAiGenerating] = useState(false);
       const [generatedDraft, setGeneratedDraft] = useState(null);
       const [emailTemplate, setEmailTemplate] = useState("direct");
       const [pbChannels, setPbChannels] = useState({ email: true });
       const [pbRunning, setPbRunning] = useState(false);
+      const [pbSent, setPbSent] = useState(false);
       const [mockReplyOpen, setMockReplyOpen] = useState(false);
       const [mockReplyText, setMockReplyText] = useState("");
       const [mockAnalyzing, setMockAnalyzing] = useState(false);
@@ -6825,23 +6843,28 @@
       };
 
       const handleStartPlaybook = () => {
+        if (!generatedDraft) { alert("請先在上方生成 AI 草稿！"); return; }
         setPbRunning(true);
+        // 開啟信箱 — 預填主旨、草稿內容與追蹤用 Reply-To
+        const subject = encodeURIComponent(`【帳務通知】關於 ${arCase.invoiceId || arCase.clientName} 溝通事宜`);
+        const body = encodeURIComponent(generatedDraft);
+        const _wsId = workspaceId || "default";
+        const replyTo = encodeURIComponent(`reply+${_wsId}_${arCase.id}@reply.beyondspec.tw`);
+        const toAddr = arCase.contactEmail ? encodeURIComponent(arCase.contactEmail) : "";
+        window.location.href = `mailto:${toAddr}?subject=${subject}&body=${body}&reply-to=${replyTo}`;
+        // 短暫延遲後記錄歷程並顯示 AI 監聽中
         setTimeout(() => {
           setPbRunning(false);
-          const activeChannels = Object.entries(pbChannels).filter(([_, v]) => v).map(([k]) => k.toUpperCase()).join("、");
-          if (!activeChannels) {
-            alert("請至少選擇一個推送管道！");
-            return;
-          }
+          setPbSent(true);
           onUpdate(arCase.id, {
             history: [...(arCase.history || []), {
               date: new Date().toISOString().split("T")[0],
-              action: `🚀 觸發自動化劇本寄送`,
-              note: `已透過 ${activeChannels} 同步發送催款訊息，AI 將自動追蹤讀取狀態。`
+              action: `📧 催款通知已發送 (Email)`,
+              note: `信件已開啟於信箱，AI 回覆監聽已啟動。Reply-To 追蹤位址：reply+${_wsId}_${arCase.id}@reply.beyondspec.tw`
             }]
           });
-          addLog?.("🚀", "全通路觸發", `為 ${arCase.clientName} 啟動自動化劇本`, C.accent);
-        }, 1500);
+          addLog?.("📧", "催款通知", `為 ${arCase.clientName} 發出催款信，AI 監聽啟動`, C.accent);
+        }, 800);
       };
 
       const [legalWizardOpen, setLegalWizardOpen] = useState(false);
@@ -7019,44 +7042,95 @@
                       style={{ width: "100%", height: 200, padding: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit" }} />
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
                       <button onClick={() => { navigator.clipboard?.writeText(generatedDraft); alert("已複製信件內容！"); }} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: C.emerald, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>📋 複製草稿</button>
-                      <button onClick={() => {
-                        const subject = encodeURIComponent(`【帳務通知】關於 ${arCase.invoiceId} 溝通事宜`);
-                        const body = encodeURIComponent(generatedDraft);
-                        // SaaS Tracking: Inject the workspaceId + caseId into the Reply-To address
-                        // Format: reply+{workspaceId}_{caseId}@reply.beyondspec.tw
-                        // Webhook parses this to locate the correct workspace & case in Firestore
-                        const _wsId = workspaceId || "default";
-                        const replyTo = encodeURIComponent(`reply+${_wsId}_${arCase.id}@reply.beyondspec.tw`);
-                        window.location.href = `mailto:?subject=${subject}&body=${body}&reply-to=${replyTo}`;
-                      }} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.accent}`, background: `${C.accent}15`, color: C.accent, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>📧 於信箱直接開啟</button>
                       <button onClick={() => setGeneratedDraft(null)} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 13, cursor: "pointer" }}>↺ 重新生成</button>
+                      <div style={{ width: "100%", fontSize: 12, color: C.inkMuted, marginTop: 2 }}>✏️ 可直接編輯草稿後，至下方「催款行動方案」確認寄出</div>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Playbook Automation Box */}
-              <div style={{ background: C.surface, borderRadius: 16, padding: "20px 24px", marginBottom: 24, border: `1px solid ${C.border}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 22 }}>🚀</span>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>全通路自動化劇本 (Playbook)</div>
-                      <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 4 }}>勾選管道後將同步發送上方編輯好的文案。系統將自動即時監聽客戶回覆 (基於 Webhook API)。</div>
+              {/* Playbook — Stage-aware Action Hub */}
+              {(() => {
+                const stage = PLAYBOOK_STAGE[arCase.status] || PLAYBOOK_STAGE.upcoming;
+                const canSend = !!generatedDraft && pbChannels.email && arCase.status !== "resolved";
+                return (
+                  <div style={{ background: C.surface, borderRadius: 16, padding: "20px 24px", marginBottom: 24, border: `1px solid ${C.border}` }}>
+                    {/* Header */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                      <span style={{ fontSize: 20 }}>📬</span>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>催款行動方案</div>
+                        <div style={{ fontSize: 12, color: C.inkSoft }}>根據催收階段推薦最佳行動・發出後自動監聽客戶回覆</div>
+                      </div>
                     </div>
+
+                    {/* Stage recommendation strip */}
+                    <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 14px", borderRadius: 10, background: `${stage.color}12`, border: `1.5px solid ${stage.color}45`, marginBottom: 14 }}>
+                      <div style={{ width: 4, borderRadius: 2, background: stage.color, alignSelf: "stretch", flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: stage.color, marginBottom: 2 }}>{stage.title}</div>
+                        <div style={{ fontSize: 12, color: C.inkSoft }}>{stage.desc}</div>
+                        <div style={{ fontSize: 11, color: C.inkMuted, marginTop: 3 }}>💡 {stage.advice}</div>
+                      </div>
+                    </div>
+
+                    {/* Channel list */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+                      {/* Email — active */}
+                      <div style={{ display: "flex", alignItems: "center", padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px solid ${pbChannels.email ? C.accent + "55" : C.border}` }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", flex: 1 }}>
+                          <input type="checkbox" checked={pbChannels.email} onChange={e => setPbChannels({ ...pbChannels, email: e.target.checked })} />
+                          <span style={{ fontSize: 16 }}>📧</span>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>Email</div>
+                            <div style={{ fontSize: 11, color: pbSent ? C.emerald : C.inkMuted }}>
+                              {pbSent ? "✅ 已寄出 · AI 正在監聽回覆" : generatedDraft ? "草稿已就緒，可確認寄出" : "請先在上方生成 AI 草稿"}
+                            </div>
+                          </div>
+                        </label>
+                        {pbSent && <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: `${C.emerald}15`, color: C.emerald, fontWeight: 700, flexShrink: 0 }}>🟢 監聽中</span>}
+                      </div>
+                      {/* LINE — coming soon */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px dashed ${C.border}`, opacity: 0.5 }}>
+                        <span style={{ fontSize: 16 }}>💬</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft }}>LINE 官方帳號</div>
+                          <div style={{ fontSize: 11, color: C.inkMuted }}>整合中，即將推出</div>
+                        </div>
+                        <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, border: `1px solid ${C.border}`, color: C.inkMuted }}>即將推出</span>
+                      </div>
+                      {/* SMS — coming soon */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px dashed ${C.border}`, opacity: 0.5 }}>
+                        <span style={{ fontSize: 16 }}>📱</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft }}>簡訊 SMS</div>
+                          <div style={{ fontSize: 11, color: C.inkMuted }}>整合中，即將推出</div>
+                        </div>
+                        <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, border: `1px solid ${C.border}`, color: C.inkMuted }}>即將推出</span>
+                      </div>
+                    </div>
+
+                    {/* CTA */}
+                    {!pbSent ? (
+                      <button onClick={handleStartPlaybook} disabled={pbRunning || !canSend}
+                        style={{ width: "100%", padding: "13px", borderRadius: 8, border: "none",
+                          background: !canSend ? C.inkMuted : pbRunning ? C.inkMuted : C.accent,
+                          color: "#fff", fontSize: 14, fontWeight: 800,
+                          cursor: (!canSend || pbRunning) ? "not-allowed" : "pointer", transition: T,
+                          display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
+                        {pbRunning ? "📤 開啟信箱中..." : !generatedDraft ? "📝 請先生成 AI 草稿" : arCase.status === "resolved" ? "✅ 案件已結案" : "📤 確認寄出・啟動 AI 回覆監聽"}
+                      </button>
+                    ) : (
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 8, background: `${C.emerald}10`, border: `1px solid ${C.emerald}40` }}>
+                        <span style={{ fontSize: 16 }}>🟢</span>
+                        <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: C.emerald }}>催款通知已發出・AI 監聽已啟動</div>
+                        <button onClick={() => { setPbSent(false); setGeneratedDraft(null); }}
+                          style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.emerald}40`, background: "transparent", color: C.emerald, cursor: "pointer", fontWeight: 600 }}>重新發送</button>
+                      </div>
+                    )}
                   </div>
-                </div>
-
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginBottom: 20, background: C.card, padding: "12px 16px", borderRadius: 8, border: `1px solid ${C.borderHover}` }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: C.ink, cursor: "pointer" }}>
-                    <input type="checkbox" checked={pbChannels.email} onChange={e => setPbChannels({ ...pbChannels, email: e.target.checked })} /> 📧 Email 主體
-                  </label>
-                </div>
-
-                <button onClick={handleStartPlaybook} disabled={pbRunning} style={{ width: "100%", padding: "12px", borderRadius: 8, border: "none", background: pbRunning ? C.inkMuted : C.ink, color: "#fff", fontSize: 14, fontWeight: 800, cursor: pbRunning ? "not-allowed" : "pointer", transition: T, display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
-                  {pbRunning ? "🚀 啟動中，發射任務至各節點..." : "⚡ 啟動全通路推播排程"}
-                </button>
-              </div>
+                );
+              })()}
 
               {/* History Timeline */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -7843,6 +7917,11 @@
       ];
       const CONTACT_FILTERS = [
         { id: "all", label: "全部", color: C.accent },
+        // 客戶健康度快速篩選
+        { id: "health_vip",      label: "⭐ 優質客戶", color: "#F5A623" },
+        { id: "health_risk",     label: "⚠️ 逾期警示", color: "#FB923C" },
+        { id: "health_critical", label: "🚨 高風險",   color: "#F472B6" },
+        { id: "has_ar",          label: "💰 催收中",   color: "#FB923C" },
         ...CONTACT_TAGS.map(t => ({ id: t.id, label: `${t.icon} ${t.label}`, color: t.color })),
         { id: "has_deals", label: "📊 有交易", color: C.gold },
         { id: "no_deals", label: "🆕 無交易", color: C.inkMuted },
