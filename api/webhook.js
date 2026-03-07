@@ -377,18 +377,29 @@ export default async function handler(req, res) {
 
         history.push({ date: today, action: "🧠 AI 判讀完成", note: aiNoteLine });
 
-        // ── 清除所有 undefined 值（Firestore 不接受 undefined）──
+        // ── 深度淨化：移除 undefined / NaN / Infinity，確保 Firestore 相容 ──
         function sanitize(obj) {
-            if (obj === null || obj === undefined) return null;
-            if (Array.isArray(obj)) return obj.map(sanitize);
-            if (typeof obj === "object" && obj !== null) {
-                const clean = {};
-                for (const [k, v] of Object.entries(obj)) {
-                    clean[k] = sanitize(v);
+            // 最可靠的方式：JSON 來回轉一次，自動去除 undefined、function、symbol
+            try {
+                return JSON.parse(JSON.stringify(obj, (key, val) => {
+                    if (val === undefined || val === null) return null;
+                    if (typeof val === "number" && !isFinite(val)) return null; // NaN, Infinity
+                    return val;
+                }));
+            } catch (e) {
+                console.error("[webhook] sanitize JSON roundtrip failed:", e.message);
+                // fallback: 遞迴手動清理
+                if (obj === null || obj === undefined) return null;
+                if (Array.isArray(obj)) return obj.map(sanitize);
+                if (typeof obj === "object") {
+                    const clean = {};
+                    for (const [k, v] of Object.entries(obj)) {
+                        clean[k] = sanitize(v);
+                    }
+                    return clean;
                 }
-                return clean;
+                return obj;
             }
-            return obj;
         }
 
         const updatedCase = sanitize({
@@ -412,11 +423,22 @@ export default async function handler(req, res) {
 
         // ── STEP F: 寫回 Firestore（用 set+merge 確保文件不存在也能建立）──
         console.log("[webhook] STEP F: Writing to Firestore...");
-        await arCasesRef.set({
-            value: sanitize(cases),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            updatedBy: { email: "webhook@system", name: "AI 自動回信判讀" },
-        }, { merge: true });
+        const sanitizedCases = sanitize(cases);
+        console.log("[webhook] STEP F: sanitized data type check:",
+            typeof sanitizedCases, Array.isArray(sanitizedCases),
+            "length:", sanitizedCases?.length,
+            "sample keys:", sanitizedCases?.[idx] ? Object.keys(sanitizedCases[idx]).join(",") : "N/A");
+        try {
+            await arCasesRef.set({
+                value: sanitizedCases,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                updatedBy: { email: "webhook@system", name: "AI 自動回信判讀" },
+            }, { merge: true });
+        } catch (fsErr) {
+            console.error("[webhook] STEP F Firestore write error:", fsErr.code, fsErr.message);
+            console.error("[webhook] STEP F: Dumping case[idx]:", JSON.stringify(sanitizedCases?.[idx]).substring(0, 500));
+            throw fsErr;
+        }
 
         console.log(`[webhook] Done! Case ${caseId} — risk=${aiResult.risk} engine=${aiResult._engine}`);
         return res.status(200).json({
