@@ -7079,10 +7079,23 @@ ${draft}`;
         const filename = type === "package"
           ? `律師案件包_${arCase.clientName}_${new Date().toISOString().split("T")[0]}.docx`
           : `存證信函草稿_${arCase.clientName}.docx`;
-        // Generate Word-compatible HTML document
+        // Generate Word-compatible HTML document with proper paragraph formatting
+        const escHtml = rawContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        // Convert text to proper HTML paragraphs: double newline = new paragraph, single newline = line break
+        // Also handle separator lines (===, ---) as horizontal rules
+        const htmlBody = escHtml
+          .replace(/^(={3,}|─{3,}|-{3,})$/gm, '<hr style="border:none;border-top:1.5px solid #999;margin:16px 0;">')
+          .split(/\n\n+/).map(para => `<p style="margin:0 0 12px 0;">${para.replace(/\n/g,"<br>")}</p>`).join("\n");
         const htmlDoc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8"><style>body{font-family:'Microsoft JhengHei','PingFang TC',sans-serif;font-size:13pt;line-height:1.8;padding:40px;white-space:pre-wrap;}</style></head>
-<body>${rawContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>")}</body></html>`;
+<head><meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 2.5cm 2cm; }
+  body { font-family: 'Microsoft JhengHei', 'PingFang TC', '微軟正黑體', sans-serif; font-size: 13pt; line-height: 1.9; color: #222; }
+  p { margin: 0 0 12px 0; }
+  hr { border: none; border-top: 1.5px solid #999; margin: 20px 0; }
+</style>
+</head>
+<body>${htmlBody}</body></html>`;
         const blob = new Blob(["\uFEFF" + htmlDoc], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
