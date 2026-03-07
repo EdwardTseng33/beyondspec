@@ -7,17 +7,28 @@ export const config = {
     api: { bodyParser: false },
 };
 
-// 1. 初始化 Firebase Admin
-if (!admin.apps.length) {
-    admin.initializeApp({
-        credential: admin.credential.cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-        }),
-    });
+// 1. 初始化 Firebase Admin（加入除錯）
+let firebaseInitError = null;
+try {
+    if (!admin.apps.length) {
+        const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+        console.log("[webhook:init] FIREBASE_PROJECT_ID:", process.env.FIREBASE_PROJECT_ID ? "SET" : "MISSING");
+        console.log("[webhook:init] FIREBASE_CLIENT_EMAIL:", process.env.FIREBASE_CLIENT_EMAIL ? "SET" : "MISSING");
+        console.log("[webhook:init] FIREBASE_PRIVATE_KEY:", privateKey ? `SET (${privateKey.length} chars, starts with ${privateKey.substring(0, 20)}...)` : "MISSING");
+        console.log("[webhook:init] GEMINI_API_KEY:", process.env.GEMINI_API_KEY ? "SET" : "MISSING");
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId: process.env.FIREBASE_PROJECT_ID,
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                privateKey: privateKey,
+            }),
+        });
+    }
+} catch (e) {
+    firebaseInitError = e;
+    console.error("[webhook:init] Firebase init FAILED:", e.message);
 }
-const db = admin.firestore();
+const db = firebaseInitError ? null : admin.firestore();
 
 // 2. 初始化 Gemini
 const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -36,33 +47,48 @@ function parseMultipart(req) {
 
 // 4. Vercel Serverless 核心處理出口
 export default async function handler(req, res) {
+    // ── CORS（允許前端跨域診斷呼叫）──
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    if (req.method === "OPTIONS") return res.status(200).end();
+
     if (req.method !== "POST") {
         return res.status(405).json({ error: "Method Not Allowed" });
     }
 
+    // 快速檢查 Firebase 初始化
+    if (firebaseInitError) {
+        console.error("[webhook] Firebase was not initialized:", firebaseInitError.message);
+        return res.status(500).json({ error: "Firebase init failed", detail: firebaseInitError.message });
+    }
+
     try {
-        // SendGrid Inbound Parse 以 multipart/form-data 傳送
+        // ── STEP A: 解析 multipart/form-data ──
+        console.log("[webhook] STEP A: Parsing multipart...");
+        console.log("[webhook] Content-Type:", req.headers["content-type"]);
         const fields = await parseMultipart(req);
+        console.log("[webhook] STEP A done. Fields:", Object.keys(fields).join(", "));
 
         const fromEmail = fields.from || "";
         const toEmail   = fields.to   || "";
         const emailText = fields.text || fields.html || "";
 
-        console.log(`[webhook] from=${fromEmail} to=${toEmail}`);
+        console.log(`[webhook] from=${fromEmail} to=${toEmail} textLen=${emailText.length}`);
 
-        // 從收件人解析 workspaceId + caseId
-        // Format: reply+{workspaceId}_{caseId}@reply.beyondspec.tw
+        // ── STEP B: 從收件人解析 workspaceId + caseId ──
         const match = toEmail.match(/reply\+([^_]+)_([^@]+)@/);
         if (!match) {
-            console.log("[webhook] No valid workspaceId/caseId in:", toEmail);
-            return res.status(200).send("No matching Workspace or Case ID");
+            console.log("[webhook] STEP B: No valid workspaceId/caseId in:", toEmail);
+            return res.status(200).json({ status: "skipped", reason: "No matching address pattern", to: toEmail });
         }
 
         const workspaceId = match[1];
         const caseId      = match[2];
-        console.log(`[webhook] workspaceId=${workspaceId} caseId=${caseId}`);
+        console.log(`[webhook] STEP B done. workspaceId=${workspaceId} caseId=${caseId}`);
 
-        // 5. Gemini AI 判讀客戶回信意圖
+        // ── STEP C: Gemini AI 判讀 ──
+        console.log("[webhook] STEP C: Calling Gemini...");
         const model = ai.getGenerativeModel({
             model: "gemini-1.5-flash",
             generationConfig: { responseMimeType: "application/json" },
@@ -87,9 +113,13 @@ export default async function handler(req, res) {
 客戶回信內容：
 ${emailText.substring(0, 2000)}`;
         const aiResponse = await model.generateContent(prompt);
-        const aiResult = JSON.parse(aiResponse.response.text());
+        const aiText = aiResponse.response.text();
+        console.log("[webhook] STEP C done. Gemini raw:", aiText.substring(0, 200));
+        const aiResult = JSON.parse(aiText);
+        console.log("[webhook] STEP C parsed. risk=", aiResult.risk);
 
-        // 6. 讀取並更新 workspaces/{workspaceId}/data/arCases（usePersisted 格式）
+        // ── STEP D: 讀取 Firestore arCases ──
+        console.log("[webhook] STEP D: Reading Firestore...");
         const arCasesRef = db
             .collection("workspaces")
             .doc(workspaceId)
@@ -98,18 +128,20 @@ ${emailText.substring(0, 2000)}`;
 
         const arCasesDoc = await arCasesRef.get();
         if (!arCasesDoc.exists) {
-            console.warn(`[webhook] arCases doc not found for workspace: ${workspaceId}`);
-            return res.status(200).send("Workspace or arCases document not found");
+            console.warn(`[webhook] STEP D: arCases doc not found for workspace: ${workspaceId}`);
+            return res.status(200).json({ status: "skipped", reason: "arCases document not found", workspaceId });
         }
 
         const cases = arCasesDoc.data().value || [];
         const idx = cases.findIndex(c => String(c.id) === String(caseId));
         if (idx === -1) {
-            console.warn(`[webhook] caseId ${caseId} not found in workspace ${workspaceId}`);
-            return res.status(200).send("Case not found in workspace");
+            console.warn(`[webhook] STEP D: caseId ${caseId} not found. Available IDs: ${cases.map(c => c.id).join(", ")}`);
+            return res.status(200).json({ status: "skipped", reason: "Case not found", caseId, availableIds: cases.map(c => c.id) });
         }
+        console.log(`[webhook] STEP D done. Found case at index ${idx}`);
 
-        // 7. 附加回信歷史記錄 + AI 判讀結果
+        // ── STEP E: 附加回信歷史記錄 + AI 判讀結果 ──
+        console.log("[webhook] STEP E: Updating case...");
         const today = new Date().toISOString().split("T")[0];
         const history = [...(cases[idx].history || [])];
         history.push({
@@ -144,18 +176,26 @@ ${emailText.substring(0, 2000)}`;
             unreadReply: true,
         };
 
-        // 8. 寫回 Firestore（與 usePersisted 相同格式）
+        // ── STEP F: 寫回 Firestore ──
+        console.log("[webhook] STEP F: Writing to Firestore...");
         await arCasesRef.update({
             value: cases,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedBy: { email: "webhook@system", name: "AI 自動回信判讀" },
         });
 
-        console.log(`[webhook] Case ${caseId} updated — risk=${aiResult.risk}`);
-        return res.status(200).send("Processed successfully");
+        console.log(`[webhook] STEP F done. Case ${caseId} updated — risk=${aiResult.risk}`);
+        return res.status(200).json({
+            status: "success",
+            caseId,
+            risk: aiResult.risk,
+            summary: aiResult.summary,
+            suggestedAction: aiResult.suggestedAction,
+        });
 
     } catch (error) {
-        console.error("[webhook] Error:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+        console.error("[webhook] Error at unknown step:", error.message);
+        console.error("[webhook] Stack:", error.stack);
+        return res.status(500).json({ error: "Internal Server Error", detail: error.message });
     }
 }
