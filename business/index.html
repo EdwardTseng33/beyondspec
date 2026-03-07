@@ -6979,7 +6979,8 @@
           ? Math.floor((new Date() - new Date(arCase.dueDate)) / 86400000)
           : 0;
 
-        let itemNum = 3;
+        const cnNum = n => ["一","二","三","四","五","六","七","八","九","十"][n - 1] || String(n);
+        let itemIdx = 3;
         let content =
 `============================================================
 存 證 信 函 草 稿
@@ -7003,12 +7004,12 @@ ${debtorIdLine ? debtorIdLine + "\n" : ""}
 二、 然迄今已逾約定付款期限 ${overdueDays > 0 ? overdueDays + " 天" : "數日"}，台端仍未依約清償，本公司已多次以書面、電子郵件催討（詳如後附歷程紀錄），台端均未予置理，顯已違約在先。`;
 
         if (legalForm.penalty) {
-          content += `\n\n${itemNum++}、 依雙方合約約定，台端另應給付違約金：${legalForm.penalty}。`;
+          content += `\n\n${cnNum(itemIdx++)}、 依雙方合約約定，台端另應給付違約金：${legalForm.penalty}。`;
         }
 
-        content += `\n\n${itemNum++}、 茲依民法第 229 條、第 233 條等相關規定，特此以本存證信函催告台端，於本函送達之日起 七（7）日內，將前述全部款項一次性清償完畢。${bankLine}`;
+        content += `\n\n${cnNum(itemIdx++)}、 茲依民法第 229 條、第 233 條等相關規定，特此以本存證信函催告台端，於本函送達之日起 七（7）日內，將前述全部款項一次性清償完畢。${bankLine}`;
 
-        content += `\n\n${itemNum}、 若台端未於前述期限內履行清償義務，本公司將不再另行通知，逕行依法向管轄法院提起民事訴訟，請求返還本金及遲延利息，訴訟所生費用亦將一併請求由台端負擔，請台端切勿自誤。`;
+        content += `\n\n${cnNum(itemIdx)}、 若台端未於前述期限內履行清償義務，本公司將不再另行通知，逕行依法向管轄法院提起民事訴訟，請求返還本金及遲延利息，訴訟所生費用亦將一併請求由台端負擔，請台端切勿自誤。`;
 
         if (legalForm.extraNotes) {
           content += `\n\n------------------------------------------------------------\n【補充聲明 / 特殊約定事項】\n${legalForm.extraNotes}`;
@@ -7074,28 +7075,138 @@ ${draft}`;
       };
 
       const handleExportLegalLetter = (type = "draft") => {
-        // Use edited draft text (from textarea) for draft; generate package with edited draft for package
         const rawContent = type === "package" ? generateCasePackage().replace(generateLegalDraft(), legalDraftText) : legalDraftText;
         const filename = type === "package"
           ? `律師案件包_${arCase.clientName}_${new Date().toISOString().split("T")[0]}.docx`
           : `存證信函草稿_${arCase.clientName}.docx`;
-        // Generate Word-compatible HTML document with proper paragraph formatting
-        const escHtml = rawContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-        // Convert text to proper HTML paragraphs: double newline = new paragraph, single newline = line break
-        // Also handle separator lines (===, ---) as horizontal rules
-        const htmlBody = escHtml
-          .replace(/^(={3,}|─{3,}|-{3,})$/gm, '<hr style="border:none;border-top:1.5px solid #999;margin:16px 0;">')
-          .split(/\n\n+/).map(para => `<p style="margin:0 0 12px 0;">${para.replace(/\n/g,"<br>")}</p>`).join("\n");
+
+        // ── 智慧 HTML 轉換引擎 ──
+        const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        const lines = rawContent.split("\n");
+        let htmlParts = [];
+        let i = 0;
+        while (i < lines.length) {
+          const line = lines[i].trim();
+          // Skip empty lines
+          if (!line) { i++; continue; }
+          // Separator lines → thin rule
+          if (/^(={3,}|─{3,}|-{3,})$/.test(line)) {
+            htmlParts.push('<hr style="border:none;border-top:1px solid #bbb;margin:14px 0;">');
+            i++; continue;
+          }
+          // Document main title (first non-empty, non-separator)
+          if (htmlParts.length === 0 && !line.startsWith("【") && !line.startsWith("存")) {
+            htmlParts.push(`<h1 style="font-size:18pt;font-weight:bold;text-align:center;margin:0 0 4px 0;letter-spacing:2px;">${esc(line)}</h1>`);
+            i++; continue;
+          }
+          // Subtitle lines (（供...）, 系統：, 匯出時間：) → centered smaller
+          if (/^（.*）$/.test(line) || /^系統：/.test(line) || /^匯出時間：/.test(line)) {
+            htmlParts.push(`<p style="text-align:center;font-size:10.5pt;color:#666;margin:0 0 2px 0;">${esc(line)}</p>`);
+            i++; continue;
+          }
+          // Section headers【一、...】or【催收歷程紀錄】
+          if (/^【.*】/.test(line)) {
+            htmlParts.push(`<h2 style="font-size:14pt;font-weight:bold;margin:22px 0 10px 0;padding-bottom:4px;border-bottom:2px solid #333;">${esc(line)}</h2>`);
+            i++; continue;
+          }
+          // Sub-title: 存 證 信 函 草 稿 (spaced characters, centered)
+          if (/^存\s+證\s+信\s+函/.test(line)) {
+            htmlParts.push(`<h1 style="font-size:20pt;font-weight:bold;text-align:center;margin:30px 0 4px 0;letter-spacing:6px;">${esc(line)}</h1>`);
+            i++; continue;
+          }
+          // Field labels like "主　旨：", "說　明：", "寄件人：", "收件人：", "發文日期："
+          if (/^(主\s*旨|說\s*明|寄件人|收件人|地\s*址|發文日期)[:：]/.test(line)) {
+            const [label, ...rest] = line.split(/[:：]/);
+            const value = rest.join("：");
+            htmlParts.push(`<p style="margin:6px 0;text-indent:0;"><b>${esc(label.trim())}：</b>${esc(value)}</p>`);
+            i++; continue;
+          }
+          // Numbered legal paragraphs: 一、 二、 三、 四、 or 3、4、
+          if (/^([一二三四五六七八九十]+|\d+)[、.]/.test(line)) {
+            // Collect continuation lines (indented or following lines until next numbered/section)
+            let paraLines = [line];
+            while (i + 1 < lines.length) {
+              const next = lines[i + 1].trim();
+              if (!next || /^([一二三四五六七八九十]+|\d+)[、.]/.test(next) || /^【/.test(next) || /^(={3,}|─{3,}|-{3,})$/.test(next) || /^(主\s*旨|說\s*明|寄件人|收件人|此致)/.test(next)) break;
+              paraLines.push(next);
+              i++;
+            }
+            htmlParts.push(`<p style="margin:8px 0 8px 28px;text-indent:-28px;">${esc(paraLines.join(""))}</p>`);
+            i++; continue;
+          }
+          // Timeline entries: [2026-...] or - 2026-...:
+          if (/^\[?\d{4}[-/]\d{2}[-/]\d{2}\]?\s/.test(line) || /^-\s*\d{4}[-/]/.test(line)) {
+            htmlParts.push(`<p style="margin:3px 0 3px 12px;font-size:11pt;color:#333;">${esc(line)}</p>`);
+            i++; continue;
+          }
+          // Key: Value pairs (債務人：, 金額：, etc.)
+          if (/^.{2,8}[:：]/.test(line) && !line.startsWith("※")) {
+            const colonIdx = line.search(/[:：]/);
+            const label = line.substring(0, colonIdx);
+            const value = line.substring(colonIdx + 1);
+            htmlParts.push(`<p style="margin:4px 0;"><span style="display:inline-block;min-width:120px;font-weight:bold;">${esc(label)}：</span>${esc(value)}</p>`);
+            i++; continue;
+          }
+          // "此致" → right-aligned block
+          if (/^此致/.test(line)) {
+            htmlParts.push(`<p style="margin:24px 0 6px 0;">${esc(line)}</p>`);
+            i++; continue;
+          }
+          // Signature block: company name, 代表人, date at end
+          if (/^(代表人|中華民國)/.test(line)) {
+            htmlParts.push(`<p style="margin:4px 0;text-align:right;">${esc(line)}</p>`);
+            i++; continue;
+          }
+          // Disclaimer ※
+          if (line.startsWith("※")) {
+            htmlParts.push(`<p style="margin:16px 0 4px 0;font-size:9.5pt;color:#888;">${esc(line)}</p>`);
+            i++; continue;
+          }
+          // Default paragraph
+          htmlParts.push(`<p style="margin:6px 0;">${esc(line)}</p>`);
+          i++;
+        }
+
+        const today = new Date().toLocaleDateString("zh-TW", { year: "numeric", month: "2-digit", day: "2-digit" });
         const htmlDoc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8">
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:SpellingState>Clean</w:SpellingState></w:WordDocument></xml><![endif]-->
 <style>
-  @page { size: A4; margin: 2.5cm 2cm; }
-  body { font-family: 'Microsoft JhengHei', 'PingFang TC', '微軟正黑體', sans-serif; font-size: 13pt; line-height: 1.9; color: #222; }
-  p { margin: 0 0 12px 0; }
-  hr { border: none; border-top: 1.5px solid #999; margin: 20px 0; }
+  @page {
+    size: A4;
+    margin: 2.2cm 2cm 2cm 2cm;
+    mso-header-margin: 1cm;
+    mso-footer-margin: 1cm;
+    mso-page-orientation: portrait;
+  }
+  @page Section1 { mso-header: h1; mso-footer: f1; }
+  div.Section1 { page: Section1; }
+  body {
+    font-family: 'Microsoft JhengHei', 'PingFang TC', '微軟正黑體', 'Noto Sans TC', sans-serif;
+    font-size: 12pt;
+    line-height: 1.7;
+    color: #222;
+  }
+  h1 { mso-style-type: export-only; page-break-after: avoid; }
+  h2 { mso-style-type: export-only; page-break-after: avoid; }
+  p { mso-style-type: export-only; }
+  table { border-collapse: collapse; }
 </style>
 </head>
-<body>${htmlBody}</body></html>`;
+<body>
+<div class="Section1">
+<!--[if gte mso 9]>
+<div style="mso-element:header" id="h1">
+<p style="font-size:8pt;color:#999;border-bottom:1px solid #ddd;padding-bottom:4px;">Beyond Business AR Module ── ${type === "package" ? "律師案件包" : "存證信函草稿"}</p>
+</div>
+<div style="mso-element:footer" id="f1">
+<p style="font-size:8pt;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:4px;">第 <span style="mso-field-code:PAGE">1</span> 頁 ／ 共 <span style="mso-field-code:NUMPAGES">1</span> 頁　｜　匯出日期：${today}　｜　Beyond Business</p>
+</div>
+<![endif]-->
+${htmlParts.join("\n")}
+</div>
+</body></html>`;
+
         const blob = new Blob(["\uFEFF" + htmlDoc], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
