@@ -7425,116 +7425,147 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
               </div>
             </div>
 
-            {/* Overlays inside Drawer — Legal Wizard (多步驟：資料填寫 → 預覽草稿) */}
+            {/* Overlays — Legal Wizard (全螢幕 overlay，不再被 Drawer 限制) */}
             {legalWizardOpen && (
-              <div style={{ position: "absolute", inset: 0, zIndex: 1110, display: "flex", justifyContent: "center", alignItems: "center" }}>
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)", animation: "fadeIn .2s ease" }} onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }} />
-                <div style={{ position: "relative", width: "92%", background: C.card, borderRadius: 16, border: `1px solid ${C.violet}40`, boxShadow: "0 20px 60px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "scaleUp .3s cubic-bezier(.175, .885, .32, 1.275)", maxHeight: "92%" }}>
+              <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center", padding: mobile ? 0 : 24 }}>
+                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)", animation: "fadeIn .2s ease" }} onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }} />
+                <div style={{ position: "relative", width: mobile ? "100%" : "min(720px, 92vw)", background: C.card, borderRadius: mobile ? 0 : 20, border: mobile ? "none" : `1px solid ${C.violet}30`, boxShadow: "0 32px 80px rgba(0,0,0,0.6)", display: "flex", flexDirection: "column", overflow: "hidden", animation: "scaleUp .3s cubic-bezier(.175, .885, .32, 1.275)", maxHeight: mobile ? "100%" : "92vh" }}>
 
-                  {/* Modal Header */}
-                  <div style={{ padding: "18px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: `${C.violet}08` }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 22 }}>⚖️</span>
+                  {/* Modal Header — 更寬敞的 header */}
+                  <div style={{ padding: "20px 28px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: `linear-gradient(135deg, ${C.violet}08, ${C.violet}04)` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 12, background: `${C.violet}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>⚖️</div>
                       <div>
-                        <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>存證信函助手・律師案件包</div>
+                        <div style={{ fontSize: 16, fontWeight: 800, color: C.ink, letterSpacing: "-.01em" }}>存證信函助手</div>
                         <div style={{ fontSize: 11, color: C.inkSoft, marginTop: 2 }}>整合催收紀錄，產出可直接送律師事務所的完整案件包</div>
                       </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                       {/* Step indicator */}
-                      <div style={{ display: "flex", gap: 6 }}>
+                      <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
                         {["資料填寫", "預覽確認"].map((label, i) => (
-                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20,
-                            background: legalStep === i ? `${C.violet}20` : "transparent",
-                            border: `1px solid ${legalStep === i ? C.violet : C.border}`,
-                            fontSize: 11, fontWeight: legalStep === i ? 700 : 400,
-                            color: legalStep === i ? C.violet : C.inkMuted }}>
-                            <span style={{ width: 16, height: 16, borderRadius: "50%", background: legalStep === i ? C.violet : C.border, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700 }}>{i + 1}</span>
-                            {label}
-                          </div>
+                          <React.Fragment key={i}>
+                            {i > 0 && <div style={{ width: 20, height: 2, background: legalStep >= i ? C.violet : C.border, borderRadius: 1 }} />}
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 20,
+                              background: legalStep === i ? `${C.violet}20` : "transparent",
+                              border: legalStep === i ? `1.5px solid ${C.violet}` : `1px solid ${legalStep > i ? `${C.violet}40` : C.border}`,
+                              fontSize: 11, fontWeight: legalStep === i ? 700 : 400,
+                              color: legalStep === i ? C.violet : legalStep > i ? `${C.violet}90` : C.inkMuted }}>
+                              <span style={{ width: 18, height: 18, borderRadius: "50%", background: legalStep >= i ? C.violet : C.border, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700 }}>
+                                {legalStep > i ? "✓" : i + 1}
+                              </span>
+                              {label}
+                            </div>
+                          </React.Fragment>
                         ))}
                       </div>
-                      <button onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }} style={{ background: C.surface, border: "none", color: C.inkSoft, cursor: "pointer", fontSize: 14, padding: "6px 10px", borderRadius: 8 }}>✕</button>
+                      <button onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }} style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.inkSoft, cursor: "pointer", fontSize: 16, padding: "6px 10px", borderRadius: 8, lineHeight: 1, transition: T }}>✕</button>
                     </div>
                   </div>
 
                   {/* Step 0: 資料填寫 */}
                   {legalStep === 0 && (
-                    <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
-                      {/* Auto-filled case summary */}
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20, padding: 14, background: C.surface, borderRadius: 10, border: `1px solid ${C.border}` }}> {/* 3 col always — cells are compact enough */}
-                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 2 }}>債務人</div><div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{arCase.clientName}</div></div>
-                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 2 }}>欠款金額</div><div style={{ fontSize: 13, fontWeight: 700, color: C.rose }}>NT$ {(arCase.amount || 0).toLocaleString()}</div></div>
-                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 2 }}>催收歷程</div><div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{(arCase.history || []).length} 筆</div></div>
+                    <div style={{ padding: mobile ? "20px 20px" : "28px 32px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 0 }}>
+                      {/* Auto-filled case summary — 案件資訊卡 */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginBottom: 28, padding: "16px 20px", background: `linear-gradient(135deg, ${C.surface}, ${C.violet}06)`, borderRadius: 12, border: `1px solid ${C.border}` }}>
+                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".08em" }}>債務人</div><div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>{arCase.clientName}</div></div>
+                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".08em" }}>欠款金額</div><div style={{ fontSize: 14, fontWeight: 700, color: C.rose }}>NT$ {(arCase.amount || 0).toLocaleString()}</div></div>
+                        <div><div style={{ fontSize: 10, color: C.inkMuted, marginBottom: 4, textTransform: "uppercase", letterSpacing: ".08em" }}>催收歷程</div><div style={{ fontSize: 14, fontWeight: 700, color: C.ink }}>{(arCase.history || []).length} 筆</div></div>
                       </div>
 
                       {/* Section: 債權人資訊 */}
-                      <div style={{ fontSize: 12, fontWeight: 800, color: C.violet, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>🏢 債權人（你的公司）資訊</div>
-                      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 16 }}>
-                        <Field label="公司地址 *">
-                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
-                            value={legalForm.senderAddress} onChange={e => setLegalForm({ ...legalForm, senderAddress: e.target.value })} placeholder="台北市○○區○○路○號" />
-                        </Field>
-                        <Field label="代表人姓名 *">
-                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
-                            value={legalForm.senderRepresentative} onChange={e => setLegalForm({ ...legalForm, senderRepresentative: e.target.value })} placeholder="代表人/負責人姓名" />
-                        </Field>
-                        <Field label="收款銀行帳號（供存證信函載明）">
-                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
-                            value={legalForm.bankAccount} onChange={e => setLegalForm({ ...legalForm, bankAccount: e.target.value })} placeholder="例：中國信託 822-1234567890" />
-                        </Field>
-                        <Field label="合約/訂單編號">
-                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
-                            value={legalForm.contractRef} onChange={e => setLegalForm({ ...legalForm, contractRef: e.target.value })} placeholder="如有合約號可填入" />
-                        </Field>
+                      <div style={{ marginBottom: 28 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: C.violet, marginBottom: 16, display: "flex", alignItems: "center", gap: 8, paddingBottom: 8, borderBottom: `1px solid ${C.violet}15` }}>
+                          <span style={{ width: 24, height: 24, borderRadius: 6, background: `${C.violet}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🏢</span>
+                          債權人（你的公司）資訊
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+                          <Field label="公司地址 *">
+                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                              onFocus={e => e.target.style.borderColor = C.violet} onBlur={e => e.target.style.borderColor = C.border}
+                              value={legalForm.senderAddress} onChange={e => setLegalForm({ ...legalForm, senderAddress: e.target.value })} placeholder="台北市○○區○○路○號" />
+                          </Field>
+                          <Field label="代表人姓名 *">
+                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                              onFocus={e => e.target.style.borderColor = C.violet} onBlur={e => e.target.style.borderColor = C.border}
+                              value={legalForm.senderRepresentative} onChange={e => setLegalForm({ ...legalForm, senderRepresentative: e.target.value })} placeholder="代表人/負責人姓名" />
+                          </Field>
+                          <Field label="收款銀行帳號（供存證信函載明）">
+                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                              onFocus={e => e.target.style.borderColor = C.violet} onBlur={e => e.target.style.borderColor = C.border}
+                              value={legalForm.bankAccount} onChange={e => setLegalForm({ ...legalForm, bankAccount: e.target.value })} placeholder="例：中國信託 822-1234567890" />
+                          </Field>
+                          <Field label="合約/訂單編號">
+                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                              onFocus={e => e.target.style.borderColor = C.violet} onBlur={e => e.target.style.borderColor = C.border}
+                              value={legalForm.contractRef} onChange={e => setLegalForm({ ...legalForm, contractRef: e.target.value })} placeholder="如有合約號可填入" />
+                          </Field>
+                        </div>
                       </div>
 
                       {/* Section: 債務人資訊 */}
-                      <div style={{ fontSize: 12, fontWeight: 800, color: C.rose, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>👤 債務人補充資訊</div>
-                      <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 12, marginBottom: 16 }}>
-                        <Field label="債務人登記地址 *">
-                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
-                            value={legalForm.recipientAddress} onChange={e => setLegalForm({ ...legalForm, recipientAddress: e.target.value })} placeholder="對方營業登記或聯絡地址" />
-                        </Field>
-                        <Field label="負責人/當事人姓名">
-                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
-                            value={legalForm.debtorRepresentative} onChange={e => setLegalForm({ ...legalForm, debtorRepresentative: e.target.value })} placeholder="公司負責人或個人姓名" />
-                        </Field>
-                        <Field label="統一編號 / 身分證字號">
-                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
-                            value={legalForm.debtorId} onChange={e => setLegalForm({ ...legalForm, debtorId: e.target.value })} placeholder="法人統編或自然人身分證號" />
-                        </Field>
+                      <div style={{ marginBottom: 28 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: C.rose, marginBottom: 16, display: "flex", alignItems: "center", gap: 8, paddingBottom: 8, borderBottom: `1px solid ${C.rose}15` }}>
+                          <span style={{ width: 24, height: 24, borderRadius: 6, background: `${C.rose}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>👤</span>
+                          債務人補充資訊
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16 }}>
+                          <Field label="債務人登記地址 *">
+                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                              onFocus={e => e.target.style.borderColor = C.rose} onBlur={e => e.target.style.borderColor = C.border}
+                              value={legalForm.recipientAddress} onChange={e => setLegalForm({ ...legalForm, recipientAddress: e.target.value })} placeholder="對方營業登記或聯絡地址" />
+                          </Field>
+                          <Field label="負責人/當事人姓名">
+                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                              onFocus={e => e.target.style.borderColor = C.rose} onBlur={e => e.target.style.borderColor = C.border}
+                              value={legalForm.debtorRepresentative} onChange={e => setLegalForm({ ...legalForm, debtorRepresentative: e.target.value })} placeholder="公司負責人或個人姓名" />
+                          </Field>
+                          <Field label="統一編號 / 身分證字號">
+                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                              onFocus={e => e.target.style.borderColor = C.rose} onBlur={e => e.target.style.borderColor = C.border}
+                              value={legalForm.debtorId} onChange={e => setLegalForm({ ...legalForm, debtorId: e.target.value })} placeholder="法人統編或自然人身分證號" />
+                          </Field>
+                        </div>
                       </div>
 
                       {/* Section: 違約/補充 */}
-                      <div style={{ fontSize: 12, fontWeight: 800, color: C.gold, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>📋 違約條款與補充說明</div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                        <Field label="違約金/滯納金訴求（選填）">
-                          <input type="text" style={{ width: "100%", padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none" }}
-                            value={legalForm.penalty} onChange={e => setLegalForm({ ...legalForm, penalty: e.target.value })} placeholder="例：依合約第X條，每日加計千分之五遲延利息" />
-                        </Field>
-                        <Field label="補充聲明（選填）">
-                          <textarea style={{ width: "100%", height: 72, padding: "10px 12px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "inherit" }}
-                            value={legalForm.extraNotes} onChange={e => setLegalForm({ ...legalForm, extraNotes: e.target.value })} placeholder="有無其他約定、特殊情況需向律師說明的事項..." />
-                        </Field>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: C.gold, marginBottom: 16, display: "flex", alignItems: "center", gap: 8, paddingBottom: 8, borderBottom: `1px solid ${C.gold}15` }}>
+                          <span style={{ width: 24, height: 24, borderRadius: 6, background: `${C.gold}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>📋</span>
+                          違約條款與補充說明
+                          <span style={{ fontSize: 10, color: C.inkMuted, fontWeight: 400, marginLeft: 4 }}>（選填）</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                          <Field label="違約金/滯納金訴求">
+                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                              onFocus={e => e.target.style.borderColor = C.gold} onBlur={e => e.target.style.borderColor = C.border}
+                              value={legalForm.penalty} onChange={e => setLegalForm({ ...legalForm, penalty: e.target.value })} placeholder="例：依合約第X條，每日加計千分之五遲延利息" />
+                          </Field>
+                          <Field label="補充聲明">
+                            <textarea style={{ width: "100%", height: 88, padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "inherit", transition: T }}
+                              onFocus={e => e.target.style.borderColor = C.gold} onBlur={e => e.target.style.borderColor = C.border}
+                              value={legalForm.extraNotes} onChange={e => setLegalForm({ ...legalForm, extraNotes: e.target.value })} placeholder="有無其他約定、特殊情況需向律師說明的事項..." />
+                          </Field>
+                        </div>
                       </div>
                     </div>
                   )}
 
                   {/* Step 1: 預覽草稿 */}
                   {legalStep === 1 && (
-                    <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1 }}>
-                      <div style={{ fontSize: 12, color: C.inkMuted, marginBottom: 12, padding: "8px 12px", borderRadius: 8, background: `${C.violet}08`, border: `1px solid ${C.violet}20` }}>
-                        📋 以下為系統自動生成的存證信函草稿全文，供你確認後再匯出。請確認資訊正確後選擇匯出方式。
+                    <div style={{ padding: mobile ? "20px 20px" : "28px 32px", overflowY: "auto", flex: 1 }}>
+                      <div style={{ fontSize: 12, color: C.inkMuted, marginBottom: 16, padding: "10px 14px", borderRadius: 10, background: `${C.violet}08`, border: `1px solid ${C.violet}20`, display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 16 }}>📋</span>
+                        以下為系統自動生成的存證信函草稿全文，請確認資訊正確後選擇匯出方式。
                       </div>
-                      <pre style={{ fontSize: 12, lineHeight: 1.7, color: C.ink, background: C.surface, padding: 16, borderRadius: 10, border: `1px solid ${C.border}`, whiteSpace: "pre-wrap", wordBreak: "break-word", margin: 0, fontFamily: "monospace" }}>
+                      <pre style={{ fontSize: 12.5, lineHeight: 1.8, color: C.ink, background: C.surface, padding: 20, borderRadius: 12, border: `1px solid ${C.border}`, whiteSpace: "pre-wrap", wordBreak: "break-word", margin: 0, fontFamily: "'JetBrains Mono', monospace" }}>
                         {generateLegalDraft()}
                       </pre>
                     </div>
                   )}
 
                   {/* Modal Footer */}
-                  <div style={{ padding: mobile ? "12px 16px" : "16px 24px", borderTop: `1px solid ${C.border}`, background: C.surface, display: "flex", flexDirection: mobile && legalStep === 1 ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "stretch" : "center", gap: 10 }}>
+                  <div style={{ padding: mobile ? "14px 20px" : "16px 28px", borderTop: `1px solid ${C.border}`, background: C.surface, display: "flex", flexDirection: mobile && legalStep === 1 ? "column" : "row", justifyContent: "space-between", alignItems: mobile ? "stretch" : "center", gap: 10 }}>
                     <div style={{ display: "flex", gap: 8 }}>
                       {legalStep === 1 && <Btn variant="ghost" onClick={() => setLegalStep(0)}>← 返回修改</Btn>}
                       <Btn variant="ghost" onClick={() => { setLegalWizardOpen(false); setLegalStep(0); }}>取消</Btn>
@@ -7545,15 +7576,15 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                       ) : (
                         <>
                           <button onClick={() => handleExportLegalLetter("draft")}
-                            style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${C.gold}`, background: `${C.gold}15`, color: C.gold, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                            style={{ padding: "9px 16px", borderRadius: 10, border: `1px solid ${C.gold}`, background: `${C.gold}15`, color: C.gold, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: T }}>
                             📄 匯出信函草稿 .txt
                           </button>
                           <button onClick={() => handleExportLegalLetter("package")}
-                            style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${C.emerald}`, background: `${C.emerald}15`, color: C.emerald, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                            style={{ padding: "9px 16px", borderRadius: 10, border: `1px solid ${C.emerald}`, background: `${C.emerald}15`, color: C.emerald, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: T }}>
                             📦 匯出完整律師案件包 .txt
                           </button>
                           <button onClick={handleEmailLawFirm}
-                            style={{ padding: "8px 14px", borderRadius: 8, border: `1px solid ${C.violet}`, background: `${C.violet}15`, color: C.violet, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}>
+                            style={{ padding: "9px 16px", borderRadius: 10, border: `1px solid ${C.violet}`, background: `${C.violet}15`, color: C.violet, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: T }}>
                             📧 用信箱寄送給律師
                           </button>
                         </>
