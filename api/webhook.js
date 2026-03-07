@@ -275,6 +275,25 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: "Method Not Allowed" });
     }
 
+    // ── 診斷：每次 POST 都記錄一筆到 Firestore（無論解析成功與否）──
+    const hitTs = new Date().toISOString();
+    const contentType = req.headers?.["content-type"] || "unknown";
+    console.log(`[webhook] HIT at ${hitTs} ct=${contentType}`);
+    if (db) {
+        try {
+            await db.collection("_webhookHits").add({
+                ts: hitTs,
+                contentType,
+                method: req.method,
+                headers: JSON.stringify(Object.fromEntries(
+                    Object.entries(req.headers || {}).filter(([k]) => !k.startsWith("x-vercel"))
+                )).substring(0, 500),
+            });
+        } catch (logErr) {
+            console.error("[webhook] hit-log write failed:", logErr.message);
+        }
+    }
+
     if (firebaseInitError) {
         console.error("[webhook] Firebase was not initialized:", firebaseInitError.message);
         return res.status(500).json({ error: "Firebase init failed", detail: firebaseInitError.message });
