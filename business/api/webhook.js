@@ -90,7 +90,7 @@ export default async function handler(req, res) {
         // ── STEP C: Gemini AI 判讀 ──
         console.log("[webhook] STEP C: Calling Gemini...");
         const model = ai.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-2.0-flash",
             generationConfig: { responseMimeType: "application/json" },
         });
         const prompt = `你是一位專業的應收帳款催收助理，請分析以下客戶回信並回覆純 JSON（不加任何說明文字）：
