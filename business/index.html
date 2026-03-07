@@ -7382,19 +7382,21 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
 
                         {/* CTA */}
                         {!pbSent ? (
-                          <button onClick={handleStartPlaybook} disabled={pbRunning || !canSend}
-                            style={{ width: "100%", padding: "13px", borderRadius: 8, border: "none",
-                              background: !canSend ? C.inkMuted : pbRunning ? C.inkMuted : C.accent,
-                              color: "#fff", fontSize: 14, fontWeight: 800,
-                              cursor: (!canSend || pbRunning) ? "not-allowed" : "pointer", transition: T,
-                              display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
-                            {pbRunning ? "📤 寄送中，請稍候..." : !generatedDraft ? "📝 請先生成 AI 草稿" : "📤 確認寄出・啟動 AI 回覆監聽"}
-                          </button>
-                          {pbError && (
-                            <div style={{ marginTop: 8, padding: "10px 14px", borderRadius: 8, background: `${C.rose}12`, border: `1px solid ${C.rose}40`, color: C.rose, fontSize: 12, fontWeight: 600 }}>
-                              ⚠️ 寄送失敗：{pbError}
-                            </div>
-                          )}
+                          <>
+                            <button onClick={handleStartPlaybook} disabled={pbRunning || !canSend}
+                              style={{ width: "100%", padding: "13px", borderRadius: 8, border: "none",
+                                background: !canSend ? C.inkMuted : pbRunning ? C.inkMuted : C.accent,
+                                color: "#fff", fontSize: 14, fontWeight: 800,
+                                cursor: (!canSend || pbRunning) ? "not-allowed" : "pointer", transition: T,
+                                display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
+                              {pbRunning ? "📤 寄送中，請稍候..." : !generatedDraft ? "📝 請先生成 AI 草稿" : "📤 確認寄出・啟動 AI 回覆監聽"}
+                            </button>
+                            {pbError && (
+                              <div style={{ marginTop: 8, padding: "10px 14px", borderRadius: 8, background: `${C.rose}12`, border: `1px solid ${C.rose}40`, color: C.rose, fontSize: 12, fontWeight: 600 }}>
+                                ⚠️ 寄送失敗：{pbError}
+                              </div>
+                            )}
+                          </>
                         ) : (
                           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 8, background: `${C.emerald}10`, border: `1px solid ${C.emerald}40` }}>
                             <span style={{ fontSize: 16 }}>🟢</span>
