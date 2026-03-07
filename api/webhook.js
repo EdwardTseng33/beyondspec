@@ -322,17 +322,40 @@ export default async function handler(req, res) {
         const aiResult = await analyzeReply(emailText);
         console.log(`[webhook] STEP C done. engine=${aiResult._engine} risk=${aiResult.risk}`);
 
-        // ── STEP D: 讀取 Firestore ──
+        // ── STEP D: 讀取 Firestore（文件不存在時自動建立）──
         console.log("[webhook] STEP D: Reading Firestore...");
         const arCasesRef = db.collection("workspaces").doc(workspaceId).collection("data").doc("arCases");
         const arCasesDoc = await arCasesRef.get();
-        if (!arCasesDoc.exists) {
-            return res.status(200).json({ status: "skipped", reason: "arCases not found", workspaceId });
+
+        let cases = [];
+        let docExists = arCasesDoc.exists;
+
+        if (docExists) {
+            cases = arCasesDoc.data().value || [];
+            console.log(`[webhook] STEP D: Found ${cases.length} cases. IDs: ${cases.map(c => c.id).join(", ")}`);
+        } else {
+            console.log("[webhook] STEP D: arCases doc not found — will create new entry");
         }
-        const cases = arCasesDoc.data().value || [];
-        const idx = cases.findIndex(c => String(c.id) === String(caseId));
+
+        let idx = cases.findIndex(c => String(c.id) === String(caseId));
+
+        // 若案件不存在，自動建立一筆（來自回信的案件）
         if (idx === -1) {
-            return res.status(200).json({ status: "skipped", reason: "Case not found", caseId, availableIds: cases.map(c => c.id) });
+            console.log(`[webhook] STEP D: Case ${caseId} not in Firestore — creating stub entry`);
+            cases.push({
+                id: caseId,
+                clientName: fromEmail.split("@")[0] || "未知客戶",
+                contactEmail: fromEmail,
+                amount: 0,
+                dueDate: "",
+                status: "overdue_t1",
+                aiStage: "t1",
+                riskLevel: "medium",
+                history: [],
+                notes: "由 Webhook 自動建立（收到客戶回覆但 Firestore 中無此案件）",
+                createdByWebhook: true,
+            });
+            idx = cases.length - 1;
         }
 
         // ── STEP E: 更新案件 ──
@@ -387,13 +410,13 @@ export default async function handler(req, res) {
         cases[idx] = updatedCase;
         console.log("[webhook] STEP E done. Updated case keys:", Object.keys(updatedCase).join(", "));
 
-        // ── STEP F: 寫回 Firestore ──
+        // ── STEP F: 寫回 Firestore（用 set+merge 確保文件不存在也能建立）──
         console.log("[webhook] STEP F: Writing to Firestore...");
-        await arCasesRef.update({
+        await arCasesRef.set({
             value: sanitize(cases),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedBy: { email: "webhook@system", name: "AI 自動回信判讀" },
-        });
+        }, { merge: true });
 
         console.log(`[webhook] Done! Case ${caseId} — risk=${aiResult.risk} engine=${aiResult._engine}`);
         return res.status(200).json({

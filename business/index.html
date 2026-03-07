@@ -7481,22 +7481,22 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                         </div>
                         <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16 }}>
                           <Field label="公司地址 *">
-                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                            <input type="text" style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
                               onFocus={e => e.target.style.borderColor = C.violet} onBlur={e => e.target.style.borderColor = C.border}
                               value={legalForm.senderAddress} onChange={e => setLegalForm({ ...legalForm, senderAddress: e.target.value })} placeholder="台北市○○區○○路○號" />
                           </Field>
                           <Field label="代表人姓名 *">
-                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                            <input type="text" style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
                               onFocus={e => e.target.style.borderColor = C.violet} onBlur={e => e.target.style.borderColor = C.border}
                               value={legalForm.senderRepresentative} onChange={e => setLegalForm({ ...legalForm, senderRepresentative: e.target.value })} placeholder="代表人/負責人姓名" />
                           </Field>
                           <Field label="收款銀行帳號（供存證信函載明）">
-                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                            <input type="text" style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
                               onFocus={e => e.target.style.borderColor = C.violet} onBlur={e => e.target.style.borderColor = C.border}
                               value={legalForm.bankAccount} onChange={e => setLegalForm({ ...legalForm, bankAccount: e.target.value })} placeholder="例：中國信託 822-1234567890" />
                           </Field>
                           <Field label="合約/訂單編號">
-                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                            <input type="text" style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
                               onFocus={e => e.target.style.borderColor = C.violet} onBlur={e => e.target.style.borderColor = C.border}
                               value={legalForm.contractRef} onChange={e => setLegalForm({ ...legalForm, contractRef: e.target.value })} placeholder="如有合約號可填入" />
                           </Field>
@@ -7511,17 +7511,17 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                         </div>
                         <div style={{ display: "grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap: 16 }}>
                           <Field label="債務人登記地址 *">
-                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                            <input type="text" style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
                               onFocus={e => e.target.style.borderColor = C.rose} onBlur={e => e.target.style.borderColor = C.border}
                               value={legalForm.recipientAddress} onChange={e => setLegalForm({ ...legalForm, recipientAddress: e.target.value })} placeholder="對方營業登記或聯絡地址" />
                           </Field>
                           <Field label="負責人/當事人姓名">
-                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                            <input type="text" style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
                               onFocus={e => e.target.style.borderColor = C.rose} onBlur={e => e.target.style.borderColor = C.border}
                               value={legalForm.debtorRepresentative} onChange={e => setLegalForm({ ...legalForm, debtorRepresentative: e.target.value })} placeholder="公司負責人或個人姓名" />
                           </Field>
                           <Field label="統一編號 / 身分證字號">
-                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                            <input type="text" style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
                               onFocus={e => e.target.style.borderColor = C.rose} onBlur={e => e.target.style.borderColor = C.border}
                               value={legalForm.debtorId} onChange={e => setLegalForm({ ...legalForm, debtorId: e.target.value })} placeholder="法人統編或自然人身分證號" />
                           </Field>
@@ -7537,12 +7537,12 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                           <Field label="違約金/滯納金訴求">
-                            <input type="text" style={{ width: "100%", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
+                            <input type="text" style={{ width: "100%", boxSizing: "border-box", padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", transition: T }}
                               onFocus={e => e.target.style.borderColor = C.gold} onBlur={e => e.target.style.borderColor = C.border}
                               value={legalForm.penalty} onChange={e => setLegalForm({ ...legalForm, penalty: e.target.value })} placeholder="例：依合約第X條，每日加計千分之五遲延利息" />
                           </Field>
                           <Field label="補充聲明">
-                            <textarea style={{ width: "100%", height: 88, padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "inherit", transition: T }}
+                            <textarea style={{ width: "100%", boxSizing: "border-box", height: 88, padding: "10px 14px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.ink, fontSize: 13, outline: "none", resize: "vertical", fontFamily: "inherit", transition: T }}
                               onFocus={e => e.target.style.borderColor = C.gold} onBlur={e => e.target.style.borderColor = C.border}
                               value={legalForm.extraNotes} onChange={e => setLegalForm({ ...legalForm, extraNotes: e.target.value })} placeholder="有無其他約定、特殊情況需向律師說明的事項..." />
                           </Field>
