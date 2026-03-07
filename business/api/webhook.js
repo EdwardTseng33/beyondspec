@@ -10,10 +10,17 @@ export const config = {
 let firebaseInitError = null;
 try {
     if (!admin.apps.length) {
-        const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+        let rawKey = process.env.FIREBASE_PRIVATE_KEY || "";
+        // 處理各種 Vercel 環境變數格式：
+        // 1. 移除外層引號（有些人會用引號包住整個 key）
+        if ((rawKey.startsWith('"') && rawKey.endsWith('"')) || (rawKey.startsWith("'") && rawKey.endsWith("'"))) {
+            rawKey = rawKey.slice(1, -1);
+        }
+        // 2. 將 literal \n 轉成真正的換行
+        const privateKey = rawKey.replace(/\\n/g, "\n");
         console.log("[webhook:init] FIREBASE_PROJECT_ID:", process.env.FIREBASE_PROJECT_ID ? "SET" : "MISSING");
         console.log("[webhook:init] FIREBASE_CLIENT_EMAIL:", process.env.FIREBASE_CLIENT_EMAIL ? "SET" : "MISSING");
-        console.log("[webhook:init] FIREBASE_PRIVATE_KEY:", privateKey ? `SET (${privateKey.length} chars)` : "MISSING");
+        console.log("[webhook:init] FIREBASE_PRIVATE_KEY:", privateKey ? `SET (${privateKey.length} chars, begins=${privateKey.substring(0, 27)})` : "MISSING");
         admin.initializeApp({
             credential: admin.credential.cert({
                 projectId: process.env.FIREBASE_PROJECT_ID,
@@ -25,6 +32,7 @@ try {
 } catch (e) {
     firebaseInitError = e;
     console.error("[webhook:init] Firebase init FAILED:", e.message);
+    console.error("[webhook:init] Key preview:", (process.env.FIREBASE_PRIVATE_KEY || "").substring(0, 50));
 }
 const db = firebaseInitError ? null : admin.firestore();
 
