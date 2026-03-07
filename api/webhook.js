@@ -160,10 +160,10 @@ function analyzeWithKeywords(emailText) {
     else if (score >= -2) risk = "medium";
     else risk = "high";
 
-    // ── 生成摘要 ──
-    const topSignals = signals.slice(0, 3).map(s => s.replace(/^[✅⚠️🚨⏳📅]\s?/, "")).join("、");
+    // ── 生成摘要（用 Unicode 安全方式去除前綴 emoji，避免孤立 surrogate）──
+    const topSignals = signals.slice(0, 3).map(s => s.replace(/^[\p{Emoji_Presentation}\p{Emoji}\u200d\ufe0f]+\s?/u, "")).join("、");
     const summary = topSignals
-        ? (topSignals.length > 25 ? topSignals.substring(0, 22) + "…" : topSignals)
+        ? ([...topSignals].length > 25 ? [...topSignals].slice(0, 22).join("") + "…" : topSignals)
         : "未偵測到明確意圖";
 
     // ── 建議行動 ──
@@ -377,25 +377,28 @@ export default async function handler(req, res) {
 
         history.push({ date: today, action: "🧠 AI 判讀完成", note: aiNoteLine });
 
-        // ── 深度淨化：移除 undefined / NaN / Infinity，確保 Firestore 相容 ──
+        // ── 深度淨化：移除 undefined / NaN / Infinity / 孤立 surrogate ──
+        function cleanStr(s) {
+            // 移除孤立的 UTF-16 surrogate（Firestore 不接受）
+            return typeof s === "string" ? s.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, "") : s;
+        }
         function sanitize(obj) {
-            // 最可靠的方式：JSON 來回轉一次，自動去除 undefined、function、symbol
             try {
-                return JSON.parse(JSON.stringify(obj, (key, val) => {
+                const json = JSON.stringify(obj, (key, val) => {
                     if (val === undefined || val === null) return null;
-                    if (typeof val === "number" && !isFinite(val)) return null; // NaN, Infinity
+                    if (typeof val === "number" && !isFinite(val)) return null;
+                    if (typeof val === "string") return cleanStr(val);
                     return val;
-                }));
+                });
+                return JSON.parse(json);
             } catch (e) {
-                console.error("[webhook] sanitize JSON roundtrip failed:", e.message);
-                // fallback: 遞迴手動清理
+                console.error("[webhook] sanitize failed:", e.message);
                 if (obj === null || obj === undefined) return null;
+                if (typeof obj === "string") return cleanStr(obj);
                 if (Array.isArray(obj)) return obj.map(sanitize);
                 if (typeof obj === "object") {
                     const clean = {};
-                    for (const [k, v] of Object.entries(obj)) {
-                        clean[k] = sanitize(v);
-                    }
+                    for (const [k, v] of Object.entries(obj)) { clean[k] = sanitize(v); }
                     return clean;
                 }
                 return obj;
