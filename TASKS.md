@@ -3,20 +3,17 @@
 ## Active
 
 - [ ] **[Story 1] deals/invoices 一鍵轉入 AR 建案** - 目前需手動填入，應可從現有交易/發票直接 prefill 新 AR 案件
-  - 優先度：P1（原 P2，因下方 P0 方向調整後提升）
+  - 優先度：P1
 
 - [ ] **法務助手匯出格式升級** - 目前只有 .txt，律師實務建議升級為 .docx（支援格式、修改、協作）
-  - 優先度：P2（原 P3）
-
-- [ ] **[Story 1] deals/invoices 一鍵轉入 AR 建案** - 目前需手動填入，應可從現有交易/發票直接 prefill 新 AR 案件
   - 優先度：P2
-
-- [ ] **法務助手匯出格式升級** - 目前只有 .txt，律師可能需要 .docx
-  - 優先度：P3
 
 ## Waiting On
 
-- [ ] **E2E Webhook 測試** - 等待 Edward 確認 Vercel 部署網址 + workspaceId，再執行 `test-webhook.mjs` 完整驗證
+- [ ] **Vercel 環境變數設定 SENDGRID_FROM_EMAIL** - 需 Edward 至 Vercel Dashboard → Settings → Environment Variables 加入已在 SendGrid 驗證的寄件者信箱
+  - since 2026-03-07
+
+- [ ] **E2E SendGrid 寄信測試** - 完成 SENDGRID_FROM_EMAIL 設定 + GitHub push 後，在 AR 案件詳情頁點「確認寄出」，確認信件正確到達、Reply-To 追蹤位址正確、客戶回信後 Firestore 有寫入
   - since 2026-03-07
 
 ## Someday
@@ -27,6 +24,11 @@
 
 ## Done
 
+- [x] ~~SendGrid Outbound API 整合~~ (2026-03-07) — v2.86
+  - 新增 /api/send.js 後端端點（@sendgrid/mail）
+  - 以 fetch('/api/send') 取代 window.location.href = mailto:
+  - 確保每封催款信帶有正確 Reply-To 追蹤位址
+  - 加入寄送中 / 成功 / 失敗 UI 狀態回饋
 - [x] ~~[P0 重定義] Webhook Gemini 升級：豐富 AI 來信判讀~~ (2026-03-07) — v2.85
   - Gemini prompt 升級：新增 paymentCommitted / commitDate / disputeDetected / suggestedAction
   - Firestore 寫入新欄位：aiSummary, aiPaymentCommitted, aiCommitDate, aiDisputeDetected, aiSuggestedAction, lastReplyText
