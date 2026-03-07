@@ -5531,8 +5531,17 @@
     };
 
     // ── Version Changelog ──
-    const VERSION = "2.86";
+    const VERSION = "2.87";
     const CHANGELOG = [
+      {
+        version: "2.87", date: "2026-03-08", title: "📬 催款行動中心 UX 大改版",
+        features: [
+          { icon: "📬", text: "整合「AI 信用診斷」與「催款行動方案」為統一的「催款行動中心」三步驟流程 — STEP 1 AI 風險診斷 → STEP 2 草稿生成 → STEP 3 確認寄出" },
+          { icon: "🎯", text: "AI 自動偵測語氣風格 — 根據案件狀態 (T1/T2/T3) 自動選取最佳語氣，使用者可手動覆寫 Pill 切換" },
+          { icon: "💊", text: "Footer 狀態選單改為 Pill 按鈕群組 — 對齊 Tasks/Leads 設計語言，有顏色回饋，手機自動折行" },
+          { icon: "🧹", text: "移除 Email 勾選框（唯一選項無意義）、移除重複的「標記已結案」按鈕、移除冗長的 AI 說明文字" },
+        ]
+      },
       {
         version: "2.86", date: "2026-03-07", title: "📤 SendGrid 真實寄信整合",
         features: [
@@ -6848,7 +6857,13 @@
       const [aiGenerating, setAiGenerating] = useState(false);
       const [generatedDraft, setGeneratedDraft] = useState(null);
       const [emailTemplate, setEmailTemplate] = useState("direct");
-      const [pbChannels, setPbChannels] = useState({ email: true });
+      // T-AR4: Auto-detect tone from case status
+      useEffect(() => {
+        if (!arCase) return;
+        if (arCase.status === "upcoming" || arCase.status === "overdue_t1") setEmailTemplate("polite");
+        else if (arCase.status === "overdue_t3" || arCase.status === "legal") setEmailTemplate("legal");
+        else setEmailTemplate("direct");
+      }, [arCase?.status]);
       const [pbRunning, setPbRunning] = useState(false);
       const [pbSent, setPbSent] = useState(false);
       const [pbError, setPbError] = useState(null);
@@ -7212,106 +7227,60 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                 </div>
               )}
 
-              {/* AI Assistant Box */}
-              <div style={{ background: `linear-gradient(135deg, ${C.surface}, ${C.bg})`, border: `2px solid ${C.accent}40`, borderRadius: 16, padding: 20, marginBottom: 24, position: "relative", overflow: "hidden" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                  <span style={{ fontSize: 20, animation: "glow-pulse 2s infinite" }}>✨</span>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: C.accent }}>AI 信用與風險診斷</div>
-                </div>
-                <div style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.6, marginBottom: 20, background: `${C.surface}80`, padding: "12px 16px", borderRadius: 12, border: `1px solid ${C.borderHover}` }}>
-                  根據設定的 <span onClick={onSettings} style={{ cursor: "pointer", color: C.accent, fontWeight: 700, textDecoration: "underline", padding: "0 2px" }} title="點擊修改天數">T1/T2 天數</span> 與案件歷程綜合判定，AI 研判此案件重點風險為：
-                  <div style={{ marginTop: 8 }}>
-                    {(() => {
-                      const days = Math.floor((new Date() - new Date(arCase.dueDate)) / (1000 * 60 * 60 * 24));
-                      const sets = arSettings || { t1Days: 14, t2Days: 30 };
-                      let aiRisk = days > sets.t2Days ? { level: "high", text: "🔴 高度風險，建議採法律行動" }
-                        : days > sets.t1Days ? { level: "medium", text: "🟡 中度風險，強烈警告階段" }
-                          : { level: "low", text: "🟢 良好可控，維持溫和提醒" };
-
-                      if (arCase.mockRisk === "low")    aiRisk = { level: "low",    text: "🟢 AI 來信判讀：客戶回應良好，暫緩行動" };
-                      if (arCase.mockRisk === "medium") aiRisk = { level: "medium", text: "🟡 AI 來信判讀：態度模糊，建議再次跟進確認" };
-                      if (arCase.mockRisk === "high")   aiRisk = { level: "high",   text: "🔴 AI 來信判讀：客戶閃避推託，強烈建議法務升級" };
-
-                      return (
-                        <strong style={{ color: aiRisk.level === "high" ? C.rose : aiRisk.level === "medium" ? C.gold : C.emerald, fontSize: 14, background: aiRisk.level === "high" ? `${C.rose}15` : aiRisk.level === "medium" ? `${C.gold}15` : `${C.emerald}15`, padding: "4px 8px", borderRadius: 6, display: "inline-block", transition: T }}>
-                          {aiRisk.text}
-                        </strong>
-                      );
-                    })()}
-                  </div>
-                </div>
-
-                {!generatedDraft ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, background: C.card, padding: "8px 12px", borderRadius: 8, border: `1px solid ${C.border}` }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>撰寫風格語氣：</div>
-                      <select value={emailTemplate} onChange={e => setEmailTemplate(e.target.value)} style={{ flex: 1, padding: "6px 10px", borderRadius: 6, border: `1px solid ${C.borderHover}`, background: C.surface, color: C.ink, fontSize: 13, cursor: "pointer", outline: "none" }}>
-                        <option value="direct">預設標準通知 (按現階段風險)</option>
-                        <option value="polite">柔性關懷提醒 (維持關係)</option>
-                        <option value="legal">法務最後通牒 (強烈警告)</option>
-                      </select>
-                    </div>
-                    <button onClick={handleAIAction} style={{ width: "100%", padding: "12px", borderRadius: 8, border: "none", background: C.accent, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T }}>
-                      {aiGenerating ? "⏳ 讀取範本引擎中..." : `👀 展開預覽與編輯文案草稿 (Email/訊息)`}
-                    </button>
-                    {(() => {
-                      const days = Math.floor((new Date() - new Date(arCase.dueDate)) / (1000 * 60 * 60 * 24));
-                      const sets = arSettings || { t1Days: 14, t2Days: 30 };
-                      if (days > sets.t1Days) {
-                        const isHigh = days > sets.t2Days;
-                        return (
-                          <button onClick={() => { setLegalStep(0); setLegalWizardOpen(true); }} style={{ width: "100%", padding: "12px", borderRadius: 8, border: `1px solid ${isHigh ? C.rose : C.gold}`, background: isHigh ? `${C.rose}15` : `${C.gold}15`, color: isHigh ? C.rose : C.gold, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T, animation: "fadeIn 0.5s ease" }}
-                            onMouseEnter={(e) => e.currentTarget.style.background = isHigh ? `${C.rose}25` : `${C.gold}25`} onMouseLeave={(e) => e.currentTarget.style.background = isHigh ? `${C.rose}15` : `${C.gold}15`}
-                          >
-                            ⚖️ 啟動存證信函助手・律師案件包
-                          </button>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                ) : (
-                  <div style={{ animation: "fadeIn .5s ease" }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: C.emerald, marginBottom: 8 }}>✅ 草稿已生成！</div>
-                    <textarea value={generatedDraft} onChange={(e) => setGeneratedDraft(e.target.value)}
-                      style={{ width: "100%", height: 200, padding: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit" }} />
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
-                      <button onClick={() => { navigator.clipboard?.writeText(generatedDraft); alert("已複製信件內容！"); }} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: C.emerald, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>📋 複製草稿</button>
-                      <button onClick={() => setGeneratedDraft(null)} style={{ padding: "8px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 13, cursor: "pointer" }}>↺ 重新生成</button>
-                      <div style={{ width: "100%", fontSize: 12, color: C.inkMuted, marginTop: 2 }}>✏️ 可直接編輯草稿後，至下方「催款行動方案」確認寄出</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Playbook — Stage-aware Action Hub */}
+              {/* 📬 催款行動中心 — T-AR1 統一三步驟流程 (v2.87) */}
               {(() => {
                 const stage = PLAYBOOK_STAGE[arCase.status] || PLAYBOOK_STAGE.upcoming;
-                const canSend = !!generatedDraft && pbChannels.email && arCase.status !== "resolved";
+                const canSend = !!generatedDraft && arCase.status !== "resolved";
+                const days = Math.floor((new Date() - new Date(arCase.dueDate)) / (1000 * 60 * 60 * 24));
+                const sets = arSettings || { t1Days: 14, t2Days: 30 };
+                let aiRisk = days > sets.t2Days ? { level: "high", text: "高度風險，建議採法律行動" }
+                  : days > sets.t1Days ? { level: "medium", text: "中度風險，強烈警告階段" }
+                    : { level: "low", text: "良好可控，維持溫和提醒" };
+                if (arCase.mockRisk === "low")    aiRisk = { level: "low",    text: "AI 來信判讀：客戶回應良好" };
+                if (arCase.mockRisk === "medium") aiRisk = { level: "medium", text: "AI 來信判讀：態度模糊，建議跟進" };
+                if (arCase.mockRisk === "high")   aiRisk = { level: "high",   text: "AI 來信判讀：客戶閃避推託" };
+                const riskColor = aiRisk.level === "high" ? C.rose : aiRisk.level === "medium" ? C.gold : C.emerald;
+                const riskIcon = aiRisk.level === "high" ? "🔴" : aiRisk.level === "medium" ? "🟡" : "🟢";
+                const TONE_OPTIONS = [
+                  { id: "polite", label: "柔性關懷", icon: "🕊️" },
+                  { id: "direct", label: "標準通知", icon: "📋" },
+                  { id: "legal",  label: "法務警告", icon: "⚖️" },
+                ];
                 return (
-                  <div style={{ background: C.surface, borderRadius: 16, padding: "20px 24px", marginBottom: 24, border: `1px solid ${C.border}` }}>
+                  <div style={{ background: `linear-gradient(135deg, ${C.surface}, ${C.bg})`, border: `2px solid ${C.accent}40`, borderRadius: 16, padding: 20, marginBottom: 24, position: "relative", overflow: "hidden" }}>
                     {/* Header */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                      <span style={{ fontSize: 20 }}>📬</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+                      <span style={{ fontSize: 20, animation: "glow-pulse 2s infinite" }}>📬</span>
                       <div>
-                        <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>催款行動方案</div>
-                        <div style={{ fontSize: 12, color: C.inkSoft }}>根據催收階段推薦最佳行動・發出後自動監聽客戶回覆</div>
+                        <div style={{ fontSize: 15, fontWeight: 800, color: C.ink }}>催款行動中心</div>
+                        <div style={{ fontSize: 12, color: C.inkSoft }}>AI 診斷 → 生成草稿 → 確認寄出</div>
                       </div>
                     </div>
 
-                    {/* Stage recommendation strip */}
-                    <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 14px", borderRadius: 10, background: `${stage.color}12`, border: `1.5px solid ${stage.color}45`, marginBottom: 14 }}>
-                      <div style={{ width: 4, borderRadius: 2, background: stage.color, alignSelf: "stretch", flexShrink: 0 }} />
-                      <div>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: stage.color, marginBottom: 2 }}>{stage.title}</div>
-                        <div style={{ fontSize: 12, color: C.inkSoft }}>{stage.desc}</div>
-                        <div style={{ fontSize: 11, color: C.inkMuted, marginTop: 3 }}>💡 {stage.advice}</div>
+                    {/* ── STEP 1: AI 風險診斷 ── */}
+                    <div style={{ marginBottom: 18 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                        <div style={{ width: 20, height: 20, borderRadius: "50%", background: `${riskColor}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>{riskIcon}</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: C.inkMuted, letterSpacing: 0.5 }}>STEP 1 — AI 風險診斷</div>
+                        <span style={{ fontSize: 10, color: C.accent, cursor: "pointer", marginLeft: "auto" }} onClick={onSettings} title="點擊修改 T1/T2 天數">⚙️ 設定</span>
+                      </div>
+                      <div style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "12px 14px", borderRadius: 10, background: `${riskColor}10`, border: `1.5px solid ${riskColor}40` }}>
+                        <div style={{ width: 4, borderRadius: 2, background: riskColor, alignSelf: "stretch", flexShrink: 0 }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: riskColor, marginBottom: 3 }}>{riskIcon} {aiRisk.text}</div>
+                          <div style={{ fontSize: 12, color: C.inkSoft }}>{stage.desc}</div>
+                          <div style={{ fontSize: 11, color: C.inkMuted, marginTop: 3 }}>💡 {stage.advice}</div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* ── Legal Stage: 法務程序專屬 CTA ── */}
+                    {/* ── Legal / Resolved / Normal branches ── */}
                     {arCase.status === "legal" ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 0 }}>
+                          <div style={{ width: 20, height: 20, borderRadius: "50%", background: `${C.violet}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>⚖️</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: C.inkMuted, letterSpacing: 0.5 }}>STEP 2 — 法務程序</div>
+                        </div>
                         <div style={{ display: "flex", gap: 12, alignItems: "center", padding: "14px 16px", borderRadius: 10, background: `${C.violet}10`, border: `1.5px solid ${C.violet}40` }}>
                           <span style={{ fontSize: 28 }}>⚖️</span>
                           <div style={{ flex: 1 }}>
@@ -7319,12 +7288,9 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                             <div style={{ fontSize: 12, color: C.inkSoft, marginTop: 3 }}>系統將協助你整理存證信函所需資料，並產出律師事務所可直接使用的完整案件包。</div>
                           </div>
                         </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                          <div style={{ fontSize: 11, color: C.inkMuted, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", padding: "0 2px" }}>流程說明</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "0 2px" }}>
                           {["① 點擊下方按鈕，開啟存證信函助手", "② 補充債務人地址、代表人等資訊", "③ 預覽草稿確認後，一鍵匯出律師案件包（.txt）", "④ 可選擇直接用信箱寄送至律師事務所"].map((step, i) => (
-                            <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0" }}>
-                              <div style={{ fontSize: 12, color: C.violet, fontWeight: 600, flexShrink: 0 }}>{step}</div>
-                            </div>
+                            <div key={i} style={{ fontSize: 12, color: C.violet, fontWeight: 600, padding: "4px 0" }}>{step}</div>
                           ))}
                         </div>
                         <button onClick={() => { setLegalStep(0); setLegalWizardOpen(true); }}
@@ -7344,67 +7310,83 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                       </div>
                     ) : (
                       <>
-                        {/* Channel list */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-                          {/* Email — active */}
-                          <div style={{ display: "flex", alignItems: "center", padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px solid ${pbChannels.email ? C.accent + "55" : C.border}` }}>
-                            <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", flex: 1 }}>
-                              <input type="checkbox" checked={pbChannels.email} onChange={e => setPbChannels({ ...pbChannels, email: e.target.checked })} />
-                              <span style={{ fontSize: 16 }}>📧</span>
-                              <div>
-                                <div style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>Email</div>
-                                <div style={{ fontSize: 11, color: pbSent ? C.emerald : C.inkMuted }}>
-                                  {pbSent ? "✅ 已寄出 · AI 正在監聽回覆" : generatedDraft ? "草稿已就緒，可確認寄出" : "請先在上方生成 AI 草稿"}
-                                </div>
+                        {/* ── STEP 2: 草稿生成 ── */}
+                        <div style={{ marginBottom: 16 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                            <div style={{ width: 20, height: 20, borderRadius: "50%", background: `${C.accent}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>📝</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: C.inkMuted, letterSpacing: 0.5 }}>STEP 2 — 草稿生成</div>
+                          </div>
+
+                          {/* T-AR4: Tone pills (auto-selected from status, user can override) */}
+                          {!generatedDraft && (
+                            <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+                              {TONE_OPTIONS.map(t => (
+                                <button key={t.id} onClick={() => setEmailTemplate(t.id)}
+                                  style={{ padding: "5px 12px", borderRadius: 8, border: emailTemplate === t.id ? `2px solid ${C.accent}` : `1px solid ${C.border}`, background: emailTemplate === t.id ? `${C.accent}15` : C.surface, color: emailTemplate === t.id ? C.accent : C.inkMuted, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: T }}>
+                                  {t.icon} {t.label}
+                                </button>
+                              ))}
+                              <span style={{ fontSize: 10, color: C.inkMuted, alignSelf: "center", marginLeft: 4 }}>已依階段自動選取，可手動切換</span>
+                            </div>
+                          )}
+
+                          {!generatedDraft ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                              <button onClick={handleAIAction} style={{ width: "100%", padding: "12px", borderRadius: 8, border: "none", background: C.accent, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T }}>
+                                {aiGenerating ? "⏳ 讀取範本引擎中..." : "✨ 展開生成 AI 草稿"}
+                              </button>
+                              {/* Legal wizard shortcut for T1+ cases */}
+                              {days > sets.t1Days && (
+                                <button onClick={() => { setLegalStep(0); setLegalWizardOpen(true); }}
+                                  style={{ width: "100%", padding: "10px", borderRadius: 8, border: `1px solid ${days > sets.t2Days ? C.rose : C.gold}`, background: days > sets.t2Days ? `${C.rose}12` : `${C.gold}12`, color: days > sets.t2Days ? C.rose : C.gold, fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", gap: 8, transition: T }}
+                                  onMouseEnter={e => e.currentTarget.style.opacity = "0.8"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                                  ⚖️ 啟動存證信函助手
+                                </button>
+                              )}
+                            </div>
+                          ) : (
+                            <div style={{ animation: "fadeIn .5s ease" }}>
+                              <textarea value={generatedDraft} onChange={(e) => setGeneratedDraft(e.target.value)}
+                                style={{ width: "100%", height: 180, padding: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit" }} />
+                              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                                <button onClick={() => { navigator.clipboard?.writeText(generatedDraft); alert("已複製信件內容！"); }} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: C.emerald, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>📋 複製</button>
+                                <button onClick={() => setGeneratedDraft(null)} style={{ padding: "6px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 12, cursor: "pointer" }}>↺ 重新生成</button>
                               </div>
-                            </label>
-                            {pbSent && <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: `${C.emerald}15`, color: C.emerald, fontWeight: 700, flexShrink: 0 }}>🟢 監聽中</span>}
-                          </div>
-                          {/* LINE — coming soon */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px dashed ${C.border}`, opacity: 0.5 }}>
-                            <span style={{ fontSize: 16 }}>💬</span>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft }}>LINE 官方帳號</div>
-                              <div style={{ fontSize: 11, color: C.inkMuted }}>整合中，即將推出</div>
                             </div>
-                            <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, border: `1px solid ${C.border}`, color: C.inkMuted }}>即將推出</span>
-                          </div>
-                          {/* SMS — coming soon */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 8, background: C.card, border: `1px dashed ${C.border}`, opacity: 0.5 }}>
-                            <span style={{ fontSize: 16 }}>📱</span>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 13, fontWeight: 600, color: C.inkSoft }}>簡訊 SMS</div>
-                              <div style={{ fontSize: 11, color: C.inkMuted }}>整合中，即將推出</div>
-                            </div>
-                            <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 8, border: `1px solid ${C.border}`, color: C.inkMuted }}>即將推出</span>
-                          </div>
+                          )}
                         </div>
 
-                        {/* CTA */}
-                        {!pbSent ? (
-                          <>
-                            <button onClick={handleStartPlaybook} disabled={pbRunning || !canSend}
-                              style={{ width: "100%", padding: "13px", borderRadius: 8, border: "none",
-                                background: !canSend ? C.inkMuted : pbRunning ? C.inkMuted : C.accent,
-                                color: "#fff", fontSize: 14, fontWeight: 800,
-                                cursor: (!canSend || pbRunning) ? "not-allowed" : "pointer", transition: T,
-                                display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
-                              {pbRunning ? "📤 寄送中，請稍候..." : !generatedDraft ? "📝 請先生成 AI 草稿" : "📤 確認寄出・啟動 AI 回覆監聽"}
-                            </button>
-                            {pbError && (
-                              <div style={{ marginTop: 8, padding: "10px 14px", borderRadius: 8, background: `${C.rose}12`, border: `1px solid ${C.rose}40`, color: C.rose, fontSize: 12, fontWeight: 600 }}>
-                                ⚠️ 寄送失敗：{pbError}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 8, background: `${C.emerald}10`, border: `1px solid ${C.emerald}40` }}>
-                            <span style={{ fontSize: 16 }}>🟢</span>
-                            <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: C.emerald }}>催款通知已發出・AI 監聽已啟動</div>
-                            <button onClick={() => { setPbSent(false); setGeneratedDraft(null); setPbError(null); }}
-                              style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.emerald}40`, background: "transparent", color: C.emerald, cursor: "pointer", fontWeight: 600 }}>重新發送</button>
+                        {/* ── STEP 3: 確認寄出 ── */}
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, opacity: generatedDraft ? 1 : 0.35 }}>
+                            <div style={{ width: 20, height: 20, borderRadius: "50%", background: generatedDraft ? `${C.emerald}20` : `${C.inkMuted}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>📤</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: C.inkMuted, letterSpacing: 0.5 }}>STEP 3 — 確認寄出</div>
                           </div>
-                        )}
+                          {!pbSent ? (
+                            <>
+                              <button onClick={handleStartPlaybook} disabled={pbRunning || !canSend}
+                                style={{ width: "100%", padding: "13px", borderRadius: 8, border: "none",
+                                  background: !canSend ? `${C.inkMuted}40` : pbRunning ? C.inkMuted : C.accent,
+                                  color: !canSend ? C.inkMuted : "#fff", fontSize: 14, fontWeight: 800,
+                                  cursor: (!canSend || pbRunning) ? "not-allowed" : "pointer", transition: T,
+                                  display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
+                                {pbRunning ? "📤 寄送中，請稍候..." : !generatedDraft ? "請先完成 STEP 2 生成草稿" : "📤 確認寄出・啟動 AI 回覆監聽"}
+                              </button>
+                              {pbError && (
+                                <div style={{ marginTop: 8, padding: "10px 14px", borderRadius: 8, background: `${C.rose}12`, border: `1px solid ${C.rose}40`, color: C.rose, fontSize: 12, fontWeight: 600 }}>
+                                  ⚠️ 寄送失敗：{pbError}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 8, background: `${C.emerald}10`, border: `1px solid ${C.emerald}40` }}>
+                              <span style={{ fontSize: 16 }}>🟢</span>
+                              <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: C.emerald }}>催款通知已發出・AI 監聽已啟動</div>
+                              <button onClick={() => { setPbSent(false); setGeneratedDraft(null); setPbError(null); }}
+                                style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.emerald}40`, background: "transparent", color: C.emerald, cursor: "pointer", fontWeight: 600 }}>重新發送</button>
+                            </div>
+                          )}
+                        </div>
                       </>
                     )}
                   </div>
@@ -7430,20 +7412,17 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
               </div>
             </div>
 
-            {/* Footer with actions */}
-            <div style={{ padding: "16px 28px", borderTop: `1px solid ${C.border}`, background: C.card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <select
-                  style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${C.borderHover}`, background: C.surface, color: C.ink, fontSize: 13, fontFamily: "inherit", cursor: "pointer" }}
-                  value={arCase.status}
-                  onChange={(e) => {
-                    onUpdate(arCase.id, { status: e.target.value });
-                  }}
-                >
-                  {AR_STATUSES.map(s => <option key={s.id} value={s.id}>{s.icon} 移至：{s.label}</option>)}
-                </select>
+            {/* T-AR2 + T-AR3: Footer with pill status buttons (v2.87) */}
+            <div style={{ padding: "14px 24px", borderTop: `1px solid ${C.border}`, background: C.card }}>
+              <div style={{ fontSize: 11, color: C.inkMuted, fontWeight: 600, marginBottom: 8 }}>案件狀態</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {AR_STATUSES.map(s => (
+                  <button key={s.id} onClick={() => onUpdate(arCase.id, { status: s.id })}
+                    style={{ padding: "7px 12px", borderRadius: 10, border: arCase.status === s.id ? `2px solid ${s.color}` : `1px solid ${C.border}`, background: arCase.status === s.id ? `${s.color}15` : C.surface, color: arCase.status === s.id ? s.color : C.inkMuted, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T }}>
+                    {s.icon} {s.label}
+                  </button>
+                ))}
               </div>
-              <button onClick={() => onUpdate(arCase.id, { status: "resolved" })} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: C.emerald, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>✅ 標記已結案</button>
             </div>
 
             {/* Overlays inside Drawer — Legal Wizard (多步驟：資料填寫 → 預覽草稿) */}
