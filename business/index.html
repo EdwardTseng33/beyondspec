@@ -7233,9 +7233,30 @@ ${debtorIdLine ? debtorIdLine + "\n" : ""}
         return content;
       };
 
+      // 匯出用：同日狀態來回切換只保留最終結果
+      const dedupeHistory = (history) => {
+        if (!history || history.length === 0) return [];
+        const result = [];
+        for (let i = 0; i < history.length; i++) {
+          const h = history[i];
+          if (h.action === "📋 狀態變更") {
+            // 往後看：同日同 action 的連續記錄，只取最後一筆
+            let last = h;
+            while (i + 1 < history.length && history[i + 1].action === "📋 狀態變更" && history[i + 1].date === h.date) {
+              i++;
+              last = history[i];
+            }
+            result.push(last);
+          } else {
+            result.push(h);
+          }
+        }
+        return result;
+      };
+
       const generateCasePackage = () => {
         const draft = generateLegalDraft();
-        const historyText = (arCase.history || [])
+        const historyText = dedupeHistory(arCase.history || [])
           .map(h => `[${h.date}] ${h.action}${h.note ? " ── " + h.note : ""}`)
           .join("\n");
         const overdueDays = arCase.dueDate
@@ -7295,7 +7316,7 @@ ${draft}`;
 
         const filename = type === "package"
           ? `律師案件包_${arCase.clientName}_${new Date().toISOString().split("T")[0]}.docx`
-          : `存證信函草稿_${arCase.clientName}.docx`;
+          : `存證信函_${arCase.clientName}_${new Date().toISOString().split("T")[0]}.docx`;
         const todayStr = new Date().toLocaleDateString("zh-TW", { year: "numeric", month: "2-digit", day: "2-digit" });
         const overdueDays = arCase.dueDate ? Math.max(0, Math.floor((new Date() - new Date(arCase.dueDate)) / 86400000)) : 0;
         const riskLabel = arCase.mockRisk === "low" ? "善意低風險" : arCase.mockRisk === "medium" ? "態度模糊" : "高風險拖延";
@@ -7396,7 +7417,7 @@ ${draft}`;
                   new TableCell({ borders, width: { size: contentW - 4200, type: WidthType.DXA }, margins: cellM, shading: { fill: "2B5797", type: ShadingType.CLEAR },
                     children: [new Paragraph({ children: [new TextRun({ text: "說明 / 備註", bold: true, font: "Microsoft JhengHei", size: 20, color: "FFFFFF" })] })] }),
                 ] }),
-                ...(arCase.history || []).map((h, i) => new TableRow({ children: [
+                ...dedupeHistory(arCase.history || []).map((h, i) => new TableRow({ children: [
                   new TableCell({ borders, width: { size: 2000, type: WidthType.DXA }, margins: cellM, shading: { fill: i % 2 ? "F9F9F9" : "FFFFFF", type: ShadingType.CLEAR },
                     children: [new Paragraph({ children: [new TextRun({ text: h.date, font: "Microsoft JhengHei", size: 20 })] })] }),
                   new TableCell({ borders, width: { size: 2200, type: WidthType.DXA }, margins: cellM, shading: { fill: i % 2 ? "F9F9F9" : "FFFFFF", type: ShadingType.CLEAR },
@@ -7632,25 +7653,28 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                 const hasReply = !!arCase.lastReplyAt;
                 const isBounced = et.bounced;
                 const isSpam = et.spamReported;
-                // 決定整體狀態色
                 const statusColor = isBounced || isSpam ? C.rose : hasReply ? C.accent : et.opened ? C.emerald : C.inkMuted;
-                // 狀態摘要文字
                 const statusParts = [];
-                if (et.delivered) statusParts.push({ icon: "📬", text: "已送達", time: fmtTW(et.deliveredAt), color: C.inkMuted });
-                if (et.opened) statusParts.push({ icon: "👁️", text: `已讀${et.openCount > 1 ? ` ×${et.openCount}` : ""}`, time: fmtTW(et.openedAt), color: C.emerald });
-                if (et.clicked) statusParts.push({ icon: "🔗", text: `點擊${et.clickCount > 1 ? ` ×${et.clickCount}` : ""}`, time: fmtTW(et.clickedAt), color: C.cyan || C.accent });
-                if (hasReply) statusParts.push({ icon: "💬", text: "已回覆", time: fmtTW(arCase.lastReplyAt), color: C.accent });
-                if (isBounced) statusParts.push({ icon: "❌", text: "退信", time: "", color: C.rose });
-                if (isSpam) statusParts.push({ icon: "🚫", text: "垃圾郵件", time: "", color: C.rose });
+                if (et.delivered) statusParts.push({ icon: "📬", text: "已送達", tooltip: `送達時間：${fmtTW(et.deliveredAt)}`, color: C.inkMuted });
+                if (et.opened) statusParts.push({ icon: "👁️", text: `已讀${et.openCount > 1 ? ` ×${et.openCount}` : ""}`, tooltip: `最近開啟：${fmtTW(et.openedAt)}`, color: C.emerald });
+                if (et.clicked) statusParts.push({ icon: "🔗", text: `點擊${et.clickCount > 1 ? ` ×${et.clickCount}` : ""}`, tooltip: `最近點擊：${fmtTW(et.clickedAt)}`, color: C.cyan || C.accent });
+                if (hasReply) statusParts.push({ icon: "💬", text: "已回覆", tooltip: `回覆時間：${fmtTW(arCase.lastReplyAt)}`, color: C.accent });
+                if (isBounced) statusParts.push({ icon: "❌", text: "退信", tooltip: et.bounceReason || "退信", color: C.rose });
+                if (isSpam) statusParts.push({ icon: "🚫", text: "垃圾郵件", tooltip: "客戶已標記為垃圾郵件", color: C.rose });
+                // 最後追蹤更新時間 = 所有事件中最晚的那個
+                const allTimes = [et.deliveredAt, et.openedAt, et.clickedAt, arCase.lastReplyAt].filter(Boolean);
+                const lastUpdate = allTimes.length ? fmtTW(allTimes.sort().pop()) : "";
                 return (
                   <div style={{ background: C.card, border: `1.5px solid ${statusColor}25`, borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
                     <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
                       <span style={{ fontSize: 14 }}>📡</span>
                       <span style={{ fontSize: 12, fontWeight: 700, color: C.ink }}>信件追蹤</span>
-                      <span style={{ fontSize: 11, color: C.inkMuted }}>·</span>
+                      {lastUpdate && <span style={{ fontSize: 10, color: C.inkMuted, marginLeft: "auto" }}>最後更新 {lastUpdate}</span>}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
                       {statusParts.map((s, i) => (
-                        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 600, color: s.color, background: `${s.color}12`, padding: "2px 8px", borderRadius: 6 }}>
-                          {s.icon} {s.text}{s.time ? ` ${s.time}` : ""}
+                        <span key={i} title={s.tooltip} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 600, color: s.color, background: `${s.color}12`, padding: "3px 10px", borderRadius: 6, cursor: "default" }}>
+                          {s.icon} {s.text}
                         </span>
                       ))}
                     </div>
