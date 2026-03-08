@@ -7560,7 +7560,6 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                               <textarea value={generatedDraft} onChange={(e) => setGeneratedDraft(e.target.value)}
                                 style={{ width: "100%", height: 180, padding: 12, background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, color: C.ink, fontSize: 13, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit" }} />
                               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                                <button onClick={() => { navigator.clipboard?.writeText(generatedDraft); alert("已複製信件內容！"); }} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: C.emerald, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>📋 複製</button>
                                 <button onClick={() => setGeneratedDraft(null)} style={{ padding: "6px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 12, cursor: "pointer" }}>↺ 重新生成</button>
                               </div>
                             </div>
