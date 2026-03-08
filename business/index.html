@@ -6555,11 +6555,10 @@
       );
     };
 
-    const ArSettingsForm = ({ settings, emailTemplates, companyProfile, onCompanyProfileChange, onSave, onCancel }) => {
+    const ArSettingsForm = ({ settings, emailTemplates, onSave, onCancel }) => {
       const [local, setLocal] = useState(settings || { t1Days: 14, t2Days: 30, t3Days: 60 });
       const [localTpls, setLocalTpls] = useState(emailTemplates || []);
-      const [localCp, setLocalCp] = useState(companyProfile || {});
-      const [tab, setTab] = useState("rules"); // "rules" or "templates" or "company"
+      const [tab, setTab] = useState("rules"); // "rules" or "templates"
 
       const arTpls = localTpls.filter(t => t.stage === "ar");
 
@@ -6577,9 +6576,10 @@
             <button onClick={() => setTab("templates")} style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: tab === "templates" ? C.card : "transparent", color: tab === "templates" ? C.accent : C.inkMuted, fontWeight: tab === "templates" ? 800 : 600, cursor: "pointer", transition: T }}>
               📝 信件範本
             </button>
-            <button onClick={() => setTab("company")} style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: tab === "company" ? C.card : "transparent", color: tab === "company" ? C.accent : C.inkMuted, fontWeight: tab === "company" ? 800 : 600, cursor: "pointer", transition: T }}>
-              🏢 公司資訊
-            </button>
+          </div>
+
+          <div style={{ fontSize: 12, color: C.inkMuted, background: `${C.accent}10`, borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", gap: 6 }}>
+            💡 公司資訊已移至右上角 <strong style={{ color: C.ink }}>⚙️ 系統設定</strong>，催收模組會自動連動。
           </div>
 
           {tab === "rules" && (
@@ -6615,40 +6615,11 @@
             </div>
           )}
 
-          {tab === "company" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <p style={{ fontSize: 13, color: C.inkSoft, margin: 0, lineHeight: 1.6 }}>這裡的資訊會用在催款信寄件人名稱、信件署名、報價單等所有對外文件。</p>
-              <Field label="公司名稱">
-                <input style={inputStyle} value={localCp.name || ""} onChange={e => setLocalCp({ ...localCp, name: e.target.value })} placeholder="例：移動城堡指揮部" />
-              </Field>
-              <Field label="公司 Logo 網址">
-                <input style={inputStyle} value={localCp.logoUrl || ""} onChange={e => setLocalCp({ ...localCp, logoUrl: e.target.value })} placeholder="https://example.com/logo.png" />
-                {localCp.logoUrl && <img src={localCp.logoUrl} alt="logo preview" style={{ marginTop: 8, maxHeight: 48, borderRadius: 6, background: C.surface, padding: 4 }} onError={e => e.target.style.display = "none"} />}
-              </Field>
-              <Field label="聯絡人 / 代表人">
-                <input style={inputStyle} value={localCp.representativeName || ""} onChange={e => setLocalCp({ ...localCp, representativeName: e.target.value })} placeholder="例：王大明" />
-              </Field>
-              <Field label="聯絡 Email">
-                <input style={inputStyle} value={localCp.email || ""} onChange={e => setLocalCp({ ...localCp, email: e.target.value })} placeholder="contact@company.com" />
-              </Field>
-              <Field label="聯絡電話">
-                <input style={inputStyle} value={localCp.phone || ""} onChange={e => setLocalCp({ ...localCp, phone: e.target.value })} placeholder="02-1234-5678" />
-              </Field>
-              <Field label="公司地址">
-                <input style={inputStyle} value={localCp.address || ""} onChange={e => setLocalCp({ ...localCp, address: e.target.value })} placeholder="台北市信義區..." />
-              </Field>
-              <Field label="銀行帳戶（催款信用）">
-                <input style={inputStyle} value={localCp.bankAccount || ""} onChange={e => setLocalCp({ ...localCp, bankAccount: e.target.value })} placeholder="銀行名稱 / 帳號" />
-              </Field>
-              <Field label="Slogan / 網站">
-                <input style={inputStyle} value={localCp.website || ""} onChange={e => setLocalCp({ ...localCp, website: e.target.value })} placeholder="https://company.com" />
-              </Field>
-            </div>
-          )}
+          {/* 🏢 公司資訊已移至 Header ⚙️ 系統設定 */}
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
             <Btn variant="ghost" onClick={onCancel}>取消</Btn>
-            <Btn onClick={() => { if (onCompanyProfileChange && tab === "company") onCompanyProfileChange(localCp); onSave(local, localTpls); }}>儲存設定</Btn>
+            <Btn onClick={() => { onSave(local, localTpls); }}>儲存設定</Btn>
           </div>
         </div>
       );
@@ -8758,6 +8729,10 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
               {user ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   {_firestoreReady && <span style={{ fontSize: 11, color: C.emerald, fontWeight: 600 }}>🟢 已連線</span>}
+                  <button onClick={() => setModal("systemSettings")} title="系統設定（公司資訊、偏好設定）"
+                    style={{ width: mobile ? 28 : 34, height: mobile ? 28 : 34, borderRadius: mobile ? 8 : 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: mobile ? 12 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.inkMuted; }}>⚙️</button>
                   {_firestoreReady && !mobile && <button onClick={() => setTab("roles")} title="管理團隊成員" style={{ padding: "5px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: T, fontWeight: 600 }}>👥 團隊</button>}
                   <button onClick={handleLogout} title={`${user.name}\n點擊登出`}
                     style={{ width: mobile ? 28 : 34, height: mobile ? 28 : 34, borderRadius: mobile ? 8 : 10, overflow: "hidden", border: `2px solid ${C.accent}`, cursor: "pointer", padding: 0, background: C.accentSoft, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -8900,7 +8875,64 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
           {modal === "addRole" && <Modal title="新增角色" onClose={() => setModal(null)}><RoleForm onSave={addRole} onCancel={() => setModal(null)} /></Modal>}
           {modal === "editRole" && editItem && <Modal title="編輯角色" onClose={() => { setModal(null); setEditItem(null); }}><RoleForm role={editItem} onSave={updateRole} onCancel={() => { setModal(null); setEditItem(null); }} /></Modal>}
           {modal === "addArCase" && <Modal title="💰 新增催收案件" onClose={() => setModal(null)}><ArCaseForm contacts={aggregatedContacts} invoices={invoices} onSave={addArCase} onCancel={() => setModal(null)} /></Modal>}
-          {modal === "arSettings" && <Modal title="⚙️ 催收系統設定" onClose={() => setModal(null)}><ArSettingsForm settings={arSettings} emailTemplates={emailTemplates} companyProfile={companyProfile} onCompanyProfileChange={setCompanyProfile} onSave={(s, newTpls) => { setArSettings(s); setEmailTemplates(newTpls); setModal(null); addLog("⚙️", "更新設定", "催收階段規則與範本已更新", C.accent); }} onCancel={() => setModal(null)} /></Modal>}
+          {/* 全域系統設定 Modal — 公司資訊在此編輯，各模組連動 */}
+          {modal === "systemSettings" && <Modal title="⚙️ 系統設定" onClose={() => setModal(null)}>
+            {(() => {
+              const [localCp, setLocalCp] = useState(companyProfile || {});
+              const [saved, setSaved] = useState(false);
+              const handleSave = () => { setCompanyProfile(localCp); setSaved(true); addLog("⚙️", "更新公司資訊", localCp.name || "已儲存", C.accent); setTimeout(() => setSaved(false), 2000); };
+              return (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  <p style={{ fontSize: 13, color: C.inkSoft, margin: 0, lineHeight: 1.6 }}>
+                    此處設定的公司資訊會自動套用到系統標題、催款信寄件人、報價單、發票等所有對外文件。
+                  </p>
+                  <Field label="公司名稱（系統標題）">
+                    <input style={inputStyle} value={localCp.name || ""} onChange={e => setLocalCp({ ...localCp, name: e.target.value })} placeholder="例：移動城堡指揮部" />
+                  </Field>
+                  <Field label="公司 Logo 網址">
+                    <input style={inputStyle} value={localCp.logoUrl || ""} onChange={e => setLocalCp({ ...localCp, logoUrl: e.target.value })} placeholder="https://example.com/logo.png" />
+                    {localCp.logoUrl && <img src={localCp.logoUrl} alt="preview" style={{ marginTop: 8, maxHeight: 48, borderRadius: 6, background: C.surface, padding: 4 }} onError={e => e.target.style.display = "none"} />}
+                  </Field>
+                  <Field label="Slogan / 副標題">
+                    <input style={inputStyle} value={localCp.slogan || ""} onChange={e => setLocalCp({ ...localCp, slogan: e.target.value })} placeholder="你的公司口號" />
+                  </Field>
+                  <Field label="聯絡人 / 代表人">
+                    <input style={inputStyle} value={localCp.representativeName || ""} onChange={e => setLocalCp({ ...localCp, representativeName: e.target.value })} placeholder="例：王大明" />
+                  </Field>
+                  <Field label="聯絡 Email">
+                    <input style={inputStyle} value={localCp.email || ""} onChange={e => setLocalCp({ ...localCp, email: e.target.value })} placeholder="contact@company.com" />
+                  </Field>
+                  <Field label="聯絡電話">
+                    <input style={inputStyle} value={localCp.phone || ""} onChange={e => setLocalCp({ ...localCp, phone: e.target.value })} placeholder="02-1234-5678" />
+                  </Field>
+                  <Field label="公司地址">
+                    <input style={inputStyle} value={localCp.address || ""} onChange={e => setLocalCp({ ...localCp, address: e.target.value })} placeholder="台北市信義區..." />
+                  </Field>
+                  <Field label="銀行帳戶（催款信 / 發票用）">
+                    <input style={inputStyle} value={localCp.bankAccount || ""} onChange={e => setLocalCp({ ...localCp, bankAccount: e.target.value })} placeholder="銀行名稱 / 帳號" />
+                  </Field>
+                  <Field label="簽約方名稱（報價單簽章欄）">
+                    <input style={inputStyle} value={localCp.signatory || ""} onChange={e => setLocalCp({ ...localCp, signatory: e.target.value })} placeholder="簽約方公司全名" />
+                  </Field>
+                  <Field label="公司印章圖片（報價單浮水印）">
+                    <input style={inputStyle} value={localCp.stampImage || ""} onChange={e => setLocalCp({ ...localCp, stampImage: e.target.value })} placeholder="https://example.com/stamp.png" />
+                    {localCp.stampImage && <img src={localCp.stampImage} alt="stamp" style={{ marginTop: 8, maxHeight: 64, opacity: 0.4, borderRadius: 6, background: C.surface, padding: 4 }} onError={e => e.target.style.display = "none"} />}
+                  </Field>
+                  <Field label="公司網站">
+                    <input style={inputStyle} value={localCp.website || ""} onChange={e => setLocalCp({ ...localCp, website: e.target.value })} placeholder="https://company.com" />
+                  </Field>
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
+                    <Btn variant="ghost" onClick={() => setModal(null)}>取消</Btn>
+                    <Btn onClick={handleSave}>{saved ? "✅ 已儲存" : "儲存設定"}</Btn>
+                  </div>
+                  <div style={{ fontSize: 11, color: C.inkMuted, padding: "8px 0 0", borderTop: `1px solid ${C.border}`, lineHeight: 1.6 }}>
+                    💡 這些資訊會連動到：左上角系統標題與 Logo、催款信寄件人與簽名檔、報價單 FROM 區塊與簽章欄、發票表頭。
+                  </div>
+                </div>
+              );
+            })()}
+          </Modal>}
+          {modal === "arSettings" && <Modal title="⚙️ 催收系統設定" onClose={() => setModal(null)}><ArSettingsForm settings={arSettings} emailTemplates={emailTemplates} onSave={(s, newTpls) => { setArSettings(s); setEmailTemplates(newTpls); setModal(null); addLog("⚙️", "更新設定", "催收階段規則與範本已更新", C.accent); }} onCancel={() => setModal(null)} /></Modal>}
           {/* P0: Proposal Modals */}
           {modal === "addProposal" && <Modal title="新增報價單" wide={780} onClose={() => setModal(null)}><ProposalForm deals={deals.filter((d) => !d.archived)} leads={leads} partners={partners} onPartnersChange={setPartners} onLeadsImport={(newLeads) => { const mapped = newLeads.map((l, i) => ({ ...l, id: nLead.current++ })); setLeads((p) => [...p, ...mapped]); addLog("📁", "CSV 匯入 BD", `新增 ${mapped.length} 筆`, C.violet); }} companyProfile={companyProfile} onCompanyProfileChange={setCompanyProfile} serviceTemplates={serviceTemplates} onServiceTemplatesChange={setServiceTemplates} noteTemplates={noteTemplates} onNoteTemplatesChange={setNoteTemplates} onSave={addProposal} onCancel={() => setModal(null)} /></Modal>}
           {modal === "editProposal" && editItem && <Modal title="編輯報價單" wide={780} onClose={() => { setModal(null); setEditItem(null); }}><ProposalForm proposal={editItem} deals={deals.filter((d) => !d.archived)} leads={leads} partners={partners} onPartnersChange={setPartners} onLeadsImport={(newLeads) => { const mapped = newLeads.map((l, i) => ({ ...l, id: nLead.current++ })); setLeads((p) => [...p, ...mapped]); addLog("📁", "CSV 匯入 BD", `新增 ${mapped.length} 筆`, C.violet); }} companyProfile={companyProfile} onCompanyProfileChange={setCompanyProfile} serviceTemplates={serviceTemplates} onServiceTemplatesChange={setServiceTemplates} noteTemplates={noteTemplates} onNoteTemplatesChange={setNoteTemplates} onSave={updateProposal} onCancel={() => { setModal(null); setEditItem(null); }} /></Modal>}
