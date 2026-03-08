@@ -5537,7 +5537,7 @@
     };
 
     // ── Version Changelog ──
-    const VERSION = "3.03";
+    const VERSION = "3.04";
     const CHANGELOG = [
       {
         version: "3.03", date: "2026-03-08", title: "📋 手動貼上回覆 + AI 分析",
@@ -7012,11 +7012,23 @@
             baseDraft += `\n\n👉 若您已付款或有任何疑問，請直接回覆本信件。`;
           }
 
-          baseDraft = baseDraft.replace("{{company}}", companyProfile?.name || "本公司");
+          baseDraft = baseDraft.replace(/{{company}}/g, companyProfile?.name || "本公司");
           baseDraft = baseDraft.replace(/{{contact}}/g, arCase.clientName || "客戶");
           baseDraft = baseDraft.replace(/{{invoice}}/g, arCase.invoiceId || "未知");
           baseDraft = baseDraft.replace(/{{amount}}/g, (arCase.amount || 0).toLocaleString());
           baseDraft = baseDraft.replace(/{{dueDate}}/g, arCase.dueDate || "未知");
+
+          // 信件尾部自動帶入公司完整簽名檔
+          const sigParts = [];
+          if (companyProfile?.representativeName) sigParts.push(companyProfile.representativeName);
+          if (companyProfile?.name) sigParts.push(companyProfile.name);
+          if (companyProfile?.phone) sigParts.push(`電話：${companyProfile.phone}`);
+          if (companyProfile?.email) sigParts.push(`Email：${companyProfile.email}`);
+          if (companyProfile?.address) sigParts.push(companyProfile.address);
+          if (companyProfile?.bankAccount) sigParts.push(`匯款資訊：${companyProfile.bankAccount}`);
+          if (sigParts.length > 0) {
+            baseDraft += `\n\n——————————————\n${sigParts.join("\n")}`;
+          }
 
           setGeneratedDraft(baseDraft);
         }, 1200);
@@ -7058,7 +7070,8 @@
         setPbRunning(true);
         setPbError(null);
         const _wsId = workspaceId || "default";
-        const subject = `【帳務通知】關於 ${arCase.invoiceId || arCase.clientName} 溝通事宜`;
+        const cpName = companyProfile?.name || "帳務催收中心";
+        const subject = `【${cpName}｜帳務通知】關於 ${arCase.invoiceId || arCase.clientName} 溝通事宜`;
         try {
           const res = await fetch("https://api.beyondspec.tw/api/send", {
             method: "POST",
