@@ -11,6 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@9.5.0/build/index.umd.min.js"></script>
   <style>
     /* Hide number input spinners globally */
     input[type="number"]::-webkit-inner-spin-button,
@@ -7275,38 +7276,252 @@ ${historyText}
 ${draft}`;
       };
 
-      const handleExportLegalLetter = (type = "draft") => {
-        // Use edited draft text (from textarea) for draft; generate package with edited draft for package
-        const rawContent = type === "package" ? generateCasePackage().replace(generateLegalDraft(), legalDraftText) : legalDraftText;
+      const handleExportLegalLetter = async (type = "draft") => {
+        const D = window.docx;
+        if (!D) { alert("docx 函式庫載入中，請稍後再試"); return; }
+        const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+                Header, Footer, AlignmentType, BorderStyle, WidthType, ShadingType,
+                HeadingLevel, PageBreak, PageNumber, TabStopType, TabStopPosition } = D;
+
         const filename = type === "package"
           ? `律師案件包_${arCase.clientName}_${new Date().toISOString().split("T")[0]}.docx`
           : `存證信函草稿_${arCase.clientName}.docx`;
-        // Generate Word-compatible HTML document with proper paragraph formatting
-        const escHtml = rawContent.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-        // Convert text to proper HTML paragraphs: double newline = new paragraph, single newline = line break
-        // Also handle separator lines (===, ---) as horizontal rules
-        const htmlBody = escHtml
-          .replace(/^(={3,}|─{3,}|-{3,})$/gm, '<hr style="border:none;border-top:1.5px solid #999;margin:16px 0;">')
-          .split(/\n\n+/).map(para => `<p style="margin:0 0 12px 0;">${para.replace(/\n/g,"<br>")}</p>`).join("\n");
-        const htmlDoc = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8">
-<style>
-  @page { size: A4; margin: 2.5cm 2cm; }
-  body { font-family: 'Microsoft JhengHei', 'PingFang TC', '微軟正黑體', sans-serif; font-size: 13pt; line-height: 1.9; color: #222; }
-  p { margin: 0 0 12px 0; }
-  hr { border: none; border-top: 1.5px solid #999; margin: 20px 0; }
-</style>
-</head>
-<body>${htmlBody}</body></html>`;
-        const blob = new Blob(["\uFEFF" + htmlDoc], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const todayStr = new Date().toLocaleDateString("zh-TW", { year: "numeric", month: "2-digit", day: "2-digit" });
+        const overdueDays = arCase.dueDate ? Math.max(0, Math.floor((new Date() - new Date(arCase.dueDate)) / 86400000)) : 0;
+        const riskLabel = arCase.mockRisk === "low" ? "善意低風險" : arCase.mockRisk === "medium" ? "態度模糊" : "高風險拖延";
+        const sender = companyProfile?.name || "（公司名稱）";
+        const thinBorder = { style: BorderStyle.SINGLE, size: 1, color: "CCCCCC" };
+        const borders = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
+        const noBorders = { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE } };
+        const cellM = { top: 60, bottom: 60, left: 100, right: 100 };
+        // A4 content width = 11906 - 2*1134 = 9638 DXA (2cm margins)
+        const pageW = 11906, marginLR = 1134, contentW = pageW - 2 * marginLR;
+        const labelW = 2800, valueW = contentW - labelW;
+
+        const makeInfoRow = (label, value, opts = {}) => new TableRow({ children: [
+          new TableCell({ borders: opts.noBorder ? noBorders : borders, width: { size: labelW, type: WidthType.DXA }, margins: cellM,
+            shading: { fill: opts.noBorder ? "FFFFFF" : "F5F5F5", type: ShadingType.CLEAR },
+            children: [new Paragraph({ children: [new TextRun({ text: label, bold: true, font: "Microsoft JhengHei", size: 22 })] })] }),
+          new TableCell({ borders: opts.noBorder ? noBorders : borders, width: { size: valueW, type: WidthType.DXA }, margins: cellM,
+            children: [new Paragraph({ children: [new TextRun({ text: value || "未提供", font: "Microsoft JhengHei", size: 22, color: value ? "222222" : "999999" })] })] })
+        ] });
+
+        const makeTable = (rows) => new Table({ width: { size: contentW, type: WidthType.DXA }, columnWidths: [labelW, valueW], rows });
+
+        const heading = (text, level = HeadingLevel.HEADING_1) => new Paragraph({ heading: level, children: [new TextRun({ text, font: "Microsoft JhengHei" })] });
+        const para = (text, opts = {}) => new Paragraph({ alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT, spacing: { after: opts.after || 120 },
+          children: [new TextRun({ text, font: "Microsoft JhengHei", size: opts.size || 22, bold: opts.bold, color: opts.color || "222222", italics: opts.italic })] });
+        const spacer = () => new Paragraph({ spacing: { after: 80 }, children: [] });
+
+        // === Build sections ===
+        const children = [];
+
+        if (type === "package") {
+          // ── Cover Page ──
+          children.push(
+            spacer(), spacer(), spacer(), spacer(), spacer(), spacer(),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: "⚖️", font: "Microsoft JhengHei", size: 72 })] }),
+            spacer(),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 }, children: [new TextRun({ text: "逾期帳款催收案件", font: "Microsoft JhengHei", size: 44, bold: true })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: "完整移交包", font: "Microsoft JhengHei", size: 44, bold: true })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 }, children: [new TextRun({ text: `債務人：${arCase.clientName}`, font: "Microsoft JhengHei", size: 28, color: "555555" })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 }, children: [new TextRun({ text: `應收金額：NT$ ${(arCase.amount || 0).toLocaleString()}`, font: "Microsoft JhengHei", size: 28, color: "555555" })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 }, children: [new TextRun({ text: `逾期天數：${overdueDays} 天`, font: "Microsoft JhengHei", size: 28, color: overdueDays > 30 ? "CC0000" : "555555" })] }),
+            spacer(), spacer(), spacer(),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 40 }, border: { top: { style: BorderStyle.SINGLE, size: 1, color: "CCCCCC", space: 8 } },
+              children: [new TextRun({ text: `供律師事務所建案用`, font: "Microsoft JhengHei", size: 20, color: "888888", italics: true })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 40 }, children: [new TextRun({ text: `系統：Beyond Business AR Module`, font: "Microsoft JhengHei", size: 18, color: "AAAAAA" })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 40 }, children: [new TextRun({ text: `匯出時間：${new Date().toLocaleString("zh-TW")}`, font: "Microsoft JhengHei", size: 18, color: "AAAAAA" })] }),
+            new Paragraph({ children: [new PageBreak()] }),
+
+            // ── Section 1: Case Summary ──
+            heading("一、案件摘要"),
+            makeTable([
+              makeInfoRow("債務人名稱", arCase.clientName),
+              makeInfoRow("發票號碼", arCase.invoiceId),
+              makeInfoRow("應收金額", `NT$ ${(arCase.amount || 0).toLocaleString()}`),
+              makeInfoRow("約定付款日", arCase.dueDate),
+              makeInfoRow("逾期天數", overdueDays > 0 ? `${overdueDays} 天` : "未逾期"),
+              makeInfoRow("AI 風險評估", riskLabel),
+              makeInfoRow("最後回覆日", arCase.lastReplyAt || "無回覆記錄"),
+            ]),
+            spacer(),
+
+            // ── Section 2: Parties ──
+            heading("二、雙方當事人資訊"),
+            para("【債權人（本公司）】", { bold: true, size: 24, after: 60 }),
+            makeTable([
+              makeInfoRow("公司名稱", sender),
+              makeInfoRow("公司地址", legalForm.senderAddress),
+              makeInfoRow("代表人", legalForm.senderRepresentative),
+              makeInfoRow("收款帳戶", legalForm.bankAccount),
+              makeInfoRow("聯絡 Email", companyProfile?.email),
+              makeInfoRow("聯絡電話", companyProfile?.phone),
+            ]),
+            spacer(),
+            para("【債務人】", { bold: true, size: 24, after: 60 }),
+            makeTable([
+              makeInfoRow("公司 / 姓名", arCase.clientName),
+              makeInfoRow("登記地址", legalForm.recipientAddress),
+              makeInfoRow("負責人", legalForm.debtorRepresentative),
+              makeInfoRow("統一編號 / 身分證", legalForm.debtorId),
+              makeInfoRow("合約 / 訂單編號", legalForm.contractRef),
+              makeInfoRow("聯絡人", arCase.contactName),
+              makeInfoRow("聯絡電話", arCase.contactPhone),
+              makeInfoRow("聯絡 Email", arCase.contactEmail),
+            ]),
+            spacer(),
+
+            // ── Section 3: Collection Timeline ──
+            heading("三、催收歷程時間軸"),
+            new Table({
+              width: { size: contentW, type: WidthType.DXA },
+              columnWidths: [2000, 2200, contentW - 4200],
+              rows: [
+                new TableRow({ children: [
+                  new TableCell({ borders, width: { size: 2000, type: WidthType.DXA }, margins: cellM, shading: { fill: "2B5797", type: ShadingType.CLEAR },
+                    children: [new Paragraph({ children: [new TextRun({ text: "日期", bold: true, font: "Microsoft JhengHei", size: 20, color: "FFFFFF" })] })] }),
+                  new TableCell({ borders, width: { size: 2200, type: WidthType.DXA }, margins: cellM, shading: { fill: "2B5797", type: ShadingType.CLEAR },
+                    children: [new Paragraph({ children: [new TextRun({ text: "事件", bold: true, font: "Microsoft JhengHei", size: 20, color: "FFFFFF" })] })] }),
+                  new TableCell({ borders, width: { size: contentW - 4200, type: WidthType.DXA }, margins: cellM, shading: { fill: "2B5797", type: ShadingType.CLEAR },
+                    children: [new Paragraph({ children: [new TextRun({ text: "說明 / 備註", bold: true, font: "Microsoft JhengHei", size: 20, color: "FFFFFF" })] })] }),
+                ] }),
+                ...(arCase.history || []).map((h, i) => new TableRow({ children: [
+                  new TableCell({ borders, width: { size: 2000, type: WidthType.DXA }, margins: cellM, shading: { fill: i % 2 ? "F9F9F9" : "FFFFFF", type: ShadingType.CLEAR },
+                    children: [new Paragraph({ children: [new TextRun({ text: h.date, font: "Microsoft JhengHei", size: 20 })] })] }),
+                  new TableCell({ borders, width: { size: 2200, type: WidthType.DXA }, margins: cellM, shading: { fill: i % 2 ? "F9F9F9" : "FFFFFF", type: ShadingType.CLEAR },
+                    children: [new Paragraph({ children: [new TextRun({ text: h.action.replace(/^[^\u4e00-\u9fff\u3400-\u4dbfa-zA-Z0-9]+/, "").trim(), font: "Microsoft JhengHei", size: 20 })] })] }),
+                  new TableCell({ borders, width: { size: contentW - 4200, type: WidthType.DXA }, margins: cellM, shading: { fill: i % 2 ? "F9F9F9" : "FFFFFF", type: ShadingType.CLEAR },
+                    children: [new Paragraph({ children: [new TextRun({ text: h.note || "—", font: "Microsoft JhengHei", size: 20, color: h.note ? "222222" : "BBBBBB" })] })] }),
+                ] }))
+              ]
+            }),
+            spacer(),
+
+            // ── Section 4: Attachment Checklist ──
+            heading("四、附件清單（律師建案 Checklist）"),
+            para("請確認以下文件是否已備齊，勾選後隨本案件包一併提交：", { size: 20, color: "666666", after: 80 }),
+            ...[
+              ["發票影本 / 請款單", arCase.invoiceId ? "系統已記錄發票號碼" : "待補"],
+              ["合約 / 訂單 / 報價單", legalForm.contractRef ? "已有編號" : "待補"],
+              ["催收郵件往來紀錄", (arCase.history || []).some(h => h.action.includes("寄出")) ? "系統已記錄催收信" : "待補"],
+              ["客戶回覆截圖 / 紀錄", (arCase.history || []).some(h => h.action.includes("回覆")) ? "有回覆紀錄" : "待補"],
+              ["債務人公司登記資料（經濟部商工登記）", legalForm.debtorId ? "已有統編" : "待補"],
+              ["匯款紀錄 / 付款證明（如有部分付款）", "請自行確認"],
+              ["存證信函草稿（見本文件第五章）", "已包含"],
+            ].map(([item, status]) => new Table({
+              width: { size: contentW, type: WidthType.DXA },
+              columnWidths: [500, contentW - 2500, 2000],
+              rows: [new TableRow({ children: [
+                new TableCell({ borders: noBorders, width: { size: 500, type: WidthType.DXA }, margins: { top: 40, bottom: 40, left: 60, right: 0 },
+                  children: [new Paragraph({ children: [new TextRun({ text: "☐", font: "Microsoft JhengHei", size: 22 })] })] }),
+                new TableCell({ borders: noBorders, width: { size: contentW - 2500, type: WidthType.DXA }, margins: { top: 40, bottom: 40, left: 40, right: 40 },
+                  children: [new Paragraph({ children: [new TextRun({ text: item, font: "Microsoft JhengHei", size: 21 })] })] }),
+                new TableCell({ borders: noBorders, width: { size: 2000, type: WidthType.DXA }, margins: { top: 40, bottom: 40, left: 40, right: 60 },
+                  children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: status, font: "Microsoft JhengHei", size: 18, color: status === "已包含" || status.includes("已") ? "2B7A2B" : "CC8800", italics: true })] })] }),
+              ] })]
+            })),
+            spacer(),
+            new Paragraph({ children: [new PageBreak()] }),
+
+            // ── Section 5: Legal Draft (full text) ──
+            heading("五、存證信函草稿全文"),
+          );
+        }
+
+        // ── Legal Draft Content (used for both draft-only and package section 5) ──
+        const draftText = legalDraftText || generateLegalDraft();
+        const draftLines = draftText.split("\n");
+        const draftParagraphs = [];
+        for (const line of draftLines) {
+          if (/^={3,}$|^-{3,}$|^─{3,}$/.test(line.trim())) {
+            draftParagraphs.push(new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: "999999", space: 4 } }, spacing: { after: 120 }, children: [] }));
+          } else if (line.trim() === "") {
+            draftParagraphs.push(spacer());
+          } else {
+            const isBold = /^(主\s*旨|說\s*明|寄件人|收件人|地\s*址|發文日期|存\s*證\s*信\s*函|此致|代表人|※)/.test(line.trim());
+            const isCenter = /^(存\s*證\s*信\s*函|（供律師)/.test(line.trim());
+            draftParagraphs.push(new Paragraph({
+              alignment: isCenter ? AlignmentType.CENTER : AlignmentType.LEFT,
+              spacing: { after: 80, line: 360 },
+              children: [new TextRun({ text: line, font: "Microsoft JhengHei", size: 22, bold: isBold })]
+            }));
+          }
+        }
+        if (type === "package") {
+          children.push(...draftParagraphs);
+        }
+
+        // ── Assemble Document ──
+        const sections = type === "package" ? [{
+          properties: {
+            page: {
+              size: { width: pageW, height: 16838 },
+              margin: { top: 1440, right: marginLR, bottom: 1440, left: marginLR }
+            }
+          },
+          headers: {
+            default: new Header({ children: [new Paragraph({
+              children: [
+                new TextRun({ text: sender, font: "Microsoft JhengHei", size: 16, color: "999999" }),
+                new TextRun({ text: "\t機密文件 — 律師案件移交包", font: "Microsoft JhengHei", size: 16, color: "999999" }),
+              ],
+              tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+              border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: "DDDDDD", space: 4 } },
+            })] })
+          },
+          footers: {
+            default: new Footer({ children: [new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({ text: "Beyond Business AR Module — 第 ", font: "Microsoft JhengHei", size: 16, color: "AAAAAA" }),
+                new TextRun({ children: [PageNumber.CURRENT], font: "Microsoft JhengHei", size: 16, color: "AAAAAA" }),
+                new TextRun({ text: " 頁", font: "Microsoft JhengHei", size: 16, color: "AAAAAA" }),
+              ]
+            })] })
+          },
+          children,
+        }] : [{
+          properties: {
+            page: {
+              size: { width: pageW, height: 16838 },
+              margin: { top: 1440, right: marginLR, bottom: 1440, left: marginLR }
+            }
+          },
+          children: draftParagraphs,
+        }];
+
+        const doc = new Document({
+          styles: {
+            default: { document: { run: { font: "Microsoft JhengHei", size: 22 } } },
+            paragraphStyles: [
+              { id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
+                run: { size: 30, bold: true, font: "Microsoft JhengHei", color: "2B5797" },
+                paragraph: { spacing: { before: 300, after: 160 }, outlineLevel: 0 } },
+              { id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true,
+                run: { size: 26, bold: true, font: "Microsoft JhengHei", color: "2B5797" },
+                paragraph: { spacing: { before: 200, after: 120 }, outlineLevel: 1 } },
+            ]
+          },
+          sections,
+        });
+
+        try {
+          const buffer = await Packer.toBlob(doc);
+          const url = URL.createObjectURL(buffer);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          console.error("docx export error:", err);
+          alert("匯出失敗：" + err.message);
+          return;
+        }
+
         onUpdate?.(arCase.id, {
           history: [...(arCase.history || []), {
             date: new Date().toISOString().split("T")[0],
