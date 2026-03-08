@@ -61,9 +61,9 @@ const KEYWORDS = {
         "抱歉遲了", "不好意思", "感謝提醒", "收到了",
         "會盡快處理", "正在處理", "安排付款", "排入付款",
     ],
-    // ── 承諾付款日期的模式 ──
+    // ── 承諾付款日期的模式（需搭配善意關鍵字才有效，避免電話號碼誤判）──
     datePatterns: [
-        /(\d{1,2})[/\-.](\d{1,2})/,                    // 3/15, 3-15
+        /(?<!\d)(\d{1,2})[/.](\d{1,2})(?!\d)/,         // 3/15, 3.15（排除 078-230 電話格式，只允許 / 和 .）
         /(\d{4})[/\-.](\d{1,2})[/\-.](\d{1,2})/,      // 2026/3/15
         /(下週[一二三四五六日])/,                          // 下週一
         /(本週[一二三四五六日])/,                          // 本週五
@@ -103,12 +103,13 @@ const KEYWORDS = {
     ],
 };
 
-// ── 剔除引用/轉寄的原始郵件內容，只保留回覆正文 ──
+// ── 剔除引用/轉寄的原始郵件內容 + 簽名檔，只保留回覆正文 ──
 function extractReplyBody(raw) {
     if (!raw) return "";
     let text = raw;
     // 移除 HTML 標籤
     text = text.replace(/<[^>]+>/g, " ");
+    // ── 移除引用/轉寄區塊 ──
     const cutPatterns = [
         /^-{2,}\s*Original Message\s*-{2,}/im,
         /^-{2,}\s*Forwarded message\s*-{2,}/im,
@@ -125,12 +126,46 @@ function extractReplyBody(raw) {
         const m = text.search(pat);
         if (m > 10) { text = text.substring(0, m); break; }
     }
+    // ── 移除 email 簽名檔（Regards / Best / Sent from …）──
+    const sigPatterns = [
+        /^[\s]*[-—–][\s]*$/m,                          // 分隔線
+        /^\s*(Best\s+)?Regards\s*[,，]?\s*$/im,        // Regards / Best Regards
+        /^\s*Sent\s+(from|by)\s+/im,                   // Sent from iPhone/iPad
+        /^\s*此致\s*[,，]?\s*$/im,                      // 此致
+        /^\s*敬上\s*$/im,                               // 敬上
+        /^\s*順頌\s*商祺\s*$/im,                        // 順頌商祺
+        /^\s*Best\s*[,，]?\s*$/im,                      // Best,
+        /^\s*Thanks\s*[,，]?\s*$/im,                    // Thanks,
+        /^\s*Thank\s+you\s*[,，]?\s*$/im,              // Thank you,
+        /^\s*Cheers\s*[,，]?\s*$/im,                    // Cheers,
+    ];
+    for (const pat of sigPatterns) {
+        const m = text.search(pat);
+        if (m >= 0) { text = text.substring(0, m); break; }
+    }
     return text.trim();
 }
 
 function analyzeWithKeywords(emailText) {
     const replyOnly = extractReplyBody(emailText);
     const text = (replyOnly || emailText).toLowerCase();
+
+    // ── 最低內容門檻：去掉空白後 < 5 字 → 無實質內容 ──
+    const stripped = text.replace(/[\s\n\r\t]/g, "").replace(/[a-z0-9@._\-+()]/gi, "");
+    if (stripped.length < 5 && !text.match(/[付款匯轉帳還錢爭議問題拒絕]/)) {
+        return {
+            risk: "medium",
+            summary: "僅簽名檔，無實質回覆內容",
+            paymentCommitted: false,
+            commitDate: null,
+            disputeDetected: false,
+            suggestedAction: "待客戶正式回覆，可再發催告",
+            _engine: "keyword-rules-v1",
+            _score: 0,
+            _signals: ["⚪ 無實質內容"],
+        };
+    }
+
     let score = 0; // 正=善意, 負=高風險
     const signals = [];
     let paymentCommitted = false;
@@ -145,14 +180,19 @@ function analyzeWithKeywords(emailText) {
         }
     }
 
-    // ── 掃描付款日期 ──
+    // ── 掃描付款日期（只有在有善意信號時才算承諾付款，避免電話號碼誤判）──
+    const hasPositiveSignal = score > 0;
     for (const pattern of KEYWORDS.datePatterns) {
         const m = text.match(pattern);
         if (m) {
-            paymentCommitted = true;
-            commitDate = m[0];
-            score += 3;
-            signals.push(`📅 ${m[0]}`);
+            if (hasPositiveSignal) {
+                paymentCommitted = true;
+                commitDate = m[0];
+                score += 3;
+                signals.push(`📅 ${m[0]}`);
+            } else {
+                signals.push(`📅? ${m[0]}（需配合善意信號）`);
+            }
             break;
         }
     }
