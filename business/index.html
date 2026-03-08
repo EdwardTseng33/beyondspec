@@ -7345,57 +7345,48 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                 </div>
               </div>
 
-              {/* 📡 Email 追蹤狀態卡 */}
-              {arCase.emailTracking && (arCase.emailTracking.delivered || arCase.emailTracking.opened || arCase.emailTracking.bounced) && (
-                <div style={{ background: C.card, border: `1.5px solid ${arCase.emailTracking.bounced ? C.rose : arCase.lastReplyAt ? C.accent : arCase.emailTracking.opened ? C.emerald : C.border}40`, borderRadius: 14, padding: 18, marginBottom: 18, animation: "fadeIn 0.4s ease" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                    <span style={{ fontSize: 16 }}>📡</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>催款信追蹤</span>
-                    {arCase.emailTracking.lastEventAt && (
-                      <span style={{ fontSize: 11, color: C.inkMuted }}>最後事件：{fmtTW(arCase.emailTracking.lastEventAt)}</span>
+              {/* 📡 Email 追蹤狀態摘要 — v3.05 精簡版 */}
+              {arCase.emailTracking && (arCase.emailTracking.delivered || arCase.emailTracking.opened || arCase.emailTracking.bounced) && (() => {
+                const et = arCase.emailTracking;
+                const hasReply = !!arCase.lastReplyAt;
+                const isBounced = et.bounced;
+                const isSpam = et.spamReported;
+                // 決定整體狀態色
+                const statusColor = isBounced || isSpam ? C.rose : hasReply ? C.accent : et.opened ? C.emerald : C.inkMuted;
+                // 狀態摘要文字
+                const statusParts = [];
+                if (et.delivered) statusParts.push({ icon: "📬", text: "已送達", time: fmtTW(et.deliveredAt), color: C.inkMuted });
+                if (et.opened) statusParts.push({ icon: "👁️", text: `已讀${et.openCount > 1 ? ` ×${et.openCount}` : ""}`, time: fmtTW(et.openedAt), color: C.emerald });
+                if (et.clicked) statusParts.push({ icon: "🔗", text: `點擊${et.clickCount > 1 ? ` ×${et.clickCount}` : ""}`, time: fmtTW(et.clickedAt), color: C.cyan || C.accent });
+                if (hasReply) statusParts.push({ icon: "💬", text: "已回覆", time: fmtTW(arCase.lastReplyAt), color: C.accent });
+                if (isBounced) statusParts.push({ icon: "❌", text: "退信", time: "", color: C.rose });
+                if (isSpam) statusParts.push({ icon: "🚫", text: "垃圾郵件", time: "", color: C.rose });
+                return (
+                  <div style={{ background: C.card, border: `1.5px solid ${statusColor}25`, borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
+                    <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                      <span style={{ fontSize: 14 }}>📡</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: C.ink }}>信件追蹤</span>
+                      <span style={{ fontSize: 11, color: C.inkMuted }}>·</span>
+                      {statusParts.map((s, i) => (
+                        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 600, color: s.color, background: `${s.color}12`, padding: "2px 8px", borderRadius: 6 }}>
+                          {s.icon} {s.text}{s.time ? ` ${s.time}` : ""}
+                        </span>
+                      ))}
+                    </div>
+                    {/* 退信/垃圾郵件詳細說明 */}
+                    {isBounced && (
+                      <div style={{ fontSize: 12, color: C.rose, marginTop: 8, padding: "6px 10px", background: `${C.rose}08`, borderRadius: 6 }}>
+                        ❌ 退信原因：{et.bounceReason || "未知"}
+                      </div>
+                    )}
+                    {isSpam && (
+                      <div style={{ fontSize: 12, color: C.rose, marginTop: 8, padding: "6px 10px", background: `${C.rose}08`, borderRadius: 6 }}>
+                        🚫 客戶已將此郵件標記為垃圾郵件
+                      </div>
                     )}
                   </div>
-                  {/* 追蹤進度條 */}
-                  <div style={{ display: "flex", gap: 4, marginBottom: 14, alignItems: "center" }}>
-                    {[
-                      { key: "delivered", icon: "📬", label: "已送達", active: arCase.emailTracking.delivered, color: C.inkMuted, at: arCase.emailTracking.deliveredAt },
-                      { key: "opened", icon: "👁️", label: `已讀${arCase.emailTracking.openCount > 1 ? ` ×${arCase.emailTracking.openCount}` : ""}`, active: arCase.emailTracking.opened, color: C.emerald, at: arCase.emailTracking.openedAt },
-                      { key: "replied", icon: "💬", label: "已回覆", active: !!arCase.lastReplyAt, color: C.accent, at: arCase.lastReplyAt },
-                    ].map((step, i, arr) => (
-                      <React.Fragment key={step.key}>
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1 }}>
-                          <div style={{ width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, background: step.active ? `${step.color}20` : C.surface, border: `2px solid ${step.active ? step.color : C.border}`, transition: "all 0.3s" }}>
-                            {step.icon}
-                          </div>
-                          <div style={{ fontSize: 11, fontWeight: step.active ? 700 : 400, color: step.active ? step.color : C.inkMuted }}>{step.label}</div>
-                          {step.active && step.at && (
-                            <div style={{ fontSize: 10, color: C.inkMuted }}>{fmtTW(step.at)}</div>
-                          )}
-                        </div>
-                        {i < arr.length - 1 && (
-                          <div style={{ flex: 0.5, height: 2, background: arr[i + 1].active ? arr[i + 1].color : C.border, borderRadius: 1, alignSelf: "flex-start", marginTop: 16, transition: "all 0.3s" }} />
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                  {/* 退信/垃圾郵件警告 */}
-                  {arCase.emailTracking.bounced && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: `${C.rose}10`, border: `1px solid ${C.rose}30`, borderRadius: 8, marginBottom: 8 }}>
-                      <span style={{ fontSize: 14 }}>❌</span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: C.rose }}>郵件退回</div>
-                        <div style={{ fontSize: 12, color: C.inkSoft }}>{arCase.emailTracking.bounceReason || "未知原因"}</div>
-                      </div>
-                    </div>
-                  )}
-                  {arCase.emailTracking.spamReported && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: `${C.rose}10`, border: `1px solid ${C.rose}30`, borderRadius: 8 }}>
-                      <span style={{ fontSize: 14 }}>🚫</span>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: C.rose }}>客戶將郵件標記為垃圾郵件</div>
-                    </div>
-                  )}
-                </div>
-              )}
+                );
+              })()}
 
               {/* 📋 手動貼上回覆 */}
               <div style={{ background: C.card, border: `1.5px solid ${C.border}40`, borderRadius: 14, padding: 18, marginBottom: 18 }}>
