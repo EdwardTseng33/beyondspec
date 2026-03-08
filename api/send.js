@@ -7,7 +7,9 @@ export const config = {
 
 export default async function handler(req, res) {
     // CORS — allow beyondspec.tw to call this API on vercel.app
-    res.setHeader("Access-Control-Allow-Origin", "https://beyondspec.tw");
+    const origin = req.headers.origin || "";
+    const allowed = ["https://beyondspec.tw", "https://www.beyondspec.tw", "https://api.beyondspec.tw"];
+    res.setHeader("Access-Control-Allow-Origin", allowed.includes(origin) ? origin : "https://beyondspec.tw");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     if (req.method === "OPTIONS") return res.status(200).end();
