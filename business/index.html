@@ -5537,8 +5537,20 @@
     };
 
     // ── Version Changelog ──
-    const VERSION = "3.00";
+    const VERSION = "3.01";
     const CHANGELOG = [
+      {
+        version: "3.01", date: "2026-03-08", title: "📡 Email 開信/點擊追蹤系統",
+        features: [
+          { icon: "📡", text: "Email 追蹤系統 — 催款信自動追蹤「已送達→已讀→已點擊」三階段狀態，結果即時回寫 Firestore" },
+          { icon: "👁️", text: "開信追蹤 — 透過 SendGrid tracking pixel 偵測客戶開啟郵件，記錄開啟次數與時間" },
+          { icon: "🔗", text: "點擊追蹤 — 偵測客戶點擊郵件內連結，記錄點擊次數與連結 URL" },
+          { icon: "❌", text: "退信/垃圾郵件偵測 — 自動偵測 bounce、dropped、spamreport，即時標記問題案件" },
+          { icon: "📊", text: "追蹤進度卡 — AR 案件詳情頁新增追蹤狀態卡，以進度條視覺化呈現郵件生命週期" },
+          { icon: "🏷️", text: "列表追蹤標籤 — AR 列表案件名旁顯示追蹤狀態徽章（📬已送達 / 👁️已讀 / 🔗已點擊 / ❌退信）" },
+          { icon: "📝", text: "歷程自動記錄 — 首次開信、首次點擊、退信等重要事件自動寫入案件歷程" },
+        ],
+      },
       {
         version: "3.00", date: "2026-03-08", title: "🏗️ 系統白標化 + AI 修正 + 批次催款 + 全模組匯出",
         features: [
@@ -6864,12 +6876,28 @@
                       onMouseLeave={(e) => e.currentTarget.style.background = selectedIds.includes(c.id) ? `${C.accent}08` : "transparent"}>
                       <div><input type="checkbox" checked={selectedIds.includes(c.id)} onChange={() => toggleSelect(c.id)} style={{ cursor: "pointer" }} /></div>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, display: "flex", alignItems: "center", gap: 6 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: C.ink, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                           {c.clientName}
                           {c.unreadReply && (
                             <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 700, color: C.gold, background: `${C.gold}18`, border: `1px solid ${C.gold}40`, borderRadius: 6, padding: "2px 6px", animation: "pulseGlow 2s ease-in-out infinite" }}>
                               🔔 新回覆
                             </span>
+                          )}
+                          {/* Email 追蹤狀態指示器 */}
+                          {c.emailTracking?.bounced && (
+                            <span title={`退信：${c.emailTracking.bounceReason || "unknown"}`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, fontWeight: 700, color: C.rose, background: `${C.rose}15`, borderRadius: 5, padding: "1px 5px" }}>❌ 退信</span>
+                          )}
+                          {c.emailTracking?.spamReported && (
+                            <span title="被標記為垃圾郵件" style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, fontWeight: 700, color: C.rose, background: `${C.rose}15`, borderRadius: 5, padding: "1px 5px" }}>🚫 垃圾</span>
+                          )}
+                          {!c.emailTracking?.bounced && c.emailTracking?.clicked && (
+                            <span title={`已點擊 ${c.emailTracking.clickCount || 1} 次`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, fontWeight: 700, color: C.accent, background: `${C.accent}15`, borderRadius: 5, padding: "1px 5px" }}>🔗 已點擊</span>
+                          )}
+                          {!c.emailTracking?.bounced && !c.emailTracking?.clicked && c.emailTracking?.opened && (
+                            <span title={`已開啟 ${c.emailTracking.openCount || 1} 次${c.emailTracking.openedAt ? " · " + c.emailTracking.openedAt.substring(0, 16).replace("T", " ") : ""}`} style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, fontWeight: 700, color: C.emerald, background: `${C.emerald}15`, borderRadius: 5, padding: "1px 5px" }}>👁️ 已讀</span>
+                          )}
+                          {!c.emailTracking?.bounced && !c.emailTracking?.opened && c.emailTracking?.delivered && (
+                            <span title="郵件已送達" style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, fontWeight: 700, color: C.inkMuted, background: `${C.inkMuted}15`, borderRadius: 5, padding: "1px 5px" }}>📬 已送達</span>
                           )}
                         </div>
                         <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 4 }}>發票: {c.invoiceId}</div>
@@ -7259,6 +7287,67 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                   <div style={{ fontSize: 13, fontWeight: 600, color: arCase.contactEmail ? C.ink : C.inkMuted }}>{arCase.contactEmail || "未提供"}</div>
                 </div>
               </div>
+
+              {/* 📡 Email 追蹤狀態卡 */}
+              {arCase.emailTracking && (arCase.emailTracking.delivered || arCase.emailTracking.opened || arCase.emailTracking.bounced) && (
+                <div style={{ background: C.card, border: `1.5px solid ${arCase.emailTracking.bounced ? C.rose : arCase.emailTracking.clicked ? C.accent : arCase.emailTracking.opened ? C.emerald : C.border}40`, borderRadius: 14, padding: 18, marginBottom: 18, animation: "fadeIn 0.4s ease" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                    <span style={{ fontSize: 16 }}>📡</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>催款信追蹤</span>
+                    {arCase.emailTracking.lastEventAt && (
+                      <span style={{ fontSize: 11, color: C.inkMuted }}>最後事件：{arCase.emailTracking.lastEventAt.substring(0, 16).replace("T", " ")}</span>
+                    )}
+                  </div>
+                  {/* 追蹤進度條 */}
+                  <div style={{ display: "flex", gap: 4, marginBottom: 14, alignItems: "center" }}>
+                    {[
+                      { key: "delivered", icon: "📬", label: "已送達", active: arCase.emailTracking.delivered, color: C.inkMuted, at: arCase.emailTracking.deliveredAt },
+                      { key: "opened", icon: "👁️", label: `已讀${arCase.emailTracking.openCount > 1 ? ` ×${arCase.emailTracking.openCount}` : ""}`, active: arCase.emailTracking.opened, color: C.emerald, at: arCase.emailTracking.openedAt },
+                      { key: "clicked", icon: "🔗", label: `已點擊${arCase.emailTracking.clickCount > 1 ? ` ×${arCase.emailTracking.clickCount}` : ""}`, active: arCase.emailTracking.clicked, color: C.accent, at: arCase.emailTracking.clickedAt },
+                    ].map((step, i, arr) => (
+                      <React.Fragment key={step.key}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1 }}>
+                          <div style={{ width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, background: step.active ? `${step.color}20` : C.surface, border: `2px solid ${step.active ? step.color : C.border}`, transition: "all 0.3s" }}>
+                            {step.icon}
+                          </div>
+                          <div style={{ fontSize: 11, fontWeight: step.active ? 700 : 400, color: step.active ? step.color : C.inkMuted }}>{step.label}</div>
+                          {step.active && step.at && (
+                            <div style={{ fontSize: 10, color: C.inkMuted }}>{step.at.substring(5, 16).replace("T", " ")}</div>
+                          )}
+                        </div>
+                        {i < arr.length - 1 && (
+                          <div style={{ flex: 0.5, height: 2, background: arr[i + 1].active ? arr[i + 1].color : C.border, borderRadius: 1, alignSelf: "flex-start", marginTop: 16, transition: "all 0.3s" }} />
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  {/* 退信/垃圾郵件警告 */}
+                  {arCase.emailTracking.bounced && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: `${C.rose}10`, border: `1px solid ${C.rose}30`, borderRadius: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 14 }}>❌</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.rose }}>郵件退回</div>
+                        <div style={{ fontSize: 12, color: C.inkSoft }}>{arCase.emailTracking.bounceReason || "未知原因"}</div>
+                      </div>
+                    </div>
+                  )}
+                  {arCase.emailTracking.spamReported && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: `${C.rose}10`, border: `1px solid ${C.rose}30`, borderRadius: 8 }}>
+                      <span style={{ fontSize: 14 }}>🚫</span>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: C.rose }}>客戶將郵件標記為垃圾郵件</div>
+                    </div>
+                  )}
+                  {/* 點擊連結列表 */}
+                  {arCase.emailTracking.clickedUrls && arCase.emailTracking.clickedUrls.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ fontSize: 11, color: C.inkMuted, marginBottom: 4 }}>點擊的連結：</div>
+                      {arCase.emailTracking.clickedUrls.map((url, i) => (
+                        <div key={i} style={{ fontSize: 11, color: C.accent, wordBreak: "break-all", padding: "2px 0" }}>🔗 {url}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* AI 來信判讀卡：有收到客戶回信且 Gemini 已分析時顯示 */}
               {arCase.aiSummary && (

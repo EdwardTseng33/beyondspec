@@ -28,7 +28,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: "SENDGRID_FROM_EMAIL env var not set" });
     }
 
-    const replyTo = `reply+${workspaceId}_${caseId}@reply.beyondspec.tw`;
+    const replyToAddress = `reply+${workspaceId}_${caseId}@reply.beyondspec.tw`;
 
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -38,17 +38,36 @@ export default async function handler(req, res) {
             email: fromEmail,
             name: fromName || "帳務催收中心",
         },
-        replyTo,
+        // ── Reply-To：使用物件格式確保 SendGrid 正確設定 header ──
+        replyTo: {
+            email: replyToAddress,
+            name: fromName || "帳務催收中心",
+        },
         subject,
         text: body,
         // HTML 版本：保留換行
         html: `<div style="font-family:sans-serif;font-size:15px;line-height:1.8;color:#222;">${body.replace(/\n/g, "<br>")}</div>`,
+        // ── 強制 Reply-To header（某些 @sendgrid/mail 版本 replyTo 可能不生效）──
+        headers: {
+            "Reply-To": replyToAddress,
+        },
+        // ── Email 追蹤設定 ──
+        trackingSettings: {
+            clickTracking: { enable: true, enableText: false },
+            openTracking: { enable: true },
+        },
+        // ── 自訂參數：Event Webhook 會帶回這些值 ──
+        customArgs: {
+            workspaceId,
+            caseId,
+            sentAt: new Date().toISOString(),
+        },
     };
 
     try {
         await sgMail.send(msg);
-        console.log(`[send] OK → to=${to} case=${caseId} replyTo=${replyTo}`);
-        return res.status(200).json({ ok: true, replyTo });
+        console.log(`[send] OK → to=${to} case=${caseId} replyTo=${replyToAddress}`);
+        return res.status(200).json({ ok: true, replyTo: replyToAddress });
     } catch (err) {
         const detail = err?.response?.body?.errors || err.message;
         console.error("[send] SendGrid error:", JSON.stringify(detail));
