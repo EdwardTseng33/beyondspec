@@ -47,10 +47,6 @@ export default async function handler(req, res) {
         text: body,
         // HTML 版本：保留換行
         html: `<div style="font-family:sans-serif;font-size:15px;line-height:1.8;color:#222;">${body.replace(/\n/g, "<br>")}</div>`,
-        // ── 強制 Reply-To header（某些 @sendgrid/mail 版本 replyTo 可能不生效）──
-        headers: {
-            "Reply-To": replyToAddress,
-        },
         // ── Email 追蹤設定 ──
         trackingSettings: {
             clickTracking: { enable: true, enableText: false },
