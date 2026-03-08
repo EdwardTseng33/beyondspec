@@ -6930,6 +6930,7 @@
     };
 
     const ArDetailDrawer = ({ arCase, companyProfile, arSettings, emailTemplates, onClose, onUpdate, addLog, onSettings, workspaceId }) => {
+      const fmtTW = (iso) => { if (!iso) return ""; try { return new Date(iso).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }); } catch { return iso.substring(0, 16).replace("T", " "); } };
       const [aiGenerating, setAiGenerating] = useState(false);
       const [generatedDraft, setGeneratedDraft] = useState(null);
       const [emailTemplate, setEmailTemplate] = useState("direct");
