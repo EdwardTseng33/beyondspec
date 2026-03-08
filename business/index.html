@@ -5537,8 +5537,25 @@
     };
 
     // ── Version Changelog ──
-    const VERSION = "3.04";
+    const VERSION = "3.05";
     const CHANGELOG = [
+      {
+        version: "3.05", date: "2026-03-08", title: "🎨 Header 資訊架構重整",
+        features: [
+          { icon: "🎨", text: "Header 精簡重構 — 低頻操作收進頭像下拉選單，Header 只保留品牌區 + ⌘K + 通知徽章 + 頭像，視覺焦點從 11 降到 4 個" },
+          { icon: "👤", text: "頭像下拉選單 — 收納系統設定、團隊管理、雲端同步、匯出、連線狀態、登出等低頻功能" },
+        ],
+      },
+      {
+        version: "3.04", date: "2026-03-08", title: "🔧 AI 判讀修正 + 歷程美化 + 系統設定獨立",
+        features: [
+          { icon: "🧠", text: "AI 關鍵字引擎修正 — 手機號碼不再誤判為付款日期；簽名檔自動剔除；最低內容門檻 5 字元" },
+          { icon: "🕐", text: "Webhook 時區修正 — 收信時間改為 UTC+8 台灣時區顯示" },
+          { icon: "🎨", text: "歷程時間軸美化 — 不同事件類型以不同顏色圓點區分；AI 判讀/客戶回覆/寄信各有專屬排版" },
+          { icon: "🔗", text: "AI 區塊合併 — 原「AI 來信判讀卡」與「STEP 1 AI 風險診斷」合併為單一區塊，消除資訊矛盾" },
+          { icon: "⚙️", text: "系統設定獨立 — 公司資訊從 AR 設定移至 Header ⚙️ 全域系統設定，所有模組自動連動" },
+        ],
+      },
       {
         version: "3.03", date: "2026-03-08", title: "📋 手動貼上回覆 + AI 分析",
         features: [
@@ -7994,6 +8011,7 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
       ]);
       const [emailTemplates, setEmailTemplates] = usePersisted("emailTemplates", DEFAULT_EMAIL_TEMPLATES);
       const [changelogOpen, setChangelogOpen] = useState(false);
+      const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
       // P0/P1 states
       const [companyProfile, setCompanyProfile] = usePersisted("companyProfile", {
         name: "",
@@ -8682,62 +8700,95 @@ ${content.substring(0, 3000)}${content.length > 3000 ? "\n\n（完整內容請�
                 {!mobile && <span style={{ fontSize: 13, color: C.inkMuted, whiteSpace: "nowrap" }}>{companyProfile?.slogan || "業務管理系統"}</span>}
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: mobile ? 4 : 8, flexShrink: 0 }}>
-              {!mobile && <span style={{ fontSize: 13, color: C.inkMuted }}>{now}</span>}
-              {/* Cmd+K button */}
+            {/* ═══ Header Right — v3.05 精簡版：⌘K + 通知 + 頭像下拉 ═══ */}
+            <div style={{ display: "flex", alignItems: "center", gap: mobile ? 6 : 10, flexShrink: 0 }}>
+              {/* ⌘K 指令面板 — 高頻，常駐 */}
               <button onClick={() => setCmdOpen(true)} title="指令面板 (⌘K)"
-                style={{ display: "flex", alignItems: "center", gap: mobile ? 0 : 6, padding: mobile ? "4px 6px" : "5px 12px", borderRadius: mobile ? 8 : 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: mobile ? 11 : 12, cursor: "pointer", fontFamily: "inherit", transition: T }}>
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: mobile ? "5px 8px" : "6px 14px", borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: T }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.inkMuted; }}>
                 🔍 {!mobile && "指令"} {!mobile && <span style={{ fontSize: 10, background: C.surface, padding: "1px 5px", borderRadius: 4, fontFamily: "monospace" }}>⌘K</span>}
               </button>
-              {/* Export button — hidden on mobile to save space */}
-              {!mobile && (tab === "pipeline" || tab === "tasks" || tab === "bd" || tab === "proposals" || tab === "invoices" || tab === "ar") && (
-                <button onClick={() => { if (tab === "pipeline") doExportDeals(); else if (tab === "tasks") doExportTasks(); else if (tab === "bd") doExportLeads(); else if (tab === "proposals") doExportProposals(); else if (tab === "invoices") doExportInvoices(); else if (tab === "ar") doExportArCases(); }}
-                  title="匯出 CSV"
-                  style={{ width: 34, height: 34, borderRadius: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>⬇</button>
-              )}
-              {/* Activity log button */}
+
+              {/* 📜 活動紀錄 — 有徽章時常駐 */}
               {(() => {
                 const unreadCount = Math.max(0, activityLog.length - lastSeenLogCount); return (
                   <button onClick={() => { setLogOpen(true); setLastSeenLogCount(activityLog.length); }} title="活動紀錄"
-                    style={{ position: "relative", width: mobile ? 28 : 34, height: mobile ? 28 : 34, borderRadius: mobile ? 8 : 10, border: `1px solid ${unreadCount > 0 ? C.accent + "40" : C.border}`, background: unreadCount > 0 ? `${C.accent}10` : "transparent", color: unreadCount > 0 ? C.accent : C.inkMuted, cursor: "pointer", fontSize: mobile ? 11 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>
+                    style={{ position: "relative", width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, border: `1px solid ${unreadCount > 0 ? C.accent + "40" : C.border}`, background: unreadCount > 0 ? `${C.accent}10` : "transparent", color: unreadCount > 0 ? C.accent : C.inkMuted, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>
                     📜
                     {unreadCount > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: C.accent, color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{unreadCount > 9 ? "9+" : unreadCount}</span>}
                   </button>
                 );
               })()}
-              {/* Overdue badge */}
+
+              {/* ⚠️ 逾期警示 — 有逾期才顯示 */}
               {(() => {
                 const overdue = tasks.filter((t) => !t.archived && t.status !== "done" && t.due < today()).length; return overdue > 0 ? (
                   <button onClick={() => { setTab("tasks"); setTaskFilter("overdue"); }} title={`${overdue} 個逾期任務`} className="castle-pulse"
-                    style={{ position: "relative", width: mobile ? 28 : 34, height: mobile ? 28 : 34, borderRadius: mobile ? 8 : 10, border: `1px solid ${C.rose}30`, background: `${C.rose}10`, color: C.rose, cursor: "pointer", fontSize: mobile ? 11 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}>
+                    style={{ position: "relative", width: mobile ? 30 : 34, height: mobile ? 30 : 34, borderRadius: 10, border: `1px solid ${C.rose}30`, background: `${C.rose}10`, color: C.rose, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}>
                     ⚠️<span style={{ position: "absolute", top: -4, right: -4, background: C.rose, color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{overdue}</span>
                   </button>
                 ) : null;
               })()}
-              {/* Calcifer companion + Cloud sync */}
-              {user && API_URL && React.createElement(React.Fragment, null,
-                !mobile && React.createElement(CalciferCompanion, { syncing, onShowChangelog: () => setChangelogOpen(true) }),
-                React.createElement("button", {
-                  onClick: syncToCloud,
-                  title: syncing ? "卡西法正在燃燒同步中..." : `☁️ 同步到雲端\n將案件、任務、BD 資料備份到 Google Sheets\n${lastSyncTime ? `上次同步：${new Date(lastSyncTime).toLocaleString("zh-TW")}` : "尚未同步過"}`,
-                  style: { position: "relative", width: mobile ? 28 : 34, height: mobile ? 28 : 34, borderRadius: mobile ? 8 : 10, border: `1px solid ${syncing ? C.emerald : C.border}`, background: syncing ? `${C.emerald}15` : "transparent", color: syncing ? C.emerald : C.inkMuted, cursor: "pointer", fontSize: mobile ? 11 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" },
-                },
-                  syncing ? "⏳" : (lastSyncTime ? "☁️" : "☁️")
-                )
-              )}
-              {/* User avatar or login */}
+
+              {/* 👤 頭像 + 下拉選單 — 收納所有低頻操作 */}
               {user ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  {_firestoreReady && <span style={{ fontSize: 11, color: C.emerald, fontWeight: 600 }}>🟢 已連線</span>}
-                  <button onClick={() => setModal("systemSettings")} title="系統設定（公司資訊、偏好設定）"
-                    style={{ width: mobile ? 28 : 34, height: mobile ? 28 : 34, borderRadius: mobile ? 8 : 10, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, cursor: "pointer", fontSize: mobile ? 12 : 14, display: "flex", alignItems: "center", justifyContent: "center", transition: T, fontFamily: "inherit" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.inkMuted; }}>⚙️</button>
-                  {_firestoreReady && !mobile && <button onClick={() => setTab("roles")} title="管理團隊成員" style={{ padding: "5px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "transparent", color: C.inkMuted, fontSize: 12, cursor: "pointer", fontFamily: "inherit", transition: T, fontWeight: 600 }}>👥 團隊</button>}
-                  <button onClick={handleLogout} title={`${user.name}\n點擊登出`}
-                    style={{ width: mobile ? 28 : 34, height: mobile ? 28 : 34, borderRadius: mobile ? 8 : 10, overflow: "hidden", border: `2px solid ${C.accent}`, cursor: "pointer", padding: 0, background: C.accentSoft, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {user.picture ? <img src={user.picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; e.target.parentElement.innerHTML = '<span style="font-size:15px">👑</span>'; }} referrerPolicy="no-referrer" /> : <span style={{ fontSize: 15 }}>👑</span>}
+                <div style={{ position: "relative" }}>
+                  <button onClick={() => setHeaderMenuOpen(!headerMenuOpen)} title={user.name || "選單"}
+                    style={{ width: mobile ? 32 : 38, height: mobile ? 32 : 38, borderRadius: mobile ? 10 : 12, overflow: "hidden", border: `2px solid ${headerMenuOpen ? C.accent : C.border}`, cursor: "pointer", padding: 0, background: C.accentSoft, display: "flex", alignItems: "center", justifyContent: "center", transition: T }}>
+                    {user.picture ? <img src={user.picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; e.target.parentElement.innerHTML = '<span style="font-size:16px">👑</span>'; }} referrerPolicy="no-referrer" /> : <span style={{ fontSize: 16 }}>👑</span>}
                   </button>
+                  {/* 下拉選單 */}
+                  {headerMenuOpen && <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 240, background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,.4)", zIndex: 200, overflow: "hidden", animation: "fadeIn .15s ease" }}
+                    onClick={() => setHeaderMenuOpen(false)}>
+                    {/* 使用者資訊 */}
+                    <div style={{ padding: "14px 16px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 8, overflow: "hidden", border: `1.5px solid ${C.accent}`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: C.accentSoft }}>
+                        {user.picture ? <img src={user.picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} referrerPolicy="no-referrer" /> : <span style={{ fontSize: 14 }}>👑</span>}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user.name}</div>
+                        <div style={{ fontSize: 11, color: C.inkMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user.email}</div>
+                      </div>
+                    </div>
+                    {/* 連線狀態 */}
+                    {_firestoreReady && <div style={{ padding: "8px 16px", display: "flex", alignItems: "center", gap: 6, borderBottom: `1px solid ${C.border}` }}>
+                      <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.emerald, display: "inline-block" }} />
+                      <span style={{ fontSize: 12, color: C.emerald, fontWeight: 600 }}>Firestore 已連線</span>
+                      {lastSyncTime && <span style={{ fontSize: 11, color: C.inkMuted, marginLeft: "auto" }}>同步 {new Date(lastSyncTime).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })}</span>}
+                    </div>}
+                    {/* 選單項目 */}
+                    {[
+                      { icon: "⚙️", label: "系統設定", desc: "公司資訊、偏好設定", action: () => setModal("systemSettings") },
+                      _firestoreReady && { icon: "👥", label: "團隊管理", desc: "角色與成員設定", action: () => setTab("roles") },
+                      user && API_URL && { icon: syncing ? "⏳" : "☁️", label: syncing ? "同步中..." : "雲端同步", desc: lastSyncTime ? `上次 ${new Date(lastSyncTime).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })}` : "尚未同步", action: syncToCloud },
+                      (tab === "pipeline" || tab === "tasks" || tab === "bd" || tab === "proposals" || tab === "invoices" || tab === "ar") && { icon: "⬇️", label: "匯出 CSV", desc: "匯出當前模組資料", action: () => { if (tab === "pipeline") doExportDeals(); else if (tab === "tasks") doExportTasks(); else if (tab === "bd") doExportLeads(); else if (tab === "proposals") doExportProposals(); else if (tab === "invoices") doExportInvoices(); else if (tab === "ar") doExportArCases(); } },
+                      { icon: "📋", label: "版本更新", desc: `v${VERSION}`, action: () => setChangelogOpen(true) },
+                    ].filter(Boolean).map((item, i) => (
+                      <button key={i} onClick={(e) => { e.stopPropagation(); item.action(); setHeaderMenuOpen(false); }}
+                        style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", border: "none", background: "transparent", color: C.ink, cursor: "pointer", fontFamily: "inherit", transition: T, textAlign: "left" }}
+                        onMouseEnter={e => e.currentTarget.style.background = `${C.accent}10`}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        <span style={{ fontSize: 16, width: 22, textAlign: "center" }}>{item.icon}</span>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{item.label}</div>
+                          <div style={{ fontSize: 11, color: C.inkMuted }}>{item.desc}</div>
+                        </div>
+                      </button>
+                    ))}
+                    {/* 卡西法 + 登出 */}
+                    <div style={{ borderTop: `1px solid ${C.border}`, padding: "6px 8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      {!mobile && user && API_URL && React.createElement(CalciferCompanion, { syncing, onShowChangelog: () => { setChangelogOpen(true); setHeaderMenuOpen(false); } })}
+                      <button onClick={handleLogout}
+                        style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 8, border: `1px solid ${C.rose}30`, background: `${C.rose}08`, color: C.rose, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: T }}
+                        onMouseEnter={e => { e.currentTarget.style.background = `${C.rose}20`; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = `${C.rose}08`; }}>
+                        🚪 登出
+                      </button>
+                    </div>
+                  </div>}
+                  {/* 背景遮罩 — 點擊關閉 */}
+                  {headerMenuOpen && <div onClick={() => setHeaderMenuOpen(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 199 }} />}
                 </div>
               ) : (
                 <button onClick={() => setShowLoginHelp(true)}
