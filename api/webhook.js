@@ -83,12 +83,14 @@ const KEYWORDS = {
     ],
     // ── 高風險信號 ──
     highRisk: [
-        "不會付", "拒絕付款", "不付", "無法付款",
-        "找律師", "法律途徑", "法院見", "訴訟",
-        "沒有欠款", "不承認", "不認帳",
+        "不會付", "拒絕付款", "不付", "無法付款", "不想付", "不打算付",
+        "不還錢", "不還款", "不會還", "不想還", "拒絕還款", "不歸還",
+        "找律師", "法律途徑", "法院見", "訴訟", "告你", "提告",
+        "沒有欠款", "不承認", "不認帳", "沒有這筆", "不關我的事",
         "已經付過", "重複請款", "帳目不對",
-        "公司已解散", "倒閉", "破產",
-        "不要再寄", "不要再聯繫", "騷擾",
+        "公司已解散", "倒閉", "破產", "歇業", "結束營業",
+        "不要再寄", "不要再聯繫", "騷擾", "檢舉", "滾",
+        "去死", "做夢", "想太多", "門都沒有", "休想", "不可能",
     ],
     // ── 拖延信號（中風險）──
     stalling: [
@@ -101,8 +103,39 @@ const KEYWORDS = {
     ],
 };
 
+// 從回覆 email 中提取真正的回覆內容（去除引用/轉發部分）
+function extractReplyBody(raw) {
+    if (!raw) return "";
+    let text = raw;
+    // 移除 HTML 標籤
+    text = text.replace(/<[^>]+>/g, " ");
+    // 常見引用分隔線（Gmail / Outlook / 中文 Email）
+    const cutPatterns = [
+        /^-{2,}\s*Original Message\s*-{2,}/im,
+        /^-{2,}\s*Forwarded message\s*-{2,}/im,
+        /^On .+ wrote:$/im,
+        /^>\s/m,
+        /^在 .+ 寫道：$/im,
+        /^於 .+ 寫道：$/im,
+        /^寄件者：/im,
+        /^From:\s/im,
+        /^---------- Forwarded/im,
+        /^_{5,}/m,
+    ];
+    for (const pat of cutPatterns) {
+        const m = text.search(pat);
+        if (m > 10) { // 至少保留前 10 字元
+            text = text.substring(0, m);
+            break;
+        }
+    }
+    return text.trim();
+}
+
 function analyzeWithKeywords(emailText) {
-    const text = emailText.toLowerCase();
+    // 先提取回覆本體，避免引用內容干擾判讀
+    const replyOnly = extractReplyBody(emailText);
+    const text = (replyOnly || emailText).toLowerCase();
     let score = 0; // 正=善意, 負=高風險
     const signals = [];
     let paymentCommitted = false;
@@ -155,8 +188,10 @@ function analyzeWithKeywords(emailText) {
     }
 
     // ── 判定風險等級 ──
+    // score=0 且無任何信號 → medium（未偵測到意圖，不可樂觀判 low）
     let risk;
-    if (score >= 3) risk = "low";
+    if (signals.length === 0) risk = "medium"; // 無任何關鍵字命中
+    else if (score >= 3) risk = "low";
     else if (score >= -2) risk = "medium";
     else risk = "high";
 
@@ -378,12 +413,18 @@ export default async function handler(req, res) {
         }
 
         // ── STEP E: 更新案件 ──
-        const today = new Date().toISOString().split("T")[0];
+        const now = new Date();
+        const today = now.toISOString().split("T")[0];
+        const timeStr = now.toISOString().substring(11, 16); // HH:MM
         const history = [...(cases[idx].history || [])];
+        // 提取回覆本體（去除引用）供摘要
+        const replyBody = extractReplyBody(emailText);
+        const preview = (replyBody || emailText).substring(0, 120) + ((replyBody || emailText).length > 120 ? "…" : "");
         history.push({
             date: today,
+            time: timeStr,
             action: `📩 收到客戶回覆 (${fromEmail})`,
-            note: emailText.substring(0, 120) + (emailText.length > 120 ? "…" : ""),
+            note: preview,
         });
 
         const riskLabel = aiResult.risk === "low" ? "✅ 善意回覆"
@@ -394,7 +435,7 @@ export default async function handler(req, res) {
         aiNoteLine += `｜建議：${aiResult.suggestedAction || "無"}`;
         aiNoteLine += `｜引擎：${aiResult._engine || "unknown"}`;
 
-        history.push({ date: today, action: "🧠 AI 判讀完成", note: aiNoteLine });
+        history.push({ date: today, time: timeStr, action: "🧠 AI 判讀完成", note: aiNoteLine });
 
         // ── 深度淨化：移除 undefined / NaN / Infinity / 孤立 surrogate ──
         function cleanStr(s) {
