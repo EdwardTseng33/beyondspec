@@ -5538,8 +5538,18 @@
     };
 
     // ── Version Changelog ──
-    const VERSION = "3.05";
+    const VERSION = "3.06";
     const CHANGELOG = [
+      {
+        version: "3.06", date: "2026-03-08", title: "⚖️ 律師案件包匯出全面升級",
+        features: [
+          { icon: "📄", text: "真正 .docx 格式 — 改用 docx-js 引擎，不再是 HTML 偽裝；Word / Google Docs / WPS 完美開啟" },
+          { icon: "📑", text: "專業封面頁 — 含案件名稱、金額、逾期天數、系統來源、匯出時間" },
+          { icon: "📊", text: "結構化表格 — 案件摘要、雙方當事人、催收時間軸皆改為表格排版，律師助理一目了然" },
+          { icon: "✅", text: "附件 Checklist — 新增第四章「律師建案 Checklist」，含勾選框與系統狀態提示，確保文件齊備" },
+          { icon: "🔖", text: "頁首頁尾 — 公司名稱 + 機密標記 + 頁碼，每頁都有" },
+        ],
+      },
       {
         version: "3.05", date: "2026-03-08", title: "🎨 Header 資訊架構重整",
         features: [
