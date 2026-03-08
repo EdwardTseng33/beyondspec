@@ -427,13 +427,16 @@ export default async function handler(req, res) {
             idx = cases.length - 1;
         }
 
-        // ── STEP E: 更新案件 ──
+        // ── STEP E: 更新案件（使用台灣時間 UTC+8）──
         const now = new Date();
-        const today = now.toISOString().split("T")[0];
-        const timeStr = now.toISOString().substring(11, 16); // HH:MM
+        const twNow = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+        const today = twNow.toISOString().split("T")[0];
+        const timeStr = twNow.toISOString().substring(11, 16); // HH:MM (台灣)
         const history = [...(cases[idx].history || [])];
         const replyBody = extractReplyBody(emailText);
-        const preview = (replyBody || emailText).substring(0, 120) + ((replyBody || emailText).length > 120 ? "…" : "");
+        // 清理回覆預覽：保留換行、壓縮多餘空白
+        const cleanedReply = (replyBody || emailText).replace(/\r\n/g, "\n").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+        const preview = cleanedReply.substring(0, 200) + (cleanedReply.length > 200 ? "…" : "");
         history.push({
             date: today,
             time: timeStr,
