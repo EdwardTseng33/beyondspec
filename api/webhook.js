@@ -103,13 +103,12 @@ const KEYWORDS = {
     ],
 };
 
-// 從回覆 email 中提取真正的回覆內容（去除引用/轉發部分）
+// ── 剔除引用/轉寄的原始郵件內容，只保留回覆正文 ──
 function extractReplyBody(raw) {
     if (!raw) return "";
     let text = raw;
     // 移除 HTML 標籤
     text = text.replace(/<[^>]+>/g, " ");
-    // 常見引用分隔線（Gmail / Outlook / 中文 Email）
     const cutPatterns = [
         /^-{2,}\s*Original Message\s*-{2,}/im,
         /^-{2,}\s*Forwarded message\s*-{2,}/im,
@@ -124,16 +123,12 @@ function extractReplyBody(raw) {
     ];
     for (const pat of cutPatterns) {
         const m = text.search(pat);
-        if (m > 10) { // 至少保留前 10 字元
-            text = text.substring(0, m);
-            break;
-        }
+        if (m > 10) { text = text.substring(0, m); break; }
     }
     return text.trim();
 }
 
 function analyzeWithKeywords(emailText) {
-    // 先提取回覆本體，避免引用內容干擾判讀
     const replyOnly = extractReplyBody(emailText);
     const text = (replyOnly || emailText).toLowerCase();
     let score = 0; // 正=善意, 負=高風險
@@ -188,9 +183,8 @@ function analyzeWithKeywords(emailText) {
     }
 
     // ── 判定風險等級 ──
-    // score=0 且無任何信號 → medium（未偵測到意圖，不可樂觀判 low）
     let risk;
-    if (signals.length === 0) risk = "medium"; // 無任何關鍵字命中
+    if (signals.length === 0) risk = "medium"; // 無任何關鍵字命中 → 預設中風險
     else if (score >= 3) risk = "low";
     else if (score >= -2) risk = "medium";
     else risk = "high";
@@ -310,25 +304,6 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: "Method Not Allowed" });
     }
 
-    // ── 診斷：每次 POST 都記錄一筆到 Firestore（無論解析成功與否）──
-    const hitTs = new Date().toISOString();
-    const contentType = req.headers?.["content-type"] || "unknown";
-    console.log(`[webhook] HIT at ${hitTs} ct=${contentType}`);
-    if (db) {
-        try {
-            await db.collection("_webhookHits").add({
-                ts: hitTs,
-                contentType,
-                method: req.method,
-                headers: JSON.stringify(Object.fromEntries(
-                    Object.entries(req.headers || {}).filter(([k]) => !k.startsWith("x-vercel"))
-                )).substring(0, 500),
-            });
-        } catch (logErr) {
-            console.error("[webhook] hit-log write failed:", logErr.message);
-        }
-    }
-
     if (firebaseInitError) {
         console.error("[webhook] Firebase was not initialized:", firebaseInitError.message);
         return res.status(500).json({ error: "Firebase init failed", detail: firebaseInitError.message });
@@ -417,7 +392,6 @@ export default async function handler(req, res) {
         const today = now.toISOString().split("T")[0];
         const timeStr = now.toISOString().substring(11, 16); // HH:MM
         const history = [...(cases[idx].history || [])];
-        // 提取回覆本體（去除引用）供摘要
         const replyBody = extractReplyBody(emailText);
         const preview = (replyBody || emailText).substring(0, 120) + ((replyBody || emailText).length > 120 ? "…" : "");
         history.push({
