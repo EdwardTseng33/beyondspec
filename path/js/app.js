@@ -98,8 +98,12 @@ function renderQuestion() {
 
     const progressText = `${PATH_DIMENSIONS[q.dim].split(' ')[0]} · ${currentQuestionIndex + 1} / ${activeQuizQuestions.length}`;
     document.getElementById('quiz-progress-text').textContent = progressText;
-    const progressPercent = ((currentQuestionIndex) / activeQuizQuestions.length) * 100;
+    const progressPercent = ((currentQuestionIndex + 1) / activeQuizQuestions.length) * 100;
     document.getElementById('quiz-progress-bar').style.width = progressPercent + '%';
+
+    // Update back button text
+    const backBtn = document.getElementById('btn-quiz-prev');
+    if (backBtn) backBtn.textContent = currentQuestionIndex === 0 ? '← 返回' : '← 上一題';
 
     const optionsDiv = document.getElementById('quiz-options');
     optionsDiv.innerHTML = '';
@@ -199,7 +203,7 @@ if (restartBtn) {
         const emailSection = document.getElementById('email-capture');
         if (emailSection) emailSection.style.display = '';
         const restartBtnEl2 = document.getElementById('btn-restart');
-        if (restartBtnEl2) restartBtnEl2.textContent = '重新評估';
+        if (restartBtnEl2) restartBtnEl2.textContent = '重新測驗';
 
         // Clear hash
         history.replaceState(null, '', window.location.pathname);
@@ -247,17 +251,32 @@ if (emailSubmitBtn) {
         };
 
         emailSubmitted = true;
-        emailInput.style.display = 'none';
-        emailSubmitBtn.style.display = 'none';
-        if (emailSuccess) emailSuccess.style.display = 'block';
+        // Show loading state
+        emailSubmitBtn.textContent = '送出中...';
+        emailSubmitBtn.disabled = true;
+        emailInput.disabled = true;
 
-        // 非同步送出，不阻塞 UI
+        // 非同步送出
         if (GOOGLE_SHEET_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
             fetch(GOOGLE_SHEET_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
-            }).catch(err => console.warn('[BeyondPath] Sheet sync failed:', err));
+            }).then(() => {
+                emailInput.style.display = 'none';
+                emailSubmitBtn.style.display = 'none';
+                if (emailSuccess) emailSuccess.style.display = 'block';
+            }).catch(err => {
+                console.warn('[BeyondPath] Sheet sync failed:', err);
+                // Still show success to user (data was captured in console)
+                emailInput.style.display = 'none';
+                emailSubmitBtn.style.display = 'none';
+                if (emailSuccess) emailSuccess.style.display = 'block';
+            });
+        } else {
+            emailInput.style.display = 'none';
+            emailSubmitBtn.style.display = 'none';
+            if (emailSuccess) emailSuccess.style.display = 'block';
         }
 
         console.log('[BeyondPath] Data captured:', payload);
@@ -348,7 +367,16 @@ function renderResultsFromScores(scores, isSharedView) {
         const emailSection = document.getElementById('email-capture');
         if (emailSection) emailSection.style.display = 'none';
         const restartBtnEl = document.getElementById('btn-restart');
-        if (restartBtnEl) restartBtnEl.textContent = '我也來測 PATH 評估';
+        if (restartBtnEl) {
+            restartBtnEl.textContent = '我也來測 PATH 評估';
+            restartBtnEl.style.textDecoration = 'none';
+            restartBtnEl.style.background = 'linear-gradient(135deg, #E8622A 0%, #D4551F 100%)';
+            restartBtnEl.style.color = 'white';
+            restartBtnEl.style.padding = '14px 24px';
+            restartBtnEl.style.borderRadius = '12px';
+            restartBtnEl.style.fontWeight = '600';
+            restartBtnEl.style.fontSize = '15px';
+        }
     } else {
         // Custom email CTA for quiz taker
         const weakDimLabels = {
