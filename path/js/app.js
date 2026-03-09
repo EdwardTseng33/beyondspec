@@ -44,6 +44,10 @@ document.getElementById('btn-start').addEventListener('click', () => {
     showScreen('screen-q0');
 });
 
+document.getElementById('btn-q0-back').addEventListener('click', () => {
+    showScreen('screen-welcome');
+});
+
 document.getElementById('btn-q0-ai').addEventListener('click', () => {
     isAIProduct = true;
     startQuiz();
@@ -155,7 +159,6 @@ function finishQuiz() {
     // 靜默記錄：完測自動記一筆到 Google Sheet（不含 email）
     if (GOOGLE_SHEET_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
         const silentPayload = {
-            email: '',
             type: isAIProduct ? 'AI' : 'Standard',
             totalScore: result.total,
             P: result.normalized.P,
@@ -239,14 +242,9 @@ function renderResultsFromScores(scores, isSharedView) {
     if (taglineEl) taglineEl.textContent = pathInfo.tagline || '';
     document.getElementById('result-desc').textContent = pathInfo.desc;
 
-    // Explorer count (seed + real data from Sheet row count)
+    // Explorer count placeholder (hidden until real data available)
     const explorerEl = document.getElementById('explorer-count');
-    if (explorerEl) {
-        const seed = 47; // base seed
-        const daysSinceLaunch = Math.floor((Date.now() - new Date('2025-03-10').getTime()) / 86400000);
-        const estimatedCount = seed + Math.floor(daysSinceLaunch * 0.8);
-        explorerEl.textContent = `已有 ${estimatedCount} 位探路者完成評估`;
-    }
+    if (explorerEl) explorerEl.textContent = '';
 
     document.getElementById('result-total-num').dataset.target = total;
     document.getElementById('result-p-num').dataset.target = P;
