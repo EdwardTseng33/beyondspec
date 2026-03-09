@@ -272,21 +272,41 @@ function renderResultsFromScores(scores, isSharedView) {
     let lowestDim = 'P', minVal = P;
     ['A', 'T', 'H'].forEach(dim => { if (dims[dim] < minVal) { minVal = dims[dim]; lowestDim = dim; } });
 
-    let viewpointText = "你的四個維度相當均衡，這在早期產品裡不常見。我的建議是：挑一個你最沒把握的維度，花一週全力去驗證它。均衡不代表沒風險，而是風險還沒被看見。";
-    if (lowestDim === 'P') viewpointText = "說實話，其他維度你做得不錯，但「問題定義」這塊讓我擔心。你可能正在為一個不夠痛的問題打造解法。我會建議你這週就去找 5 個目標用戶，不是問他們覺得你的產品好不好——而是聽他們怎麼描述自己的困擾。如果他們講不出來，問題可能不夠真。";
-    if (lowestDim === 'A') viewpointText = "你的問題看得很準，解法方向也對，但「受眾」這塊比較模糊。坦白說，「很多人都能用」是最危險的說法——因為你等於沒有對象。我會建議你把受眾縮到一個具體的人：一個職業、一個場景、一個非解決不可的時刻。先服務好 10 個人，比觸及 1000 個人重要。";
-    if (lowestDim === 'T') viewpointText = "你的產品方向很清楚，問題和受眾都有基礎。但「牽引力」偏低是一個警訊——這代表市場還沒真正回應你。我最常看到創業者在這個階段犯的錯是繼續打磨產品，而不是去測試付費意願。我的建議：這週就設計一個最小的收費實驗，哪怕只是一頁付款連結。";
-    if (lowestDim === 'H') viewpointText = "你對市場的判斷力很好，問題和受眾都找對了。但「解法可行性」的分數讓我好奇——你的護城河在哪？如果競爭對手花三個月就能做出一樣的東西，你需要重新思考什麼是別人抄不走的。可能是數據、可能是關係網、可能是某個獨特的流程。";
-    document.getElementById('result-viewpoint').textContent = viewpointText;
+    const spread = maxScore - minScore;
+    let viewpointText, reflectText;
 
-    const reflectQuestions = {
-        P: '— 你的用戶最後一次說「這真的很痛」，是什麼時候？',
-        A: '— 如果只能服務一種人，你會選誰？',
-        T: '— 如果只能測試一個假設，你會先測哪一個？',
-        H: '— 有什麼是你能做、但競爭對手很難複製的？'
-    };
+    if (spread < 15) {
+        // 四維均衡 → 依總分高低給不同觀點
+        if (total >= 80) {
+            viewpointText = "四個維度都很穩，老實說這不常見——大多數早期產品都有明顯的短板。你已經走得比多數人遠。現在的挑戰不再是補弱項，而是找到加速的槓桿點：哪一個維度如果從好變成極好，能帶動整體突破？";
+            reflectText = "— 如果只能把一件事做到極致，你會選哪個方向全力衝刺？";
+        } else if (total >= 60) {
+            viewpointText = "你的四個維度相當均衡，每個方向都有一定基礎。但均衡有時候也意味著還沒有壓倒性的優勢。我的建議：從四個維度裡挑一個你最有信心的，先把它做到極致，用一個強項帶動其他三個。";
+            reflectText = "— 四個維度裡，你最有把握的是哪一個？為什麼？";
+        } else {
+            viewpointText = "你的四個維度分數相近，但整體偏低——代表你的產品還在很早期的探索階段。好消息是還沒有錯得太離譜。壞消息是每個方向都需要更多驗證。我建議先從 Problem 開始，確認你要解的問題是真的，再往下走。";
+            reflectText = "— 你有沒有親耳聽過用戶描述這個問題的痛？";
+        }
+    } else {
+        // 有明確弱項 → 針對最低維度給建議
+        if (lowestDim === 'P') {
+            viewpointText = "說實話，其他維度你做得不錯，但「問題定義」這塊讓我擔心。你可能正在為一個不夠痛的問題打造解法。我會建議你這週就去找 5 個目標用戶，不是問他們覺得你的產品好不好——而是聽他們怎麼描述自己的困擾。如果他們講不出來，問題可能不夠真。";
+            reflectText = "— 你的用戶最後一次說「這真的很痛」，是什麼時候？";
+        } else if (lowestDim === 'A') {
+            viewpointText = "你的問題看得很準，解法方向也對，但「受眾」這塊比較模糊。坦白說，「很多人都能用」是最危險的說法——因為你等於沒有對象。我會建議你把受眾縮到一個具體的人：一個職業、一個場景、一個非解決不可的時刻。先服務好 10 個人，比觸及 1000 個人重要。";
+            reflectText = "— 如果只能服務一種人，你會選誰？";
+        } else if (lowestDim === 'T') {
+            viewpointText = "你的產品方向很清楚，問題和受眾都有基礎。但「牽引力」偏低是一個警訊——這代表市場還沒真正回應你。我最常看到創業者在這個階段犯的錯是繼續打磨產品，而不是去測試付費意願。我的建議：這週就設計一個最小的收費實驗，哪怕只是一頁付款連結。";
+            reflectText = "— 如果只能測試一個假設，你會先測哪一個？";
+        } else {
+            viewpointText = "你對市場的判斷力很好，問題和受眾都找對了。但「解法可行性」的分數讓我好奇——你的護城河在哪？如果競爭對手花三個月就能做出一樣的東西，你需要重新思考什麼是別人抄不走的。可能是數據、可能是關係網、可能是某個獨特的流程。";
+            reflectText = "— 有什麼是你能做、但競爭對手很難複製的？";
+        }
+    }
+
+    document.getElementById('result-viewpoint').textContent = viewpointText;
     const reflectEl = document.getElementById('result-reflect');
-    if (reflectEl) reflectEl.textContent = reflectQuestions[lowestDim] || reflectQuestions['T'];
+    if (reflectEl) reflectEl.textContent = reflectText;
 
     // For shared view: swap restart button to CTA style
     if (isSharedView) {
