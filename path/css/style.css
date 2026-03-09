@@ -242,6 +242,16 @@ body {
   font-family: var(--font-body);
 }
 
+.footer-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: var(--accent);
+}
+
 /* ===== Q0 ROUTING SCREEN ===== */
 .screen-q0 {
   justify-content: center;
