@@ -194,14 +194,6 @@ if (restartBtn) {
         const radarContainer = document.getElementById('radar-container');
         if (radarContainer) radarContainer.style.display = 'none';
 
-        // Reset restart button to default link style
-        const restartBtnEl2 = document.getElementById('btn-restart');
-        if (restartBtnEl2) {
-            restartBtnEl2.textContent = '重新測驗';
-            restartBtnEl2.classList.remove('btn-restart-cta');
-            restartBtnEl2.classList.add('btn-restart-link');
-        }
-
         // Clear hash
         history.replaceState(null, '', window.location.pathname);
 
@@ -305,16 +297,6 @@ function renderResultsFromScores(scores, isSharedView) {
     document.getElementById('result-viewpoint').textContent = viewpointText;
     const reflectEl = document.getElementById('result-reflect');
     if (reflectEl) reflectEl.textContent = reflectText;
-
-    // For shared view: swap restart button to CTA style
-    if (isSharedView) {
-        const restartBtnEl = document.getElementById('btn-restart');
-        if (restartBtnEl) {
-            restartBtnEl.textContent = '免費測你的產品力';
-            restartBtnEl.classList.remove('btn-restart-link');
-            restartBtnEl.classList.add('btn-restart-cta');
-        }
-    }
 
     showScreen('screen-results');
 
