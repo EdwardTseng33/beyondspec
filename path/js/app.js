@@ -170,19 +170,19 @@ function finishQuiz() {
         if (scores[dim] < minVal) { minVal = scores[dim]; lowestDim = dim; }
     });
 
-    let viewpointText = "你的產品架構相當均衡，目前處於穩定的探索期。建議針對最不可控的風險優先切入。";
-    if (lowestDim === 'P') viewpointText = "你的受眾和解法看起來很有潛力，但核心的「問題定義」分數偏低——建議先停下手邊的開發，去找至少 5 個真實用戶聊聊他們的痛點。";
-    if (lowestDim === 'A') viewpointText = "你的問題定義很深刻，但受眾輪廓較為模糊。這可能導致行銷成本過高。建議縮小打擊範圍，先服務好一個特定的利基市場。";
-    if (lowestDim === 'T') viewpointText = "你的產品完整度高，問題也定義對了。但牽引力表現面臨挑戰——這是死亡之谷。建議盡快驗證最小收費模式，測試市場買單意願。";
-    if (lowestDim === 'H') viewpointText = "你的市場敏銳度極高，但目前的執行方案（How）可能難以建立長期護城河。建議重新盤點團隊資源與核心技術壁壘。";
+    let viewpointText = "你的四個維度相當均衡，這在早期產品裡不常見。我的建議是：挑一個你最沒把握的維度，花一週全力去驗證它。均衡不代表沒風險，而是風險還沒被看見。";
+    if (lowestDim === 'P') viewpointText = "說實話，其他維度你做得不錯，但「問題定義」這塊讓我擔心。你可能正在為一個不夠痛的問題打造解法。我會建議你這週就去找 5 個目標用戶，不是問他們覺得你的產品好不好——而是聽他們怎麼描述自己的困擾。如果他們講不出來，問題可能不夠真。";
+    if (lowestDim === 'A') viewpointText = "你的問題看得很準，解法方向也對，但「受眾」這塊比較模糊。坦白說，「很多人都能用」是最危險的說法——因為你等於沒有對象。我會建議你把受眾縮到一個具體的人：一個職業、一個場景、一個非解決不可的時刻。先服務好 10 個人，比觸及 1000 個人重要。";
+    if (lowestDim === 'T') viewpointText = "你的產品方向很清楚，問題和受眾都有基礎。但「牽引力」偏低是一個警訊——這代表市場還沒真正回應你。我最常看到創業者在這個階段犯的錯是繼續打磨產品，而不是去測試付費意願。我的建議：這週就設計一個最小的收費實驗，哪怕只是一頁付款連結。";
+    if (lowestDim === 'H') viewpointText = "你對市場的判斷力很好，問題和受眾都找對了。但「解法可行性」的分數讓我好奇——你的護城河在哪？如果競爭對手花三個月就能做出一樣的東西，你需要重新思考什麼是別人抄不走的。可能是數據、可能是關係網、可能是某個獨特的流程。";
 
     document.getElementById('result-viewpoint').textContent = viewpointText;
 
     const reflectQuestions = {
-        P: '🪞 你的用戶最後一次說「這真的很痛」是什麼時候？',
-        A: '🪞 你的第一個付費用戶，會是誰？',
-        T: '🪞 如果只能測試一個假設，你會先測哪一個？',
-        H: '🪞 有什麼是你能做、但競爭對手很難複製的？'
+        P: '— 你的用戶最後一次說「這真的很痛」，是什麼時候？',
+        A: '— 如果只能服務一種人，你會選誰？',
+        T: '— 如果只能測試一個假設，你會先測哪一個？',
+        H: '— 有什麼是你能做、但競爭對手很難複製的？'
     };
     const reflectEl = document.getElementById('result-reflect');
     if (reflectEl) reflectEl.textContent = reflectQuestions[lowestDim] || reflectQuestions['T'];
@@ -222,8 +222,7 @@ function finishQuiz() {
         };
         fetch(GOOGLE_SHEET_URL, {
             method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(silentPayload)
         }).catch(err => console.warn('[BeyondPath] Silent record failed:', err));
     }
@@ -250,6 +249,7 @@ if (restartBtn) {
         if (emailSuccess) emailSuccess.style.display = 'none';
         const emailBtn = document.getElementById('btn-email-submit');
         if (emailBtn) emailBtn.style.display = '';
+        emailSubmitted = false;
 
         const radarContainer = document.getElementById('radar-container');
         if (radarContainer) radarContainer.style.display = 'none';
@@ -262,9 +262,11 @@ if (restartBtn) {
 // 替換為你的 Google Apps Script Web App URL
 const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwIjqcCgDAevw2Z87OcXRRsVnOxhB_WMHrbhh1DbcPGSt88uGXj_zYnS-q2KAGJnnsg/exec';
 
+let emailSubmitted = false;
 const emailSubmitBtn = document.getElementById('btn-email-submit');
 if (emailSubmitBtn) {
     emailSubmitBtn.addEventListener('click', () => {
+        if (emailSubmitted) return;
         const emailInput = document.getElementById('email-input');
         const emailSuccess = document.getElementById('email-success');
         if (!emailInput) return;
@@ -294,6 +296,7 @@ if (emailSubmitBtn) {
             timestamp: new Date().toISOString()
         };
 
+        emailSubmitted = true;
         emailInput.style.display = 'none';
         emailSubmitBtn.style.display = 'none';
         if (emailSuccess) emailSuccess.style.display = 'block';
@@ -302,8 +305,7 @@ if (emailSubmitBtn) {
         if (GOOGLE_SHEET_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
             fetch(GOOGLE_SHEET_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify(payload)
             }).catch(err => console.warn('[BeyondPath] Sheet sync failed:', err));
         }
