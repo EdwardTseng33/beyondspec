@@ -335,7 +335,7 @@ function checkSharedResult() {
 
 // ===== RADAR ANIMATION =====
 const center = 150;
-const maxRadius = 130;
+const maxRadius = 140;
 
 function scoreToRadius(score) { return (score / 100) * maxRadius; }
 
