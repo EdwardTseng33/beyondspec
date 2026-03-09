@@ -3,7 +3,7 @@
   --accent-light: rgba(232, 98, 42, 0.1);
   --bg-page: #FAFAFA;
   --bg-card: #FFFFFF;
-  --border: #E5E2DC;
+  --border: #EAEAEA;
   --text-primary: #2C2C2C;
   --text-secondary: #6B6B6B;
   --text-muted: #8B8B90;
@@ -265,7 +265,29 @@ body {
 .q0-content-area {
   width: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.q0-back-link {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  padding: 4px 0;
+  align-self: center;
+  max-width: 640px;
+  width: 100%;
+  text-align: left;
+  transition: color 0.2s;
+}
+
+.q0-back-link:hover {
+  color: var(--text-secondary);
 }
 
 .q0-card {
@@ -313,7 +335,7 @@ body {
   font-size: 12px;
   color: var(--text-muted);
   font-family: var(--font-body);
-  opacity: 0.7;
+  opacity: 1;
   line-height: 1.3;
 }
 
