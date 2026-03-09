@@ -355,7 +355,7 @@ function renderResultsFromScores(scores, isSharedView) {
     setTimeout(() => {
         document.getElementById('radar-container').style.display = 'block';
         animateRadar({ P, A, T, H });
-        animateCountUp();
+        animateCountUp({ total, P, A, T, H });
     }, 100);
 }
 
@@ -463,22 +463,30 @@ function animateRadar(scores) {
     }, delay);
 }
 
-function animateCountUp() {
-    const counters = document.querySelectorAll('.screen-results [data-target]');
-    counters.forEach((counter, i) => {
-        const target = parseInt(counter.dataset.target);
-        const delay = counter.id === 'result-total-num' ? 1900 : 2100 + (i * 100);
-        const duration = 800;
+function animateCountUp(scores) {
+    if (!scores) return;
+    const mapping = [
+        { id: 'result-total-num', value: scores.total, delay: 1900 },
+        { id: 'result-p-num', value: scores.P, delay: 2100 },
+        { id: 'result-a-num', value: scores.A, delay: 2200 },
+        { id: 'result-t-num', value: scores.T, delay: 2300 },
+        { id: 'result-h-num', value: scores.H, delay: 2400 }
+    ];
 
-        counter.textContent = "0";
+    mapping.forEach(({ id, value, delay }) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const target = value || 0;
+        el.textContent = "0";
 
         setTimeout(() => {
+            const duration = 800;
             const startTime = performance.now();
             function update(currentTime) {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const eased = 1 - Math.pow(1 - progress, 3);
-                counter.textContent = Math.round(eased * target);
+                el.textContent = Math.round(eased * target);
                 if (progress < 1) requestAnimationFrame(update);
             }
             requestAnimationFrame(update);
@@ -487,5 +495,9 @@ function animateCountUp() {
 }
 
 // ===== PAGE LOAD: Check for shared result hash =====
-checkSharedResult();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => checkSharedResult());
+} else {
+    checkSharedResult();
+}
 
