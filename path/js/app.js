@@ -136,76 +136,17 @@ function renderQuestion() {
 function finishQuiz() {
     const result = calculateScores(answers);
 
-    document.getElementById('result-type-name').textContent = result.type;
-    document.getElementById('result-desc').textContent = result.desc;
+    // Render results using shared function (not a shared view)
+    renderResultsFromScores({
+        total: result.total,
+        P: result.normalized.P,
+        A: result.normalized.A,
+        T: result.normalized.T,
+        H: result.normalized.H
+    }, false);
 
-    document.getElementById('result-total-num').dataset.target = result.total;
-    document.getElementById('result-p-num').dataset.target = result.normalized.P;
-    document.getElementById('result-a-num').dataset.target = result.normalized.A;
-    document.getElementById('result-t-num').dataset.target = result.normalized.T;
-    document.getElementById('result-h-num').dataset.target = result.normalized.H;
-
-    // M1: Dynamic color classes
-    const scores = result.normalized;
-    const dims = ['P', 'A', 'T', 'H'];
-    const maxScore = Math.max(...dims.map(d => scores[d]));
-    const minScore = Math.min(...dims.map(d => scores[d]));
-
-    dims.forEach(dim => {
-        const el = document.getElementById(`result-${dim.toLowerCase()}-num`);
-        el.classList.remove('accent', 'danger', 'normal');
-        if (scores[dim] === maxScore) {
-            el.classList.add('accent');
-        } else if (scores[dim] === minScore) {
-            el.classList.add('danger');
-        } else {
-            el.classList.add('normal');
-        }
-    });
-
-    // Viewpoint text
-    let lowestDim = 'P';
-    let minVal = scores.P;
-    ['A', 'T', 'H'].forEach(dim => {
-        if (scores[dim] < minVal) { minVal = scores[dim]; lowestDim = dim; }
-    });
-
-    let viewpointText = "你的四個維度相當均衡，這在早期產品裡不常見。我的建議是：挑一個你最沒把握的維度，花一週全力去驗證它。均衡不代表沒風險，而是風險還沒被看見。";
-    if (lowestDim === 'P') viewpointText = "說實話，其他維度你做得不錯，但「問題定義」這塊讓我擔心。你可能正在為一個不夠痛的問題打造解法。我會建議你這週就去找 5 個目標用戶，不是問他們覺得你的產品好不好——而是聽他們怎麼描述自己的困擾。如果他們講不出來，問題可能不夠真。";
-    if (lowestDim === 'A') viewpointText = "你的問題看得很準，解法方向也對，但「受眾」這塊比較模糊。坦白說，「很多人都能用」是最危險的說法——因為你等於沒有對象。我會建議你把受眾縮到一個具體的人：一個職業、一個場景、一個非解決不可的時刻。先服務好 10 個人，比觸及 1000 個人重要。";
-    if (lowestDim === 'T') viewpointText = "你的產品方向很清楚，問題和受眾都有基礎。但「牽引力」偏低是一個警訊——這代表市場還沒真正回應你。我最常看到創業者在這個階段犯的錯是繼續打磨產品，而不是去測試付費意願。我的建議：這週就設計一個最小的收費實驗，哪怕只是一頁付款連結。";
-    if (lowestDim === 'H') viewpointText = "你對市場的判斷力很好，問題和受眾都找對了。但「解法可行性」的分數讓我好奇——你的護城河在哪？如果競爭對手花三個月就能做出一樣的東西，你需要重新思考什麼是別人抄不走的。可能是數據、可能是關係網、可能是某個獨特的流程。";
-
-    document.getElementById('result-viewpoint').textContent = viewpointText;
-
-    const reflectQuestions = {
-        P: '— 你的用戶最後一次說「這真的很痛」，是什麼時候？',
-        A: '— 如果只能服務一種人，你會選誰？',
-        T: '— 如果只能測試一個假設，你會先測哪一個？',
-        H: '— 有什麼是你能做、但競爭對手很難複製的？'
-    };
-    const reflectEl = document.getElementById('result-reflect');
-    if (reflectEl) reflectEl.textContent = reflectQuestions[lowestDim] || reflectQuestions['T'];
-
-    // 客製化 Email CTA — 針對最弱維度
-    const weakDimLabels = {
-        P: { label: '問題定義', hook: '你的「問題定義」得分偏低——這代表什麼？留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
-        A: { label: '受眾定義', hook: '你的「受眾定義」得分偏低——目標客群可能還不夠聚焦。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
-        T: { label: '牽引力', hook: '你的「牽引力」得分偏低——這是產品死亡之谷的關鍵指標。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
-        H: { label: '解法可行性', hook: '你的「解法可行性」得分偏低——護城河尚未建立。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' }
-    };
-    const emailLabel = document.getElementById('email-capture-label');
-    if (emailLabel && weakDimLabels[lowestDim]) {
-        emailLabel.textContent = weakDimLabels[lowestDim].hook;
-    }
-
-    showScreen('screen-results');
-
-    setTimeout(() => {
-        document.getElementById('radar-container').style.display = 'block';
-        animateRadar(result.normalized);
-        animateCountUp();
-    }, 100);
+    // Update URL hash for sharing
+    history.replaceState(null, '', encodeResultHash(result.total, result.normalized.P, result.normalized.A, result.normalized.T, result.normalized.H));
 
     // 靜默記錄：完測自動記一筆到 Google Sheet（不含 email）
     if (GOOGLE_SHEET_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
@@ -253,6 +194,15 @@ if (restartBtn) {
 
         const radarContainer = document.getElementById('radar-container');
         if (radarContainer) radarContainer.style.display = 'none';
+
+        // Restore email section if hidden by shared view
+        const emailSection = document.getElementById('email-capture');
+        if (emailSection) emailSection.style.display = '';
+        const restartBtnEl2 = document.getElementById('btn-restart');
+        if (restartBtnEl2) restartBtnEl2.textContent = '重新評估';
+
+        // Clear hash
+        history.replaceState(null, '', window.location.pathname);
 
         showScreen('screen-welcome');
     });
@@ -314,22 +264,130 @@ if (emailSubmitBtn) {
     });
 }
 
+// ===== URL HASH SHARE SYSTEM =====
+// Hash format: #r=total-P-A-T-H  (e.g. #r=55-80-60-20-60)
+
+function encodeResultHash(total, P, A, T, H) {
+    return `#r=${total}-${P}-${A}-${T}-${H}`;
+}
+
+function decodeResultHash(hash) {
+    if (!hash || !hash.startsWith('#r=')) return null;
+    const parts = hash.substring(3).split('-').map(Number);
+    if (parts.length !== 5 || parts.some(isNaN)) return null;
+    return { total: parts[0], P: parts[1], A: parts[2], T: parts[3], H: parts[4] };
+}
+
+function getPathTypeFromTotal(totalScore) {
+    if (totalScore <= 39) return { type: '起點探路者', desc: '你正站在旅程的起點。地圖還沒畫好，但每一步探索都是找到方向的線索。先別急著跑，確認腳下的路是對的。' };
+    if (totalScore <= 59) return { type: '岔路行者', desc: '你已經走了一段路，但眼前出現了幾個岔路口。有些方向看得清，有些還在霧裡。建議停下來看看路標——你的弱項維度就是最需要釐清的方向。' };
+    if (totalScore <= 79) return { type: '山腰攀登者', desc: '你已經走過最混亂的山腳路段，方向越來越清楚了。現在你在半山腰，看得見山頂。關鍵是找到屬於你的攀登路線，而不是跟著別人的腳印。' };
+    return { type: '破曉衝刺者', desc: '你的旅程已經來到最後一段上坡。四個維度都展現了高度成熟，市場也給了正面回饋。天快亮了——準備好加速衝刺。' };
+}
+
+function renderResultsFromScores(scores, isSharedView) {
+    const { total, P, A, T, H } = scores;
+    const pathInfo = getPathTypeFromTotal(total);
+
+    document.getElementById('result-type-name').textContent = pathInfo.type;
+    document.getElementById('result-desc').textContent = pathInfo.desc;
+
+    document.getElementById('result-total-num').dataset.target = total;
+    document.getElementById('result-p-num').dataset.target = P;
+    document.getElementById('result-a-num').dataset.target = A;
+    document.getElementById('result-t-num').dataset.target = T;
+    document.getElementById('result-h-num').dataset.target = H;
+
+    // Dynamic color classes
+    const dims = { P, A, T, H };
+    const dimKeys = ['P', 'A', 'T', 'H'];
+    const maxScore = Math.max(P, A, T, H);
+    const minScore = Math.min(P, A, T, H);
+
+    dimKeys.forEach(dim => {
+        const el = document.getElementById(`result-${dim.toLowerCase()}-num`);
+        el.classList.remove('accent', 'danger', 'normal');
+        if (dims[dim] === maxScore) el.classList.add('accent');
+        else if (dims[dim] === minScore) el.classList.add('danger');
+        else el.classList.add('normal');
+    });
+
+    // Viewpoint + reflect
+    let lowestDim = 'P', minVal = P;
+    ['A', 'T', 'H'].forEach(dim => { if (dims[dim] < minVal) { minVal = dims[dim]; lowestDim = dim; } });
+
+    let viewpointText = "你的四個維度相當均衡，這在早期產品裡不常見。我的建議是：挑一個你最沒把握的維度，花一週全力去驗證它。均衡不代表沒風險，而是風險還沒被看見。";
+    if (lowestDim === 'P') viewpointText = "說實話，其他維度你做得不錯，但「問題定義」這塊讓我擔心。你可能正在為一個不夠痛的問題打造解法。我會建議你這週就去找 5 個目標用戶，不是問他們覺得你的產品好不好——而是聽他們怎麼描述自己的困擾。如果他們講不出來，問題可能不夠真。";
+    if (lowestDim === 'A') viewpointText = "你的問題看得很準，解法方向也對，但「受眾」這塊比較模糊。坦白說，「很多人都能用」是最危險的說法——因為你等於沒有對象。我會建議你把受眾縮到一個具體的人：一個職業、一個場景、一個非解決不可的時刻。先服務好 10 個人，比觸及 1000 個人重要。";
+    if (lowestDim === 'T') viewpointText = "你的產品方向很清楚，問題和受眾都有基礎。但「牽引力」偏低是一個警訊——這代表市場還沒真正回應你。我最常看到創業者在這個階段犯的錯是繼續打磨產品，而不是去測試付費意願。我的建議：這週就設計一個最小的收費實驗，哪怕只是一頁付款連結。";
+    if (lowestDim === 'H') viewpointText = "你對市場的判斷力很好，問題和受眾都找對了。但「解法可行性」的分數讓我好奇——你的護城河在哪？如果競爭對手花三個月就能做出一樣的東西，你需要重新思考什麼是別人抄不走的。可能是數據、可能是關係網、可能是某個獨特的流程。";
+    document.getElementById('result-viewpoint').textContent = viewpointText;
+
+    const reflectQuestions = {
+        P: '— 你的用戶最後一次說「這真的很痛」，是什麼時候？',
+        A: '— 如果只能服務一種人，你會選誰？',
+        T: '— 如果只能測試一個假設，你會先測哪一個？',
+        H: '— 有什麼是你能做、但競爭對手很難複製的？'
+    };
+    const reflectEl = document.getElementById('result-reflect');
+    if (reflectEl) reflectEl.textContent = reflectQuestions[lowestDim] || reflectQuestions['T'];
+
+    // For shared view: hide email capture, show "我也來測" CTA
+    if (isSharedView) {
+        const emailSection = document.getElementById('email-capture');
+        if (emailSection) emailSection.style.display = 'none';
+        const restartBtnEl = document.getElementById('btn-restart');
+        if (restartBtnEl) restartBtnEl.textContent = '我也來測 PATH 評估';
+    } else {
+        // Custom email CTA for quiz taker
+        const weakDimLabels = {
+            P: { hook: '你的「問題定義」得分偏低——這代表什麼？留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
+            A: { hook: '你的「受眾定義」得分偏低——目標客群可能還不夠聚焦。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
+            T: { hook: '你的「牽引力」得分偏低——這是產品死亡之谷的關鍵指標。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
+            H: { hook: '你的「解法可行性」得分偏低——護城河尚未建立。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' }
+        };
+        const emailLabel = document.getElementById('email-capture-label');
+        if (emailLabel && weakDimLabels[lowestDim]) emailLabel.textContent = weakDimLabels[lowestDim].hook;
+    }
+
+    showScreen('screen-results');
+
+    setTimeout(() => {
+        document.getElementById('radar-container').style.display = 'block';
+        animateRadar({ P, A, T, H });
+        animateCountUp();
+    }, 100);
+}
+
+// Check for shared result on page load
+function checkSharedResult() {
+    const shared = decodeResultHash(window.location.hash);
+    if (!shared) return false;
+    renderResultsFromScores(shared, true);
+    return true;
+}
+
 // ===== SHARE BUTTON =====
 const shareBtn = document.getElementById('btn-share');
 if (shareBtn) {
     shareBtn.addEventListener('click', () => {
         const result = calculateScores(answers);
-        const shareText = `我的 PATH 產品力評估：綜合 ${result.total} 分（P:${result.normalized.P} A:${result.normalized.A} T:${result.normalized.T} H:${result.normalized.H}）— ${result.type}。你也來測測看！`;
-        const shareUrl = 'https://beyondspec.tw/path/';
+        const hash = encodeResultHash(result.total, result.normalized.P, result.normalized.A, result.normalized.T, result.normalized.H);
+        const shareUrl = 'https://beyondspec.tw/path/' + hash;
+        const pathInfo = getPathTypeFromTotal(result.total);
+        const shareText = `我是「${pathInfo.type}」— PATH 產品力綜合 ${result.total} 分。你的產品在哪條路上？`;
         const hint = document.getElementById('share-hint');
 
+        // Update URL without reload
+        history.replaceState(null, '', hash);
+
         if (navigator.share) {
-            navigator.share({ title: 'BeyondPath — PATH 產品力評估', text: shareText, url: shareUrl })
+            navigator.share({ title: 'BeyondPath — 我的 PATH 產品力結果', text: shareText, url: shareUrl })
                 .catch(() => {});
         } else {
             navigator.clipboard.writeText(shareText + '\n' + shareUrl).then(() => {
                 if (hint) {
-                    hint.textContent = '✓ 已複製到剪貼簿！';
+                    hint.textContent = '已複製結果連結！';
                     hint.classList.add('visible');
                     setTimeout(() => hint.classList.remove('visible'), 2500);
                 }
@@ -427,4 +485,7 @@ function animateCountUp() {
         }, delay);
     });
 }
+
+// ===== PAGE LOAD: Check for shared result hash =====
+checkSharedResult();
 
