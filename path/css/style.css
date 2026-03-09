@@ -979,6 +979,7 @@ body {
   font-weight: 500;
   color: var(--text-secondary);
   margin: 0;
+  line-height: 1.6;
 }
 
 .email-form {
@@ -1033,6 +1034,61 @@ body {
   font-weight: 500;
   margin: 0;
   display: none;
+}
+
+/* ===== SHARE SECTION ===== */
+.share-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  opacity: 0;
+  animation: fadeIn 0.4s 3.2s ease forwards;
+}
+
+.share-btn-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.share-btn-new:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.share-btn-new svg {
+  transition: stroke 0.25s ease;
+}
+
+.share-btn-new:hover svg {
+  stroke: white;
+}
+
+.share-hint {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  margin: 0;
+}
+
+.share-hint.visible {
+  opacity: 1;
 }
 
 /* ===== RESTART BUTTON ===== */
@@ -1252,3 +1308,4 @@ body {
     animation: none;
   }
 }
+
