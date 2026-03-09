@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeyondPath — PATH 產品力評估</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500;600&family=Inter:wght@400;500;600&family=Instrument+Serif&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <main id="app">
+
+        <!-- WELCOME SCREEN -->
+        <section id="screen-welcome" class="screen screen-welcome active">
+            <div class="welcome-card">
+                <img src="logo/path_logo_black.png" alt="BeyondPath Logo" class="welcome-logo">
+                <h1 class="welcome-title">每個好產品都始於一段旅程。</h1>
+                <p class="welcome-desc">用 5 分鐘回答 20 個問題，透過 PATH 四維模型，看清你的產品在哪個路徑上——以及下一步該往哪走。</p>
+
+                <div class="path-icons-row">
+                    <div class="path-col">
+                        <div class="path-icon-circ">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </div>
+                        <span>Problem</span>
+                    </div>
+                    <div class="path-col">
+                        <div class="path-icon-circ">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <span>Audience</span>
+                    </div>
+                    <div class="path-col">
+                        <div class="path-icon-circ">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                        </div>
+                        <span>Traction</span>
+                    </div>
+                    <div class="path-col">
+                        <div class="path-icon-circ">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+                                </path>
+                            </svg>
+                        </div>
+                        <span>How</span>
+                    </div>
+                </div>
+
+                <div class="welcome-actions">
+                    <button id="btn-start" class="btn-primary">
+                        開始探路
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                    <div class="time-note">⏱ 約 5-6 分鐘 · 完全免費</div>
+                </div>
+
+                <div class="social-proof">專為早期創業者打造。透過 P·A·T·H 四維模型，找出你的產品在哪個路徑上——以及下一步最關鍵的行動。</div>
+            </div>
+            <div class="footer-note">BeyondSpec 產品設計智庫 · beyondspec.tw/path</div>
+        </section>
+
+        <!-- Q0 ROUTING SCREEN -->
+        <section id="screen-q0" class="screen screen-q0">
+            <header class="topbar">
+                <div class="logo"><img src="logo/path_logo_black.png" alt="BeyondPath"></div>
+            </header>
+            <div class="q0-content-area">
+                <div class="q0-card">
+                    <div class="edward-profile">
+                        <div class="avatar">E</div>
+                        <div class="edward-titles">
+                            <span class="edward-name">Edward</span>
+                            <span class="edward-role">AI 產品教練</span>
+                        </div>
+                    </div>
+                    <div class="chat-bubble">
+                        你好！在開始之前，讓我問你一個問題——這樣我可以為你選出最適合的題組。<br><br>你的產品跟 AI 技術有關嗎？
+                    </div>
+                    <div class="chat-actions">
+                        <button id="btn-q0-ai" class="btn-primary" style="max-width: 100%;">🤖 是，有用到 AI</button>
+                        <button id="btn-q0-standard" class="btn-secondary">🚀 不是，傳統產品或 SaaS</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- QUIZ SCREEN -->
+        <section id="screen-quiz" class="screen screen-quiz">
+            <header class="topbar with-bg">
+                <div class="logo"><img src="logo/path_logo_black.png" alt="BeyondPath"></div>
+                <div class="progress-info" id="quiz-progress-text">P 問題清晰度 · 1 / 20</div>
+            </header>
+            <div class="progress-container">
+                <div id="quiz-progress-bar" class="progress-bar"></div>
+            </div>
+            <div class="quiz-content">
+                <div class="quiz-card">
+                    <div class="quiz-header">
+                        <div id="quiz-dim-tag" class="dim-tag">P1 · Problem 問題清晰度</div>
+                        <div id="quiz-question" class="question-text">你能一句話說清楚在解決什麼問題嗎？</div>
+                    </div>
+                    <div id="quiz-options" class="options-list">
+                        <!-- Options injected here -->
+                    </div>
+                    <div class="quiz-nav">
+                        <button id="btn-quiz-prev" class="nav-btn-back">← 上一題</button>
+                        <div style="flex:1"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RESULTS SCREEN -->
+        <section id="screen-results" class="screen screen-results">
+            <header class="topbar">
+                <div class="logo"><img src="logo/path_logo_black.png" alt="BeyondPath"></div>
+                <button class="share-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="18" cy="5" r="3" />
+                        <circle cx="6" cy="12" r="3" />
+                        <circle cx="18" cy="19" r="3" />
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                    分享結果
+                </button>
+            </header>
+            <div class="content-results">
+                <!-- Radar from prototype -->
+                <div class="radar-section">
+                    <div class="radar-glow"></div>
+                    <div class="radar-grid">
+                        <svg viewBox="0 0 300 300">
+                            <polygon class="grid-line" points="150,10 290,150 150,290 10,150" />
+                            <polygon class="grid-line" points="150,50 250,150 150,250 50,150"
+                                style="animation-delay: 0.7s" />
+                            <polygon class="grid-line" points="150,90 210,150 150,210 90,150"
+                                style="animation-delay: 0.8s" />
+                            <line class="grid-line" x1="150" y1="10" x2="150" y2="290" style="animation-delay: 0.9s" />
+                            <line class="grid-line" x1="10" y1="150" x2="290" y2="150" style="animation-delay: 0.9s" />
+                        </svg>
+                    </div>
+                    <div class="radar-diamond" id="radar-container" style="display:none">
+                        <svg viewBox="0 0 300 300">
+                            <defs>
+                                <linearGradient id="radarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#E8622A;stop-opacity:0.9" />
+                                    <stop offset="100%" style="stop-color:#E8622A;stop-opacity:0.55" />
+                                </linearGradient>
+                            </defs>
+                            <polygon class="radar-polygon" id="radarShape" points="150,150 150,150 150,150 150,150" />
+                            <polygon class="radar-polygon-stroke" id="radarStroke"
+                                points="150,150 150,150 150,150 150,150" />
+                            <circle class="score-dot" id="dotP" cx="150" cy="150" r="4" fill="#E8622A" opacity="0" />
+                            <circle class="score-dot" id="dotA" cx="150" cy="150" r="4" fill="#E8622A" opacity="0" />
+                            <circle class="score-dot" id="dotT" cx="150" cy="150" r="4" fill="#E8622A" opacity="0" />
+                            <circle class="score-dot" id="dotH" cx="150" cy="150" r="4" fill="#E8622A" opacity="0" />
+                        </svg>
+                    </div>
+                    <span class="radar-label label-p">P</span>
+                    <span class="radar-label label-a">A</span>
+                    <span class="radar-label label-t">T</span>
+                    <span class="radar-label label-h">H</span>
+                </div>
+
+                <div class="score-summary">
+                    <div class="path-type-header">
+                        <p class="path-type-label">你的路徑類型</p>
+                        <h1 id="result-type-name" class="path-type-name">-</h1>
+                        <p id="result-desc" class="path-description">-</p>
+                    </div>
+
+                    <div class="score-row">
+                        <div class="total-score">
+                            <div id="result-total-num" class="number" data-target="0">0</div>
+                            <div class="label">總分</div>
+                        </div>
+                    </div>
+
+                    <div class="dim-scores">
+                        <div class="dim-score">
+                            <div id="result-p-num" class="number normal" data-target="0">0</div>
+                            <div class="label">P</div>
+                        </div>
+                        <div class="dim-score">
+                            <div id="result-a-num" class="number normal" data-target="0">0</div>
+                            <div class="label">A</div>
+                        </div>
+                        <div class="dim-score">
+                            <div id="result-t-num" class="number normal" data-target="0">0</div>
+                            <div class="label">T</div>
+                        </div>
+                        <div class="dim-score">
+                            <div id="result-h-num" class="number normal" data-target="0">0</div>
+                            <div class="label">H</div>
+                        </div>
+                    </div>
+
+                    <div class="cta-section">
+                        <a href="https://beyondspec.tw/#booking" class="cta-btn cta-btn-booking" target="_blank" rel="noopener">
+                            預約產品健檢 · 30 分鐘免費諮詢
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                                <polyline points="12 5 19 12 12 19" />
+                            </svg>
+                        </a>
+                        <p class="cta-note">由 BeyondSpec 創辦人 Edward 親自為你的產品把脈</p>
+                        <div class="divider"></div>
+                        <!-- PAYUNi 一頁式收款連結 -->
+                        <a href="https://api.payuni.com.tw/api/uop/receive_info/2/1/U083967424/bLpEHgxWRPuTFGyYHiUi" class="cta-btn cta-btn-l2" id="btn-unlock-l2" target="_blank" rel="noopener">
+                            解鎖 L2 深度診斷報告 · NT$1,499
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        </a>
+                        <p class="cta-note-l2">38 題深度診斷 + 產品風險地圖 + 3 個優先行動建議</p>
+                        <div class="divider"></div>
+                    </div>
+
+                    <div class="viewpoint">
+                        <div class="viewpoint-header">
+                            <div class="dot"></div>
+                            <span>BeyondSpec Viewpoint</span>
+                        </div>
+                        <p id="result-viewpoint">你的問題定義很清楚，受眾也找對了。但牽引力分數偏低——建議先用最小可行方案驗證一個核心假設，而不是急著完善產品。</p>
+                        <p id="result-reflect" class="reflect">🪞 如果只能測試一個假設，你會先測哪一個？</p>
+                    </div>
+
+                    <div class="email-capture">
+                        <p class="email-capture-label">想收到完整的 PATH 診斷建議信？</p>
+                        <div class="email-form">
+                            <input type="email" id="email-input" placeholder="your@email.com" class="email-input">
+                            <button id="btn-email-submit" class="btn-email-submit">送出</button>
+                        </div>
+                        <p id="email-success" class="email-success">✓ 已記錄，我們會盡快寄出！</p>
+                    </div>
+
+                    <button id="btn-restart" class="btn-restart">↩ 重新測驗</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- DIM TRANSITION TOAST -->
+        <div id="dim-toast" class="dim-toast"></div>
+
+    </main>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>
