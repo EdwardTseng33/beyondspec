@@ -490,14 +490,15 @@ body {
   background: rgba(0, 0, 0, 0.02);
 }
 
-/* ===== RESULTS SCREEN (Reused from prototype) ===== */
+/* ===== RESULTS SCREEN ===== */
 .content-results {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 60px;
-  padding: 24px 60px;
-  min-height: calc(100vh - 64px);
+  gap: 40px;
+  padding: 40px 24px 60px;
+  max-width: 560px;
+  margin: 0 auto;
 }
 
 /* Same styles for Radar mapping */
@@ -616,15 +617,26 @@ body {
 
 .score-summary {
   width: 100%;
-  max-width: 380px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  align-items: center;
+  gap: 24px;
+}
+
+.score-summary .path-type-header {
+  text-align: center;
+}
+
+.score-summary .score-row,
+.score-summary .dim-scores {
+  width: 100%;
+  max-width: 420px;
 }
 
 .path-type-header {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
 }
 
@@ -770,6 +782,7 @@ body {
   align-items: center;
   gap: 10px;
   width: 100%;
+  max-width: 420px;
 }
 
 .cta-btn {
@@ -852,6 +865,8 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  width: 100%;
+  max-width: 420px;
   opacity: 0;
   transform: translateY(20px);
   animation: fadeInUp 0.6s 3.0s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -1213,13 +1228,6 @@ body {
 
 /* ===== RESPONSIVE: 900px ===== */
 @media (max-width: 900px) {
-  .content-results {
-    flex-direction: column;
-    padding: 24px;
-    gap: 32px;
-    align-items: center;
-  }
-
   .radar-section {
     width: 300px;
     height: 300px;
@@ -1234,11 +1242,6 @@ body {
   .radar-grid svg {
     width: 240px;
     height: 240px;
-  }
-
-  .score-summary {
-    width: 100%;
-    max-width: 480px;
   }
 }
 
@@ -1352,28 +1355,6 @@ body {
     font-size: 30px;
   }
 
-  .email-form {
-    flex-direction: column;
-  }
-
-  .btn-email-submit {
-    width: 100%;
-  }
-
-  /* Mobile: reorder score-summary children to put share higher */
-  .score-summary {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .share-section {
-    order: -1;
-    margin-bottom: 8px;
-  }
-
-  .btn-restart-link {
-    order: 10;
-  }
 }
 
 /* ===== PREFERS REDUCED MOTION ===== */
