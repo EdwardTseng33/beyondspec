@@ -188,22 +188,16 @@ if (restartBtn) {
             if (el) { el.textContent = '0'; el.dataset.target = '0'; }
         });
 
-        const emailInput = document.getElementById('email-input');
-        const emailSuccess = document.getElementById('email-success');
-        if (emailInput) { emailInput.value = ''; emailInput.style.display = ''; }
-        if (emailSuccess) emailSuccess.style.display = 'none';
-        const emailBtn = document.getElementById('btn-email-submit');
-        if (emailBtn) emailBtn.style.display = '';
-        emailSubmitted = false;
-
         const radarContainer = document.getElementById('radar-container');
         if (radarContainer) radarContainer.style.display = 'none';
 
-        // Restore email section if hidden by shared view
-        const emailSection = document.getElementById('email-capture');
-        if (emailSection) emailSection.style.display = '';
+        // Reset restart button to default link style
         const restartBtnEl2 = document.getElementById('btn-restart');
-        if (restartBtnEl2) restartBtnEl2.textContent = '重新測驗';
+        if (restartBtnEl2) {
+            restartBtnEl2.textContent = '重新測驗';
+            restartBtnEl2.classList.remove('btn-restart-cta');
+            restartBtnEl2.classList.add('btn-restart-link');
+        }
 
         // Clear hash
         history.replaceState(null, '', window.location.pathname);
@@ -212,76 +206,8 @@ if (restartBtn) {
     });
 }
 
-// ===== EMAIL CAPTURE → Google Sheet =====
-// 替換為你的 Google Apps Script Web App URL
+// ===== GOOGLE SHEET URL =====
 const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwIjqcCgDAevw2Z87OcXRRsVnOxhB_WMHrbhh1DbcPGSt88uGXj_zYnS-q2KAGJnnsg/exec';
-
-let emailSubmitted = false;
-const emailSubmitBtn = document.getElementById('btn-email-submit');
-if (emailSubmitBtn) {
-    emailSubmitBtn.addEventListener('click', () => {
-        if (emailSubmitted) return;
-        const emailInput = document.getElementById('email-input');
-        const emailSuccess = document.getElementById('email-success');
-        if (!emailInput) return;
-
-        const email = emailInput.value.trim();
-        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-        if (!isValid) {
-            emailInput.style.borderColor = 'var(--danger)';
-            setTimeout(() => { emailInput.style.borderColor = ''; }, 1500);
-            return;
-        }
-
-        // 計算目前分數
-        const result = calculateScores(answers);
-
-        // 送到 Google Sheet
-        const payload = {
-            email: email,
-            type: isAIProduct ? 'AI' : 'Standard',
-            totalScore: result.total,
-            P: result.normalized.P,
-            A: result.normalized.A,
-            T: result.normalized.T,
-            H: result.normalized.H,
-            pathType: result.type,
-            timestamp: new Date().toISOString()
-        };
-
-        emailSubmitted = true;
-        // Show loading state
-        emailSubmitBtn.textContent = '送出中...';
-        emailSubmitBtn.disabled = true;
-        emailInput.disabled = true;
-
-        // 非同步送出
-        if (GOOGLE_SHEET_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
-            fetch(GOOGLE_SHEET_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(payload)
-            }).then(() => {
-                emailInput.style.display = 'none';
-                emailSubmitBtn.style.display = 'none';
-                if (emailSuccess) emailSuccess.style.display = 'block';
-            }).catch(err => {
-                console.warn('[BeyondPath] Sheet sync failed:', err);
-                // Still show success to user (data was captured in console)
-                emailInput.style.display = 'none';
-                emailSubmitBtn.style.display = 'none';
-                if (emailSuccess) emailSuccess.style.display = 'block';
-            });
-        } else {
-            emailInput.style.display = 'none';
-            emailSubmitBtn.style.display = 'none';
-            if (emailSuccess) emailSuccess.style.display = 'block';
-        }
-
-        console.log('[BeyondPath] Data captured:', payload);
-    });
-}
 
 // ===== URL HASH SHARE SYSTEM =====
 // Hash format: #r=total-P-A-T-H  (e.g. #r=55-80-60-20-60)
@@ -362,31 +288,14 @@ function renderResultsFromScores(scores, isSharedView) {
     const reflectEl = document.getElementById('result-reflect');
     if (reflectEl) reflectEl.textContent = reflectQuestions[lowestDim] || reflectQuestions['T'];
 
-    // For shared view: hide email capture, show "我也來測" CTA
+    // For shared view: swap restart button to CTA style
     if (isSharedView) {
-        const emailSection = document.getElementById('email-capture');
-        if (emailSection) emailSection.style.display = 'none';
         const restartBtnEl = document.getElementById('btn-restart');
         if (restartBtnEl) {
-            restartBtnEl.textContent = '我也來測 PATH 評估';
-            restartBtnEl.style.textDecoration = 'none';
-            restartBtnEl.style.background = 'linear-gradient(135deg, #E8622A 0%, #D4551F 100%)';
-            restartBtnEl.style.color = 'white';
-            restartBtnEl.style.padding = '14px 24px';
-            restartBtnEl.style.borderRadius = '12px';
-            restartBtnEl.style.fontWeight = '600';
-            restartBtnEl.style.fontSize = '15px';
+            restartBtnEl.textContent = '免費測你的產品力';
+            restartBtnEl.classList.remove('btn-restart-link');
+            restartBtnEl.classList.add('btn-restart-cta');
         }
-    } else {
-        // Custom email CTA for quiz taker
-        const weakDimLabels = {
-            P: { hook: '你的「問題定義」得分偏低——這代表什麼？留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
-            A: { hook: '你的「受眾定義」得分偏低——目標客群可能還不夠聚焦。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
-            T: { hook: '你的「牽引力」得分偏低——這是產品死亡之谷的關鍵指標。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
-            H: { hook: '你的「解法可行性」得分偏低——護城河尚未建立。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' }
-        };
-        const emailLabel = document.getElementById('email-capture-label');
-        if (emailLabel && weakDimLabels[lowestDim]) emailLabel.textContent = weakDimLabels[lowestDim].hook;
     }
 
     showScreen('screen-results');
@@ -404,40 +313,6 @@ function checkSharedResult() {
     if (!shared) return false;
     renderResultsFromScores(shared, true);
     return true;
-}
-
-// ===== SHARE BUTTON =====
-const shareBtn = document.getElementById('btn-share');
-if (shareBtn) {
-    shareBtn.addEventListener('click', () => {
-        const result = calculateScores(answers);
-        const hash = encodeResultHash(result.total, result.normalized.P, result.normalized.A, result.normalized.T, result.normalized.H);
-        const shareUrl = 'https://beyondspec.tw/path/' + hash;
-        const pathInfo = getPathTypeFromTotal(result.total);
-        const shareText = `我是「${pathInfo.type}」— PATH 產品力綜合 ${result.total} 分。你的產品在哪條路上？`;
-        const hint = document.getElementById('share-hint');
-
-        // Update URL without reload
-        history.replaceState(null, '', hash);
-
-        if (navigator.share) {
-            navigator.share({ title: 'BeyondPath — 我的 PATH 產品力結果', text: shareText, url: shareUrl })
-                .catch(() => {});
-        } else {
-            navigator.clipboard.writeText(shareText + '\n' + shareUrl).then(() => {
-                if (hint) {
-                    hint.textContent = '已複製結果連結！';
-                    hint.classList.add('visible');
-                    setTimeout(() => hint.classList.remove('visible'), 2500);
-                }
-            }).catch(() => {
-                if (hint) {
-                    hint.textContent = '請手動複製連結分享';
-                    hint.classList.add('visible');
-                }
-            });
-        }
-    });
 }
 
 // ===== RADAR ANIMATION =====
