@@ -187,6 +187,18 @@ function finishQuiz() {
     const reflectEl = document.getElementById('result-reflect');
     if (reflectEl) reflectEl.textContent = reflectQuestions[lowestDim] || reflectQuestions['T'];
 
+    // 客製化 Email CTA — 針對最弱維度
+    const weakDimLabels = {
+        P: { label: '問題定義', hook: '你的「問題定義」得分偏低——這代表什麼？留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
+        A: { label: '受眾定義', hook: '你的「受眾定義」得分偏低——目標客群可能還不夠聚焦。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
+        T: { label: '牽引力', hook: '你的「牽引力」得分偏低——這是產品死亡之谷的關鍵指標。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' },
+        H: { label: '解法可行性', hook: '你的「解法可行性」得分偏低——護城河尚未建立。留下 email，收到你專屬的弱項拆解 + 1 個立即可執行的行動建議。' }
+    };
+    const emailLabel = document.getElementById('email-capture-label');
+    if (emailLabel && weakDimLabels[lowestDim]) {
+        emailLabel.textContent = weakDimLabels[lowestDim].hook;
+    }
+
     showScreen('screen-results');
 
     setTimeout(() => {
@@ -194,6 +206,27 @@ function finishQuiz() {
         animateRadar(result.normalized);
         animateCountUp();
     }, 100);
+
+    // 靜默記錄：完測自動記一筆到 Google Sheet（不含 email）
+    if (GOOGLE_SHEET_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
+        const silentPayload = {
+            email: '',
+            type: isAIProduct ? 'AI' : 'Standard',
+            totalScore: result.total,
+            P: result.normalized.P,
+            A: result.normalized.A,
+            T: result.normalized.T,
+            H: result.normalized.H,
+            pathType: result.type,
+            timestamp: new Date().toISOString()
+        };
+        fetch(GOOGLE_SHEET_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(silentPayload)
+        }).catch(err => console.warn('[BeyondPath] Silent record failed:', err));
+    }
 }
 
 // ===== RESTART =====
@@ -276,6 +309,35 @@ if (emailSubmitBtn) {
         }
 
         console.log('[BeyondPath] Data captured:', payload);
+    });
+}
+
+// ===== SHARE BUTTON =====
+const shareBtn = document.getElementById('btn-share');
+if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+        const result = calculateScores(answers);
+        const shareText = `我的 PATH 產品力評估：綜合 ${result.total} 分（P:${result.normalized.P} A:${result.normalized.A} T:${result.normalized.T} H:${result.normalized.H}）— ${result.type}。你也來測測看！`;
+        const shareUrl = 'https://beyondspec.tw/path/';
+        const hint = document.getElementById('share-hint');
+
+        if (navigator.share) {
+            navigator.share({ title: 'BeyondPath — PATH 產品力評估', text: shareText, url: shareUrl })
+                .catch(() => {});
+        } else {
+            navigator.clipboard.writeText(shareText + '\n' + shareUrl).then(() => {
+                if (hint) {
+                    hint.textContent = '✓ 已複製到剪貼簿！';
+                    hint.classList.add('visible');
+                    setTimeout(() => hint.classList.remove('visible'), 2500);
+                }
+            }).catch(() => {
+                if (hint) {
+                    hint.textContent = '請手動複製連結分享';
+                    hint.classList.add('visible');
+                }
+            });
+        }
     });
 }
 
@@ -363,3 +425,4 @@ function animateCountUp() {
         }, delay);
     });
 }
+
