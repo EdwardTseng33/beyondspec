@@ -227,7 +227,7 @@ if (restartBtn) {
 
 // ===== EMAIL CAPTURE → Google Sheet =====
 // 替換為你的 Google Apps Script Web App URL
-const GOOGLE_SHEET_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwIjqcCgDAevw2Z87OcXRRsVnOxhB_WMHrbhh1DbcPGSt88uGXj_zYnS-q2KAGJnnsg/exec';
 
 const emailSubmitBtn = document.getElementById('btn-email-submit');
 if (emailSubmitBtn) {
