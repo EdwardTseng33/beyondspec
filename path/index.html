@@ -8205,10 +8205,7 @@ function loadHistory(){
       ];
       const gaps = gapTemplates.slice(0, Math.floor(Math.random() * 2) + 3);
 
-      // Cross-validation with existing diagnoses/researches
-      const diagCount = state.diagnoses?.length || 0;
-      const labCount = state.researches?.length || 0;
-      const hasCrossData = diagCount > 0 || labCount > 0;
+      // (Cross-validation removed — will implement properly with Claude API)
 
       let relatedHTML = relatedKws.map(rk => {
         const tColor = { '上升': 'var(--teal)', '持平': 'var(--ink-muted)', '下降': '#EF4444' }[rk.trend];
@@ -8232,29 +8229,6 @@ function loadHistory(){
       }).join('');
 
       let crossHTML = '';
-      if (hasCrossData) {
-        crossHTML = `
-        <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--primary);margin-bottom:12px">${ICONS.link2} 已有研究數據</div>
-          <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
-            <div style="text-align:center;flex:1;min-width:100px">
-              <div style="font-size:28px;font-weight:800;color:var(--ink)">${diagCount}</div>
-              <div style="font-size:12px;color:var(--ink-sec)">PATH 診斷</div>
-            </div>
-            <div style="text-align:center;flex:1;min-width:100px">
-              <div style="font-size:28px;font-weight:800;color:var(--ink)">${labCount}</div>
-              <div style="font-size:12px;color:var(--ink-sec)">Lab 研究</div>
-            </div>
-          </div>
-          <p style="color:var(--ink-sec);font-size:13px;line-height:1.6;margin:0">接入 Claude API 後，市場探測數據將與你的 PATH 診斷及 Lab 研究進行交叉驗證，提供數據一致性分析。</p>
-        </div>`;
-      } else {
-        crossHTML = `
-        <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--primary);margin-bottom:8px">${ICONS.link2} 交叉驗證引擎</div>
-          <p style="color:var(--ink-sec);font-size:13px;line-height:1.6;margin:0">完成 PATH 診斷或 Lab 研究後，系統將在此顯示已有的研究數據摘要。接入 AI 後將自動進行交叉驗證比對。</p>
-        </div>`;
-      }
 
       resultsEl.innerHTML = `
         <!-- Summary Cards -->
@@ -8309,8 +8283,7 @@ function loadHistory(){
           ${gapsHTML}
         </div>
 
-        <!-- Cross-validation -->
-        ${crossHTML}`;
+        `;
 
       // Save market data so report can detect it
       try { localStorage.setItem('bp_market_' + kw1, JSON.stringify({ kw: keywords, region, date: new Date().toISOString() })); } catch(e) {}
