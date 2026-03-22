@@ -676,9 +676,10 @@ h3{font-size:16px;font-weight:600;color:var(--ink)}
 /* ===== BUTTONS ===== */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:12px 24px;font-size:var(--text-base);font-weight:600;border-radius:var(--r-sm);cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);border:none;font-family:inherit}
 .btn svg{width:16px;height:16px}
-.btn-gold,.btn-accent{background:var(--primary);color:#fff}
-.btn-gold:hover,.btn-accent:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 4px 12px rgba(124,92,252,.25)}
-.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--ink-sec)}
+.btn-primary,.btn-gold,.btn-accent{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(124,92,252,.18)}
+.btn-primary:hover,.btn-gold:hover,.btn-accent:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 4px 12px rgba(124,92,252,.25)}
+.btn-primary:disabled,.btn-gold:disabled,.btn-accent:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-secondary,.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--ink-sec)}
 .btn-secondary:hover,.btn-outline:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
 .btn-ghost{background:transparent;color:var(--ink-sec);border:none;padding:8px 12px}
 .btn-ghost:hover{background:var(--bg-hover);color:var(--ink)}
@@ -989,7 +990,7 @@ canvas{display:block;margin:0 auto 24px}
 .settings-label{font-size:var(--text-base);font-weight:600;color:var(--ink)}
 .settings-value{font-size:var(--text-sm);color:var(--ink-muted);margin-top:4px}
 .divider{height:0;margin:20px 0}
-.btn-small{padding:6px 14px;font-size:var(--text-xs)}
+.btn-small{padding:6px 14px !important;font-size:var(--text-xs) !important}
 .status-indicator{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--teal);margin-right:6px}
 .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .pricing-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:28px;text-align:center;transition:all .2s}
@@ -8610,7 +8611,7 @@ function loadHistory(){
         <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
           <div style="font-size:16px;font-weight:700;color:var(--ink)">生成問卷 · ${questions.length} 題</div>
           <div style="display:flex;gap:8px">
-            <button class="btn" style="padding:6px 14px;font-size:12px;background:var(--bg);border:1px solid var(--border);color:var(--ink)" onclick="app.exportSurvey()">
+            <button class="btn btn-secondary btn-small" onclick="app.exportSurvey()">
               ${ICONS.download} <span style="margin-left:4px">匯出問卷</span>
             </button>
           </div>
@@ -8888,7 +8889,7 @@ function loadHistory(){
             `<span style="font-size:11px;font-weight:600;color:var(--teal);padding:2px 8px;background:rgba(45,189,168,.08);border-radius:var(--r-sm)">已完成</span>` :
             `<div style="display:flex;align-items:center;gap:8px">
               <span style="font-size:11px;font-weight:600;color:${reqColor};padding:2px 8px;background:${reqColor}10;border-radius:var(--r-sm)">${reqLabel}</span>
-              <button class="btn" style="padding:3px 10px;font-size:11px;background:var(--bg-card);border:1px solid var(--border);color:var(--primary)" onclick="app.navigate('${item.nav}')">前往</button>
+              <button class="btn btn-secondary" style="padding:3px 10px;font-size:11px" onclick="app.navigate('${item.nav}')">前往</button>
             </div>`
           }
         </div>`;
@@ -9197,7 +9198,7 @@ function loadHistory(){
         <div style="margin-bottom:6px">${ICONS.flask}</div>
         <div style="font-size:13px;margin-bottom:4px">Lab 研究數據不足</div>
         <div style="font-size:12px">完成 Lab 研究後，此區域將顯示合成用戶的詳細維度評分</div>
-        <button class="btn" style="padding:4px 12px;font-size:11px;background:var(--bg-card);border:1px solid var(--border);color:var(--primary);margin-top:8px" onclick="app.navigate('lab')">前往 Lab</button>
+        <button class="btn btn-secondary" style="padding:4px 12px;font-size:11px;margin-top:8px" onclick="app.navigate('lab')">前往 Lab</button>
       </div>`;
     }
 
@@ -9310,7 +9311,7 @@ function loadHistory(){
           <div style="margin-bottom:8px">${ICONS.trendUp}</div>
           <div style="font-size:14px;margin-bottom:4px">尚未對「${prodName}」進行市場探測</div>
           <div style="font-size:12px;margin-bottom:12px">完成市場探測後，此章節將顯示搜尋熱度、競爭強度、需求缺口等數據</div>
-          <button class="btn" style="padding:6px 16px;font-size:12px;background:var(--bg-card);border:1px solid var(--border);color:var(--primary)" onclick="app.navigate('market')">前往市場探測</button>
+          <button class="btn btn-secondary btn-small" onclick="app.navigate('market')">前往市場探測</button>
         </div>
       </div>`;
     }
