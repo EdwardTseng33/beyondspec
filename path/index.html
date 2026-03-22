@@ -3643,14 +3643,10 @@ canvas{display:block;margin:0 auto 24px}
             </div>
           </div>
 
-          <!-- Import Type Selector -->
-          <div style="display:flex;gap:8px;margin-bottom:16px">
-            <button id="importTypeProduct" class="btn" style="flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--primary);color:#fff;border:1.5px solid var(--primary)" onclick="app.switchImportType('product')">
-              ${ICONS.pulse} 產品診斷
-            </button>
-            <button id="importTypeFeature" class="btn" style="flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--bg);color:var(--ink-sec);border:1.5px solid var(--border)" onclick="app.switchImportType('feature')">
-              ${ICONS.crosshair} 功能診斷
-            </button>
+          <!-- Import type indicator (auto-synced with card selection above) -->
+          <div id="importTypeIndicator" style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 14px;background:var(--bg);border-radius:var(--r-sm)">
+            <div style="color:var(--primary)">${ICONS.pulse}</div>
+            <div style="font-size:13px;color:var(--ink-sec)">目前模式：<strong id="importTypeLabel" style="color:var(--ink)">產品診斷</strong>　<span style="color:var(--ink-muted)">· 點選上方卡片自動切換</span></div>
           </div>
 
           <div class="doc-import-row">
@@ -3813,6 +3809,8 @@ canvas{display:block;margin:0 auto 24px}
       input.style.display = 'block';
       setTimeout(() => document.getElementById('diagName-' + type)?.focus(), 100);
     }
+    // Auto-switch doc import template to match
+    switchImportType(type === 'feature' ? 'feature' : 'product');
   }
 
   function startQuizFromCard(type) {
@@ -10387,27 +10385,24 @@ function loadHistory(){
 
   function switchImportType(type) {
     _importType = type;
-    const productBtn = document.getElementById('importTypeProduct');
-    const featureBtn = document.getElementById('importTypeFeature');
     const productTpl = document.getElementById('docTemplateProduct');
     const featureTpl = document.getElementById('docTemplateFeature');
     const nameLabel = document.getElementById('importNameLabel');
     const nameInput = document.getElementById('importProdName');
+    const typeLabel = document.getElementById('importTypeLabel');
 
     if (type === 'feature') {
-      productBtn.style.cssText = 'flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--bg);color:var(--ink-sec);border:1.5px solid var(--border)';
-      featureBtn.style.cssText = 'flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--primary);color:#fff;border:1.5px solid var(--primary)';
       if (productTpl) productTpl.style.display = 'none';
       if (featureTpl) featureTpl.style.display = '';
       if (nameLabel) nameLabel.innerHTML = '功能名稱 <span class="req">*</span>';
       if (nameInput) nameInput.placeholder = '例：社群動態牆、AI 推薦系統';
+      if (typeLabel) typeLabel.textContent = '功能診斷';
     } else {
-      productBtn.style.cssText = 'flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--primary);color:#fff;border:1.5px solid var(--primary)';
-      featureBtn.style.cssText = 'flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--bg);color:var(--ink-sec);border:1.5px solid var(--border)';
       if (productTpl) productTpl.style.display = '';
       if (featureTpl) featureTpl.style.display = 'none';
       if (nameLabel) nameLabel.innerHTML = '產品名稱 <span class="req">*</span>';
       if (nameInput) nameInput.placeholder = '例：ECHO 回聲、Moodscape';
+      if (typeLabel) typeLabel.textContent = '產品診斷';
     }
   }
 
