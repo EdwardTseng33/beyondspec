@@ -2439,7 +2439,9 @@ canvas{display:block;margin:0 auto 24px}
       aiModel: localStorage.getItem('bp_aiModel') || 'sonnet',
       aiMode: localStorage.getItem('bp_aiMode') || 'precise',
       settings: JSON.parse(localStorage.getItem('bp_settings') || '{}'),
-      feedbackLog: JSON.parse(localStorage.getItem('bp_feedback') || '[]')
+      feedbackLog: JSON.parse(localStorage.getItem('bp_feedback') || '[]'),
+      savedSurveys: JSON.parse(localStorage.getItem('bp_savedSurveys') || '[]'),
+      savedReports: JSON.parse(localStorage.getItem('bp_savedReports') || '[]')
     };
     Object.assign(state, saved);
   }
@@ -2763,6 +2765,8 @@ canvas{display:block;margin:0 auto 24px}
 
     const diagCount = state.diagnoses.length;
     const labCount = state.researches.length;
+    const surveyCount = (state.savedSurveys || []).length;
+    const reportCount = (state.savedReports || []).length;
     const tab = activeTab || state._homeReportTab || 'lab';
     state._homeReportTab = tab;
     const searchVal = window._bpHomeSearch || '';
@@ -2775,10 +2779,16 @@ canvas{display:block;margin:0 auto 24px}
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;justify-content:space-between">
         <div class="report-tabs" style="margin-bottom:0;flex-shrink:0">
           <button class="report-tab ${tab==='path'?'active':''}" onclick="app.renderHome('path')">
-            ${ICONS.pulse} 產品診斷<span class="report-tab-count">${diagCount}</span>
+            ${ICONS.pulse} 診斷<span class="report-tab-count">${diagCount}</span>
           </button>
           <button class="report-tab ${tab==='lab'?'active':''}" onclick="app.renderHome('lab')">
-            ${ICONS.flask} 受眾研究<span class="report-tab-count">${labCount}</span>
+            ${ICONS.flask} 研究<span class="report-tab-count">${labCount}</span>
+          </button>
+          <button class="report-tab ${tab==='survey'?'active':''}" onclick="app.renderHome('survey')">
+            ${ICONS.clipboard} 問卷<span class="report-tab-count">${surveyCount}</span>
+          </button>
+          <button class="report-tab ${tab==='report'?'active':''}" onclick="app.renderHome('report')">
+            ${ICONS.fileText} 報告<span class="report-tab-count">${reportCount}</span>
           </button>
         </div>
         <div style="width:200px;position:relative;flex-shrink:0">
@@ -2906,6 +2916,64 @@ canvas{display:block;margin:0 auto 24px}
           '</div>';
         }).join('');
         reportsHTML += '</div>';
+      }
+    }
+
+    // Survey Tab
+    if (tab === 'survey') {
+      const surveys = state.savedSurveys || [];
+      if (surveys.length === 0) {
+        reportsHTML += `
+          <div class="empty-state">
+            <div style="width:64px;height:64px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--primary)">${ICONS.clipboard}</div>
+            <div class="empty-state-title">還沒有問卷記錄</div>
+            <div class="empty-state-text">前往問卷引擎生成你的第一份調查問卷</div>
+            <button class="btn btn-accent" style="margin-top:16px;padding:12px 28px;font-size:14px" onclick="app.navigate('survey')">前往問卷引擎 →</button>
+          </div>`;
+      } else {
+        reportsHTML += [...surveys].reverse().map(s => {
+          const date = new Date(s.date).toLocaleDateString('zh-TW',{year:'numeric',month:'short',day:'numeric'});
+          return '<div class="card" style="cursor:pointer;margin-bottom:12px" onclick="app.navigate(\'survey\')">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between">' +
+              '<div>' +
+                '<div style="font-size:14px;font-weight:600;color:var(--ink)">' + (s.typeName || '問卷') + '</div>' +
+                '<div style="font-size:12px;color:var(--ink-muted);margin-top:4px">' + (s.goal || '') + '</div>' +
+                '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">' + date + ' · ' + (s.questionCount || 0) + ' 題</div>' +
+              '</div>' +
+              '<div style="color:var(--primary)">' + ICONS.arrowRight + '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+    }
+
+    // Report Tab
+    if (tab === 'report') {
+      const reports = state.savedReports || [];
+      if (reports.length === 0) {
+        reportsHTML += `
+          <div class="empty-state">
+            <div style="width:64px;height:64px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--primary)">${ICONS.fileText}</div>
+            <div class="empty-state-title">還沒有市場報告</div>
+            <div class="empty-state-text">完成 PATH 診斷後，前往市場報告生成完整分析</div>
+            <button class="btn btn-accent" style="margin-top:16px;padding:12px 28px;font-size:14px" onclick="app.navigate('report')">前往市場報告 →</button>
+          </div>`;
+      } else {
+        const verdictColors = { kill:'var(--rose)', pivot:'var(--gold)', persevere:'var(--teal)', hold:'var(--rose)', validate:'var(--gold)', build:'var(--teal)' };
+        reportsHTML += [...reports].reverse().map(rpt => {
+          const date = new Date(rpt.date).toLocaleDateString('zh-TW',{year:'numeric',month:'short',day:'numeric'});
+          const vc = verdictColors[rpt.verdict] || 'var(--ink-muted)';
+          return '<div class="card" style="cursor:pointer;margin-bottom:12px" onclick="app.navigate(\'report\')">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between">' +
+              '<div>' +
+                '<div style="font-size:14px;font-weight:600;color:var(--ink)">' + (rpt.productName || '未命名') + '</div>' +
+                '<div style="font-size:12px;color:var(--ink-muted);margin-top:4px">' + (rpt.typeName || '市場報告') + ' · ' + date + '</div>' +
+                (rpt.verdict ? '<div style="font-size:12px;font-weight:600;color:' + vc + ';margin-top:2px">' + rpt.verdict.toUpperCase() + ' · ' + Math.round(rpt.diagTotal) + ' 分</div>' : '') +
+              '</div>' +
+              '<div style="color:var(--primary)">' + ICONS.arrowRight + '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
       }
     }
 
@@ -8140,17 +8208,17 @@ function loadHistory(){
       // Cross-validation with existing diagnoses/researches
       const diagCount = state.diagnoses?.length || 0;
       const labCount = state.researches?.length || 0;
-      const crossScore = diagCount > 0 || labCount > 0 ? Math.floor(Math.random() * 20) + 70 : 0;
+      const hasCrossData = diagCount > 0 || labCount > 0;
 
       let relatedHTML = relatedKws.map(rk => {
         const tColor = { '上升': 'var(--teal)', '持平': 'var(--ink-muted)', '下降': '#EF4444' }[rk.trend];
         const dColor = { '低': 'var(--teal)', '中': '#D97706', '高': '#EF4444' }[rk.diff];
         const tArrow = { '上升': '↑', '持平': '→', '下降': '↓' }[rk.trend];
         return `<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 12px;font-size:13px;color:var(--ink)">${rk.kw}</td>
-          <td style="padding:10px 12px;font-size:13px;font-weight:600;color:var(--primary);text-align:right">${rk.vol.toLocaleString()}</td>
-          <td style="padding:10px 12px;text-align:center"><span style="font-size:12px;padding:2px 8px;border-radius:var(--r-sm);background:${dColor}15;color:${dColor};font-weight:600">${rk.diff}</span></td>
-          <td style="padding:10px 12px;font-size:13px;color:${tColor};text-align:center;font-weight:600">${tArrow} ${rk.trend}</td>
+          <td style="padding:10px 16px;font-size:13px;color:var(--ink)">${rk.kw}</td>
+          <td style="padding:10px 16px;font-size:13px;font-weight:600;color:var(--primary);text-align:right">${rk.vol.toLocaleString()}</td>
+          <td style="padding:10px 16px;text-align:center"><span style="font-size:12px;padding:2px 8px;border-radius:var(--r-sm);background:${dColor}15;color:${dColor};font-weight:600">${rk.diff}</span></td>
+          <td style="padding:10px 16px;font-size:13px;color:${tColor};text-align:center;font-weight:600">${tArrow} ${rk.trend}</td>
         </tr>`;
       }).join('');
 
@@ -8164,15 +8232,11 @@ function loadHistory(){
       }).join('');
 
       let crossHTML = '';
-      if (crossScore > 0) {
+      if (hasCrossData) {
         crossHTML = `
         <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;color:var(--primary);margin-bottom:12px">${ICONS.link2} 交叉驗證結果</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--primary);margin-bottom:12px">${ICONS.link2} 已有研究數據</div>
           <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
-            <div style="text-align:center;flex:1;min-width:100px">
-              <div style="font-size:28px;font-weight:800;color:var(--primary)">${crossScore}%</div>
-              <div style="font-size:12px;color:var(--ink-sec)">數據一致性</div>
-            </div>
             <div style="text-align:center;flex:1;min-width:100px">
               <div style="font-size:28px;font-weight:800;color:var(--ink)">${diagCount}</div>
               <div style="font-size:12px;color:var(--ink-sec)">PATH 診斷</div>
@@ -8182,13 +8246,13 @@ function loadHistory(){
               <div style="font-size:12px;color:var(--ink-sec)">Lab 研究</div>
             </div>
           </div>
-          <p style="color:var(--ink-sec);font-size:13px;line-height:1.6;margin:0">市場搜尋數據與你的 AI 洞察交叉比對完成。一致性分數越高，代表你的產品假設越獲得真實市場數據支持。</p>
+          <p style="color:var(--ink-sec);font-size:13px;line-height:1.6;margin:0">接入 Claude API 後，市場探測數據將與你的 PATH 診斷及 Lab 研究進行交叉驗證，提供數據一致性分析。</p>
         </div>`;
       } else {
         crossHTML = `
         <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px">${ICONS.link2} 交叉驗證引擎</div>
-          <p style="color:var(--ink-sec);font-size:13px;line-height:1.6;margin:0">尚無 PATH 診斷或 Lab 研究記錄。完成至少一次診斷或研究後，系統將自動進行交叉驗證比對。</p>
+          <div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--primary);margin-bottom:8px">${ICONS.link2} 交叉驗證引擎</div>
+          <p style="color:var(--ink-sec);font-size:13px;line-height:1.6;margin:0">完成 PATH 診斷或 Lab 研究後，系統將在此顯示已有的研究數據摘要。接入 AI 後將自動進行交叉驗證比對。</p>
         </div>`;
       }
 
@@ -8219,17 +8283,17 @@ function loadHistory(){
 
         <!-- Related Keywords Table -->
         <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
-            <div style="font-size:16px;font-weight:700;color:var(--ink)">關聯關鍵字分析</div>
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
+            <div style="font-size:15px;font-weight:700;color:var(--ink)">關聯關鍵字分析</div>
           </div>
           <div style="overflow-x:auto">
             <table style="width:100%;border-collapse:collapse">
               <thead>
                 <tr style="border-bottom:2px solid var(--border);background:var(--bg)">
-                  <th style="padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--ink-muted)">關鍵字</th>
-                  <th style="padding:10px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--ink-muted)">月搜尋量</th>
-                  <th style="padding:10px 12px;text-align:center;font-size:12px;font-weight:600;color:var(--ink-muted)">競爭</th>
-                  <th style="padding:10px 12px;text-align:center;font-size:12px;font-weight:600;color:var(--ink-muted)">趨勢</th>
+                  <th style="padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--ink-muted)">關鍵字</th>
+                  <th style="padding:10px 16px;text-align:right;font-size:12px;font-weight:600;color:var(--ink-muted)">月搜尋量</th>
+                  <th style="padding:10px 16px;text-align:center;font-size:12px;font-weight:600;color:var(--ink-muted)">競爭</th>
+                  <th style="padding:10px 16px;text-align:center;font-size:12px;font-weight:600;color:var(--ink-muted)">趨勢</th>
                 </tr>
               </thead>
               <tbody>${relatedHTML}</tbody>
@@ -8239,8 +8303,8 @@ function loadHistory(){
 
         <!-- Demand Gaps -->
         <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
-            <div style="font-size:16px;font-weight:700;color:var(--ink)">${ICONS.target} 需求缺口 & 機會點</div>
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+            <div style="font-size:15px;font-weight:700;color:var(--ink)">${ICONS.target} 需求缺口 & 機會點</div>
           </div>
           ${gapsHTML}
         </div>
@@ -8547,6 +8611,19 @@ function loadHistory(){
       }));
 
       generatedSurvey = { goal, type, typeName: template.label, questions, length };
+
+      // Save to state for homepage listing
+      const surveyRecord = {
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        typeName: template.label,
+        goal: goal,
+        questionCount: questions.length,
+        type: type
+      };
+      if (!state.savedSurveys) state.savedSurveys = [];
+      state.savedSurveys.push(surveyRecord);
+      try { localStorage.setItem('bp_savedSurveys', JSON.stringify(state.savedSurveys)); } catch(e) {}
 
       // Render results
       renderSurveyResults(questions, template.label, goal);
@@ -9015,6 +9092,22 @@ function loadHistory(){
 
     setTimeout(() => {
       reportState.generated = true;
+
+      // Save report record for homepage listing
+      const typeLabels = { toc: '消費市場報告', tob: '企業市場報告', feature: '功能可行性報告' };
+      const reportRecord = {
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        reportType: reportState.reportType,
+        typeName: typeLabels[reportState.reportType] || '市場報告',
+        productName: reportState.selectedDiag?.productName || '未命名',
+        diagTotal: reportState.selectedDiag?.total || 0,
+        verdict: reportState.selectedDiag?.verdict || ''
+      };
+      if (!state.savedReports) state.savedReports = [];
+      state.savedReports.push(reportRecord);
+      try { localStorage.setItem('bp_savedReports', JSON.stringify(state.savedReports)); } catch(e) {}
+
       renderFullReport();
     }, 2500);
   }
@@ -9474,15 +9567,76 @@ function loadHistory(){
       <div style="background:linear-gradient(135deg,rgba(124,92,252,.04),rgba(45,189,168,.04));border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center">
         <div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">此報告由 BeyondPath AI 引擎根據 PATH 診斷、Lab 研究及市場探測數據整合生成</div>
         <div style="font-size:11px;color:var(--ink-muted);margin-bottom:16px">${today}</div>
-        <button class="btn btn-primary" style="padding:10px 24px;font-size:14px" onclick="app.backToReportPrep()">
-          ${ICONS.arrowLeft} <span style="margin-left:6px">返回</span>
-        </button>
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-accent" style="padding:10px 24px;font-size:14px" onclick="app.exportMarketReportMD()">
+            ${ICONS.fileText} 匯出 MD
+          </button>
+          <button class="btn btn-outline" style="padding:10px 24px;font-size:14px" onclick="app.exportMarketReportPDF()">
+            ${ICONS.fileText} 匯出 PDF
+          </button>
+          <button class="btn btn-ghost" style="padding:10px 24px;font-size:14px" onclick="app.backToReportPrep()">
+            ${ICONS.arrowLeft} 返回
+          </button>
+        </div>
       </div>`;
   }
 
   function backToReportPrep() {
     reportState.generated = false;
     renderMarketReport();
+  }
+
+  function exportMarketReportMD() {
+    const diag = reportState.selectedDiag;
+    const rType = reportState.reportType;
+    if (!diag || !rType) { showToast('請先生成報告'); return; }
+    const prodName = diag.productName || '未命名產品';
+    const typeLabels = { toc: '消費市場報告', tob: '企業市場報告', feature: '功能可行性報告' };
+    const today = new Date().toLocaleDateString('zh-TW');
+    const scores = diag.scores || {};
+    const verdictLabel = { kill: 'KILL — 建議停止', pivot: 'PIVOT — 建議轉向', persevere: 'PERSEVERE — 繼續前進', hold: 'HOLD — 建議暫緩', validate: 'VALIDATE — 需要驗證', build: 'BUILD — 建議開發' };
+
+    let md = `# ${typeLabels[rType]} — ${prodName}\n\n`;
+    md += `> 生成日期：${today}\n\n`;
+    md += `## PATH 診斷摘要\n\n`;
+    md += `| 維度 | 分數 |\n|---|---|\n`;
+    ['P','A','T','H'].forEach(dim => {
+      const dimNames = {P:'問題驗證',A:'受眾輪廓',T:'牽引力',H:'執行力'};
+      md += `| ${dim} · ${dimNames[dim]} | ${Math.round(scores[dim]||0)} |\n`;
+    });
+    md += `\n**總分：${Math.round(diag.total)}** · **判定：${verdictLabel[diag.verdict] || diag.verdict || '—'}**\n\n`;
+
+    // Extract text content from the rendered report
+    const reportEl = document.getElementById('content');
+    if (reportEl) {
+      const chapters = reportEl.querySelectorAll('[style*="margin-bottom"]');
+      chapters.forEach(ch => {
+        const title = ch.querySelector('[style*="font-weight:800"], [style*="font-weight:700"]');
+        if (title && title.textContent.trim()) {
+          md += `## ${title.textContent.trim()}\n\n`;
+        }
+        const paras = ch.querySelectorAll('p, [style*="line-height:1."]');
+        paras.forEach(p => {
+          const txt = p.textContent.trim();
+          if (txt && txt.length > 10) md += txt + '\n\n';
+        });
+      });
+    }
+
+    md += `\n---\n\n*此報告由 BeyondPath AI 引擎生成 · ${today}*\n`;
+
+    const blob = new Blob([md], {type: 'text/markdown;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${prodName}_${typeLabels[rType]}_${today}.md`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    showToast('已匯出 Markdown 報告');
+  }
+
+  function exportMarketReportPDF() {
+    showToast('準備列印 PDF...');
+    setTimeout(() => window.print(), 300);
   }
 
   // ==================== MODULE: 競品雷達 (Compete Radar) ====================
@@ -10951,6 +11105,8 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     selectReportType,
     generateMarketReport,
     backToReportPrep,
+    exportMarketReportMD,
+    exportMarketReportPDF,
     runCompeteRadar,
     runPricingTest,
     setPricingMethod,
