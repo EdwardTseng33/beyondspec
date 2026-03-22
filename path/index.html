@@ -2400,6 +2400,8 @@ canvas{display:block;margin:0 auto 24px}
     researches: [],
     labCount: 0,
     diagCount: 0,
+    creditUsed: 0,
+    aiModel: 'sonnet',
     aiMode: 'precise',
     settings: { theme: 'light', model: 'gpt-4', proxyUrl: '' },
     quizState: {
@@ -2429,6 +2431,8 @@ canvas{display:block;margin:0 auto 24px}
       researches: JSON.parse(localStorage.getItem('bp_researches') || '[]'),
       labCount: parseInt(localStorage.getItem('bp_labCount') || '0'),
       diagCount: parseInt(localStorage.getItem('bp_diagCount') || '0'),
+      creditUsed: parseInt(localStorage.getItem('bp_creditUsed') || '0'),
+      aiModel: localStorage.getItem('bp_aiModel') || 'sonnet',
       aiMode: localStorage.getItem('bp_aiMode') || 'precise',
       settings: JSON.parse(localStorage.getItem('bp_settings') || '{}'),
       feedbackLog: JSON.parse(localStorage.getItem('bp_feedback') || '[]')
@@ -2480,6 +2484,8 @@ canvas{display:block;margin:0 auto 24px}
     localStorage.setItem('bp_researches', JSON.stringify(state.researches));
     localStorage.setItem('bp_labCount', state.labCount);
     localStorage.setItem('bp_diagCount', state.diagCount);
+    localStorage.setItem('bp_creditUsed', state.creditUsed);
+    localStorage.setItem('bp_aiModel', state.aiModel || 'sonnet');
     localStorage.setItem('bp_aiMode', state.aiMode);
     localStorage.setItem('bp_settings', JSON.stringify(state.settings));
   }
@@ -3477,6 +3483,75 @@ canvas{display:block;margin:0 auto 24px}
         {t:'單位經濟正向，但需要一定規模才能盈利',s:3},
         {t:'已驗證單位經濟，毛利率 > 60%，規模越大越賺錢',s:4}
       ]}
+    ],
+    feature: [
+      // ── P：需求驗證（功能級）── 3 題
+      { dim:'P', q:'現有用戶有多少人主動反映需要這個功能？', opts:[
+        {t:'沒有人提過，是團隊內部想做的',s:1},
+        {t:'偶爾在客服或社群看到零星提到',s:2},
+        {t:'多位用戶在不同場合獨立提出類似需求',s:3},
+        {t:'這是用戶反饋的 Top 3 需求，有數據佐證（工單量/投票數）',s:4}
+      ]},
+      { dim:'P', q:'沒有這個功能時，用戶是怎麼解決的？', opts:[
+        {t:'不清楚，沒研究過',s:1},
+        {t:'大概知道有人用其他工具替代，但不確定比例',s:2},
+        {t:'了解主要的替代方案，知道哪些用戶在用',s:3},
+        {t:'有量化數據：X% 用戶用外部工具、Y% 手動處理、Z% 直接放棄',s:4}
+      ]},
+      { dim:'P', q:'這個功能解決的問題，發生頻率如何？', opts:[
+        {t:'偶爾才會遇到，不是常態',s:1},
+        {t:'一些用戶會定期遇到',s:2},
+        {t:'多數活躍用戶每週都會碰到',s:3},
+        {t:'幾乎每次使用產品都會涉及，是核心流程的一環',s:4}
+      ]},
+
+      // ── A：影響範圍 ── 2 題
+      { dim:'A', q:'這個功能會影響多少比例的現有用戶？', opts:[
+        {t:'很小的一部分（< 10%），是很利基的需求',s:1},
+        {t:'一部分用戶（10-30%），特定角色或場景才用到',s:2},
+        {t:'相當比例（30-60%）的活躍用戶會使用',s:3},
+        {t:'大多數用戶（> 60%）都會直接受益',s:4}
+      ]},
+      { dim:'A', q:'哪些用戶最需要這個功能？你清楚嗎？', opts:[
+        {t:'不太確定，覺得大家都需要',s:1},
+        {t:'有個模糊的印象，但沒有數據區分',s:2},
+        {t:'能描述出最需要的用戶群體特徵和使用場景',s:3},
+        {t:'已分群分析過，知道哪個 cohort 的需求最強、願付價格最高',s:4}
+      ]},
+
+      // ── T：價值評估 ── 3 題
+      { dim:'T', q:'這個功能對核心指標（留存/活躍/營收）的預期影響？', opts:[
+        {t:'沒有想過對指標的影響',s:1},
+        {t:'覺得應該有正面影響，但沒有量化預估',s:2},
+        {t:'有初步預估，例如留存可能提升 X% 或 ARPU 增加 Y%',s:3},
+        {t:'有基於數據的預估模型，並設定了明確的成功指標',s:4}
+      ]},
+      { dim:'T', q:'競品有類似功能嗎？', opts:[
+        {t:'不清楚',s:1},
+        {t:'知道有些競品有，但沒仔細比較',s:2},
+        {t:'分析了 2-3 個競品的做法，知道各自優劣',s:3},
+        {t:'有完整的功能對照矩陣，知道我們做出來能有什麼差異化',s:4}
+      ]},
+      { dim:'T', q:'不做這個功能的風險是什麼？', opts:[
+        {t:'好像也沒什麼影響，產品照樣運作',s:1},
+        {t:'可能會慢慢流失一些用戶，但不是立即危機',s:2},
+        {t:'競品已有類似功能，不做可能影響競爭力',s:3},
+        {t:'已有用戶因此流失的數據，或這是阻擋大客戶簽約的關鍵缺口',s:4}
+      ]},
+
+      // ── H：可行性 ── 2 題
+      { dim:'H', q:'這個功能的技術複雜度如何？', opts:[
+        {t:'很複雜，需要大幅重構現有架構',s:1},
+        {t:'有一定複雜度，需要新增技術棧或重要依賴',s:2},
+        {t:'在現有架構上可以實現，但需要 2-4 週開發',s:3},
+        {t:'技術上直接可行，現有架構完全支援，1-2 週可完成',s:4}
+      ]},
+      { dim:'H', q:'做這個功能需要的資源（人力/時間/預算），團隊目前能負擔嗎？', opts:[
+        {t:'完全超出目前能力，需要招人或大量外包',s:1},
+        {t:'勉強可以，但會排擠其他重要項目',s:2},
+        {t:'資源足夠，可以納入近期 Sprint 規劃',s:3},
+        {t:'團隊有餘力，而且有人對這個功能特別有經驗',s:4}
+      ]}
     ]
   };
 
@@ -3528,11 +3603,11 @@ canvas{display:block;margin:0 auto 24px}
           <div class="subtitle">PATH 四維模型 · 找出你的產品盲點</div>
         </div>
 
-        <div class="quiz-select-grid">
+        <div class="quiz-select-grid" style="grid-template-columns:repeat(3,1fr)">
           <div class="quiz-select-card" id="quizCard-standard" onclick="app.expandQuizCard('standard')">
             <div class="card-icon">${ICONS.pulse}</div>
-            <h3>一般產品</h3>
-            <p>適用大多數產品<br>20 道情境選擇題 · 5 分鐘</p>
+            <h3>產品診斷</h3>
+            <p>全新產品可行性評估<br>20 題 · 5 分鐘</p>
             <div id="quizInput-standard" class="quiz-card-input" style="display:none" onclick="event.stopPropagation()">
               <input type="text" id="diagName-standard" class="form-input" placeholder="輸入產品名稱" style="margin-bottom:10px;font-size:14px;padding:10px 12px" onkeydown="if(event.key==='Enter')app.startQuizFromCard('standard')">
               <button class="btn btn-primary" onclick="app.startQuizFromCard('standard')" style="width:100%;padding:10px;font-size:14px">開始診斷 →</button>
@@ -3540,11 +3615,20 @@ canvas{display:block;margin:0 auto 24px}
           </div>
           <div class="quiz-select-card" id="quizCard-ai" onclick="app.expandQuizCard('ai')">
             <div class="card-icon">${ICONS.zap}</div>
-            <h3>AI 產品</h3>
-            <p>以 AI 為核心的產品<br>含 AI 專屬情境 · 5 分鐘</p>
+            <h3>AI 產品診斷</h3>
+            <p>以 AI 為核心的產品<br>20 題 · 5 分鐘</p>
             <div id="quizInput-ai" class="quiz-card-input" style="display:none" onclick="event.stopPropagation()">
               <input type="text" id="diagName-ai" class="form-input" placeholder="輸入產品名稱" style="margin-bottom:10px;font-size:14px;padding:10px 12px" onkeydown="if(event.key==='Enter')app.startQuizFromCard('ai')">
               <button class="btn btn-primary" onclick="app.startQuizFromCard('ai')" style="width:100%;padding:10px;font-size:14px">開始診斷 →</button>
+            </div>
+          </div>
+          <div class="quiz-select-card" id="quizCard-feature" onclick="app.expandQuizCard('feature')">
+            <div class="card-icon">${ICONS.cpu}</div>
+            <h3>功能診斷</h3>
+            <p>既有產品的新功能評估<br>10 題 · 3 分鐘</p>
+            <div id="quizInput-feature" class="quiz-card-input" style="display:none" onclick="event.stopPropagation()">
+              <input type="text" id="diagName-feature" class="form-input" placeholder="輸入功能名稱（如：社群功能）" style="margin-bottom:10px;font-size:14px;padding:10px 12px" onkeydown="if(event.key==='Enter')app.startQuizFromCard('feature')">
+              <button class="btn btn-primary" onclick="app.startQuizFromCard('feature')" style="width:100%;padding:10px;font-size:14px">開始診斷 →</button>
             </div>
           </div>
         </div>
@@ -3669,7 +3753,7 @@ canvas{display:block;margin:0 auto 24px}
 
   function expandQuizCard(type) {
     // Collapse all first
-    ['standard','ai'].forEach(t => {
+    ['standard','ai','feature'].forEach(t => {
       const card = document.getElementById('quizCard-' + t);
       const input = document.getElementById('quizInput-' + t);
       if (card) card.classList.remove('expanded');
@@ -3752,22 +3836,32 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   function showQuizResults() {
-    /* 計分：每維度 5 題 × 1-4 分 = 5~20 → 正規化 0-100 */
+    /* 計分：每維度 N 題 × 1-4 分 = N~4N → 正規化 0-100
+       standard/ai: 5 題/維度, feature: 2-3 題/維度 */
     const normalized = {};
     const dims = ['P', 'A', 'T', 'H'];
     dims.forEach(dim => {
       const scores = state.quizState.scores[dim] || [];
-      const raw = scores.reduce((a, b) => a + b, 0); // 5~20
-      const normalized_score = ((raw - 5) / 15) * 100;
+      const n = scores.length || 1;
+      const raw = scores.reduce((a, b) => a + b, 0); // n ~ 4n
+      const normalized_score = ((raw - n) / (3 * n)) * 100;
       normalized[dim] = Math.max(0, Math.min(100, Math.round(normalized_score)));
     });
 
     const total = Math.round((normalized.P + normalized.A + normalized.T + normalized.H) / 4);
 
-    let pathType = '萌芽探索者';
-    if (total > 25) pathType = '摸索前進者';
-    if (total > 50) pathType = '蓄勢待發者';
-    if (total > 75) pathType = '準備起飛者';
+    let pathType;
+    if (state.quizState.quizType === 'feature') {
+      pathType = '觀望評估中';
+      if (total > 25) pathType = '值得研究';
+      if (total > 50) pathType = '建議開發';
+      if (total > 75) pathType = '強烈建議';
+    } else {
+      pathType = '萌芽探索者';
+      if (total > 25) pathType = '摸索前進者';
+      if (total > 50) pathType = '蓄勢待發者';
+      if (total > 75) pathType = '準備起飛者';
+    }
 
     state.quizState.results = { normalized, total, pathType };
 
@@ -3847,17 +3941,21 @@ canvas{display:block;margin:0 auto 24px}
         </div>
       </div>
 
-      <!-- ═══ Kill / Pivot / Persevere Verdict ═══ -->
+      <!-- ═══ Verdict Section ═══ -->
       ${(() => {
-        const v = getVerdict(normalized, total, weakDim, strongDim);
-        const vColors = { kill: 'var(--rose)', pivot: 'var(--gold)', persevere: 'var(--teal)' };
-        const vBgs = { kill: 'rgba(232,98,124,.06)', pivot: 'rgba(240,160,90,.06)', persevere: 'rgba(45,189,168,.06)' };
+        const isFeature = state.quizState.quizType === 'feature';
+        const v = isFeature ? getFeatureVerdict(normalized, total, weakDim, strongDim) : getVerdict(normalized, total, weakDim, strongDim);
+        const vColors = { kill: 'var(--rose)', pivot: 'var(--gold)', persevere: 'var(--teal)', hold: 'var(--rose)', validate: 'var(--gold)', build: 'var(--teal)' };
+        const vBgs = { kill: 'rgba(232,98,124,.06)', pivot: 'rgba(240,160,90,.06)', persevere: 'rgba(45,189,168,.06)', hold: 'rgba(232,98,124,.06)', validate: 'rgba(240,160,90,.06)', build: 'rgba(45,189,168,.06)' };
         const vIcons = {
           kill: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
           pivot: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 014-4h12"/></svg>',
-          persevere: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+          persevere: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+          hold: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+          validate: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+          build: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
         };
-        const vLabels = { kill: 'KILL — 建議停止', pivot: 'PIVOT — 建議轉向', persevere: 'PERSEVERE — 繼續前進' };
+        const vLabels = { kill: 'KILL — 建議停止', pivot: 'PIVOT — 建議轉向', persevere: 'PERSEVERE — 繼續前進', hold: 'HOLD — 建議暫緩', validate: 'VALIDATE — 需要驗證', build: 'BUILD — 建議開發' };
         const confLabels = { high: '高信心', medium: '中信心', low: '待驗證' };
         const c = vColors[v.verdict];
         const bg = vBgs[v.verdict];
@@ -3965,7 +4063,8 @@ canvas{display:block;margin:0 auto 24px}
 
     // Only save if this is a fresh quiz completion (not just viewing a historical report)
     const isViewing = state.quizState._viewOnly;
-    const verdictData = getVerdict(normalized, total, weakDim, strongDim);
+    const isFeatureQuiz = state.quizState.quizType === 'feature';
+    const verdictData = isFeatureQuiz ? getFeatureVerdict(normalized, total, weakDim, strongDim) : getVerdict(normalized, total, weakDim, strongDim);
     if (!isViewing) {
       const rediagId = state.quizState.rediagId;
       if (rediagId) {
@@ -3973,6 +4072,7 @@ canvas{display:block;margin:0 auto 24px}
         const existing = state.diagnoses.find(x => x.id === rediagId);
         if (existing) {
           existing.type = state.quizState.type;
+          existing.quizType = state.quizState.quizType || 'standard';
           existing.date = new Date().toISOString();
           existing.scores = normalized;
           existing.rawScores = JSON.parse(JSON.stringify(state.quizState.scores));
@@ -3986,6 +4086,7 @@ canvas{display:block;margin:0 auto 24px}
         const diagnosis = {
           id: 'diag_' + Date.now(),
           type: state.quizState.type,
+          quizType: state.quizState.quizType || 'standard',
           date: new Date().toISOString(),
           scores: normalized,
           rawScores: JSON.parse(JSON.stringify(state.quizState.scores)),
@@ -4098,12 +4199,97 @@ canvas{display:block;margin:0 auto 24px}
     };
   }
 
+  function getFeatureVerdict(normalized, total, weakDim, strongDim) {
+    const P = normalized.P, A = normalized.A, T = normalized.T, H = normalized.H;
+    const weakScore = normalized[weakDim.id];
+    const strongScore = normalized[strongDim.id];
+    const dimBelow30 = ['P','A','T','H'].filter(d => normalized[d] < 30).length;
+    const dimAbove70 = ['P','A','T','H'].filter(d => normalized[d] >= 70).length;
+
+    // ── HOLD conditions ──
+    if (P < 20) return {
+      verdict: 'hold', confidence: 'high',
+      title: '建議暫緩——需求尚未確認',
+      reason: '需求驗證分數極低（' + P + ' 分），代表現有用戶對這個功能的需求尚未被確認。在投入開發前，需要更多用戶反饋。',
+      action: '建議先做 5-10 場用戶訪談，確認這個功能是否是用戶真正需要的。觀察用戶目前如何解決這個問題，痛點是否強烈到值得開發。',
+      pivotHint: null
+    };
+    if (dimBelow30 >= 3) return {
+      verdict: 'hold', confidence: 'high',
+      title: '建議暫緩——多維度驗證不足',
+      reason: '四個維度中有 ' + dimBelow30 + ' 個低於 30 分，代表這個功能在需求、影響範圍和可行性上都缺乏支撐。',
+      action: '暫緩開發，先回到用戶研究。確認這個功能想解決的問題是否真實存在，以及團隊目前是否有能力做好。',
+      pivotHint: null
+    };
+    if (total < 25) return {
+      verdict: 'hold', confidence: 'high',
+      title: '建議暫緩——條件不成熟',
+      reason: '綜合評分只有 ' + total + ' 分，需求、影響力和可行性都需要更多驗證。',
+      action: '暫不排入開發計畫。花 1-2 週收集更多用戶回饋和競品分析，再重新評估這個功能的優先級。',
+      pivotHint: null
+    };
+
+    // ── VALIDATE conditions ──
+    if (H < 30 && total >= 40) return {
+      verdict: 'validate', confidence: 'medium',
+      title: '需求有潛力，但可行性需驗證',
+      reason: '需求面的評估不錯，但可行性（' + H + ' 分）是主要瓶頸。技術複雜度或資源限制可能影響開發。',
+      action: '建議做技術評估（spike）：花 2-3 天驗證核心技術可行性，評估所需資源是否能負擔，考慮是否有更簡單的替代方案。',
+      pivotHint: '如果技術驗證通過，可以考慮簡化版本先上線'
+    };
+    if (weakScore < 40 && strongScore >= 60) return {
+      verdict: 'validate', confidence: 'medium',
+      title: '建議先驗證「' + weakDim.name + '」再決定',
+      reason: '「' + strongDim.name + '」表現不錯（' + strongScore + ' 分），但「' + weakDim.name + '」只有 ' + weakScore + ' 分。需要針對弱項做更多驗證。',
+      action: weakDim.id === 'P' ? '做更多用戶訪談確認需求強度。' : weakDim.id === 'A' ? '明確這個功能的目標用戶群，驗證影響範圍。' : weakDim.id === 'T' ? '分析競品功能和商業價值，確認值得投入。' : '評估技術方案和資源，確認團隊能力足夠。',
+      pivotHint: null
+    };
+    if (total >= 35 && total < 55) return {
+      verdict: 'validate', confidence: 'medium',
+      title: '有一定基礎——需要更多驗證',
+      reason: '綜合 ' + total + ' 分，功能有基礎價值但還不足以確信投入開發。建議針對弱項補充驗證。',
+      action: '針對「' + weakDim.name + '」做深入驗證。可以用原型測試、A/B 測試或用戶訪談來收集更多數據支持決策。',
+      pivotHint: null
+    };
+
+    // ── BUILD conditions ──
+    if (total >= 70 || dimAbove70 >= 3) return {
+      verdict: 'build', confidence: 'high',
+      title: '強烈建議開發——數據全面支持',
+      reason: '需求明確、影響範圍清楚、商業價值高' + (weakScore < 60 ? '，「' + weakDim.name + '」（' + weakScore + ' 分）可在開發中持續優化' : '') + '。這個功能值得優先排入開發計畫。',
+      action: '建議立即排入下個 sprint。先定義 MVP 範圍，用最小可行版本上線驗證，再根據用戶數據迭代。',
+      pivotHint: null
+    };
+    if (total >= 55 && strongScore - weakScore <= 30) return {
+      verdict: 'build', confidence: 'medium',
+      title: '建議開發——各維度均衡',
+      reason: '綜合 ' + total + ' 分，四個維度相對均衡。功能有明確價值，可以排入開發計畫。',
+      action: '建議排入近期 roadmap。開發時優先關注「' + weakDim.name + '」相關的風險，設定明確的成功指標來追蹤上線效果。',
+      pivotHint: null
+    };
+
+    // Default: validate
+    return {
+      verdict: 'validate', confidence: 'low',
+      title: '建議補充驗證後再決定',
+      reason: '綜合 ' + total + ' 分，有些基礎但也有弱點。需要更多數據才能做出開發決策。',
+      action: '針對「' + weakDim.name + '」做更深入的用戶研究和競品分析，再重新評估。',
+      pivotHint: null
+    };
+  }
+
   function getPathTypeDescription(type, prodName, weakDim, strongDim, scores) {
     const desc = {
+      // Product diagnosis labels
       '萌芽探索者': `${prodName} 還在最早期——大部分維度都處於假設階段，缺乏真實驗證。你的當務之急不是寫程式或做產品，而是走出去跟 5 個以上的目標用戶深度對話，確認這個問題是否真的存在、是否有人願意付費解決。`,
       '摸索前進者': `${prodName} 已經有了初步方向，你的「${strongDim.name}」相對較好（${scores[strongDim.id]} 分），但「${weakDim.name}」只有 ${scores[weakDim.id]} 分——這是你最大的盲點。建議在推進開發之前，集中 1-2 週的時間補強這個弱點。`,
       '蓄勢待發者': `${prodName} 有清晰的方向和一定的驗證基礎。你的強項在「${strongDim.name}」（${scores[strongDim.id]} 分），但「${weakDim.name}」（${scores[weakDim.id]} 分）仍有提升空間。現在可以開始小規模推向市場，同時持續用數據驗證你的假設。`,
-      '準備起飛者': `${prodName} 在四個維度都有紮實的驗證基礎。即使是最弱的「${weakDim.name}」也有 ${scores[weakDim.id]} 分。你現在應該專注在用戶獲取和規模化，同時建立可重複的成長引擎。`
+      '準備起飛者': `${prodName} 在四個維度都有紮實的驗證基礎。即使是最弱的「${weakDim.name}」也有 ${scores[weakDim.id]} 分。你現在應該專注在用戶獲取和規模化，同時建立可重複的成長引擎。`,
+      // Feature diagnosis labels
+      '觀望評估中': `「${prodName}」這個功能目前缺乏足夠的數據支撐。需求驗證（${scores.P} 分）和影響範圍都還在假設階段。建議先做用戶訪談，確認是否有足夠多的用戶真的需要這個功能、使用頻率如何。`,
+      '值得研究': `「${prodName}」有一定的需求基礎，「${strongDim.name}」表現較好（${scores[strongDim.id]} 分），但「${weakDim.name}」（${scores[weakDim.id]} 分）是主要瓶頸。建議針對弱項做更深入的驗證——原型測試或競品分析都是有效的方法。`,
+      '建議開發': `「${prodName}」的需求和價值都有一定驗證。「${strongDim.name}」是最強項（${scores[strongDim.id]} 分），但「${weakDim.name}」（${scores[weakDim.id]} 分）仍可優化。建議排入開發計畫，用 MVP 先行驗證，再根據數據決定是否全面投入。`,
+      '強烈建議': `「${prodName}」在各維度都有紮實的驗證基礎。即使最弱的「${weakDim.name}」也有 ${scores[weakDim.id]} 分。強烈建議優先排入開發，定義好 MVP 範圍後盡快上線收集真實用戶數據。`
     };
     return desc[type] || '';
   }
@@ -7792,7 +7978,7 @@ function loadHistory(){
     const names = {survey:'問卷引擎',market:'市場探測'};
     const descs = {
       survey:'AI 自動生成最佳化問卷，匯出分享給真人填答，並提供問卷品質檢測。',
-      market:'真實搜尋關鍵字熱度、趨勢走向、需求缺口——用數據佐證你的產品方向。'
+      market:'輸入產品關鍵字，分析搜尋熱度趨勢、關聯詞競爭強度與市場需求缺口。'
     };
     const icons = {survey:'clipboard',market:'trendUp'};
     const content = document.getElementById('content');
@@ -7817,7 +8003,7 @@ function loadHistory(){
     content.innerHTML = `
       <div class="page-title-area">
         <h1>${ICONS.trendUp} 市場探測</h1>
-        <div class="subtitle">真實搜尋數據驗證你的產品方向</div>
+        <div class="subtitle">透過關鍵字熱度、競爭強度與需求缺口，評估你的市場機會</div>
       </div>
 
       <!-- Input Section -->
@@ -8604,9 +8790,9 @@ function loadHistory(){
     if (hasDiags) {
       const diagOptions = diags.map(d => {
         const date = new Date(d.date).toLocaleDateString('zh-TW', {month:'short', day:'numeric'});
-        const scoreColor = d.total >= 70 ? '🟢' : d.total >= 50 ? '🟡' : '🔴';
-        const verdictLabel = d.verdict === 'persevere' ? '繼續前進' : d.verdict === 'pivot' ? '建議轉向' : d.verdict === 'kill' ? '建議停止' : '';
-        return `<option value="${d.id}" ${selectedDiag?.id === d.id ? 'selected' : ''}>${d.productName || '未命名'} — ${d.total} 分 · ${date} · ${verdictLabel}</option>`;
+        const typeLabel = d.quizType === 'feature' ? '功能' : d.quizType === 'ai' ? 'AI' : '產品';
+        const verdictLabel = d.verdict === 'persevere' ? '繼續前進' : d.verdict === 'pivot' ? '建議轉向' : d.verdict === 'kill' ? '建議停止' : d.verdict === 'build' ? '建議開發' : d.verdict === 'validate' ? '需要驗證' : d.verdict === 'hold' ? '暫緩' : '';
+        return `<option value="${d.id}" ${selectedDiag?.id === d.id ? 'selected' : ''}>[${typeLabel}] ${d.productName || '未命名'} — ${d.total} 分 · ${date}${verdictLabel ? ' · ' + verdictLabel : ''}</option>`;
       }).join('');
       diagSelectHTML = `<select id="reportDiagSelect" style="width:100%" onchange="app.selectReportDiag(this.value)">
         <option value="">選擇一筆 PATH 診斷結果...</option>
@@ -8735,13 +8921,15 @@ function loadHistory(){
           </div>
 
           <!-- Generate Button -->
-          <div style="background:${canGenerate ? 'linear-gradient(135deg,var(--primary),rgba(124,92,252,.85))' : 'var(--bg-card)'};border:1px solid ${canGenerate ? 'transparent' : 'var(--border)'};border-radius:var(--r-lg);padding:24px;text-align:center">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;text-align:center">
             ${canGenerate ?
-              `<button class="btn" style="padding:14px 48px;font-size:15px;font-weight:700;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:var(--r-md)" onclick="app.generateMarketReport()">
-                ${ICONS.fileText} <span style="margin-left:8px">生成${selectedType?.label || '市場報告'}</span>
+              `<button class="btn btn-accent" style="width:100%;padding:14px 24px;font-size:14px" onclick="app.generateMarketReport()">
+                ${ICONS.fileText} 生成${selectedType?.label || '市場報告'}
               </button>
-              <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:8px">${selectedProdName} · ${selectedType?.label || ''}</div>` :
-              `<div style="font-size:14px;color:var(--ink-muted)">${!selectedDiag ? '請先選擇一筆 PATH 診斷' : '請選擇報告類型'}</div>`
+              <div style="font-size:12px;color:var(--ink-muted);margin-top:8px">${selectedProdName} · ${selectedType?.label || ''}</div>` :
+              `<button class="btn btn-accent" style="width:100%;padding:14px 24px;font-size:14px;opacity:.35;cursor:not-allowed" disabled>
+                ${ICONS.fileText} ${!selectedDiag ? '請先選擇一筆 PATH 診斷' : '請選擇報告類型'}
+              </button>`
             }
           </div>
         </div>
@@ -9387,14 +9575,30 @@ function loadHistory(){
     const plan = state.plan || 'free';
     const planLabel = plan === 'enterprise' ? 'Enterprise' : plan === 'pro' ? 'Pro' : 'Free';
     const planColor = plan === 'enterprise' ? 'var(--teal)' : plan === 'pro' ? 'var(--primary)' : 'var(--ink-muted)';
-    const labLimit = plan === 'free' ? 1 : plan === 'pro' ? 5 : '自訂';
-    const labUsed = state.labCount || 0;
-    const labPercent = plan === 'free' ? Math.min((labUsed / 1) * 100, 100) : plan === 'pro' ? Math.min((labUsed / 5) * 100, 100) : 0;
-    const diagLimit = plan === 'free' ? 3 : plan === 'pro' ? 20 : '自訂';
-    const diagUsed = state.diagCount || 0;
-    const diagPercent = plan === 'free' ? Math.min((diagUsed / 3) * 100, 100) : plan === 'pro' ? Math.min((diagUsed / 20) * 100, 100) : 0;
-    const sampleLabel = plan === 'enterprise' ? '自訂' : plan === 'pro' ? '64 / 128 人' : '16 / 32 人';
-    const aiModeLabel = (state.aiMode || 'precise') === 'precise' ? '精準模式' : '快速模式';
+    // Unified credit system
+    const creditLimit = plan === 'free' ? 100 : plan === 'pro' ? 2000 : 10000;
+    const creditUsed = state.creditUsed || 0;
+    const creditPercent = Math.min((creditUsed / creditLimit) * 100, 100);
+    const creditRemain = Math.max(0, creditLimit - creditUsed);
+
+    // AI model config
+    const aiModel = state.aiModel || 'sonnet';
+    const modelOptions = [
+      { id: 'haiku', label: 'Claude Haiku 4.5', desc: '快速回應・低消耗', cost: '1x' },
+      { id: 'sonnet', label: 'Claude Sonnet 4.6', desc: '均衡品質・推薦', cost: '2x' },
+      { id: 'opus', label: 'Claude Opus 4.6', desc: '最高品質・深度分析', cost: '5x' }
+    ];
+    const currentModel = modelOptions.find(m => m.id === aiModel) || modelOptions[1];
+
+    // Credit cost reference
+    const creditCosts = [
+      { action: 'PATH 診斷', cost: '5' },
+      { action: 'Lab AI 研究', cost: '20' },
+      { action: '問卷生成', cost: '10' },
+      { action: '市場探測', cost: '15' },
+      { action: '市場報告', cost: '25' },
+      { action: '文件匯入評分', cost: '8' }
+    ];
 
     content.innerHTML = `
       <div class="page-title-area">
@@ -9421,33 +9625,48 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">方案與用量</div>
 
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px">
-          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <div style="font-size:12px;color:var(--ink-muted)">PATH 診斷</div>
-              <div style="font-size:13px;font-weight:700;color:var(--primary)">${diagUsed} / ${diagLimit}</div>
+        <!-- Unified Credit Bar -->
+        <div style="background:var(--bg-app);border-radius:var(--r-md);padding:20px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+            <div style="font-size:14px;font-weight:700;color:var(--ink)">AI Credits</div>
+            <div style="font-size:13px;color:var(--ink-muted)">
+              <span style="font-weight:700;color:${creditPercent > 80 ? 'var(--rose)' : creditPercent > 50 ? 'var(--gold)' : 'var(--primary)'}">${creditUsed.toLocaleString()}</span> / ${creditLimit.toLocaleString()} credits
             </div>
-            <div class="usage-bar"><div class="usage-fill" style="width:${diagPercent}%"></div></div>
-            <div style="font-size:11px;color:var(--ink-muted);margin-top:6px">次 / 月</div>
           </div>
-          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <div style="font-size:12px;color:var(--ink-muted)">Lab AI 深度研究</div>
-              <div style="font-size:13px;font-weight:700;color:var(--primary)">${labUsed} / ${labLimit}</div>
-            </div>
-            <div class="usage-bar"><div class="usage-fill" style="width:${labPercent}%"></div></div>
-            <div style="font-size:11px;color:var(--ink-muted);margin-top:6px">次 / 月</div>
+          <div class="usage-bar" style="height:8px;margin-bottom:8px"><div class="usage-fill" style="width:${creditPercent}%;background:${creditPercent > 80 ? 'var(--rose)' : creditPercent > 50 ? 'var(--gold)' : 'var(--primary)'}"></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:12px;color:var(--ink-muted)">剩餘 ${creditRemain.toLocaleString()} credits · 每月重置</div>
+            <div style="font-size:12px;color:var(--ink-muted)">${Math.round(creditPercent)}% 已使用</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px">
-          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px;text-align:center">
-            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">模擬受訪者</div>
-            <div style="font-size:18px;font-weight:800;color:var(--primary)">${sampleLabel}</div>
+
+        <!-- AI Model + Credit Cost side by side -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+          <!-- AI Model Selector -->
+          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px">AI 模型</div>
+            ${plan === 'free' ? `
+              <div style="font-size:13px;font-weight:700;color:var(--ink)">${modelOptions[0].label}</div>
+              <div style="font-size:11px;color:var(--ink-muted);margin-top:4px">Free 方案固定使用 Haiku</div>
+            ` : `
+              <select style="width:100%;font-size:13px;font-weight:600" onchange="app.setAIModel(this.value)">
+                ${modelOptions.map(m => `<option value="${m.id}" ${aiModel === m.id ? 'selected' : ''}>${m.label}（${m.cost} credit）</option>`).join('')}
+              </select>
+              <div style="font-size:11px;color:var(--ink-muted);margin-top:6px">${currentModel.desc}</div>
+            `}
           </div>
-          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px;text-align:center">
-            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">AI 模式</div>
-            <div style="font-size:14px;font-weight:700;color:${plan==='free'?'var(--ink-muted)':'var(--primary)'}">${plan==='free'?'快速模式（固定）':aiModeLabel}</div>
-            ${plan!=='free'?'<button class="btn btn-outline" style="font-size:11px;padding:4px 10px;margin-top:6px" onclick="app.toggleAIMode()">切換模式</button>':''}
+
+          <!-- Credit Costs Reference -->
+          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">
+            <div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px">各功能消耗</div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              ${creditCosts.map(c => `
+                <div style="display:flex;justify-content:space-between;font-size:12px">
+                  <span style="color:var(--ink-sec)">${c.action}</span>
+                  <span style="color:var(--primary);font-weight:600">${c.cost} credits</span>
+                </div>
+              `).join('')}
+            </div>
           </div>
         </div>
 
@@ -9455,11 +9674,11 @@ function loadHistory(){
         <button class="btn btn-gold" style="width:100%;padding:12px 0" onclick="app.showUpgradeInfo()">升級到 Pro · NT$890/月</button>
         ` : plan==='pro' ? `
         <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--ink-muted)">
-          用量每月重置 · 達上限後當月不再產出新報告
+          模型倍率影響消耗：Haiku 1x · Sonnet 2x · Opus 5x
         </div>
         ` : `
         <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--ink-muted)">
-          Enterprise 方案 · 自訂用量與受訪者規模
+          Enterprise 方案 · 自訂 credit 額度與模型配置
         </div>
         `}
       </div>
@@ -9478,22 +9697,23 @@ function loadHistory(){
               </tr>
             </thead>
             <tbody>
-              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">產品研究</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">PATH 診斷</td><td style="text-align:center;padding:10px 8px">3 次/月</td><td style="text-align:center;padding:10px 8px">20 次/月</td><td style="text-align:center;padding:10px 8px">自訂</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">Lab AI 深度研究</td><td style="text-align:center;padding:10px 8px">1 次/月</td><td style="text-align:center;padding:10px 8px">5 次/月</td><td style="text-align:center;padding:10px 8px">自訂</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">問卷引擎</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">模擬受訪者</td><td style="text-align:center;padding:10px 8px">16 / 32 人</td><td style="text-align:center;padding:10px 8px">64 / 128 人</td><td style="text-align:center;padding:10px 8px">自訂</td></tr>
-              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">市場情報</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">市場探測</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">AI Credits</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">每月 Credits</td><td style="text-align:center;padding:10px 8px">100</td><td style="text-align:center;padding:10px 8px;color:var(--primary);font-weight:700">2,000</td><td style="text-align:center;padding:10px 8px;color:var(--teal);font-weight:700">10,000+</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">AI 模型</td><td style="text-align:center;padding:10px 8px">Haiku 4.5</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">Haiku / Sonnet / Opus</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全模型 + 自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">功能模組</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">PATH 診斷</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">5 credits/次</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">Lab AI 深度研究</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">20 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">20 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">20 credits/次</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">問卷生成</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">10 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">10 credits/次</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">市場探測</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">15 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">15 credits/次</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">市場報告</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">25 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">25 credits/次</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">即將推出</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;color:var(--ink-muted)">焦點小組</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;color:var(--ink-muted)">體驗走查</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">平台功能</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">AI 模型切換</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">精準 / 快速</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂調校</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">可視化報告 + 匯出</td><td style="text-align:center;padding:10px 8px">PATH 診斷報告</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">完整報告 · MD / PDF</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全部 + API</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">可管理品牌數</td><td style="text-align:center;padding:10px 8px">1 個</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">無限</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">無限</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">團隊協作</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">最多 10 人</td></tr>
-              <tr><td style="padding:10px 8px">專屬客戶經理</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓</td></tr>
+              <tr><td style="padding:10px 8px">專屬客戶經理</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">支援</td></tr>
             </tbody>
           </table>
         </div>
@@ -9572,6 +9792,18 @@ function loadHistory(){
     saveState();
     const label = state.aiMode === 'precise' ? '精準模式（深度分析）' : '快速模式（大量驗證）';
     showToast('已切換至 ' + label);
+    renderSettings();
+  }
+
+  function setAIModel(modelId) {
+    if (state.plan === 'free') {
+      showToast('升級到 Pro 方案即可選擇 AI 模型');
+      return;
+    }
+    const models = { haiku: 'Claude Haiku 4.5', sonnet: 'Claude Sonnet 4.6', opus: 'Claude Opus 4.6' };
+    state.aiModel = modelId;
+    saveState();
+    showToast('已切換至 ' + (models[modelId] || modelId));
     renderSettings();
   }
 
@@ -10586,6 +10818,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     openBlogPost,
     closeBlogPost,
     toggleAIMode,
+    setAIModel,
     // v0.8 new modules
     runMarketSignal,
     generateSurvey,
