@@ -3643,11 +3643,7 @@ canvas{display:block;margin:0 auto 24px}
             </div>
           </div>
 
-          <!-- Import type indicator (auto-synced with card selection above) -->
-          <div id="importTypeIndicator" style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 14px;background:var(--bg);border-radius:var(--r-sm)">
-            <div style="color:var(--primary)">${ICONS.pulse}</div>
-            <div style="font-size:13px;color:var(--ink-sec)">目前模式：<strong id="importTypeLabel" style="color:var(--ink)">產品診斷</strong>　<span style="color:var(--ink-muted)">· 點選上方卡片自動切換</span></div>
-          </div>
+          <div id="importTypeIndicator" style="display:none"><span id="importTypeLabel">產品診斷</span></div>
 
           <div class="doc-import-row">
             <div>
