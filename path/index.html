@@ -30,63 +30,63 @@
 
 html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg-app);color:var(--ink);transition:background .25s cubic-bezier(.4,0,.2,1),color .25s cubic-bezier(.4,0,.2,1);font-size:16px;line-height:1.6;font-weight:450;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
-/* ===== LANDING PAGE — PREMIUM v2 ===== */
-.landing-page{min-height:100vh;background:#08080F;overflow-x:hidden;position:relative;color:#fff}
+/* ===== LANDING PAGE — LIGHT PREMIUM ===== */
+.landing-page{min-height:100vh;background:#FAFAFA;overflow-x:hidden;position:relative;color:#111122}
 
-/* — dot-grid background (Linear-style) — */
-.landing-page::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(124,92,252,.12) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;opacity:.5}
+/* — dot-grid background — */
+.landing-page::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(124,92,252,.06) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;opacity:.4}
 /* — ambient gradient orbs — */
-.landing-page::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 30%,rgba(124,92,252,.10),transparent 70%),radial-gradient(ellipse 50% 40% at 80% 70%,rgba(106,75,232,.07),transparent 70%);pointer-events:none;z-index:0}
+.landing-page::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 30%,rgba(124,92,252,.05),transparent 70%),radial-gradient(ellipse 50% 40% at 80% 70%,rgba(124,92,252,.03),transparent 70%);pointer-events:none;z-index:0}
 
-/* — NAV — glass-morphism — */
-.landing-nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 3rem;background:rgba(8,8,15,.70);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:100;transition:background .3s}
+/* — NAV — */
+.landing-nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 3rem;background:rgba(255,255,255,.85);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-bottom:1px solid rgba(0,0,0,.06);position:sticky;top:0;z-index:100;transition:background .3s}
 .landing-logo{display:flex;align-items:center}
 .landing-logo img{height:30px;width:auto}
 .landing-logo .logo-light{display:block}
 .landing-logo .logo-dark{display:none}
 .landing-links{display:flex;align-items:center;gap:2.8rem}
-.landing-links a{text-decoration:none;color:rgba(255,255,255,.55);font-weight:500;font-size:.88rem;letter-spacing:.2px;transition:color .25s,transform .25s}
-.landing-links a:hover{color:#fff;transform:translateY(-1px)}
-.btn-login{background:var(--primary);color:#fff;border:none;padding:.65rem 1.6rem;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .25s cubic-bezier(.16,1,.3,1);font-family:inherit;box-shadow:0 0 0 1px rgba(124,92,252,.3),0 4px 16px rgba(124,92,252,.25);position:relative;overflow:hidden}
+.landing-links a{text-decoration:none;color:rgba(17,17,34,.5);font-weight:500;font-size:.88rem;letter-spacing:.2px;transition:color .25s,transform .25s}
+.landing-links a:hover{color:#111122;transform:translateY(-1px)}
+.btn-login{background:var(--primary);color:#fff;border:none;padding:.65rem 1.6rem;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .25s cubic-bezier(.16,1,.3,1);font-family:inherit;box-shadow:0 2px 12px rgba(124,92,252,.2);position:relative;overflow:hidden}
 .btn-login::after{content:'';position:absolute;inset:-50%;background:conic-gradient(from 0deg,transparent,rgba(255,255,255,.15),transparent 30%);animation:btn-shimmer 3s linear infinite}
-.btn-login:hover{background:var(--primary-hover);transform:translateY(-2px);box-shadow:0 0 0 1px rgba(124,92,252,.5),0 8px 28px rgba(124,92,252,.35)}
+.btn-login:hover{background:var(--primary-hover);transform:translateY(-2px);box-shadow:0 4px 20px rgba(124,92,252,.3)}
 
 /* — HERO — */
 .hero{padding:12rem 3rem 6rem;text-align:center;position:relative;z-index:2}
-.hero::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:min(900px,90vw);height:min(900px,90vw);background:radial-gradient(circle,rgba(124,92,252,.12) 0%,rgba(124,92,252,.04) 40%,transparent 70%);pointer-events:none;border-radius:50%;animation:hero-pulse 6s ease-in-out infinite}
+.hero::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:min(900px,90vw);height:min(900px,90vw);background:radial-gradient(circle,rgba(124,92,252,.06) 0%,rgba(124,92,252,.02) 40%,transparent 70%);pointer-events:none;border-radius:50%;animation:hero-pulse 6s ease-in-out infinite}
 .hero-inner{max-width:860px;margin:0 auto;position:relative;z-index:2}
 
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,92,252,.08);color:rgba(255,255,255,.85);padding:10px 22px;border-radius:100px;font-size:.78rem;font-weight:600;margin-bottom:2.5rem;border:1px solid rgba(124,92,252,.25);letter-spacing:.6px;text-transform:uppercase;animation:fadeInDown .7s cubic-bezier(.16,1,.3,1)}
-.hero-badge .badge-dot{width:6px;height:6px;border-radius:50%;background:#7C5CFC;animation:badge-pulse 2s ease-in-out infinite;box-shadow:0 0 8px rgba(124,92,252,.6)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,92,252,.06);color:var(--primary);padding:10px 22px;border-radius:100px;font-size:.78rem;font-weight:600;margin-bottom:2.5rem;border:1px solid rgba(124,92,252,.15);letter-spacing:.6px;text-transform:uppercase;animation:fadeInDown .7s cubic-bezier(.16,1,.3,1)}
+.hero-badge .badge-dot{width:6px;height:6px;border-radius:50%;background:#7C5CFC;animation:badge-pulse 2s ease-in-out infinite;box-shadow:0 0 8px rgba(124,92,252,.4)}
 
 .hero h1{font-size:clamp(3rem,6vw,5rem);font-weight:900;line-height:1.08;margin-bottom:2rem;letter-spacing:-2.5px;animation:fadeInDown .7s cubic-bezier(.16,1,.3,1) .08s backwards}
-.hero h1 .line-white{display:block;color:#fff}
-.hero h1 .line-gradient{display:block;background:linear-gradient(135deg,#7C5CFC 0%,#a78bfa 50%,#c4b5fd 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:200% auto;animation:gradient-text 4s ease infinite}
+.hero h1 .line-white{display:block;color:#111122}
+.hero h1 .line-gradient{display:block;background:linear-gradient(135deg,#7C5CFC 0%,#6a4be8 50%,#5438c5 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:200% auto;animation:gradient-text 4s ease infinite}
 
-.hero p{font-size:1.15rem;color:rgba(255,255,255,.55);line-height:1.9;margin-bottom:3.5rem;max-width:580px;margin-left:auto;margin-right:auto;letter-spacing:.2px;animation:fadeInDown .7s cubic-bezier(.16,1,.3,1) .16s backwards;font-weight:450}
+.hero p{font-size:1.15rem;color:rgba(17,17,34,.5);line-height:1.9;margin-bottom:3.5rem;max-width:580px;margin-left:auto;margin-right:auto;letter-spacing:.2px;animation:fadeInDown .7s cubic-bezier(.16,1,.3,1) .16s backwards;font-weight:450}
 
 .hero-btns{display:flex;gap:1.2rem;justify-content:center;flex-wrap:wrap;animation:fadeInUp .7s cubic-bezier(.16,1,.3,1) .24s backwards}
 
-.hero-trust{margin-top:5rem;display:flex;align-items:center;justify-content:center;gap:3rem;font-size:.82rem;color:rgba(255,255,255,.35);flex-wrap:wrap;animation:fadeInUp .7s cubic-bezier(.16,1,.3,1) .32s backwards;letter-spacing:.3px}
+.hero-trust{margin-top:5rem;display:flex;align-items:center;justify-content:center;gap:3rem;font-size:.82rem;color:rgba(17,17,34,.35);flex-wrap:wrap;animation:fadeInUp .7s cubic-bezier(.16,1,.3,1) .32s backwards;letter-spacing:.3px}
 .hero-trust span{display:flex;align-items:center;gap:6px;white-space:nowrap}
-.hero-trust .trust-check{color:rgba(124,92,252,.7);font-weight:700}
+.hero-trust .trust-check{color:var(--primary);font-weight:700}
 
 /* — BUTTONS (landing) — */
-.landing-page .btn-primary{background:var(--primary);color:#fff;border:none;padding:1rem 2.4rem;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;transition:all .25s cubic-bezier(.16,1,.3,1);font-family:inherit;box-shadow:0 0 0 1px rgba(124,92,252,.3),0 8px 28px rgba(124,92,252,.3);position:relative;overflow:hidden}
-.landing-page .btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transition:left .5s;pointer-events:none}
-.landing-page .btn-primary:hover{background:var(--primary-hover);transform:translateY(-3px);box-shadow:0 0 0 1px rgba(124,92,252,.5),0 12px 36px rgba(124,92,252,.4)}
+.landing-page .btn-primary{background:var(--primary);color:#fff;border:none;padding:1rem 2.4rem;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;transition:all .25s cubic-bezier(.16,1,.3,1);font-family:inherit;box-shadow:0 4px 20px rgba(124,92,252,.25);position:relative;overflow:hidden}
+.landing-page .btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transition:left .5s;pointer-events:none}
+.landing-page .btn-primary:hover{background:var(--primary-hover);transform:translateY(-3px);box-shadow:0 8px 32px rgba(124,92,252,.35)}
 .landing-page .btn-primary:hover::before{left:120%}
-.btn-outline{background:transparent;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15);padding:1rem 2.4rem;border-radius:10px;font-weight:600;font-size:1rem;cursor:pointer;transition:all .25s cubic-bezier(.16,1,.3,1);font-family:inherit}
-.btn-outline:hover{border-color:rgba(124,92,252,.6);color:#fff;background:rgba(124,92,252,.08);transform:translateY(-2px)}
+.landing-page .btn-outline{background:#fff;color:rgba(17,17,34,.6);border:1px solid rgba(0,0,0,.1);padding:1rem 2.4rem;border-radius:10px;font-weight:600;font-size:1rem;cursor:pointer;transition:all .25s cubic-bezier(.16,1,.3,1);font-family:inherit}
+.landing-page .btn-outline:hover{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.04);transform:translateY(-2px)}
 
 /* — SECTIONS — */
 .l-section{padding:7rem 3rem;position:relative;z-index:2}
-.l-section.bg-dark{background:transparent}
-.l-section.bg-subtle{background:rgba(255,255,255,.02);border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04)}
+.l-section.bg-dark{background:#fff}
+.l-section.bg-subtle{background:#F5F3FF;border-top:1px solid rgba(124,92,252,.06);border-bottom:1px solid rgba(124,92,252,.06)}
 .section-center{max-width:1100px;margin:0 auto}
 .section-header{text-align:center;margin-bottom:4.5rem}
-.section-header h2{font-size:clamp(2rem,4vw,3rem);font-weight:900;margin-bottom:1.2rem;color:#fff;letter-spacing:-1px;line-height:1.15}
-.section-sub{color:rgba(255,255,255,.4);margin-bottom:0;font-size:1.05rem;line-height:1.8;font-weight:450;max-width:560px;margin-left:auto;margin-right:auto}
+.section-header h2{font-size:clamp(2rem,4vw,3rem);font-weight:900;margin-bottom:1.2rem;color:#111122;letter-spacing:-1px;line-height:1.15}
+.section-sub{color:rgba(17,17,34,.45);margin-bottom:0;font-size:1.05rem;line-height:1.8;font-weight:450;max-width:560px;margin-left:auto;margin-right:auto}
 .section-tag{display:inline-block;color:var(--primary);font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1.2rem}
 
 /* — REVEAL SYSTEM — */
@@ -106,137 +106,138 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 
 /* — AI FEATURES GRID — */
 .ai-features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:4rem}
-.ai-feat-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:2.8rem 2rem;text-align:left;transition:all .35s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden}
-.ai-feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,92,252,.4),transparent);opacity:0;transition:opacity .35s}
-.ai-feat-card:hover{border-color:rgba(124,92,252,.25);background:rgba(124,92,252,.04);transform:translateY(-6px)}
+.ai-feat-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:2.8rem 2rem;text-align:left;transition:all .35s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.ai-feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(124,92,252,.4),transparent);opacity:0;transition:opacity .35s}
+.ai-feat-card:hover{border-color:rgba(124,92,252,.2);background:#fff;transform:translateY(-6px);box-shadow:0 12px 40px rgba(124,92,252,.08)}
 .ai-feat-card:hover::before{opacity:1}
-.ai-feat-card h3{font-size:1.1rem;font-weight:750;margin:1.5rem 0 .8rem;color:#fff;line-height:1.35;letter-spacing:-.2px}
-.ai-feat-card p{font-size:.88rem;color:rgba(255,255,255,.4);line-height:1.75;font-weight:450}
-.ai-feat-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(124,92,252,.1);border:1px solid rgba(124,92,252,.15);transition:all .35s cubic-bezier(.16,1,.3,1);color:var(--primary)}
+.ai-feat-card h3{font-size:1.1rem;font-weight:750;margin:1.5rem 0 .8rem;color:#111122;line-height:1.35;letter-spacing:-.2px}
+.ai-feat-card p{font-size:.88rem;color:rgba(17,17,34,.45);line-height:1.75;font-weight:450}
+.ai-feat-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.12);transition:all .35s cubic-bezier(.16,1,.3,1);color:var(--primary)}
 .ai-feat-icon svg{width:26px;height:26px}
-.ai-feat-card:hover .ai-feat-icon{background:rgba(124,92,252,.18);border-color:rgba(124,92,252,.35);transform:scale(1.08);box-shadow:0 0 24px rgba(124,92,252,.2)}
+.ai-feat-card:hover .ai-feat-icon{background:rgba(124,92,252,.14);border-color:rgba(124,92,252,.25);transform:scale(1.08);box-shadow:0 0 20px rgba(124,92,252,.12)}
 
 /* — COMPARISON TABLE — */
-.comparison-section{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:3.5rem;overflow:hidden}
+.comparison-section{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:3.5rem;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .comparison-table{width:100%;border-collapse:collapse;margin-top:2.5rem}
-.comparison-table th,.comparison-table td{padding:1.3rem 1.2rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);font-size:.9rem}
-.comparison-table th{color:rgba(255,255,255,.4);font-weight:700;font-size:.78rem;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.1)}
+.comparison-table th,.comparison-table td{padding:1.3rem 1.2rem;text-align:left;border-bottom:1px solid rgba(0,0,0,.06);font-size:.9rem}
+.comparison-table th{color:rgba(17,17,34,.4);font-weight:700;font-size:.78rem;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid rgba(0,0,0,.1)}
 .comparison-table th.highlight{color:var(--primary)}
-.comparison-table td:first-child{font-weight:650;color:rgba(255,255,255,.7);width:26%}
-.comparison-table td{color:rgba(255,255,255,.35)}
+.comparison-table td:first-child{font-weight:650;color:rgba(17,17,34,.7);width:26%}
+.comparison-table td{color:rgba(17,17,34,.4)}
 .comparison-table tr{transition:background .2s}
-.comparison-table tr:hover{background:rgba(255,255,255,.02)}
+.comparison-table tr:hover{background:rgba(124,92,252,.02)}
 .comparison-table .check{color:#2DBDA8;font-weight:800}
-.comparison-table .cross{color:rgba(255,255,255,.2);font-weight:600}
-.comparison-table .highlight{color:rgba(255,255,255,.65);font-weight:600;border-left:2px solid var(--primary);padding-left:1.2rem;background:rgba(124,92,252,.03)}
+.comparison-table .cross{color:rgba(17,17,34,.2);font-weight:600}
+.comparison-table .highlight{color:rgba(17,17,34,.7);font-weight:600;border-left:2px solid var(--primary);padding-left:1.2rem;background:rgba(124,92,252,.03)}
 
 /* — FEATURES GRID (tool chain) — */
 .features{padding:7rem 3rem;position:relative;z-index:2}
 .features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:4rem}
-.feat-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:2.5rem 2rem;text-align:left;transition:all .35s cubic-bezier(.16,1,.3,1);position:relative}
-.feat-card:hover{border-color:rgba(124,92,252,.25);background:rgba(124,92,252,.04);transform:translateY(-6px)}
-.feat-card h3{font-size:1.05rem;font-weight:750;margin:1.3rem 0 .7rem;color:#fff;letter-spacing:-.2px}
-.feat-card p{font-size:.85rem;color:rgba(255,255,255,.38);line-height:1.75;font-weight:450}
-.feat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;transition:all .35s cubic-bezier(.16,1,.3,1)}
+.feat-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:2.5rem 2rem;text-align:left;transition:all .35s cubic-bezier(.16,1,.3,1);position:relative;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.feat-card:hover{border-color:rgba(124,92,252,.2);background:#fff;transform:translateY(-6px);box-shadow:0 12px 40px rgba(124,92,252,.08)}
+.feat-card h3{font-size:1.05rem;font-weight:750;margin:1.3rem 0 .7rem;color:#111122;letter-spacing:-.2px}
+.feat-card p{font-size:.85rem;color:rgba(17,17,34,.42);line-height:1.75;font-weight:450}
+.feat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:all .35s cubic-bezier(.16,1,.3,1)}
 .feat-icon svg{width:22px;height:22px}
-.feat-icon.purple{background:linear-gradient(135deg,rgba(124,92,252,.2),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.2);color:var(--primary)}
-.feat-icon.gold{background:linear-gradient(135deg,rgba(240,160,90,.15),rgba(240,160,90,.05));border:1px solid rgba(240,160,90,.15);color:#F0A05A}
-.feat-icon.teal{background:linear-gradient(135deg,rgba(45,189,168,.15),rgba(45,189,168,.05));border:1px solid rgba(45,189,168,.15);color:#2DBDA8}
-.feat-icon.rose{background:linear-gradient(135deg,rgba(232,98,124,.15),rgba(232,98,124,.05));border:1px solid rgba(232,98,124,.15);color:#E8627C}
-.feat-card:hover .feat-icon{transform:scale(1.1);box-shadow:0 0 20px rgba(124,92,252,.15)}
+.feat-icon.purple{background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.12);color:var(--primary)}
+.feat-icon.gold{background:rgba(240,160,90,.08);border:1px solid rgba(240,160,90,.12);color:#D4862E}
+.feat-icon.teal{background:rgba(45,189,168,.08);border:1px solid rgba(45,189,168,.12);color:#1E9E88}
+.feat-icon.rose{background:rgba(232,98,124,.08);border:1px solid rgba(232,98,124,.12);color:#D44060}
+.feat-card:hover .feat-icon{transform:scale(1.1);box-shadow:0 0 16px rgba(124,92,252,.1)}
 
 /* — METHODOLOGY / TRUST — */
 .method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3.5rem}
-.method-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:2.5rem 2rem;text-align:left;position:relative;transition:all .35s cubic-bezier(.16,1,.3,1)}
-.method-card:hover{border-color:rgba(124,92,252,.2);background:rgba(124,92,252,.03);transform:translateY(-4px)}
-.method-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(124,92,252,.1);border:1px solid rgba(124,92,252,.15);color:var(--primary);margin-bottom:1.3rem}
+.method-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:2.5rem 2rem;text-align:left;position:relative;transition:all .35s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.method-card:hover{border-color:rgba(124,92,252,.2);background:#fff;transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,92,252,.08)}
+.method-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.12);color:var(--primary);margin-bottom:1.3rem}
 .method-icon svg{width:22px;height:22px}
-.method-card h3{font-size:1.05rem;font-weight:750;color:#fff;margin-bottom:.7rem;letter-spacing:-.2px}
-.method-card p{font-size:.85rem;color:rgba(255,255,255,.4);line-height:1.75;font-weight:450}
-.method-note{margin-top:2.5rem;padding:1.5rem 2rem;background:rgba(124,92,252,.04);border:1px solid rgba(124,92,252,.1);border-radius:12px;font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.75}
-.method-note strong{color:rgba(255,255,255,.7)}
+.method-card h3{font-size:1.05rem;font-weight:750;color:#111122;margin-bottom:.7rem;letter-spacing:-.2px}
+.method-card p{font-size:.85rem;color:rgba(17,17,34,.45);line-height:1.75;font-weight:450}
+.method-note{margin-top:2.5rem;padding:1.5rem 2rem;background:rgba(124,92,252,.04);border:1px solid rgba(124,92,252,.1);border-radius:12px;font-size:.85rem;color:rgba(17,17,34,.5);line-height:1.75}
+.method-note strong{color:rgba(17,17,34,.75)}
 
 /* — BLOG / JOURNAL — */
 .blog-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3.5rem}
-.blog-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;transition:all .35s cubic-bezier(.16,1,.3,1);cursor:pointer}
-.blog-card:hover{border-color:rgba(124,92,252,.25);background:rgba(124,92,252,.03);transform:translateY(-4px)}
-.blog-thumb{width:100%;height:200px;object-fit:cover;display:block;background:linear-gradient(135deg,rgba(124,92,252,.15),rgba(124,92,252,.05));position:relative}
+.blog-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;overflow:hidden;transition:all .35s cubic-bezier(.16,1,.3,1);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.blog-card:hover{border-color:rgba(124,92,252,.2);transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,92,252,.08)}
+.blog-thumb{width:100%;height:200px;object-fit:cover;display:block;background:linear-gradient(135deg,rgba(124,92,252,.08),rgba(124,92,252,.03));position:relative}
 .blog-thumb-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:2rem}
-.blog-thumb-inner svg{width:80px;height:80px;color:rgba(124,92,252,.4)}
+.blog-thumb-inner svg{width:80px;height:80px;color:rgba(124,92,252,.3)}
 .blog-body{padding:2rem}
 .blog-meta{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem}
-.blog-tag{font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--primary);background:rgba(124,92,252,.1);padding:.3rem .8rem;border-radius:20px}
-.blog-date{font-size:.75rem;color:rgba(255,255,255,.3);font-weight:500}
-.blog-card h3{font-size:1.1rem;font-weight:750;color:#fff;margin-bottom:.7rem;letter-spacing:-.2px;line-height:1.4}
-.blog-card p{font-size:.85rem;color:rgba(255,255,255,.38);line-height:1.75;font-weight:450;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.blog-tag{font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--primary);background:rgba(124,92,252,.08);padding:.3rem .8rem;border-radius:20px}
+.blog-date{font-size:.75rem;color:rgba(17,17,34,.35);font-weight:500}
+.blog-card h3{font-size:1.1rem;font-weight:750;color:#111122;margin-bottom:.7rem;letter-spacing:-.2px;line-height:1.4}
+.blog-card p{font-size:.85rem;color:rgba(17,17,34,.42);line-height:1.75;font-weight:450;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .blog-read-more{display:inline-flex;align-items:center;gap:.4rem;margin-top:1.2rem;font-size:.82rem;font-weight:650;color:var(--primary);text-decoration:none;transition:gap .2s}
 .blog-card:hover .blog-read-more{gap:.7rem}
-.blog-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,8,15,.92);backdrop-filter:blur(16px);overflow-y:auto;padding:3rem}
+.blog-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);overflow-y:auto;padding:3rem}
 .blog-overlay.active{display:block}
 .blog-article{max-width:720px;margin:0 auto;padding:2rem 0}
-.blog-article-close{position:fixed;top:1.5rem;right:1.5rem;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:10000}
-.blog-article-close:hover{background:rgba(124,92,252,.2);border-color:rgba(124,92,252,.3)}
-.blog-article h1{font-size:clamp(1.8rem,3vw,2.4rem);font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.25;margin-bottom:1.5rem}
-.blog-article .article-meta{display:flex;align-items:center;gap:1rem;margin-bottom:2.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.06)}
-.blog-article .article-meta span{font-size:.82rem;color:rgba(255,255,255,.4)}
-.blog-article h2{font-size:1.3rem;font-weight:800;color:#fff;margin:2.5rem 0 1rem;letter-spacing:-.3px}
-.blog-article h3{font-size:1.1rem;font-weight:700;color:rgba(255,255,255,.85);margin:2rem 0 .8rem}
-.blog-article p{font-size:.95rem;color:rgba(255,255,255,.55);line-height:1.85;margin-bottom:1.2rem}
-.blog-article strong{color:rgba(255,255,255,.8)}
-.blog-article blockquote{border-left:3px solid var(--primary);padding:.8rem 0 .8rem 1.5rem;margin:1.5rem 0;background:rgba(124,92,252,.04);border-radius:0 8px 8px 0}
-.blog-article blockquote p{color:rgba(255,255,255,.5);font-style:italic;margin-bottom:0}
-.blog-article .article-highlight{background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.12);border-radius:12px;padding:1.5rem 2rem;margin:2rem 0}
+.blog-article-close{position:fixed;top:1.5rem;right:1.5rem;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.08);color:#111122;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:10000}
+.blog-article-close:hover{background:rgba(124,92,252,.1);border-color:rgba(124,92,252,.2)}
+.blog-article h1{font-size:clamp(1.8rem,3vw,2.4rem);font-weight:900;color:#111122;letter-spacing:-.5px;line-height:1.25;margin-bottom:1.5rem}
+.blog-article .article-meta{display:flex;align-items:center;gap:1rem;margin-bottom:2.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(0,0,0,.06)}
+.blog-article .article-meta span{font-size:.82rem;color:rgba(17,17,34,.4)}
+.blog-article h2{font-size:1.3rem;font-weight:800;color:#111122;margin:2.5rem 0 1rem;letter-spacing:-.3px}
+.blog-article h3{font-size:1.1rem;font-weight:700;color:rgba(17,17,34,.8);margin:2rem 0 .8rem}
+.blog-article p{font-size:.95rem;color:rgba(17,17,34,.55);line-height:1.85;margin-bottom:1.2rem}
+.blog-article strong{color:rgba(17,17,34,.8)}
+.blog-article blockquote{border-left:3px solid var(--primary);padding:.8rem 0 .8rem 1.5rem;margin:1.5rem 0;background:rgba(124,92,252,.03);border-radius:0 8px 8px 0}
+.blog-article blockquote p{color:rgba(17,17,34,.5);font-style:italic;margin-bottom:0}
+.blog-article .article-highlight{background:rgba(124,92,252,.04);border:1px solid rgba(124,92,252,.1);border-radius:12px;padding:1.5rem 2rem;margin:2rem 0}
 .blog-article .article-highlight p{margin-bottom:0}
 .blog-article .article-stat{display:inline-block;font-size:1.4rem;font-weight:900;color:var(--primary);margin-right:.3rem}
 
 /* — STATS ROW — */
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:5rem;padding-top:5rem;border-top:1px solid rgba(255,255,255,.06)}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:5rem;padding-top:5rem;border-top:1px solid rgba(0,0,0,.06)}
 .stat-item{text-align:center}
-.stat-number{font-size:clamp(2.2rem,4vw,3.2rem);font-weight:900;color:#fff;letter-spacing:-1px;line-height:1}
+.stat-number{font-size:clamp(2.2rem,4vw,3.2rem);font-weight:900;color:#111122;letter-spacing:-1px;line-height:1}
 .stat-number .accent{background:linear-gradient(135deg,#7C5CFC,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.stat-label{font-size:.82rem;color:rgba(255,255,255,.3);margin-top:.6rem;font-weight:500;letter-spacing:.3px}
+.stat-label{font-size:.82rem;color:rgba(17,17,34,.35);margin-top:.6rem;font-weight:500;letter-spacing:.3px}
 
 /* — PRICING — */
 .pricing{padding:7rem 3rem;position:relative;z-index:2}
 .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:1000px;margin:4rem auto 0}
-.price-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:3rem 2.5rem;text-align:center;position:relative;transition:all .35s cubic-bezier(.16,1,.3,1)}
-.price-card:hover{border-color:rgba(124,92,252,.2);transform:translateY(-6px);background:rgba(124,92,252,.03)}
-.price-card.featured{border-color:rgba(124,92,252,.35);background:rgba(124,92,252,.05);box-shadow:0 0 60px rgba(124,92,252,.08)}
-.price-card.featured:hover{transform:translateY(-10px);box-shadow:0 0 80px rgba(124,92,252,.12)}
-.price-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:6px 18px;border-radius:100px;font-size:.7rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;box-shadow:0 4px 16px rgba(124,92,252,.3)}
-.price-card h3{font-size:1.15rem;font-weight:750;margin-bottom:1.2rem;color:#fff;letter-spacing:-.2px}
+.price-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:3rem 2.5rem;text-align:center;position:relative;transition:all .35s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.price-card:hover{border-color:rgba(124,92,252,.2);transform:translateY(-6px);box-shadow:0 12px 40px rgba(124,92,252,.08)}
+.price-card.featured{border-color:rgba(124,92,252,.25);background:rgba(124,92,252,.02);box-shadow:0 4px 24px rgba(124,92,252,.08)}
+.price-card.featured:hover{transform:translateY(-10px);box-shadow:0 16px 48px rgba(124,92,252,.12)}
+.price-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:6px 18px;border-radius:100px;font-size:.7rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;box-shadow:0 4px 16px rgba(124,92,252,.25)}
+.price-card h3{font-size:1.15rem;font-weight:750;margin-bottom:1.2rem;color:#111122;letter-spacing:-.2px}
 .price-amount{font-size:2.8rem;font-weight:900;color:var(--primary);margin-bottom:.3rem;letter-spacing:-1px}
-.price-amount.contact-text{font-size:1rem;color:rgba(255,255,255,.4);margin-bottom:1.5rem;font-weight:600;letter-spacing:0}
-.price-amount small{font-size:.88rem;font-weight:500;color:rgba(255,255,255,.3);margin-bottom:2rem;display:block}
+.price-amount.contact-text{font-size:1rem;color:rgba(17,17,34,.4);margin-bottom:1.5rem;font-weight:600;letter-spacing:0}
+.price-amount small{font-size:.88rem;font-weight:500;color:rgba(17,17,34,.35);margin-bottom:2rem;display:block}
 .price-card ul{list-style:none;text-align:left;margin-bottom:2.5rem}
-.price-card li{padding:.7rem 0;font-size:.88rem;color:rgba(255,255,255,.45);border-bottom:1px solid rgba(255,255,255,.04);font-weight:450;display:flex;align-items:center;gap:.6rem}
+.price-card li{padding:.7rem 0;font-size:.88rem;color:rgba(17,17,34,.5);border-bottom:1px solid rgba(0,0,0,.04);font-weight:450;display:flex;align-items:center;gap:.6rem}
 .price-card li:last-child{border:none}
 .price-card li::before{content:'';display:inline-block;width:16px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%237C5CFC'%3E%3Cpath d='M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z'/%3E%3C/svg%3E") no-repeat center;flex-shrink:0}
-.btn-price{width:100%;padding:.9rem;background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .3s cubic-bezier(.16,1,.3,1);color:rgba(255,255,255,.5);font-family:inherit}
-.btn-price:hover{border-color:rgba(124,92,252,.5);color:var(--primary);background:rgba(124,92,252,.06);transform:translateY(-2px)}
-.btn-price.featured{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 8px 24px rgba(124,92,252,.25)}
-.btn-price.featured:hover{background:var(--primary-hover);transform:translateY(-2px);box-shadow:0 10px 32px rgba(124,92,252,.35)}
+.btn-price{width:100%;padding:.9rem;background:transparent;border:1px solid rgba(0,0,0,.1);border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .3s cubic-bezier(.16,1,.3,1);color:rgba(17,17,34,.5);font-family:inherit}
+.btn-price:hover{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.04);transform:translateY(-2px)}
+.btn-price.featured{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 4px 20px rgba(124,92,252,.2)}
+.btn-price.featured:hover{background:var(--primary-hover);transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,92,252,.3)}
 
 /* — CTA — */
-.cta-section{padding:6rem 3rem;text-align:center;position:relative;z-index:2;margin:4rem auto;max-width:900px;border-radius:24px;background:rgba(124,92,252,.04);border:1px solid rgba(124,92,252,.15);overflow:hidden}
-.cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(124,92,252,.08),transparent 70%);pointer-events:none}
+.cta-section{padding:6rem 3rem;text-align:center;position:relative;z-index:2;margin:4rem auto;max-width:900px;border-radius:24px;background:var(--primary);border:none;overflow:hidden}
+.cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(255,255,255,.1),transparent 70%);pointer-events:none}
 .cta-section h2{font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:900;color:#fff;margin-bottom:1.5rem;letter-spacing:-.5px;position:relative;z-index:1}
-.cta-section p{font-size:1.05rem;color:rgba(255,255,255,.45);margin-bottom:3rem;line-height:1.8;position:relative;z-index:1}
-.cta-section .btn-primary{width:auto;min-width:240px;position:relative;z-index:1}
+.cta-section p{font-size:1.05rem;color:rgba(255,255,255,.75);margin-bottom:3rem;line-height:1.8;position:relative;z-index:1}
+.cta-section .btn-primary{width:auto;min-width:240px;position:relative;z-index:1;background:#fff;color:var(--primary);box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.cta-section .btn-primary:hover{background:#fff;transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.15)}
 
 /* — FOOTER — */
-.landing-footer{padding:4rem 3rem;border-top:1px solid rgba(255,255,255,.06);position:relative;z-index:2}
+.landing-footer{padding:4rem 3rem;border-top:1px solid rgba(0,0,0,.06);position:relative;z-index:2;background:#fff}
 .footer-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:3rem;margin-bottom:3rem}
-.footer-section h4{font-size:.85rem;font-weight:750;color:rgba(255,255,255,.6);margin-bottom:1.5rem;letter-spacing:.3px;text-transform:uppercase}
+.footer-section h4{font-size:.85rem;font-weight:750;color:rgba(17,17,34,.6);margin-bottom:1.5rem;letter-spacing:.3px;text-transform:uppercase}
 .footer-section ul{list-style:none}
 .footer-section li{margin-bottom:.7rem}
-.footer-section a{color:rgba(255,255,255,.3);text-decoration:none;font-size:.85rem;transition:color .25s;font-weight:450}
+.footer-section a{color:rgba(17,17,34,.35);text-decoration:none;font-size:.85rem;transition:color .25s;font-weight:450}
 .footer-section a:hover{color:var(--primary)}
-.footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:2rem}
+.footer-bottom{border-top:1px solid rgba(0,0,0,.06);padding-top:3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:2rem}
 .footer-brand{font-size:1.2rem;font-weight:900;letter-spacing:-.3px}
 .footer-brand .beyond{color:var(--primary)}
-.footer-brand .path{color:rgba(255,255,255,.6)}
-.footer-bottom p{color:rgba(255,255,255,.2);font-size:.82rem;margin:0;font-weight:450}
+.footer-brand .path{color:rgba(17,17,34,.6)}
+.footer-bottom p{color:rgba(17,17,34,.25);font-size:.82rem;margin:0;font-weight:450}
 
 /* — KEYFRAMES — */
 @keyframes fadeInDown{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:translateY(0)}}
@@ -2304,7 +2305,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.7.0</div>
+        <div class="sidebar-version">v0.7.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -2352,6 +2353,8 @@ canvas{display:block;margin:0 auto 24px}
     diagnoses: [],
     researches: [],
     labCount: 0,
+    diagCount: 0,
+    aiMode: 'precise',
     settings: { theme: 'light', model: 'gpt-4', proxyUrl: '' },
     quizState: {
       type: null,
@@ -2379,6 +2382,8 @@ canvas{display:block;margin:0 auto 24px}
       diagnoses: JSON.parse(localStorage.getItem('bp_diagnoses') || '[]'),
       researches: JSON.parse(localStorage.getItem('bp_researches') || '[]'),
       labCount: parseInt(localStorage.getItem('bp_labCount') || '0'),
+      diagCount: parseInt(localStorage.getItem('bp_diagCount') || '0'),
+      aiMode: localStorage.getItem('bp_aiMode') || 'precise',
       settings: JSON.parse(localStorage.getItem('bp_settings') || '{}'),
       feedbackLog: JSON.parse(localStorage.getItem('bp_feedback') || '[]')
     };
@@ -2428,6 +2433,8 @@ canvas{display:block;margin:0 auto 24px}
     localStorage.setItem('bp_diagnoses', JSON.stringify(state.diagnoses));
     localStorage.setItem('bp_researches', JSON.stringify(state.researches));
     localStorage.setItem('bp_labCount', state.labCount);
+    localStorage.setItem('bp_diagCount', state.diagCount);
+    localStorage.setItem('bp_aiMode', state.aiMode);
     localStorage.setItem('bp_settings', JSON.stringify(state.settings));
   }
 
@@ -4925,7 +4932,7 @@ canvas{display:block;margin:0 auto 24px}
 
     <!-- VERSION FOOTER ──────────────────── -->
     <div style="text-align:center;padding:24px 0 8px;font-size:13px;color:var(--ink-muted);letter-spacing:.5px">
-      PATH 受眾研究室 v0.7.0 · <a href="https://beyondspec.tw" style="color:var(--ink-muted);text-decoration:none">BeyondSpec 規格外工作室</a> · 華語市場合成用戶研究引擎
+      PATH 受眾研究室 v0.7.1 · <a href="https://beyondspec.tw" style="color:var(--ink-muted);text-decoration:none">BeyondSpec 規格外工作室</a> · 華語市場合成用戶研究引擎
     </div>
       </div>
     </div>
@@ -7277,7 +7284,7 @@ function exportMarkdown(){
       qualSamples.forEach(s=>md+=`> **${s.id}：** ${s.text}\n\n`);
     }
   }
-  md+=`\n\n---\n\n*由 PATH 受眾研究室 v0.7.0 生成 · ${new Date().toLocaleDateString('zh-TW')} · BeyondSpec*\n`;
+  md+=`\n\n---\n\n*由 PATH 受眾研究室 v0.7.1 生成 · ${new Date().toLocaleDateString('zh-TW')} · BeyondSpec*\n`;
   const blob=new Blob([md],{type:'text/markdown'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -7316,7 +7323,7 @@ function copyReportSummary(){
 }
 
 
-// (monkey-patch merged into goPhase — cleaned up in v0.7.0)
+// (monkey-patch merged into goPhase — cleaned up in v0.7.1)
 
 // ========================================
 // URL 參數帶入（從 PATH L1 結果頁跳轉）
@@ -7721,11 +7728,14 @@ function loadHistory(){
     const plan = state.plan || 'free';
     const planLabel = plan === 'enterprise' ? 'Enterprise' : plan === 'pro' ? 'Pro' : 'Free';
     const planColor = plan === 'enterprise' ? 'var(--teal)' : plan === 'pro' ? 'var(--primary)' : 'var(--ink-muted)';
-    const labLimit = plan === 'free' ? 3 : '∞';
+    const labLimit = plan === 'free' ? 1 : plan === 'pro' ? 5 : '自訂';
     const labUsed = state.labCount || 0;
-    const labPercent = plan === 'free' ? Math.min((labUsed / 3) * 100, 100) : 0;
-    const diagLabel = plan === 'free' ? '快速模式（5 題）' : '完整模式（20 題）';
-    const sampleLabel = plan === 'enterprise' ? '64 人' : plan === 'pro' ? '32 人' : '8 人';
+    const labPercent = plan === 'free' ? Math.min((labUsed / 1) * 100, 100) : plan === 'pro' ? Math.min((labUsed / 5) * 100, 100) : 0;
+    const diagLimit = plan === 'free' ? 3 : plan === 'pro' ? 20 : '自訂';
+    const diagUsed = state.diagCount || 0;
+    const diagPercent = plan === 'free' ? Math.min((diagUsed / 3) * 100, 100) : plan === 'pro' ? Math.min((diagUsed / 20) * 100, 100) : 0;
+    const sampleLabel = plan === 'enterprise' ? '自訂' : plan === 'pro' ? '64 / 128 人' : '16 / 32 人';
+    const aiModeLabel = (state.aiMode || 'precise') === 'precise' ? '精準模式' : '快速模式';
 
     content.innerHTML = `
       <div class="page-title-area">
@@ -7752,36 +7762,45 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">方案與用量</div>
 
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
-          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px;text-align:center">
-            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">Lab 研究</div>
-            <div style="font-size:22px;font-weight:800;color:var(--primary)">${plan==='free' ? labUsed + ' / ' + labLimit : '∞'}</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">${plan==='free'?'次/月':'無限制'}</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px">
+          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div style="font-size:12px;color:var(--ink-muted)">PATH 診斷</div>
+              <div style="font-size:13px;font-weight:700;color:var(--primary)">${diagUsed} / ${diagLimit}</div>
+            </div>
+            <div class="usage-bar"><div class="usage-fill" style="width:${diagPercent}%"></div></div>
+            <div style="font-size:11px;color:var(--ink-muted);margin-top:6px">次 / 月</div>
           </div>
-          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px;text-align:center">
-            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">PATH 診斷</div>
-            <div style="font-size:22px;font-weight:800;color:var(--primary)">${plan==='free'?'5':'20'}</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">${diagLabel}</div>
+          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div style="font-size:12px;color:var(--ink-muted)">Lab AI 深度研究</div>
+              <div style="font-size:13px;font-weight:700;color:var(--primary)">${labUsed} / ${labLimit}</div>
+            </div>
+            <div class="usage-bar"><div class="usage-fill" style="width:${labPercent}%"></div></div>
+            <div style="font-size:11px;color:var(--ink-muted);margin-top:6px">次 / 月</div>
           </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px">
           <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px;text-align:center">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">模擬受訪者</div>
-            <div style="font-size:22px;font-weight:800;color:var(--primary)">${sampleLabel.replace(' 人','')}</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">${sampleLabel}</div>
+            <div style="font-size:18px;font-weight:800;color:var(--primary)">${sampleLabel}</div>
+          </div>
+          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px;text-align:center">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">AI 模式</div>
+            <div style="font-size:14px;font-weight:700;color:${plan==='free'?'var(--ink-muted)':'var(--primary)'}">${plan==='free'?'快速模式（固定）':aiModeLabel}</div>
+            ${plan!=='free'?'<button class="btn btn-outline" style="font-size:11px;padding:4px 10px;margin-top:6px" onclick="app.toggleAIMode()">切換模式</button>':''}
           </div>
         </div>
 
         ${plan==='free' ? `
-        <div style="margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-muted);margin-bottom:6px">
-            <span>本月 AI 研究用量</span>
-            <span>${labUsed} / ${labLimit}</span>
-          </div>
-          <div class="usage-bar"><div class="usage-fill" style="width:${labPercent}%"></div></div>
+        <button class="btn btn-gold" style="width:100%;padding:12px 0" onclick="app.showUpgradeInfo()">升級到 Pro · NT$890/月</button>
+        ` : plan==='pro' ? `
+        <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--ink-muted)">
+          用量每月重置 · 達上限後當月不再產出新報告
         </div>
-        <button class="btn btn-gold" style="width:100%;padding:12px 0" onclick="app.showUpgradeInfo()">升級到 Pro · 解鎖無限研究</button>
         ` : `
-        <div style="text-align:center;padding:8px 0;font-size:14px;color:var(--ink-muted)">
-          ${plan==='pro' ? '你正在使用 Pro 方案，所有核心功能已解鎖' : '你正在使用 Enterprise 方案，享有完整功能與團隊協作'}
+        <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--ink-muted)">
+          Enterprise 方案 · 自訂用量與受訪者規模
         </div>
         `}
       </div>
@@ -7800,13 +7819,13 @@ function loadHistory(){
               </tr>
             </thead>
             <tbody>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">PATH 診斷</td><td style="text-align:center;padding:10px 8px">快速（5 題）</td><td style="text-align:center;padding:10px 8px">完整（20 題）</td><td style="text-align:center;padding:10px 8px">完整 + 自訂</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">Lab AI 研究</td><td style="text-align:center;padding:10px 8px">3 次/月</td><td style="text-align:center;padding:10px 8px">無限</td><td style="text-align:center;padding:10px 8px">無限</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">模擬受訪者</td><td style="text-align:center;padding:10px 8px">8 人</td><td style="text-align:center;padding:10px 8px">32 人</td><td style="text-align:center;padding:10px 8px">64 人</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">AI 深度分析</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">✓</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">匯出報告</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">MD / PDF</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全部 + API</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">PATH 診斷</td><td style="text-align:center;padding:10px 8px">3 次/月</td><td style="text-align:center;padding:10px 8px">20 次/月</td><td style="text-align:center;padding:10px 8px">自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">Lab AI 深度研究</td><td style="text-align:center;padding:10px 8px">1 次/月</td><td style="text-align:center;padding:10px 8px">5 次/月</td><td style="text-align:center;padding:10px 8px">自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">模擬受訪者</td><td style="text-align:center;padding:10px 8px">16 / 32 人</td><td style="text-align:center;padding:10px 8px">64 / 128 人</td><td style="text-align:center;padding:10px 8px">自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">AI 模型切換</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">精準 / 快速</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂調校</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">可視化報告 + 匯出</td><td style="text-align:center;padding:10px 8px">PATH 診斷報告</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">完整報告 · MD / PDF</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全部 + API</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">可管理品牌數</td><td style="text-align:center;padding:10px 8px">1 個</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">無限</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">無限</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">團隊協作</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">最多 10 人</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">白標品牌</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓</td></tr>
               <tr><td style="padding:10px 8px">專屬客戶經理</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓</td></tr>
             </tbody>
           </table>
@@ -7857,7 +7876,7 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v0.7.0</span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v0.7.1</span></div>
             <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 產品驗證平台</div>
           </div>
           <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
@@ -7875,6 +7894,18 @@ function loadHistory(){
 
   function showUpgradeInfo() {
     showToast('感謝你的興趣！付費功能開發中，敬請期待');
+  }
+
+  function toggleAIMode() {
+    if (state.plan === 'free') {
+      showToast('升級到 Pro 方案即可切換 AI 模式');
+      return;
+    }
+    state.aiMode = state.aiMode === 'precise' ? 'fast' : 'precise';
+    saveState();
+    const label = state.aiMode === 'precise' ? '精準模式（深度分析）' : '快速模式（大量驗證）';
+    showToast('已切換至 ' + label);
+    renderSettings();
   }
 
   // ==================== ADVANCED ANALYTICS ====================
@@ -8076,7 +8107,7 @@ function loadHistory(){
   function exportAllData() {
     const exportData = {
       exportDate: new Date().toISOString(),
-      version: 'v0.7.0',
+      version: 'v0.7.1',
       plan: state.plan,
       diagnoses: state.diagnoses,
       researches: state.researches,
@@ -8167,7 +8198,7 @@ function loadHistory(){
     }
 
     if (!config.sampleSize || config.sampleSize < 8 || config.sampleSize > 64) {
-      errors.push('樣本數需在 8-64 之間');
+      errors.push('樣本數需在 16-128 之間');
     }
 
     return {
@@ -8350,7 +8381,7 @@ function loadHistory(){
     ['P','A','T','H'].forEach(dim => {
       md += '| ' + dim + ' · ' + dimNames[dim] + ' | ' + Math.round(d.scores[dim] || 0) + ' |\n';
     });
-    md += '\n---\n\n*由 BeyondPath PATH 診斷 v0.7.0 生成 · ' + date + '*\n';
+    md += '\n---\n\n*由 BeyondPath PATH 診斷 v0.7.1 生成 · ' + date + '*\n';
     const blob = new Blob([md], {type:'text/markdown'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -8374,7 +8405,7 @@ function loadHistory(){
       (d.verdict ? '<div class="verdict" style="margin-top:8px;background:' + (d.verdict==='kill'?'#ffe0e0;color:#d32f2f':d.verdict==='pivot'?'#fff3e0;color:#e65100':'#e0f5f0;color:#00796b') + '">' + d.verdict.toUpperCase() + '</div>' : '') +
       '</div>' +
       '<table><tr style="background:#f5f5f5"><th style="padding:6px 12px;border:1px solid #ddd;text-align:left">維度</th><th style="padding:6px 12px;border:1px solid #ddd">分數</th></tr>' + rows + '</table>' +
-      '<div style="margin-top:32px;color:#999;font-size:11px;text-align:center">BeyondPath PATH 診斷 v0.7.0 · ' + date + '</div>' +
+      '<div style="margin-top:32px;color:#999;font-size:11px;text-align:center">BeyondPath PATH 診斷 v0.7.1 · ' + date + '</div>' +
       '<script>window.onload=function(){window.print()}<\/script></body></html>';
     const w = window.open('','_blank');
     if(w){ w.document.write(html); w.document.close(); }
@@ -8397,7 +8428,7 @@ function loadHistory(){
       '<div class="meta"><span class="badge">' + r.type + '</span><span class="badge">' + audLabel + '</span><span class="badge">' + (r.region||'') + '</span> · ' + date + ' · ' + (r.sampleSize||'—') + ' 人樣本</div>' +
       (r.verdict ? '<div style="background:#f8f8ff;padding:12px 16px;border-radius:8px;margin:16px 0;font-size:14px;line-height:1.6">' + r.verdict + '</div>' : '') +
       (quantRows ? '<h2 style="font-size:16px;margin-top:24px">量化指標</h2><table><tr style="background:#f5f5f5"><th style="padding:6px 12px;border:1px solid #ddd;text-align:left">指標</th><th style="padding:6px 12px;border:1px solid #ddd">均分</th></tr>' + quantRows + '</table>' : '') +
-      '<div style="margin-top:32px;color:#999;font-size:11px;text-align:center">BeyondPath 受眾研究 v0.7.0 · ' + date + '</div>' +
+      '<div style="margin-top:32px;color:#999;font-size:11px;text-align:center">BeyondPath 受眾研究 v0.7.1 · ' + date + '</div>' +
       '<script>window.onload=function(){window.print()}<\/script></body></html>';
     const w = window.open('','_blank');
     if(w){ w.document.write(html); w.document.close(); }
@@ -8887,6 +8918,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     runDocDiagnosis,
     openBlogPost,
     closeBlogPost,
+    toggleAIMode,
   };
 
   // ==================== BLOG FUNCTIONS ====================
@@ -8961,7 +8993,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     el.innerHTML = `
       <div class="landing-page">
         <nav class="landing-nav">
-          <div class="landing-logo"><img src="data:image/png;base64,${LOGO_DARK}" alt="BeyondPath"></div>
+          <div class="landing-logo"><img src="data:image/png;base64,${LOGO_LIGHT}" alt="BeyondPath"></div>
           <div class="landing-links">
             <a href="#ai-features">AI 功能</a>
             <a href="#methodology">方法論</a>
@@ -8999,7 +9031,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
               <div class="ai-feat-card stagger-child d1">
                 <div class="ai-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 017 7c0 3-2 5-3 7h-8c-1-2-3-4-3-7a7 7 0 017-7z"/><path d="M9 16v2a3 3 0 006 0v-2"/><path d="M10 22h4"/></svg></div>
                 <h3>AI 人格合成</h3>
-                <p>根據你的目標受眾，AI 自動生成 8-64 位多元用戶人格，每位都有獨特的背景、需求與決策模式</p>
+                <p>根據你的目標受眾，AI 自動生成 16-128 位多元用戶人格，每位都有獨特的背景、需求與決策模式</p>
               </div>
               <div class="ai-feat-card stagger-child d2">
                 <div class="ai-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M8 10h8"/><path d="M8 14h4"/></svg></div>
@@ -9089,7 +9121,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                 <tr>
                   <td>樣本規模</td>
                   <td><span class="cross">✗</span> 5~15 人</td>
-                  <td class="highlight"><span class="check">✓</span> 8~64 多元人格</td>
+                  <td class="highlight"><span class="check">✓</span> 16~128 多元人格</td>
                 </tr>
                 <tr>
                   <td>可重複性</td>
@@ -9233,7 +9265,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                   <li>Lab AI 深度研究 1 次</li>
                   <li>模擬受訪者 16 / 32 人</li>
                   <li>PATH 診斷報告</li>
-                  <li>1 個產品項目</li>
+                  <li>1 個可管理品牌數</li>
                 </ul>
                 <button class="btn-price" onclick="app.showLoginModal()">免費開始</button>
               </div>
@@ -9248,7 +9280,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                   <li>模擬受訪者 64 / 128 人</li>
                   <li>AI 模型切換（精準 / 快速模式）</li>
                   <li>完整可視化報告 + 匯出</li>
-                  <li>無限產品項目</li>
+                  <li>無限可管理品牌數</li>
                   <li>優先客服支持</li>
                 </ul>
                 <button class="btn-price featured" onclick="app.showLoginModal()">升級 Pro</button>
