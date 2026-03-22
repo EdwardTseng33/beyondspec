@@ -156,6 +156,39 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 .method-note{margin-top:2.5rem;padding:1.5rem 2rem;background:rgba(124,92,252,.04);border:1px solid rgba(124,92,252,.1);border-radius:12px;font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.75}
 .method-note strong{color:rgba(255,255,255,.7)}
 
+/* — BLOG / JOURNAL — */
+.blog-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3.5rem}
+.blog-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;overflow:hidden;transition:all .35s cubic-bezier(.16,1,.3,1);cursor:pointer}
+.blog-card:hover{border-color:rgba(124,92,252,.25);background:rgba(124,92,252,.03);transform:translateY(-4px)}
+.blog-thumb{width:100%;height:200px;object-fit:cover;display:block;background:linear-gradient(135deg,rgba(124,92,252,.15),rgba(124,92,252,.05));position:relative}
+.blog-thumb-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:2rem}
+.blog-thumb-inner svg{width:80px;height:80px;color:rgba(124,92,252,.4)}
+.blog-body{padding:2rem}
+.blog-meta{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem}
+.blog-tag{font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--primary);background:rgba(124,92,252,.1);padding:.3rem .8rem;border-radius:20px}
+.blog-date{font-size:.75rem;color:rgba(255,255,255,.3);font-weight:500}
+.blog-card h3{font-size:1.1rem;font-weight:750;color:#fff;margin-bottom:.7rem;letter-spacing:-.2px;line-height:1.4}
+.blog-card p{font-size:.85rem;color:rgba(255,255,255,.38);line-height:1.75;font-weight:450;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.blog-read-more{display:inline-flex;align-items:center;gap:.4rem;margin-top:1.2rem;font-size:.82rem;font-weight:650;color:var(--primary);text-decoration:none;transition:gap .2s}
+.blog-card:hover .blog-read-more{gap:.7rem}
+.blog-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,8,15,.92);backdrop-filter:blur(16px);overflow-y:auto;padding:3rem}
+.blog-overlay.active{display:block}
+.blog-article{max-width:720px;margin:0 auto;padding:2rem 0}
+.blog-article-close{position:fixed;top:1.5rem;right:1.5rem;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:10000}
+.blog-article-close:hover{background:rgba(124,92,252,.2);border-color:rgba(124,92,252,.3)}
+.blog-article h1{font-size:clamp(1.8rem,3vw,2.4rem);font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.25;margin-bottom:1.5rem}
+.blog-article .article-meta{display:flex;align-items:center;gap:1rem;margin-bottom:2.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.blog-article .article-meta span{font-size:.82rem;color:rgba(255,255,255,.4)}
+.blog-article h2{font-size:1.3rem;font-weight:800;color:#fff;margin:2.5rem 0 1rem;letter-spacing:-.3px}
+.blog-article h3{font-size:1.1rem;font-weight:700;color:rgba(255,255,255,.85);margin:2rem 0 .8rem}
+.blog-article p{font-size:.95rem;color:rgba(255,255,255,.55);line-height:1.85;margin-bottom:1.2rem}
+.blog-article strong{color:rgba(255,255,255,.8)}
+.blog-article blockquote{border-left:3px solid var(--primary);padding:.8rem 0 .8rem 1.5rem;margin:1.5rem 0;background:rgba(124,92,252,.04);border-radius:0 8px 8px 0}
+.blog-article blockquote p{color:rgba(255,255,255,.5);font-style:italic;margin-bottom:0}
+.blog-article .article-highlight{background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.12);border-radius:12px;padding:1.5rem 2rem;margin:2rem 0}
+.blog-article .article-highlight p{margin-bottom:0}
+.blog-article .article-stat{display:inline-block;font-size:1.4rem;font-weight:900;color:var(--primary);margin-right:.3rem}
+
 /* — STATS ROW — */
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:5rem;padding-top:5rem;border-top:1px solid rgba(255,255,255,.06)}
 .stat-item{text-align:center}
@@ -232,6 +265,7 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
   .landing-links{gap:1rem}
   .landing-links a{font-size:.82rem}
   .method-grid{grid-template-columns:1fr}
+  .blog-grid{grid-template-columns:1fr}
   .footer-inner{grid-template-columns:1fr 1fr}
   .cta-section{margin:3rem 1rem;padding:4rem 2rem}
   .hero{padding:9rem 1.5rem 5rem}
@@ -8851,7 +8885,73 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     handleDocFile,
     handleDocDrop,
     runDocDiagnosis,
+    openBlogPost,
+    closeBlogPost,
   };
+
+  // ==================== BLOG FUNCTIONS ====================
+  const BLOG_POSTS = {
+    'westwood-2025': {
+      title: '當 AI 能 99.8% 偽裝成真人受訪者：Westwood 研究對產品驗證的啟示',
+      date: '2026.03.22',
+      tag: '研究解讀',
+      readTime: '8 分鐘',
+      content: `
+        <h2>一項震撼學術界的發現</h2>
+        <p>2025 年 11 月，達特茅斯學院政府系副教授 Sean Westwood 在《美國國家科學院院刊》（PNAS）發表了一項研究：他開發的「自主合成受訪者」AI 工具，能以 <strong>99.8% 的機率繞過現行所有機器人偵測系統</strong>。</p>
+        <p>這項技術意味著，只需每份約 NT$1.5 的成本，就能大規模操控問卷與民調結果。研究顯示，在 2024 年美國大選前的七項主要全國民調中，僅需混入 10 至 52 份 AI 生成的假問卷，就足以翻轉預測結果。</p>
+        <div class="article-highlight">
+          <p><strong>核心數據：</strong>在 43,000 次測試中，AI 系統通過了 99.8% 的注意力檢查題，邏輯謎題更是零錯誤。傳統的「速度檢測」防偽手段失敗率高達 80%-99%。</p>
+        </div>
+
+        <h2>精密模擬：不只是自動填答</h2>
+        <p>Westwood 的系統並非簡單的自動填答程式，而是一套完整的「人類行為模擬系統」。它能根據設定的人口統計特徵推理出符合角色的答案、模擬逼真的閱讀時間與滑鼠軌跡，甚至在開放式問題中模擬鍵盤敲擊並「故意」打錯字再修正。</p>
+        <p>系統可串接 OpenAI、Anthropic、Google 等主流 AI 模型，只需約 500 字的提示詞，就能將大型語言模型變身為難以辨識的假受訪者。</p>
+
+        <h2>對 BeyondPath 的意義：同一技術，兩種路線</h2>
+        <p>這項研究與 BeyondPath 的技術根基高度相關——<strong>我們都使用 AI 來合成受訪者</strong>。但關鍵差異在於意圖與框架：</p>
+
+        <h3>攻擊性偽造 vs. 建設性模擬</h3>
+        <p>Westwood 的場景是「污染」——將 AI 假受訪者混入真人問卷，讓研究者無法分辨。BeyondPath 的場景是「輔助」——明確告知用戶所有受訪者皆為 AI 合成，目的是快速驗證產品假設。</p>
+
+        <h3>500 字 Prompt vs. 結構化框架</h3>
+        <p>Westwood 僅用簡單提示詞驅動 AI。BeyondPath 則有 <strong>PATH 四維診斷框架</strong>、人口統計與消費行為建模、文化參數校準、以及 RQS（Research Quality Score）量化每次研究的方法論完整度。</p>
+
+        <h3>隱匿身份 vs. 透明揭露</h3>
+        <p>Westwood 的 AI 設計為「偽裝」通過偵測。BeyondPath 則<strong>明確標示所有限制</strong>——正面偏誤校準值、文化參數影響範圍、合成受訪者非真人隨機抽樣的已知限制。</p>
+
+        <div class="article-highlight">
+          <p><strong>我們的立場：</strong>BeyondPath 是產品假設的快速驗證工具，不是傳統市調的替代品。在投入大規模研究之前，先用 AI 低成本驗證方向是否正確——這才是合成受訪者技術的正確應用。</p>
+        </div>
+
+        <h2>產業啟示：信任重建之路</h2>
+        <p>Westwood 的研究為全球價值數十億美元的問卷產業敲響警鐘。但與其恐慌，不如思考如何善用這項技術。</p>
+        <p>對產品團隊而言，AI 合成受訪者提供了前所未有的可能性：<strong>在數分鐘內，以極低成本，獲得結構化的用戶洞察</strong>。關鍵在於使用者必須理解其邊界——AI 模擬的是「可能的用戶反應模式」，而非「確定的市場真相」。</p>
+        <p>這也是為什麼 BeyondPath 堅持在每份報告中呈現 RQS 分數，並建議 Pro 用戶搭配真人訪談進行交叉驗證。<strong>透明的方法論，是 AI 驗證工具建立信任的唯一路徑。</strong></p>
+
+        <h2>結語</h2>
+        <p>AI 合成受訪者已經不是「會不會出現」的問題，而是「如何被使用」的問題。Westwood 展示了它的破壞力；BeyondPath 選擇展示它的建設力。在這個新時代，最終決定技術價值的，是使用者的意圖與工具的透明度。</p>
+      `
+    }
+  };
+
+  function openBlogPost(postId) {
+    const post = BLOG_POSTS[postId];
+    if (!post) return;
+    const overlay = document.getElementById('blogOverlay');
+    const content = document.getElementById('blogArticleContent');
+    content.innerHTML = '<h1>' + post.title + '</h1>' +
+      '<div class="article-meta"><span class="blog-tag">' + post.tag + '</span><span>' + post.date + '</span><span>' + post.readTime + ' 閱讀</span></div>' +
+      post.content;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeBlogPost() {
+    const overlay = document.getElementById('blogOverlay');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
 
   // ==================== NEW FUNCTIONS ====================
   function renderLanding() {
@@ -8865,7 +8965,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           <div class="landing-links">
             <a href="#ai-features">AI 功能</a>
             <a href="#methodology">方法論</a>
-            <a href="#features">工具鏈</a>
+            <a href="#journal">期刊</a>
             <a href="#pricing">定價</a>
             <button class="btn-login" onclick="app.showLoginModal()">登入</button>
           </div>
@@ -9068,7 +9168,56 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           </div>
         </section>
 
-        <section class="pricing l-section bg-dark reveal" id="pricing">
+        <section class="l-section bg-dark reveal" id="journal">
+          <div class="section-center">
+            <div class="section-header">
+              <div class="section-tag">Journal</div>
+              <h2>研究期刊</h2>
+              <p class="section-sub">AI 產品驗證的前沿觀點與方法論探討</p>
+            </div>
+            <div class="blog-grid">
+              <div class="blog-card stagger-child d1" onclick="app.openBlogPost('westwood-2025')">
+                <div class="blog-thumb">
+                  <div class="blog-thumb-inner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+                  </div>
+                </div>
+                <div class="blog-body">
+                  <div class="blog-meta">
+                    <span class="blog-tag">研究解讀</span>
+                    <span class="blog-date">2026.03.22</span>
+                  </div>
+                  <h3>當 AI 能 99.8% 偽裝成真人受訪者：Westwood 研究對產品驗證的啟示</h3>
+                  <p>達特茅斯學院研究揭示 AI 合成受訪者能以極低成本操控問卷結果。這對 BeyondPath 這類 AI 驗證工具意味著什麼？我們如何確保「建設性模擬」與「攻擊性偽造」之間的本質差異？</p>
+                  <span class="blog-read-more">閱讀全文 →</span>
+                </div>
+              </div>
+              <div class="blog-card stagger-child d2" style="opacity:.5;pointer-events:none">
+                <div class="blog-thumb">
+                  <div class="blog-thumb-inner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l3-9 6 18 3-9h4"/></svg>
+                  </div>
+                </div>
+                <div class="blog-body">
+                  <div class="blog-meta">
+                    <span class="blog-tag">方法論</span>
+                    <span class="blog-date">即將發布</span>
+                  </div>
+                  <h3>RQS 品質分數深度解析：如何量化 AI 研究的可信度</h3>
+                  <p>Research Quality Score 背後的四大因子、計算邏輯，以及為什麼它是 AI 產品驗證工具的信任基石。</p>
+                  <span class="blog-read-more">敬請期待</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="blog-overlay" id="blogOverlay">
+          <button class="blog-article-close" onclick="app.closeBlogPost()">✕</button>
+          <div class="blog-article" id="blogArticleContent"></div>
+        </div>
+
+        <section class="pricing l-section bg-subtle reveal" id="pricing">
           <div class="section-center">
             <div class="section-header">
               <h2>簡單透明的定價</h2>
@@ -9097,6 +9246,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                   <li>PATH 診斷 每月 20 次</li>
                   <li>Lab AI 深度研究 每月 5 次</li>
                   <li>模擬受訪者 64 / 128 人</li>
+                  <li>AI 模型切換（精準 / 快速模式）</li>
                   <li>完整可視化報告 + 匯出</li>
                   <li>無限產品項目</li>
                   <li>優先客服支持</li>
@@ -9107,14 +9257,17 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                 <h3>Enterprise</h3>
                 <div class="price-amount contact-text">依需求報價</div>
                 <ul>
-                  <li>自訂受訪者規模</li>
-                  <li>專屬 AI 模型調校</li>
+                  <li>自訂用量與受訪者規模</li>
+                  <li>專屬 AI 模型調校與切換</li>
                   <li>API 整合</li>
                   <li>團隊多人協作</li>
                   <li>專屬客戶成功經理</li>
                 </ul>
                 <button class="btn-price" onclick="window.location.href='mailto:hello@beyondpath.ai'">聯繫我們</button>
               </div>
+            </div>
+            <div class="method-note" style="margin-top:2rem;text-align:center">
+              <strong>用量說明：</strong>各方案設有月度用量上限，受訪者人數越多（如 128 人）消耗額度越高。達到上限後當月不再產出新報告，下月自動重置。Pro 方案支援 AI 模型切換 —— 精準模式（高品質深度分析）與快速模式（低成本大量驗證）可依需求自由選擇。
             </div>
           </div>
         </section>
