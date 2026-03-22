@@ -2545,8 +2545,6 @@ canvas{display:block;margin:0 auto 24px}
       { id: 'survey', label: '問卷引擎', icon: 'clipboard', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
       { type: 'category', label: '市場情報' },
       { id: 'market', label: '市場探測', icon: 'trendUp', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
-      { id: 'compete', label: '競品雷達', icon: 'target', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
-      { id: 'pricing', label: '定價實驗室', icon: 'dollarSign', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
       { type: 'category', label: '即將推出' },
       { id: 'focusgroup', label: '焦點小組', icon: 'video', type: 'item', soon: true },
       { id: 'uxwalk', label: '體驗走查', icon: 'footprints', type: 'item', soon: true },
@@ -2644,7 +2642,7 @@ canvas{display:block;margin:0 auto 24px}
     const plan = state.plan || 'free';
     const isPro = plan === 'pro' || plan === 'enterprise';
     // Locked modules for free users → show upgrade prompt
-    const proModules = ['survey','market','compete','pricing'];
+    const proModules = ['survey','market'];
     if (!isPro && proModules.includes(moduleId)) {
       renderLockedModule(moduleId);
       return;
@@ -2656,9 +2654,8 @@ canvas{display:block;margin:0 auto 24px}
       case 'reports': renderHome(); break;
       case 'survey': renderSurveyEngine(); break;
       case 'market': renderMarketSignal(); break;
-      case 'compete': renderCompeteRadar(); break;
-      case 'pricing': renderPricingLab(); break;
-      case 'pmf': renderPMFDashboard(); break;
+      // compete & pricing removed — handled inside Lab research types
+      // pmf removed — integrated into PATH report
       case 'settings': renderSettings(); break;
     }
   }
@@ -7804,14 +7801,12 @@ function loadHistory(){
 
   // ==================== LOCKED MODULE (FREE USERS) ====================
   function renderLockedModule(moduleId) {
-    const names = {survey:'問卷引擎',market:'市場探測',compete:'競品雷達',pricing:'定價實驗室'};
+    const names = {survey:'問卷引擎',market:'市場探測'};
     const descs = {
       survey:'AI 自動生成最佳化問卷，合成用戶預測試——發給真人之前先確保問卷品質。',
-      market:'真實搜尋關鍵字熱度、趨勢走向、需求缺口——用數據佐證你的產品方向。',
-      compete:'自動辨識 3-5 個直接競品，功能 / 定價 / 定位全面比較分析。',
-      pricing:'Van Westendorp & Conjoint 定價模型，AI 受訪者告訴你最佳價格帶。'
+      market:'真實搜尋關鍵字熱度、趨勢走向、需求缺口——用數據佐證你的產品方向。'
     };
-    const icons = {survey:'clipboard',market:'trendUp',compete:'target',pricing:'dollarSign'};
+    const icons = {survey:'clipboard',market:'trendUp'};
     const content = document.getElementById('content');
     content.innerHTML = `
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px 20px">
@@ -8295,8 +8290,6 @@ function loadHistory(){
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">模擬受訪者</td><td style="text-align:center;padding:10px 8px">16 / 32 人</td><td style="text-align:center;padding:10px 8px">64 / 128 人</td><td style="text-align:center;padding:10px 8px">自訂</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">市場情報</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">市場探測</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">競品雷達</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">定價實驗室</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">3 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">即將推出</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;color:var(--ink-muted)">焦點小組</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;color:var(--ink-muted)">體驗走查</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td></tr>
@@ -9763,8 +9756,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                 <ul>
                   <li>PATH 診斷 每月 20 次</li>
                   <li>Lab AI 深度研究 每月 5 次</li>
-                  <li>問卷引擎 · 市場探測 · 競品雷達</li>
-                  <li>定價實驗室 · PMF 儀表板完整版</li>
+                  <li>問卷引擎 · 市場探測</li>
                   <li>模擬受訪者 64 / 128 人</li>
                   <li>AI 模型切換（精準 / 快速模式）</li>
                   <li>完整可視化報告 + 匯出</li>
