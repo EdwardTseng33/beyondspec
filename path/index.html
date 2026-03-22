@@ -2279,7 +2279,7 @@ canvas{display:block;margin:0 auto 24px}
           升級 Pro 方案，解鎖無限 AI 研究、完整診斷、32 人樣本、匯出報告等功能。
         </div>
         <div class="modal-actions">
-          <button class="modal-actions button" style="flex: 1; background-color: var(--gold); color: white; border: none; border-radius: 8px; padding: 12px; cursor: pointer; font-weight: 600;" onclick="app.handleUpgrade()">升級到 Pro · $29/月</button>
+          <button class="modal-actions button" style="flex: 1; background-color: var(--gold); color: white; border: none; border-radius: 8px; padding: 12px; cursor: pointer; font-weight: 600;" onclick="app.handleUpgrade()">升級到 Pro · NT$890/月</button>
         </div>
         <div style="text-align: center; margin-top: 12px;">
           <span style="color: var(--ink-muted); font-size: var(--text-sm); cursor: pointer;" onclick="app.closePaywallModal()">稍後再說</span>
@@ -7538,106 +7538,149 @@ function loadHistory(){
   // ==================== MODULE 5: SETTINGS ====================
   function renderSettings() {
     const content = document.getElementById('content');
+    const plan = state.plan || 'free';
+    const planLabel = plan === 'enterprise' ? 'Enterprise' : plan === 'pro' ? 'Pro' : 'Free';
+    const planColor = plan === 'enterprise' ? 'var(--teal)' : plan === 'pro' ? 'var(--primary)' : 'var(--ink-muted)';
+    const labLimit = plan === 'free' ? 3 : '∞';
+    const labUsed = state.labCount || 0;
+    const labPercent = plan === 'free' ? Math.min((labUsed / 3) * 100, 100) : 0;
+    const diagLabel = plan === 'free' ? '快速模式（5 題）' : '完整模式（20 題）';
+    const sampleLabel = plan === 'enterprise' ? '64 人' : plan === 'pro' ? '32 人' : '8 人';
 
     content.innerHTML = `
       <div class="page-title-area">
         <h1>設定</h1>
-        <div class="subtitle">自訂你的 BeyondPath 體驗</div>
+        <div class="subtitle">管理帳戶、方案與偏好設定</div>
       </div>
 
-      <div class="settings-section">
-        <div class="settings-section-title">帳戶</div>
-        <div class="settings-item">
+      <!-- ═══ 帳戶資訊 ═══ -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+          <div style="width:52px;height:52px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0">${(state.user.avatar || 'U')}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:17px;font-weight:700;color:var(--ink);margin-bottom:2px">${state.user.name || '使用者'}</div>
+            <div style="font-size:14px;color:var(--ink-muted)">${state.user.email || ''}</div>
+          </div>
+          <span style="font-size:13px;color:${planColor};font-weight:700;background:${plan==='free'?'var(--bg-hover)':'var(--primary-light)'};padding:5px 14px;border-radius:20px">${planLabel}</span>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-outline" style="flex:1;padding:10px 0;font-size:14px" onclick="app.logout()">登出帳號</button>
+        </div>
+      </div>
+
+      <!-- ═══ 方案與用量 ═══ -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">方案與用量</div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px;text-align:center">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">Lab 研究</div>
+            <div style="font-size:22px;font-weight:800;color:var(--primary)">${plan==='free' ? labUsed + ' / ' + labLimit : '∞'}</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">${plan==='free'?'次/月':'無限制'}</div>
+          </div>
+          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px;text-align:center">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">PATH 診斷</div>
+            <div style="font-size:22px;font-weight:800;color:var(--primary)">${plan==='free'?'5':'20'}</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">${diagLabel}</div>
+          </div>
+          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px;text-align:center">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">模擬受訪者</div>
+            <div style="font-size:22px;font-weight:800;color:var(--primary)">${sampleLabel.replace(' 人','')}</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">${sampleLabel}</div>
+          </div>
+        </div>
+
+        ${plan==='free' ? `
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-muted);margin-bottom:6px">
+            <span>本月 AI 研究用量</span>
+            <span>${labUsed} / ${labLimit}</span>
+          </div>
+          <div class="usage-bar"><div class="usage-fill" style="width:${labPercent}%"></div></div>
+        </div>
+        <button class="btn btn-gold" style="width:100%;padding:12px 0" onclick="app.showUpgradeInfo()">升級到 Pro · 解鎖無限研究</button>
+        ` : `
+        <div style="text-align:center;padding:8px 0;font-size:14px;color:var(--ink-muted)">
+          ${plan==='pro' ? '你正在使用 Pro 方案，所有核心功能已解鎖' : '你正在使用 Enterprise 方案，享有完整功能與團隊協作'}
+        </div>
+        `}
+      </div>
+
+      <!-- ═══ 功能對照表 ═══ -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">方案比較</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:14px">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border)">
+                <th style="text-align:left;padding:10px 8px;color:var(--ink-muted);font-weight:600">功能</th>
+                <th style="text-align:center;padding:10px 8px;color:var(--ink-muted);font-weight:600">Free</th>
+                <th style="text-align:center;padding:10px 8px;color:var(--primary);font-weight:700">Pro NT$890/月</th>
+                <th style="text-align:center;padding:10px 8px;color:var(--teal);font-weight:700">Enterprise NT$2,990/月</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">PATH 診斷</td><td style="text-align:center;padding:10px 8px">快速（5 題）</td><td style="text-align:center;padding:10px 8px">完整（20 題）</td><td style="text-align:center;padding:10px 8px">完整 + 自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">Lab AI 研究</td><td style="text-align:center;padding:10px 8px">3 次/月</td><td style="text-align:center;padding:10px 8px">無限</td><td style="text-align:center;padding:10px 8px">無限</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">模擬受訪者</td><td style="text-align:center;padding:10px 8px">8 人</td><td style="text-align:center;padding:10px 8px">32 人</td><td style="text-align:center;padding:10px 8px">64 人</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">AI 深度分析</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">✓</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">匯出報告</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">MD / JSON / PDF</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全部 + API</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">團隊協作</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">最多 10 人</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">白標品牌</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓</td></tr>
+              <tr><td style="padding:10px 8px">專屬客戶經理</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+        ${plan==='free' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.handleUpgrade()">升級到 Pro · NT$890/月</button>' : plan==='pro' ? '<button class="btn btn-outline" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.showUpgradeInfo()">升級到 Enterprise · NT$2,990/月</button>' : ''}
+      </div>
+
+      <!-- ═══ 團隊管理（Enterprise 預留）═══ -->
+      ${plan==='enterprise' ? `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">團隊管理</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">${(state.user.avatar||'E')}</div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--ink)">${state.user.name}</div><div style="font-size:12px;color:var(--ink-muted)">${state.user.email} · 擁有者</div></div>
+          <span style="font-size:12px;color:var(--teal);font-weight:600;background:var(--bg-app);padding:4px 10px;border-radius:12px">Owner</span>
+        </div>
+        <button class="btn btn-outline" style="width:100%;padding:10px 0;font-size:14px" onclick="app.showToast('團隊管理功能即將推出')">
+          <span style="margin-right:6px">+</span> 邀請團隊成員
+        </button>
+        <div style="margin-top:12px;font-size:13px;color:var(--ink-muted);text-align:center">Enterprise 方案支援最多 10 位成員協作，含角色權限管理（Owner / Admin / Editor / Viewer）</div>
+      </div>
+      ` : plan==='free' ? `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;opacity:.65">
+        <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">團隊協作</div>
+        <div style="font-size:14px;color:var(--ink-muted);line-height:1.6">升級到 Enterprise 方案即可邀請團隊成員共同管理診斷與研究，支援角色權限（Owner / Admin / Editor / Viewer）。</div>
+      </div>
+      ` : `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;opacity:.65">
+        <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">團隊協作</div>
+        <div style="font-size:14px;color:var(--ink-muted);line-height:1.6;margin-bottom:12px">升級到 Enterprise 方案即可邀請團隊成員共同管理診斷與研究。</div>
+        <button class="btn btn-outline" style="width:100%;padding:10px 0;font-size:14px" onclick="app.showUpgradeInfo()">了解 Enterprise 方案</button>
+      </div>
+      `}
+
+      <!-- ═══ 資料管理 ═══ -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">資料管理</div>
+        <div class="settings-item" style="border:none;padding:0">
           <div>
-            <div class="settings-label">${state.user.name}</div>
-            <div class="settings-value">${state.user.email}</div>
+            <div style="font-size:14px;font-weight:600;color:var(--ink)">匯出所有資料</div>
+            <div style="font-size:13px;color:var(--ink-muted)">下載你的診斷與研究資料（JSON 格式）</div>
           </div>
-          <span style="font-size:13px;color:var(--teal);font-weight:600;display:flex;align-items:center;gap:4px"><span class="status-indicator"></span>已連接</span>
-        </div>
-        <div style="margin-top:16px;display:flex;gap:10px">
-          <button class="btn btn-outline" style="flex:1;padding:10px 0;font-size:14px" onclick="app.logout()">登出</button>
+          <button class="btn btn-outline" style="font-size:13px;padding:8px 16px" onclick="app.exportAsJSON()">匯出 JSON</button>
         </div>
       </div>
 
-      <div class="divider"></div>
-
-      <div class="settings-section">
-        <div class="settings-section-title">AI 引擎</div>
-        <div class="settings-item">
+      <!-- ═══ 關於 ═══ -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div class="settings-label"><span class="status-indicator"></span>AI 研究引擎</div>
-            <div class="settings-value">由 BeyondPath 自動管理，無需手動設定</div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v0.6.5</span></div>
+            <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 產品驗證平台</div>
           </div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="settings-section">
-        <div class="settings-section-title">方案與用量</div>
-        <div class="settings-item">
-          <div>
-            <div class="settings-label">Free 方案</div>
-            <div class="settings-value">${state.labCount} / 3 次 AI 研究</div>
-          </div>
-        </div>
-        <div style="margin-top: 12px;">
-          <div class="usage-bar">
-            <div class="usage-fill" style="width: ${(state.labCount / 3) * 100}%"></div>
-          </div>
-        </div>
-        <button class="btn btn-gold" style="width: 100%; margin-top: 16px;" onclick="app.showUpgradeInfo()">升級到 Pro · $29/月</button>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="settings-section">
-        <div class="settings-section-title">方案比較</div>
-        <div class="pricing-grid">
-          <div class="pricing-card">
-            <div class="pricing-name">Free</div>
-            <div class="pricing-price">$0</div>
-            <ul class="pricing-features">
-              <li>3 次 AI 研究</li>
-              <li>基礎診斷</li>
-              <li>16 人樣本</li>
-              <li>無匯出</li>
-            </ul>
-            <button class="btn btn-outline" style="width: 100%;">目前方案</button>
-          </div>
-          <div class="pricing-card highlighted">
-            <div class="pricing-name">Pro</div>
-            <div class="pricing-price">$29 <span style="font-size: var(--text-xs); color: var(--ink-muted);">/月</span></div>
-            <ul class="pricing-features">
-              <li>無限 AI 研究</li>
-              <li>完整診斷 + L2</li>
-              <li>32 人樣本</li>
-              <li>匯出報告</li>
-            </ul>
-            <button class="btn btn-gold" style="width: 100%;" onclick="app.handleUpgrade()">升級到 Pro</button>
-          </div>
-          <div class="pricing-card">
-            <div class="pricing-name">Enterprise</div>
-            <div class="pricing-price">$99 <span style="font-size: var(--text-xs); color: var(--ink-muted);">/月</span></div>
-            <ul class="pricing-features">
-              <li>一切 Pro 功能</li>
-              <li>團隊協作</li>
-              <li>64 人樣本</li>
-              <li>API 存取</li>
-            </ul>
-            <button class="btn btn-outline" style="width: 100%;">聯繫我們</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="settings-section">
-        <div class="settings-section-title">關於</div>
-        <div style="font-size: var(--text-sm); color: var(--ink-muted); line-height: 1.6;">
-          <div style="margin-bottom: 8px;"><strong>BeyondPath</strong> v0.6.5</div>
-          <div style="margin-bottom: 8px;">BeyondSpec 規格外工作室</div>
-          <div>產品驗證平台 · 助力台灣科技創業</div>
+          <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
         </div>
       </div>
     `;
@@ -8723,21 +8766,21 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           <div class="pricing-grid">
             <div class="price-card">
               <h3>Free</h3>
-              <div class="price-amount">$0<small>/月</small></div>
-              <ul><li>PATH 基礎診斷（5 題）</li><li>1 次 Lab 研究 / 月</li><li>8 位模擬受訪者</li><li>基本報告匯出</li></ul>
+              <div class="price-amount">NT$0<small>/月</small></div>
+              <ul><li>PATH 快速診斷（5 題）</li><li>3 次 Lab 研究 / 月</li><li>8 位模擬受訪者</li><li>線上瀏覽報告</li></ul>
               <button class="btn-price" onclick="app.showLoginModal()">免費開始</button>
             </div>
             <div class="price-card featured">
               <div class="price-badge">最受歡迎</div>
               <h3>Pro</h3>
-              <div class="price-amount">$29<small>/月</small></div>
-              <ul><li>完整 PATH 診斷（20 題）</li><li>無限 Lab 研究</li><li>32 位模擬受訪者</li><li>AI 深度分析報告</li><li>Markdown + JSON 匯出</li></ul>
+              <div class="price-amount">NT$890<small>/月</small></div>
+              <ul><li>完整 PATH 診斷（20 題）</li><li>無限 Lab 研究</li><li>32 位模擬受訪者</li><li>AI 深度分析報告</li><li>MD / JSON / PDF 匯出</li></ul>
               <button class="btn-price featured" onclick="app.showLoginModal()">升級 Pro</button>
             </div>
             <div class="price-card">
               <h3>Enterprise</h3>
-              <div class="price-amount">$99<small>/月</small></div>
-              <ul><li>全部 Pro 功能</li><li>團隊多人協作</li><li>API 存取</li><li>自訂品牌白標</li><li>專屬客戶經理</li></ul>
+              <div class="price-amount">NT$2,990<small>/月</small></div>
+              <ul><li>全部 Pro 功能</li><li>團隊多人協作（10 人）</li><li>API 存取</li><li>自訂品牌白標</li><li>專屬客戶經理</li></ul>
               <button class="btn-price" onclick="app.showLoginModal()">聯絡銷售</button>
             </div>
           </div>
