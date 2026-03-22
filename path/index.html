@@ -2910,6 +2910,11 @@ canvas{display:block;margin:0 auto 24px}
     content.innerHTML = `
       <div class="page-header" style="justify-content:flex-end">
         <div class="header-right">
+          <div onclick="app.navigate('settings')" style="display:flex;align-items:center;gap:6px;padding:4px 12px;background:var(--bg-hover);border-radius:var(--r-sm);cursor:pointer;transition:all .2s" title="AI Credits 餘額">
+            ${ICONS.zap}
+            <span style="font-size:13px;font-weight:600;color:var(--ink)">${(() => { const lim = state.plan==='free'?100:state.plan==='pro'?2000:10000; return Math.max(0,lim-(state.creditUsed||0)).toLocaleString(); })()}</span>
+            <span style="font-size:11px;color:var(--ink-muted)">credits</span>
+          </div>
           <span class="plan-badge ${state.plan==='free'?'free':'pro'}" style="font-size:13px;padding:3px 10px">${planLabel}</span>
           <div class="header-avatar" onclick="app.navigate('settings')">${state.user.avatar}</div>
           <span class="header-name">${state.user.name}</span>
