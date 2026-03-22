@@ -9629,21 +9629,21 @@ function loadHistory(){
     // AI model config
     const aiModel = state.aiModel || 'sonnet';
     const modelOptions = [
-      { id: 'haiku', label: 'Claude Haiku 4.5', desc: '快速回應・低消耗', cost: '1x' },
-      { id: 'sonnet', label: 'Claude Sonnet 4.6', desc: '均衡品質・推薦', cost: '2x' },
-      { id: 'opus', label: 'Claude Opus 4.6', desc: '最高品質・深度分析', cost: '5x' }
+      { id: 'sonnet', label: 'Claude Sonnet 4.6', desc: '均衡品質・推薦', cost: '1x' },
+      { id: 'opus', label: 'Claude Opus 4.6', desc: '最高品質・深度分析', cost: '3x' }
     ];
-    const currentModel = modelOptions.find(m => m.id === aiModel) || modelOptions[1];
+    const currentModel = modelOptions.find(m => m.id === aiModel) || modelOptions[0];
 
-    // Credit cost reference
-    const creditCosts = [
-      { action: 'PATH 診斷', cost: '5' },
-      { action: 'Lab AI 研究', cost: '20' },
-      { action: '問卷生成', cost: '10' },
-      { action: '市場探測', cost: '15' },
-      { action: '市場報告', cost: '25' },
-      { action: '文件匯入評分', cost: '8' }
+    // Credit cost reference (filtered by plan)
+    const allCreditCosts = [
+      { action: 'PATH 診斷', cost: '5', free: true },
+      { action: '文件匯入評分', cost: '8', free: true },
+      { action: 'Lab AI 研究', cost: '20', free: false },
+      { action: '問卷生成', cost: '10', free: false },
+      { action: '市場探測', cost: '15', free: false },
+      { action: '市場報告', cost: '25', free: false }
     ];
+    const creditCosts = plan === 'free' ? allCreditCosts.filter(c => c.free) : allCreditCosts;
 
     content.innerHTML = `
       <div class="page-title-area">
@@ -9691,8 +9691,8 @@ function loadHistory(){
           <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">
             <div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px">AI 模型</div>
             ${plan === 'free' ? `
-              <div style="font-size:13px;font-weight:700;color:var(--ink)">${modelOptions[0].label}</div>
-              <div style="font-size:11px;color:var(--ink-muted);margin-top:4px">Free 方案固定使用 Haiku</div>
+              <div style="font-size:13px;font-weight:700;color:var(--ink)">Claude Sonnet 4.6</div>
+              <div style="font-size:11px;color:var(--ink-muted);margin-top:4px">Free 方案固定使用 Sonnet</div>
             ` : `
               <select style="width:100%;font-size:13px;font-weight:600" onchange="app.setAIModel(this.value)">
                 ${modelOptions.map(m => `<option value="${m.id}" ${aiModel === m.id ? 'selected' : ''}>${m.label}（${m.cost} credit）</option>`).join('')}
@@ -9719,7 +9719,7 @@ function loadHistory(){
         <button class="btn btn-gold" style="width:100%;padding:12px 0" onclick="app.showUpgradeInfo()">升級到 Pro · NT$890/月</button>
         ` : plan==='pro' ? `
         <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--ink-muted)">
-          模型倍率影響消耗：Haiku 1x · Sonnet 2x · Opus 5x
+          使用 Opus 模型時 credit 消耗為 Sonnet 的 3 倍
         </div>
         ` : `
         <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--ink-muted)">
@@ -9744,7 +9744,7 @@ function loadHistory(){
             <tbody>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">AI Credits</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">每月 Credits</td><td style="text-align:center;padding:10px 8px">100</td><td style="text-align:center;padding:10px 8px;color:var(--primary);font-weight:700">2,000</td><td style="text-align:center;padding:10px 8px;color:var(--teal);font-weight:700">10,000+</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">AI 模型</td><td style="text-align:center;padding:10px 8px">Haiku 4.5</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">Haiku / Sonnet / Opus</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全模型 + 自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">AI 模型</td><td style="text-align:center;padding:10px 8px">Sonnet 4.6</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">Sonnet / Opus</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全模型 + 自訂</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">功能模組</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">PATH 診斷</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">5 credits/次</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">Lab AI 深度研究</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">20 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">20 credits/次</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">20 credits/次</td></tr>
@@ -9845,7 +9845,7 @@ function loadHistory(){
       showToast('升級到 Pro 方案即可選擇 AI 模型');
       return;
     }
-    const models = { haiku: 'Claude Haiku 4.5', sonnet: 'Claude Sonnet 4.6', opus: 'Claude Opus 4.6' };
+    const models = { sonnet: 'Claude Sonnet 4.6', opus: 'Claude Opus 4.6' };
     state.aiModel = modelId;
     saveState();
     showToast('已切換至 ' + (models[modelId] || modelId));
