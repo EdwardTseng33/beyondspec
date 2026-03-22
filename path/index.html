@@ -8842,7 +8842,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     el.innerHTML = `
       <div class="landing-page">
         <nav class="landing-nav">
-          <div class="landing-logo"><img class="logo-light" src="data:image/png;base64,${LOGO_LIGHT}" alt="BeyondPath"><img class="logo-dark" src="data:image/png;base64,${LOGO_DARK}" alt="BeyondPath"></div>
+          <div class="landing-logo"><img src="data:image/png;base64,${LOGO_LIGHT}" alt="BeyondPath"></div>
           <div class="landing-links">
             <a href="#ai-features">AI 功能</a>
             <a href="#features">工具鏈</a>
@@ -8853,45 +8853,46 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
 
         <section class="hero">
           <div class="hero-inner">
-            <div class="hero-badge">🚀 AI 驅動的產品驗證平台</div>
-            <h1>別再靠直覺做<em>產品決策</em></h1>
+            <div class="hero-badge"><span class="badge-dot"></span> AI 驅動的產品驗證平台</div>
+            <h1><span class="line-white">別再靠直覺做</span><span class="line-gradient">產品決策</span></h1>
             <p>用 AI 模擬真實用戶深度訪談。PATH 四維診斷精準定位產品弱點，數據驅動每個迭代決策。</p>
             <div class="hero-btns">
               <button class="btn-primary" onclick="app.showLoginModal()">免費開始使用</button>
               <button class="btn-outline" onclick="document.querySelector('#ai-features').scrollIntoView({behavior:'smooth'})">了解更多</button>
             </div>
             <div class="hero-trust">
-              <span>✓ 免費方案永久可用</span>
-              <span>✓ 無需信用卡</span>
-              <span>✓ 5 分鐘完成首次診斷</span>
+              <span><span class="trust-check">✓</span> 免費方案永久可用</span>
+              <span><span class="trust-check">✓</span> 無需信用卡</span>
+              <span><span class="trust-check">✓</span> 5 分鐘完成首次診斷</span>
             </div>
           </div>
         </section>
 
-        <section class="section reveal" id="ai-features">
+        <section class="l-section bg-subtle reveal" id="ai-features">
           <div class="section-center">
             <div class="section-header">
+              <div class="section-tag">Core AI</div>
               <h2>AI 為你做了什麼</h2>
               <p class="section-sub">四個 AI 引擎，自動化產品驗證的核心流程</p>
             </div>
             <div class="ai-features-grid">
               <div class="ai-feat-card reveal stagger-1">
-                <div class="ai-feat-icon">🧠</div>
+                <div class="ai-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 017 7c0 3-2 5-3 7h-8c-1-2-3-4-3-7a7 7 0 017-7z"/><path d="M9 16v2a3 3 0 006 0v-2"/><path d="M10 22h4"/></svg></div>
                 <h3>AI 人格合成</h3>
                 <p>根據你的目標受眾，AI 自動生成 8-64 位多元用戶人格，每位都有獨特的背景、需求與決策模式</p>
               </div>
               <div class="ai-feat-card reveal stagger-2">
-                <div class="ai-feat-icon">💬</div>
+                <div class="ai-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M8 10h8"/><path d="M8 14h4"/></svg></div>
                 <h3>AI 深度訪談</h3>
                 <p>AI 模擬真實用戶進行一對一深度訪談，涵蓋痛點、需求、轉換意願、NPS 評分等關鍵維度</p>
               </div>
               <div class="ai-feat-card reveal stagger-3">
-                <div class="ai-feat-icon">✨</div>
+                <div class="ai-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/></svg></div>
                 <h3>AI 洞察引擎</h3>
                 <p>自動交叉分析所有訪談結果，提煉出可執行的產品迭代建議與優先順序</p>
               </div>
               <div class="ai-feat-card reveal stagger-4">
-                <div class="ai-feat-icon">🎯</div>
+                <div class="ai-feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l3-9 6 18 3-9h4"/></svg></div>
                 <h3>AI 四維診斷</h3>
                 <p>PATH 框架深度評估，AI 精準定位產品弱點，20 題結構化診斷報告</p>
               </div>
@@ -8899,7 +8900,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           </div>
         </section>
 
-        <section class="section reveal">
+        <section class="l-section bg-dark reveal">
           <div class="section-center">
             <div class="comparison-section">
               <div class="section-header">
@@ -8942,7 +8943,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           </div>
         </section>
 
-        <section class="section reveal">
+        <section class="l-section bg-subtle reveal">
           <div class="section-center">
             <div class="comparison-section">
               <div class="section-header">
@@ -8985,30 +8986,31 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           </div>
         </section>
 
-        <section class="features reveal">
+        <section class="features l-section bg-dark reveal">
           <div class="section-center">
             <div class="section-header">
-              <h2 style="margin-bottom:0">完整工具鏈</h2>
-              <p class="section-sub" style="margin-top:1.5rem">涵蓋從概念到驗證的全流程</p>
+              <div class="section-tag">Toolchain</div>
+              <h2>完整工具鏈</h2>
+              <p class="section-sub">涵蓋從概念到驗證的全流程</p>
             </div>
             <div class="features-grid" id="features">
               <div class="feat-card reveal stagger-1">
-                <div class="feat-icon purple" style="background:linear-gradient(135deg,#7C5CFC 0%,#6A4BE8 100%)">⚡</div>
+                <div class="feat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
                 <h3>快速診斷</h3>
-                <p>20 題 PATH 框架快速評估， 3 分鐘識別核心問題</p>
+                <p>20 題 PATH 框架快速評估，3 分鐘識別核心問題</p>
               </div>
               <div class="feat-card reveal stagger-2">
-                <div class="feat-icon gold" style="background:linear-gradient(135deg,#F0A05A 0%,#E89048 100%)">🔬</div>
+                <div class="feat-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6"/><path d="M11 8v6"/></svg></div>
                 <h3>深度訪談</h3>
                 <p>AI 與多元人格進行 30+ 題深度對話，蒐集完整反饋</p>
               </div>
               <div class="feat-card reveal stagger-3">
-                <div class="feat-icon teal" style="background:linear-gradient(135deg,#2DBDA8 0%,#25A896 100%)">📊</div>
+                <div class="feat-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div>
                 <h3>自動分析</h3>
                 <p>AI 交叉分析，自動提煉痛點矩陣、轉換漏斗、優化建議</p>
               </div>
               <div class="feat-card reveal stagger-4">
-                <div class="feat-icon rose" style="background:linear-gradient(135deg,#E8627C 0%,#D8506A 100%)">📈</div>
+                <div class="feat-icon rose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg></div>
                 <h3>可視化報告</h3>
                 <p>完整的量化報告、圖表與可下載的研究數據集</p>
               </div>
@@ -9016,7 +9018,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           </div>
         </section>
 
-        <section class="pricing reveal" id="pricing">
+        <section class="pricing l-section bg-subtle reveal" id="pricing">
           <div class="section-center">
             <div class="section-header">
               <h2>簡單透明的定價</h2>
@@ -9257,4 +9259,4 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
 })();
   </script>
 </body>
-</html><!-- deploy 1774182955 -->
+</html>
