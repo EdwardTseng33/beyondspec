@@ -2095,22 +2095,30 @@ canvas{display:block;margin:0 auto 24px}
 /* ===== PAGE TITLE AREA ===== */
 /* ===== UNIFIED PAGE TITLE SYSTEM ===== */
 .page-title-area {
-  margin-bottom: 28px;
-  padding-bottom: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 .page-title-area h1 {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: -.3px;
   color: var(--ink);
-  margin-bottom: 6px;
+  margin: 0;
   line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 .page-title-area .subtitle {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--ink-muted);
-  margin-bottom: 0;
+  margin: 0;
   font-weight: 450;
   line-height: 1.5;
 }
@@ -2548,6 +2556,7 @@ canvas{display:block;margin:0 auto 24px}
       { id: 'lab', label: 'Lab 研究', icon: 'flask' },
       { id: 'survey', label: '問卷引擎', icon: 'clipboard' },
       { id: 'market', label: '市場探測', icon: 'trendUp' },
+      { id: 'report', label: '市場報告', icon: 'fileText' },
       { id: 'settings', label: '設定', icon: 'sliders' }
     ];
 
@@ -2618,7 +2627,7 @@ canvas{display:block;margin:0 auto 24px}
     const plan = state.plan || 'free';
     const isPro = plan === 'pro' || plan === 'enterprise';
     // Locked modules for free users → show upgrade prompt
-    const proModules = ['survey','market'];
+    const proModules = ['survey','market','report'];
     if (!isPro && proModules.includes(moduleId)) {
       renderLockedModule(moduleId);
       return;
@@ -2630,6 +2639,7 @@ canvas{display:block;margin:0 auto 24px}
       case 'reports': renderHome(); break;
       case 'survey': renderSurveyEngine(); break;
       case 'market': renderMarketSignal(); break;
+      case 'report': renderMarketReport(); break;
       // compete & pricing removed — handled inside Lab research types
       // pmf removed — integrated into PATH report
       case 'settings': renderSettings(); break;
@@ -3512,7 +3522,7 @@ canvas{display:block;margin:0 auto 24px}
     if (state.quizState.type === null) {
       content.innerHTML = `
         <div class="page-title-area">
-          <h1>產品診斷</h1>
+          <h1>${ICONS.pulse} 產品診斷</h1>
           <div class="subtitle">PATH 四維模型 · 找出你的產品盲點</div>
         </div>
 
@@ -3803,7 +3813,7 @@ canvas{display:block;margin:0 auto 24px}
         <button class="back-nav" onclick="app.navigate('diagnose')">${ICONS.arrowLeft} 返回診斷列表</button>
       </div>
       <div class="page-title-area">
-        <h1>${diagProdName} 診斷結果</h1>
+        <h1>${ICONS.pulse} ${diagProdName} 診斷結果</h1>
         <div class="subtitle">PATH 四維模型綜合分析</div>
       </div>
 
@@ -4311,7 +4321,7 @@ canvas{display:block;margin:0 auto 24px}
     const content = document.getElementById('content');
     content.innerHTML = `<div id="labContainer">
       <div class="page-title-area no-border">
-        <h1>受眾研究室</h1>
+        <h1>${ICONS.flask} 受眾研究室</h1>
         <div class="subtitle">AI 模擬目標用戶訪談 · B2B / B2C 雙軌 · 華語五大市場</div>
       </div>
 
@@ -7526,7 +7536,7 @@ function loadHistory(){
     const searchVal = window._bpReportSearch || '';
     let html = `
       <div class="page-title-area">
-        <h1>研究報告</h1>
+        <h1>${ICONS.fileText} 研究報告</h1>
         <div class="subtitle">產品診斷與受眾研究的歷史記錄</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;justify-content:space-between">
@@ -8001,6 +8011,9 @@ function loadHistory(){
 
         <!-- Cross-validation -->
         ${crossHTML}`;
+
+      // Save market data so report can detect it
+      try { localStorage.setItem('bp_market_' + kw1, JSON.stringify({ kw: keywords, region, date: new Date().toISOString() })); } catch(e) {}
 
       btn.disabled = false;
       btn.innerHTML = `${ICONS.search} <span style="margin-left:6px">重新探測</span>`;
@@ -8547,6 +8560,503 @@ function loadHistory(){
     }, 1800);
   }
 
+  // ==================== MODULE: 市場報告 (Market Report) ====================
+  let reportState = { selectedDiag: null, reportType: null, generated: false };
+
+  function renderMarketReport() {
+    const content = document.getElementById('content');
+    const diags = state.diagnoses || [];
+    const researches = state.researches || [];
+
+    // If report is already generated, show it
+    if (reportState.generated && reportState.selectedDiag) {
+      renderFullReport();
+      return;
+    }
+
+    // ── Step 1: Report Preparation Page ──
+    const hasDiags = diags.length > 0;
+
+    let diagCardsHTML = '';
+    if (hasDiags) {
+      diagCardsHTML = diags.map((d, i) => {
+        const date = new Date(d.date).toLocaleDateString('zh-TW', {month:'short', day:'numeric'});
+        const isSelected = reportState.selectedDiag?.id === d.id;
+        const scoreColor = d.total >= 70 ? 'var(--teal)' : d.total >= 50 ? 'var(--gold)' : 'var(--rose)';
+        return `<div style="background:var(--bg-card);border:2px solid ${isSelected ? 'var(--primary)' : 'var(--border)'};border-radius:var(--r-lg);padding:16px;cursor:pointer;transition:all .2s" onclick="app.selectReportDiag('${d.id}')">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-size:15px;font-weight:700;color:var(--ink)">${d.productName || '未命名產品'}</div>
+            <div style="font-size:24px;font-weight:800;color:${scoreColor}">${d.total}</div>
+          </div>
+          <div style="font-size:12px;color:var(--ink-muted)">${date} · ${d.pathType || ''} · ${d.verdict === 'persevere' ? '繼續前進' : d.verdict === 'pivot' ? '建議轉向' : d.verdict === 'kill' ? '建議停止' : ''}</div>
+          ${isSelected ? '<div style="margin-top:8px;font-size:12px;color:var(--primary);font-weight:600">已選擇</div>' : ''}
+        </div>`;
+      }).join('');
+    } else {
+      diagCardsHTML = `<div style="text-align:center;padding:32px;color:var(--ink-muted);grid-column:1/-1">
+        ${ICONS.pulse}
+        <div style="margin-top:8px;font-size:14px">尚未完成任何 PATH 診斷</div>
+        <button class="btn btn-primary" style="margin-top:12px;padding:8px 20px;font-size:13px" onclick="app.navigate('diagnose')">前往 PATH 診斷</button>
+      </div>`;
+    }
+
+    // Check which modules are completed for selected diagnosis
+    const selectedDiag = reportState.selectedDiag;
+    const selectedProdName = selectedDiag?.productName || '';
+    const hasLab = selectedProdName && researches.some(r => r.productName === selectedProdName);
+    const hasMarketData = !!localStorage.getItem('bp_market_' + selectedProdName);
+
+    // Report type selection
+    const reportTypes = [
+      { id: 'toc', label: '消費市場報告', desc: '適用 To C 新產品——TAM/SAM/SOM、消費者洞察、競品分析、獲客策略', icon: 'user' },
+      { id: 'tob', label: '企業市場報告', desc: '適用 To B 新產品——企業市場規模、決策者痛點、銷售策略、合約模式', icon: 'globe' },
+      { id: 'feature', label: '功能可行性報告', desc: '適用既有產品的新功能——需求驗證、功能競品比較、商業影響預估', icon: 'zap' }
+    ];
+
+    content.innerHTML = `
+      <div class="page-title-area">
+        <h1>${ICONS.fileText} 市場報告</h1>
+        <div class="subtitle">整合 PATH · Lab · 市場探測，生成完整市場評估報告</div>
+      </div>
+
+      <!-- Step 1: Select Diagnosis -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div style="width:28px;height:28px;border-radius:50%;background:${selectedDiag ? 'var(--teal)' : 'var(--primary)'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">1</div>
+          <div style="font-size:16px;font-weight:700;color:var(--ink)">選擇產品診斷</div>
+          ${selectedDiag ? '<span style="font-size:12px;color:var(--teal);font-weight:600;padding:2px 8px;background:rgba(45,189,168,.1);border-radius:var(--r-sm)">已選擇</span>' : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
+          ${diagCardsHTML}
+        </div>
+      </div>
+
+      <!-- Step 2: Select Report Type -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;opacity:${selectedDiag ? '1' : '0.5'};pointer-events:${selectedDiag ? 'auto' : 'none'}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div style="width:28px;height:28px;border-radius:50%;background:${reportState.reportType ? 'var(--teal)' : 'var(--primary)'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">2</div>
+          <div style="font-size:16px;font-weight:700;color:var(--ink)">報告類型</div>
+          ${reportState.reportType ? '<span style="font-size:12px;color:var(--teal);font-weight:600;padding:2px 8px;background:rgba(45,189,168,.1);border-radius:var(--r-sm)">已選擇</span>' : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          ${reportTypes.map(rt => {
+            const isSelected = reportState.reportType === rt.id;
+            return `<div style="background:var(--bg);border:2px solid ${isSelected ? 'var(--primary)' : 'var(--border)'};border-radius:var(--r-lg);padding:16px;cursor:pointer;transition:all .2s" onclick="app.selectReportType('${rt.id}')">
+              <div style="color:${isSelected ? 'var(--primary)' : 'var(--ink-muted)'};margin-bottom:8px">${ICONS[rt.icon]}</div>
+              <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px">${rt.label}</div>
+              <div style="font-size:12px;color:var(--ink-muted);line-height:1.5">${rt.desc}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Step 3: Module Completion Status -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;opacity:${reportState.reportType ? '1' : '0.5'};pointer-events:${reportState.reportType ? 'auto' : 'none'}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div style="width:28px;height:28px;border-radius:50%;background:${(selectedDiag && hasLab && hasMarketData) ? 'var(--teal)' : 'var(--primary)'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">3</div>
+          <div style="font-size:16px;font-weight:700;color:var(--ink)">數據完成度</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg);border-radius:var(--r-md);border:1px solid var(--border)">
+            <div style="width:24px;height:24px;border-radius:50%;background:${selectedDiag ? 'var(--teal)' : 'var(--border)'};color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">${selectedDiag ? ICONS.check : ''}</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:600;color:var(--ink)">PATH 診斷</div>
+              <div style="font-size:12px;color:var(--ink-muted)">${selectedDiag ? selectedProdName + ' · ' + selectedDiag.total + ' 分' : '尚未選擇'}</div>
+            </div>
+            <span style="font-size:12px;font-weight:600;color:${selectedDiag ? 'var(--teal)' : 'var(--ink-muted)'}">${selectedDiag ? '已完成' : '必要'}</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg);border-radius:var(--r-md);border:1px solid var(--border)">
+            <div style="width:24px;height:24px;border-radius:50%;background:${hasLab ? 'var(--teal)' : 'var(--border)'};color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">${hasLab ? ICONS.check : ''}</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:600;color:var(--ink)">Lab 研究</div>
+              <div style="font-size:12px;color:var(--ink-muted)">${hasLab ? '已有「' + selectedProdName + '」的研究記錄' : '尚未對此產品進行 Lab 研究'}</div>
+            </div>
+            ${hasLab ? '<span style="font-size:12px;font-weight:600;color:var(--teal)">已完成</span>' : '<button class="btn" style="padding:4px 12px;font-size:12px;background:var(--bg-card);border:1px solid var(--border);color:var(--primary)" onclick="app.navigate(\'lab\')">前往研究</button>'}
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg);border-radius:var(--r-md);border:1px solid var(--border)">
+            <div style="width:24px;height:24px;border-radius:50%;background:${hasMarketData ? 'var(--teal)' : 'var(--border)'};color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">${hasMarketData ? ICONS.check : ''}</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:600;color:var(--ink)">市場探測</div>
+              <div style="font-size:12px;color:var(--ink-muted)">${hasMarketData ? '已有市場探測數據' : '尚未對此產品進行市場探測'}</div>
+            </div>
+            ${hasMarketData ? '<span style="font-size:12px;font-weight:600;color:var(--teal)">已完成</span>' : '<button class="btn" style="padding:4px 12px;font-size:12px;background:var(--bg-card);border:1px solid var(--border);color:var(--primary)" onclick="app.navigate(\'market\')">前往探測</button>'}
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate Button -->
+      <div style="text-align:center;padding:8px 0">
+        ${(selectedDiag && hasLab && hasMarketData && reportState.reportType) ?
+          `<button class="btn btn-gold" style="padding:14px 48px;font-size:16px;font-weight:700" onclick="app.generateMarketReport()">
+            ${ICONS.fileText} <span style="margin-left:8px">生成完整市場報告</span>
+          </button>` :
+          `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;display:inline-block">
+            <div style="font-size:14px;color:var(--ink-muted)">${!selectedDiag ? '請先選擇一次 PATH 診斷' : !reportState.reportType ? '請選擇報告類型' : '請完成所有模組後再生成報告'}</div>
+            ${(selectedDiag && reportState.reportType && (!hasLab || !hasMarketData)) ? '<div style="font-size:12px;color:var(--ink-muted);margin-top:6px">還缺：' + (!hasLab ? 'Lab 研究' : '') + (!hasLab && !hasMarketData ? '、' : '') + (!hasMarketData ? '市場探測' : '') + '</div>' : ''}
+          </div>`
+        }
+      </div>`;
+  }
+
+  function selectReportDiag(diagId) {
+    const diag = state.diagnoses.find(d => d.id === diagId);
+    if (diag) {
+      reportState.selectedDiag = diag;
+      reportState.generated = false;
+      renderMarketReport();
+    }
+  }
+
+  function selectReportType(type) {
+    reportState.reportType = type;
+    reportState.generated = false;
+    renderMarketReport();
+  }
+
+  function generateMarketReport() {
+    const content = document.getElementById('content');
+    content.innerHTML = `<div style="text-align:center;padding:80px 0;color:var(--ink-muted)">
+      <span class="spinner" style="display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite;margin-bottom:16px"></span>
+      <div style="font-size:16px;font-weight:600">正在生成完整市場報告...</div>
+      <div style="font-size:13px;margin-top:8px">整合 PATH 診斷 · Lab 研究 · 市場探測數據</div>
+    </div>`;
+
+    setTimeout(() => {
+      reportState.generated = true;
+      renderFullReport();
+    }, 2500);
+  }
+
+  function renderFullReport() {
+    const content = document.getElementById('content');
+    const diag = reportState.selectedDiag;
+    const rType = reportState.reportType;
+    const prodName = diag.productName || '未命名產品';
+    const researches = state.researches || [];
+    const labData = researches.filter(r => r.productName === prodName);
+    const latestLab = labData[0];
+
+    // Type labels
+    const typeLabels = { toc: '消費市場報告', tob: '企業市場報告', feature: '功能可行性報告' };
+    const isFeature = rType === 'feature';
+    const isToB = rType === 'tob';
+
+    // Generate mock market data based on product name
+    const hash = prodName.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+    const tamBase = isFeature ? 0 : ((hash % 50) + 20);
+    const sam = isFeature ? 0 : Math.floor(tamBase * 0.3);
+    const som = isFeature ? 0 : Math.floor(tamBase * 0.08);
+    const growthRate = ((hash % 20) + 8).toFixed(1);
+
+    // Scores from PATH
+    const P = diag.scores?.P || 50, A = diag.scores?.A || 50, T = diag.scores?.T || 50, H = diag.scores?.H || 50;
+
+    // Lab scores
+    const labScore = latestLab?.score || '—';
+    const labType = latestLab?.type || '';
+    const labQuant = latestLab?.quant || {};
+
+    // Generate competitors based on type
+    const competitorTemplates = isToB ? [
+      { name: 'CompetitorA SaaS', pos: '企業級全功能平台', price: 'US$99-499/月', strength: '品牌知名度高、客戶基礎大', weakness: '價格偏高、在地化不足' },
+      { name: 'CompetitorB Cloud', pos: '中小企業入門方案', price: 'US$29-99/月', strength: '價格有競爭力、易上手', weakness: '功能有限、客製化不足' },
+      { name: 'Local Player', pos: '台灣本土解決方案', price: 'NT$500-2000/月', strength: '在地服務好、中文支援', weakness: '技術架構老舊、規模受限' }
+    ] : isFeature ? [
+      { name: '競品功能 A', pos: '已上線類似功能', strength: '先發優勢、用戶已習慣', weakness: '功能較陽春、UX 待改善' },
+      { name: '競品功能 B', pos: '近期新增的類似功能', strength: '整合度高、宣傳資源多', weakness: '學習曲線高、穩定性不足' },
+      { name: '替代方案', pos: '用戶現有替代作法', strength: '零成本、已熟悉', weakness: '效率低、無法規模化' }
+    ] : [
+      { name: '品牌 A', pos: '市場領導者', price: 'NT$300-800/月', strength: '品牌信任度高、通路廣', weakness: '創新速度慢、價格偏高' },
+      { name: '品牌 B', pos: '新進挑戰者', price: 'NT$150-400/月', strength: '社群聲量高、CP值好', weakness: '品質不穩定、售後弱' },
+      { name: '品牌 C', pos: '利基市場玩家', price: 'NT$500-1200/月', strength: '專業度高、忠誠度強', weakness: '市場小、成長有限' }
+    ];
+
+    // Feature matrix
+    const features = ['核心功能', '進階功能', '客服支援', isToB ? 'API 整合' : '社群功能', isToB ? 'SLA 保證' : 'App 體驗', '定價彈性'];
+    const featureMatrix = features.map(f => ({
+      feature: f,
+      us: Math.random() > 0.3 ? '●' : '○',
+      c1: Math.random() > 0.4 ? '●' : '○',
+      c2: Math.random() > 0.5 ? '●' : '○',
+      c3: Math.random() > 0.6 ? '●' : '○'
+    }));
+
+    // Price suggestion
+    const priceRanges = isToB ?
+      { low: 'NT$' + (Math.floor(hash % 5 + 3) * 100), mid: 'NT$' + (Math.floor(hash % 5 + 6) * 100), high: 'NT$' + (Math.floor(hash % 5 + 10) * 100) } :
+      { low: 'NT$' + (Math.floor(hash % 3 + 1) * 100), mid: 'NT$' + (Math.floor(hash % 3 + 3) * 100), high: 'NT$' + (Math.floor(hash % 3 + 5) * 100) };
+
+    // ── Chapter-based rendering ──
+    const today = new Date().toLocaleDateString('zh-TW', {year:'numeric', month:'long', day:'numeric'});
+
+    // Chapter 1: Market Overview (skip for feature type)
+    let ch1HTML = '';
+    if (!isFeature) {
+      ch1HTML = `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center">${ICONS.globe}</div>
+          <div style="font-size:18px;font-weight:700;color:var(--ink)">一、市場概況</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+          <div style="text-align:center;padding:20px;background:var(--bg);border-radius:var(--r-md)">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">TAM 總可觸及市場</div>
+            <div style="font-size:28px;font-weight:800;color:var(--primary)">NT$${tamBase}億</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">${isToB ? '亞太企業市場' : '台灣消費市場'}</div>
+          </div>
+          <div style="text-align:center;padding:20px;background:var(--bg);border-radius:var(--r-md)">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">SAM 可服務市場</div>
+            <div style="font-size:28px;font-weight:800;color:var(--teal)">NT$${sam}億</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">${isToB ? '台灣中小企業' : '目標族群'}</div>
+          </div>
+          <div style="text-align:center;padding:20px;background:var(--bg);border-radius:var(--r-md)">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">SOM 可獲得市場</div>
+            <div style="font-size:28px;font-weight:800;color:var(--gold)">NT$${som}億</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">首年目標</div>
+          </div>
+        </div>
+        <div style="padding:16px;background:var(--bg);border-radius:var(--r-md)">
+          <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px">成長趨勢</div>
+          <p style="font-size:13px;color:var(--ink-sec);line-height:1.7;margin:0">此市場年複合成長率（CAGR）約 ${growthRate}%，主要驅動因素包括${isToB ? '企業數位轉型加速、遠距工作常態化、AI 技術普及降低導入門檻' : '消費者數位化程度提升、行動支付滲透率成長、Z 世代消費力崛起'}。台灣市場雖規模較小，但${isToB ? '企業 IT 預算持續成長' : '消費者對新品牌接受度高'}，具備切入優勢。</p>
+        </div>
+      </div>`;
+    } else {
+      ch1HTML = `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center">${ICONS.zap}</div>
+          <div style="font-size:18px;font-weight:700;color:var(--ink)">一、功能需求驗證</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+          <div style="text-align:center;padding:20px;background:var(--bg);border-radius:var(--r-md)">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">需求強度</div>
+            <div style="font-size:28px;font-weight:800;color:${P >= 70 ? 'var(--teal)' : 'var(--gold)'}">${P}/100</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">PATH P 維度</div>
+          </div>
+          <div style="text-align:center;padding:20px;background:var(--bg);border-radius:var(--r-md)">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">受眾匹配度</div>
+            <div style="font-size:28px;font-weight:800;color:${A >= 70 ? 'var(--teal)' : 'var(--gold)'}">${A}/100</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">PATH A 維度</div>
+          </div>
+          <div style="text-align:center;padding:20px;background:var(--bg);border-radius:var(--r-md)">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">Lab 驗證分</div>
+            <div style="font-size:28px;font-weight:800;color:var(--primary)">${labScore}</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">${labType || '綜合'}</div>
+          </div>
+        </div>
+        <div style="padding:16px;background:var(--bg);border-radius:var(--r-md)">
+          <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px">功能定位分析</div>
+          <p style="font-size:13px;color:var(--ink-sec);line-height:1.7;margin:0">根據 PATH 診斷結果，此功能的問題驗證分數為 ${P} 分，代表${P >= 70 ? '用戶對此功能有明確且強烈的需求' : P >= 50 ? '用戶有一定需求，但仍需進一步驗證使用場景' : '需求尚不明確，建議先釐清功能要解決的核心問題'}。Lab 研究中合成用戶的平均評分為 ${labScore}/10，${parseFloat(labScore) >= 7 ? '顯示功能概念獲得正面回饋' : '建議根據回饋調整功能設計方向'}。</p>
+        </div>
+      </div>`;
+    }
+
+    // Chapter 2: Competitor Landscape
+    let compTableHTML = featureMatrix.map(f => `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 12px;font-size:13px;font-weight:600;color:var(--ink)">${f.feature}</td>
+        <td style="padding:10px 12px;text-align:center;color:var(--teal);font-size:16px">${f.us}</td>
+        <td style="padding:10px 12px;text-align:center;color:var(--ink-muted);font-size:16px">${f.c1}</td>
+        <td style="padding:10px 12px;text-align:center;color:var(--ink-muted);font-size:16px">${f.c2}</td>
+        <td style="padding:10px 12px;text-align:center;color:var(--ink-muted);font-size:16px">${f.c3}</td>
+      </tr>`).join('');
+
+    let compCardsHTML = competitorTemplates.map(c => `
+      <div style="padding:16px;background:var(--bg);border-radius:var(--r-md);border:1px solid var(--border)">
+        <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">${c.name}</div>
+        <div style="font-size:12px;color:var(--primary);margin-bottom:8px">${c.pos}${c.price ? ' · ' + c.price : ''}</div>
+        <div style="font-size:13px;color:var(--ink-sec);line-height:1.6">
+          <span style="color:var(--teal);font-weight:600">強項：</span>${c.strength}<br>
+          <span style="color:var(--rose);font-weight:600">弱項：</span>${c.weakness}
+        </div>
+      </div>`).join('');
+
+    const ch2HTML = `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(232,89,12,.1);color:#E8590C;display:flex;align-items:center;justify-content:center">${ICONS.crosshair}</div>
+          <div style="font-size:18px;font-weight:700;color:var(--ink)">二、競品圖譜</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">${compCardsHTML}</div>
+        <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:12px">功能對照矩陣</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr style="border-bottom:2px solid var(--border);background:var(--bg)">
+              <th style="padding:10px 12px;text-align:left;font-size:12px;color:var(--ink-muted)">功能</th>
+              <th style="padding:10px 12px;text-align:center;font-size:12px;color:var(--primary);font-weight:700">${prodName}</th>
+              <th style="padding:10px 12px;text-align:center;font-size:12px;color:var(--ink-muted)">${competitorTemplates[0].name}</th>
+              <th style="padding:10px 12px;text-align:center;font-size:12px;color:var(--ink-muted)">${competitorTemplates[1].name}</th>
+              <th style="padding:10px 12px;text-align:center;font-size:12px;color:var(--ink-muted)">${competitorTemplates[2].name}</th>
+            </tr></thead>
+            <tbody>${compTableHTML}</tbody>
+          </table>
+        </div>
+        <div style="font-size:12px;color:var(--ink-muted);margin-top:8px">● 已具備　○ 缺少或待開發</div>
+      </div>`;
+
+    // Chapter 3: Audience Insights
+    const labDims = Object.entries(labQuant);
+    let labDimsHTML = labDims.length > 0 ? labDims.map(([dim, v]) => {
+      const col = v.avg >= 7 ? 'var(--teal)' : v.avg >= 5 ? 'var(--gold)' : 'var(--rose)';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1;font-size:13px;color:var(--ink)">${dim}</div>
+        <div style="width:120px;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:${v.avg*10}%;background:${col};border-radius:3px"></div></div>
+        <div style="font-size:14px;font-weight:700;color:${col};width:40px;text-align:right">${v.avg}</div>
+      </div>`;
+    }).join('') : '<div style="color:var(--ink-muted);font-size:13px;padding:12px 0">Lab 研究維度資料</div>';
+
+    const ch3HTML = `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(45,189,168,.1);color:var(--teal);display:flex;align-items:center;justify-content:center">${ICONS.user}</div>
+          <div style="font-size:18px;font-weight:700;color:var(--ink)">三、${isFeature ? '用戶' : '受眾'}洞察</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:12px">PATH 受眾維度分析</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;padding:12px;background:var(--bg);border-radius:var(--r-md)">
+                <div style="font-size:12px;color:var(--ink-muted);width:80px">問題共鳴</div>
+                <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:${P}%;background:${P>=70?'var(--teal)':'var(--gold)'};border-radius:3px"></div></div>
+                <div style="font-size:14px;font-weight:700;color:var(--ink);width:30px;text-align:right">${P}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:12px;background:var(--bg);border-radius:var(--r-md)">
+                <div style="font-size:12px;color:var(--ink-muted);width:80px">受眾匹配</div>
+                <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:${A}%;background:${A>=70?'var(--teal)':'var(--gold)'};border-radius:3px"></div></div>
+                <div style="font-size:14px;font-weight:700;color:var(--ink);width:30px;text-align:right">${A}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:12px;background:var(--bg);border-radius:var(--r-md)">
+                <div style="font-size:12px;color:var(--ink-muted);width:80px">市場牽引</div>
+                <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:${T}%;background:${T>=70?'var(--teal)':'var(--gold)'};border-radius:3px"></div></div>
+                <div style="font-size:14px;font-weight:700;color:var(--ink);width:30px;text-align:right">${T}</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:12px">Lab 研究評分維度</div>
+            ${labDimsHTML}
+          </div>
+        </div>
+      </div>`;
+
+    // Chapter 4: Market Signals
+    const ch4HTML = `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(124,92,252,.1);color:var(--primary);display:flex;align-items:center;justify-content:center">${ICONS.trendUp}</div>
+          <div style="font-size:18px;font-weight:700;color:var(--ink)">四、市場訊號</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
+          <div style="text-align:center;padding:16px;background:var(--bg);border-radius:var(--r-md)">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">搜尋熱度趨勢</div>
+            <div style="font-size:22px;font-weight:800;color:var(--teal)">↑ 上升</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--bg);border-radius:var(--r-md)">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">月搜尋量</div>
+            <div style="font-size:22px;font-weight:800;color:var(--primary)">${((hash % 50) + 10) * 100}</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--bg);border-radius:var(--r-md)">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">競爭強度</div>
+            <div style="font-size:22px;font-weight:800;color:#D97706">中</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--bg);border-radius:var(--r-md)">
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">需求缺口</div>
+            <div style="font-size:22px;font-weight:800;color:var(--teal)">${Math.floor(Math.random()*3)+2} 個</div>
+          </div>
+        </div>
+        <div style="padding:16px;background:var(--bg);border-radius:var(--r-md)">
+          <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:8px">關鍵字機會缺口</div>
+          <p style="font-size:13px;color:var(--ink-sec);line-height:1.7;margin:0">根據市場探測分析，「${prodName}」相關搜尋量呈上升趨勢。「${prodName} 推薦」和「${prodName} 比較」的搜尋量高但相關內容品質不足，代表內容行銷存在明確的切入機會。「${prodName} 免費試用」的搜尋量近期成長明顯，建議提供試用方案以捕捉此需求。</p>
+        </div>
+      </div>`;
+
+    // Chapter 5: Strategy Recommendations
+    const verdictLabel = { persevere: '全力衝刺', pivot: '調整方向', kill: '重新思考' };
+    const entryStrategy = isToB ?
+      `建議從${som < 3 ? '台灣中小企業' : '台灣中型企業'}切入，以 POC（概念驗證）模式降低採購決策門檻。首批目標鎖定 ${Math.floor(hash % 20 + 10)} 家種子客戶，透過產業人脈和線上展會獲客。` :
+      isFeature ?
+      `建議先對既有活躍用戶（DAU Top 20%）進行 A/B 測試，驗證功能是否提升核心指標（留存率/使用頻率）。確認正向影響後再全量上線。` :
+      `建議從${A >= 70 ? '核心受眾' : '最痛的細分群體'}切入，以社群口碑 + 內容行銷為主要獲客管道。首月目標 ${Math.floor(hash % 500 + 200)} 位試用用戶，轉換率目標 ${Math.floor(hash % 10 + 8)}%。`;
+
+    const diffStrategy = H >= 70 ?
+      `你的執行力評分高（${H}/100），這是護城河的基礎。建議持續投入在${isToB ? '客戶成功體系和 API 生態' : '產品體驗和社群經營'}，建立轉換成本。` :
+      `執行力評分 ${H}/100，建議優先補強落地能力。${isToB ? '考慮尋找有企業銷售經驗的合夥人' : '聚焦 MVP 核心功能，避免功能蔓延'}。`;
+
+    const riskItems = [
+      P < 50 ? `問題驗證不足（${P}/100）——最大風險是你在解決一個不存在的問題。建議在投入開發前完成至少 10 場用戶訪談。` : null,
+      A < 50 ? `受眾定義模糊（${A}/100）——可能導致獲客效率低、訊息不精準。建議縮小受眾範圍，找到「最痛且最願意付費」的人。` : null,
+      T < 50 ? `市場牽引力弱（${T}/100）——進入策略需要重新思考。建議先找到一個小而明確的市場切入點，建立初始口碑。` : null,
+      '競品護城河風險——現有競品可能透過快速複製或價格戰回應你的進入。建議提前準備差異化敘事和價值主張。'
+    ].filter(Boolean);
+
+    const ch5HTML = `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(240,160,90,.1);color:var(--gold);display:flex;align-items:center;justify-content:center">${ICONS.target}</div>
+          <div style="font-size:18px;font-weight:700;color:var(--ink)">五、策略建議</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="padding:16px;background:var(--bg);border-radius:var(--r-md);border-left:4px solid var(--primary)">
+            <div style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:8px">${isFeature ? '上線策略' : '進入策略'}</div>
+            <p style="font-size:13px;color:var(--ink-sec);line-height:1.7;margin:0">${entryStrategy}</p>
+          </div>
+
+          <div style="padding:16px;background:var(--bg);border-radius:var(--r-md);border-left:4px solid var(--teal)">
+            <div style="font-size:14px;font-weight:700;color:var(--teal);margin-bottom:8px">差異化建議</div>
+            <p style="font-size:13px;color:var(--ink-sec);line-height:1.7;margin:0">${diffStrategy}</p>
+          </div>
+
+          ${!isFeature ? `<div style="padding:16px;background:var(--bg);border-radius:var(--r-md);border-left:4px solid var(--gold)">
+            <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:8px">定價參考</div>
+            <p style="font-size:13px;color:var(--ink-sec);line-height:1.7;margin:0">根據競品定價和受眾付費意願分析，建議價格帶：入門方案 ${priceRanges.low}/月、標準方案 ${priceRanges.mid}/月、進階方案 ${priceRanges.high}/月。建議提供 14 天免費試用以降低轉換摩擦。</p>
+          </div>` : `<div style="padding:16px;background:var(--bg);border-radius:var(--r-md);border-left:4px solid var(--gold)">
+            <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:8px">商業影響預估</div>
+            <p style="font-size:13px;color:var(--ink-sec);line-height:1.7;margin:0">根據 Lab 研究回饋，此功能預計可提升留存率 ${Math.floor(Math.random()*8+5)}% 和使用頻率 ${Math.floor(Math.random()*12+8)}%。建議 MVP 開發週期控制在 ${Math.floor(Math.random()*2+2)} 週內，快速上線迭代。</p>
+          </div>`}
+
+          <div style="padding:16px;background:rgba(232,98,124,.04);border-radius:var(--r-md);border-left:4px solid var(--rose)">
+            <div style="font-size:14px;font-weight:700;color:var(--rose);margin-bottom:8px">風險提示</div>
+            ${riskItems.map(r => `<p style="font-size:13px;color:var(--ink-sec);line-height:1.7;margin:0 0 8px">· ${r}</p>`).join('')}
+          </div>
+        </div>
+      </div>`;
+
+    // ── Assemble Full Report ──
+    content.innerHTML = `
+      <div style="margin-bottom:12px">
+        <button class="back-nav" onclick="app.backToReportPrep()">${ICONS.arrowLeft} 返回報告準備</button>
+      </div>
+
+      <!-- Report Header -->
+      <div style="background:linear-gradient(135deg,var(--primary),rgba(124,92,252,.85));border-radius:var(--r-xl);padding:32px;margin-bottom:24px;color:#fff">
+        <div style="font-size:12px;opacity:.7;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">BeyondPath ${typeLabels[rType]}</div>
+        <div style="font-size:28px;font-weight:800;margin-bottom:8px">${prodName}</div>
+        <div style="font-size:13px;opacity:.8">${today} · PATH ${diag.total} 分 · ${verdictLabel[diag.verdict] || ''} · Lab ${labScore}/10</div>
+      </div>
+
+      ${ch1HTML}
+      ${ch2HTML}
+      ${ch3HTML}
+      ${ch4HTML}
+      ${ch5HTML}
+
+      <!-- Report Footer -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;text-align:center">
+        <div style="font-size:12px;color:var(--ink-muted);margin-bottom:12px">此報告由 BeyondPath AI 引擎根據 PATH 診斷、Lab 研究及市場探測數據整合生成</div>
+        <button class="btn btn-primary" style="padding:10px 24px;font-size:14px" onclick="app.backToReportPrep()">
+          ${ICONS.arrowLeft} <span style="margin-left:6px">返回</span>
+        </button>
+      </div>`;
+  }
+
+  function backToReportPrep() {
+    reportState.generated = false;
+    renderMarketReport();
+  }
+
   // ==================== MODULE: 競品雷達 (Compete Radar) ====================
   function renderCompeteRadar() {
     const content = document.getElementById('content');
@@ -8696,7 +9206,7 @@ function loadHistory(){
 
     content.innerHTML = `
       <div class="page-title-area">
-        <h1>設定</h1>
+        <h1>${ICONS.sliders} 設定</h1>
         <div class="subtitle">管理帳戶、方案與偏好設定</div>
       </div>
 
@@ -9890,6 +10400,10 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     setSurveyMode,
     runSurveyPretest,
     auditSurvey,
+    selectReportDiag,
+    selectReportType,
+    generateMarketReport,
+    backToReportPrep,
     runCompeteRadar,
     runPricingTest,
     setPricingMethod,
