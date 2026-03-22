@@ -2407,6 +2407,7 @@ canvas{display:block;margin:0 auto 24px}
 
   // Navigate to Lab with PATH diagnosis context (auto-populate weak dimension)
   function navigateLabWithPath(weakDim, scores) {
+    if (typeof scores === 'string') { try { scores = JSON.parse(scores); } catch(e) { scores = {}; } }
     navigate('lab');
     setTimeout(() => {
       // Auto-select research type based on weak dimension
