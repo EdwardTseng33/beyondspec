@@ -145,6 +145,17 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 .feat-icon.rose{background:linear-gradient(135deg,rgba(232,98,124,.15),rgba(232,98,124,.05));border:1px solid rgba(232,98,124,.15);color:#E8627C}
 .feat-card:hover .feat-icon{transform:scale(1.1);box-shadow:0 0 20px rgba(124,92,252,.15)}
 
+/* — METHODOLOGY / TRUST — */
+.method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3.5rem}
+.method-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:2.5rem 2rem;text-align:left;position:relative;transition:all .35s cubic-bezier(.16,1,.3,1)}
+.method-card:hover{border-color:rgba(124,92,252,.2);background:rgba(124,92,252,.03);transform:translateY(-4px)}
+.method-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(124,92,252,.1);border:1px solid rgba(124,92,252,.15);color:var(--primary);margin-bottom:1.3rem}
+.method-icon svg{width:22px;height:22px}
+.method-card h3{font-size:1.05rem;font-weight:750;color:#fff;margin-bottom:.7rem;letter-spacing:-.2px}
+.method-card p{font-size:.85rem;color:rgba(255,255,255,.4);line-height:1.75;font-weight:450}
+.method-note{margin-top:2.5rem;padding:1.5rem 2rem;background:rgba(124,92,252,.04);border:1px solid rgba(124,92,252,.1);border-radius:12px;font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.75}
+.method-note strong{color:rgba(255,255,255,.7)}
+
 /* — STATS ROW — */
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:5rem;padding-top:5rem;border-top:1px solid rgba(255,255,255,.06)}
 .stat-item{text-align:center}
@@ -220,6 +231,7 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
   .landing-nav{padding:.8rem 1.5rem}
   .landing-links{gap:1rem}
   .landing-links a{font-size:.82rem}
+  .method-grid{grid-template-columns:1fr}
   .footer-inner{grid-template-columns:1fr 1fr}
   .cta-section{margin:3rem 1rem;padding:4rem 2rem}
   .hero{padding:9rem 1.5rem 5rem}
@@ -8852,6 +8864,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           <div class="landing-logo"><img src="data:image/png;base64,${LOGO_DARK}" alt="BeyondPath"></div>
           <div class="landing-links">
             <a href="#ai-features">AI 功能</a>
+            <a href="#methodology">方法論</a>
             <a href="#features">工具鏈</a>
             <a href="#pricing">定價</a>
             <button class="btn-login" onclick="app.showLoginModal()">登入</button>
@@ -8993,7 +9006,37 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           </div>
         </section>
 
-        <section class="features l-section bg-dark reveal">
+        <section class="l-section bg-dark reveal" id="methodology">
+          <div class="section-center">
+            <div class="section-header">
+              <div class="section-tag">Methodology</div>
+              <h2>我們如何確保驗證品質</h2>
+              <p class="section-sub">透明的方法論，可量化的研究品質</p>
+            </div>
+            <div class="method-grid">
+              <div class="method-card stagger-child d1">
+                <div class="method-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div>
+                <h3>結構化人格模型</h3>
+                <p>每位 AI 受訪者基於人口統計、消費行為、文化參數生成，回答邏輯自洽且可追溯，絕非隨機輸出</p>
+              </div>
+              <div class="method-card stagger-child d2">
+                <div class="method-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l3-9 6 18 3-9h4"/></svg></div>
+                <h3>RQS 品質分數</h3>
+                <p>Research Quality Score 量化每次研究的方法論完整度，涵蓋受訪者多樣性、問題覆蓋度、數據一致性、分析深度四大因子</p>
+              </div>
+              <div class="method-card stagger-child d3">
+                <div class="method-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
+                <h3>已知限制透明揭露</h3>
+                <p>AI 合成受訪者非真人隨機抽樣。我們明確標示正面偏誤校準值、文化參數影響範圍，並建議搭配真人訪談交叉驗證</p>
+              </div>
+            </div>
+            <div class="method-note">
+              <strong>我們的定位：</strong>BeyondPath 是產品假設的快速驗證工具，不是傳統市調的替代品。在你投入 15-90 萬做大規模研究之前，先用 AI 低成本驗證方向是否正確。RQS 分數越高，代表研究設計越嚴謹，結果越值得作為決策參考。
+            </div>
+          </div>
+        </section>
+
+        <section class="features l-section bg-subtle reveal">
           <div class="section-center">
             <div class="section-header">
               <div class="section-tag">Toolchain</div>
@@ -9025,7 +9068,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           </div>
         </section>
 
-        <section class="pricing l-section bg-subtle reveal" id="pricing">
+        <section class="pricing l-section bg-dark reveal" id="pricing">
           <div class="section-center">
             <div class="section-header">
               <h2>簡單透明的定價</h2>
@@ -9051,8 +9094,8 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                 <div class="price-amount">NT$890</div>
                 <small>每月計費</small>
                 <ul>
-                  <li>無限 PATH 診斷</li>
-                  <li>無限 Lab AI 深度研究</li>
+                  <li>PATH 診斷 每月 20 次</li>
+                  <li>Lab AI 深度研究 每月 5 次</li>
                   <li>模擬受訪者 64 / 128 人</li>
                   <li>完整可視化報告 + 匯出</li>
                   <li>無限產品項目</li>
