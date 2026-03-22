@@ -2379,7 +2379,7 @@ canvas{display:block;margin:0 auto 24px}
     user: { name: 'Edward', email: 'edward@example.com', avatar: 'E' },
     currentModule: 'home',
     currentView: 'landing',
-    plan: 'free',
+    plan: 'pro',
     diagnoses: [],
     researches: [],
     labCount: 0,
@@ -2547,8 +2547,6 @@ canvas{display:block;margin:0 auto 24px}
       { id: 'market', label: '市場探測', icon: 'trendUp', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
       { id: 'compete', label: '競品雷達', icon: 'target', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
       { id: 'pricing', label: '定價實驗室', icon: 'dollarSign', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
-      { type: 'category', label: '成長追蹤' },
-      { id: 'pmf', label: 'PMF 儀表板', icon: 'gauge', type: 'item' },
       { type: 'category', label: '即將推出' },
       { id: 'focusgroup', label: '焦點小組', icon: 'video', type: 'item', soon: true },
       { id: 'uxwalk', label: '體驗走查', icon: 'footprints', type: 'item', soon: true },
@@ -8299,8 +8297,6 @@ function loadHistory(){
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">市場探測</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">競品雷達</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">定價實驗室</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">3 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
-              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">成長追蹤</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">PMF 儀表板</td><td style="text-align:center;padding:10px 8px">✓ 基礎版</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">✓ 完整版</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓ 完整版</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">即將推出</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;color:var(--ink-muted)">焦點小組</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;color:var(--ink-muted)">體驗走查</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td></tr>
@@ -9753,7 +9749,6 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                 <ul>
                   <li>PATH 四維診斷 3 次/月</li>
                   <li>Lab AI 深度研究 1 次/月</li>
-                  <li>PMF 儀表板（基礎版）</li>
                   <li>模擬受訪者 16 / 32 人</li>
                   <li>PATH 診斷報告</li>
                   <li>1 個可管理品牌數</li>
