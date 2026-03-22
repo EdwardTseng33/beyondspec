@@ -900,7 +900,7 @@ canvas{display:block;margin:0 auto 24px}
 .quiz-select-card h3{font-size:var(--text-lg);font-weight:700;margin-bottom:6px;color:var(--ink)}
 .quiz-select-card p{font-size:13.5px;color:var(--ink-muted);margin:0;line-height:1.6}
 .quiz-card-input{margin-top:16px;padding-top:16px;border-top:1px solid var(--border);text-align:left}
-.quiz-select-card.expanded{border-color:var(--primary);cursor:default}
+.quiz-select-card.expanded{border-color:rgba(124,92,252,.35);background:var(--primary-light);cursor:default;box-shadow:0 2px 12px rgba(124,92,252,.08)}
 .doc-import-section{margin-top:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:28px 28px 24px}
 .doc-import-section .di-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
 .doc-import-section .di-icon{width:40px;height:40px;border-radius:12px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--primary)}
@@ -2268,10 +2268,12 @@ canvas{display:block;margin:0 auto 24px}
 
 /* ── Accordion chevron & smooth expand ── */
 .learn-chevron {
-  width: 16px; height: 16px; flex-shrink: 0;
+  width: 14px; height: 14px; flex-shrink: 0;
   transition: transform .25s cubic-bezier(.4,0,.2,1);
-  color: var(--ink-dim);
+  color: var(--ink-muted);
+  opacity: .5;
 }
+.learn-card:hover .learn-chevron { color: var(--primary); opacity: .8; }
 .learn-card.is-open .learn-chevron { transform: rotate(180deg); }
 .learn-card { position: relative; z-index: 1; }
 .learn-card.is-open { z-index: 10; }
@@ -2948,7 +2950,7 @@ canvas{display:block;margin:0 auto 24px}
                     <div style="font-weight:600;color:var(--primary);margin-bottom:1px">PATH 模型</div>
                     <div style="color:var(--ink-dim);font-size:12px">Problem · Audience · Traction · How</div>
                   </div>
-                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
+                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
                 </div>
                 <div class="learn-body" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(124,92,252,.12);color:var(--ink-sec);line-height:1.7;font-size:12px" onclick="event.stopPropagation()">
                   四維度產品驗證框架，各維度 0–100 分：<br><br>
@@ -2971,7 +2973,7 @@ canvas{display:block;margin:0 auto 24px}
                     <div style="font-weight:600;color:var(--violet);margin-bottom:1px">RQS 研究品質分數</div>
                     <div style="color:var(--ink-dim);font-size:12px">Research Quality Score</div>
                   </div>
-                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
+                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
                 </div>
                 <div class="learn-body" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(124,92,252,.1);color:var(--ink-sec);line-height:1.7;font-size:12px" onclick="event.stopPropagation()">
                   衡量「這次研究在方法論上做對了多少事」，<strong>不是</strong>統計精度或預測準確率。0–100 分，四項因子加總：<br><br>
@@ -2994,7 +2996,7 @@ canvas{display:block;margin:0 auto 24px}
                     <div style="font-weight:600;color:var(--primary);margin-bottom:1px">合成用戶引擎</div>
                     <div style="color:var(--ink-dim);font-size:12px">Synthetic User Engine</div>
                   </div>
-                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
+                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
                 </div>
                 <div class="learn-body" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(124,92,252,.12);color:var(--ink-sec);line-height:1.7;font-size:12px" onclick="event.stopPropagation()">
                   根據你設定的受眾條件（年齡、職業、收入、地域），AI 生成具有一致人格特質的虛擬受訪者，模擬真實訪談回應。<br><br>
@@ -3011,7 +3013,7 @@ canvas{display:block;margin:0 auto 24px}
                     <div style="font-weight:600;color:var(--primary);margin-bottom:1px">五種研究類型</div>
                     <div style="color:var(--ink-dim);font-size:12px">Research Types</div>
                   </div>
-                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
+                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
                 </div>
                 <div class="learn-body" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(124,92,252,.12);color:var(--ink-sec);line-height:1.7;font-size:12px" onclick="event.stopPropagation()">
                   <strong>Concept（概念驗證）</strong>：產品概念是否引起受眾興趣？<br>
@@ -3030,7 +3032,7 @@ canvas{display:block;margin:0 auto 24px}
                     <div style="font-weight:600;color:var(--primary);margin-bottom:1px">文化校準系統</div>
                     <div style="color:var(--ink-dim);font-size:12px">Cultural Calibration</div>
                   </div>
-                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
+                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
                 </div>
                 <div class="learn-body" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);color:var(--ink-sec);line-height:1.7;font-size:12px" onclick="event.stopPropagation()">
                   針對華語市場（台灣、香港、新加坡、馬來西亞等），BeyondPath 內建文化行為參數：<br><br>
@@ -3054,7 +3056,7 @@ canvas{display:block;margin:0 auto 24px}
               <div class="learn-card" onclick="this.classList.toggle('is-open')" style="font-size:13px;padding:8px 12px;background:transparent;border-radius:var(--r-sm);cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
                 <div style="display:flex;justify-content:space-between;align-items:center">
                   <div style="font-weight:600;color:var(--ink-sec)">AI 合成用戶的結果可靠嗎？</div>
-                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
+                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
                 </div>
                 <div class="learn-body" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--ink-dim);line-height:1.6;font-size:12px" onclick="event.stopPropagation()">
                   合成用戶是方向性驗證工具，適合快速排除明顯不可行的方向、發現盲點。它不能替代真人訪談，但能在你花大量時間和金錢做真人研究之前，先用低成本找到正確的問題。
@@ -3063,7 +3065,7 @@ canvas{display:block;margin:0 auto 24px}
               <div class="learn-card" onclick="this.classList.toggle('is-open')" style="font-size:13px;padding:8px 12px;background:transparent;border-radius:var(--r-sm);cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
                 <div style="display:flex;justify-content:space-between;align-items:center">
                   <div style="font-weight:600;color:var(--ink-sec)">診斷和研究的區別？</div>
-                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
+                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
                 </div>
                 <div class="learn-body" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--ink-dim);line-height:1.6;font-size:12px" onclick="event.stopPropagation()">
                   <strong>PATH 診斷</strong>：你回答 20 道情境題，系統評估產品在四個維度的健康度。像「健康檢查」。<br>
@@ -3074,7 +3076,7 @@ canvas{display:block;margin:0 auto 24px}
               <div class="learn-card" onclick="this.classList.toggle('is-open')" style="font-size:13px;padding:8px 12px;background:transparent;border-radius:var(--r-sm);cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
                 <div style="display:flex;justify-content:space-between;align-items:center">
                   <div style="font-weight:600;color:var(--ink-sec)">分數多少算好？</div>
-                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
+                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
                 </div>
                 <div class="learn-body" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--ink-dim);line-height:1.6;font-size:12px" onclick="event.stopPropagation()">
                   <strong>7.5+</strong>：信號強烈正面，加速進入真人驗證<br>
@@ -3087,7 +3089,7 @@ canvas{display:block;margin:0 auto 24px}
               <div class="learn-card" onclick="this.classList.toggle('is-open')" style="font-size:13px;padding:8px 12px;background:transparent;border-radius:var(--r-sm);cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
                 <div style="display:flex;justify-content:space-between;align-items:center">
                   <div style="font-weight:600;color:var(--ink-sec)">Free 和 Pro 差在哪？</div>
-                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
+                  <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
                 </div>
                 <div class="learn-body" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);color:var(--ink-dim);line-height:1.6;font-size:12px" onclick="event.stopPropagation()">
                   <strong>Free</strong>：最多 64 位合成用戶，RQS 上限 85（無真人）/ 93（有真人）<br>
@@ -4086,19 +4088,19 @@ canvas{display:block;margin:0 auto 24px}
       </div>
 
       <!-- ═══ CTA ═══ -->
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px 24px;box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:20px 0 8px">
         <div>
           <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px">下一步：用 Lab 深入驗證</div>
           <div style="font-size:13px;color:var(--ink-muted)">針對最弱維度「${weakDim.name}」進行 AI 模擬用戶訪談</div>
         </div>
         <div style="display:flex;gap:10px;flex-shrink:0">
-          <button class="btn btn-primary" onclick="app.navigateLabWithPath('${weakest[0]}', '${JSON.stringify(normalized).replace(/"/g, '&quot;')}')">
+          <button class="btn btn-accent" onclick="app.navigateLabWithPath('${weakest[0]}', '${JSON.stringify(normalized).replace(/"/g, '&quot;')}')">
             驗證「${weakDim.name}」 ${ICONS.arrowRight}
           </button>
-          <button class="btn btn-secondary" onclick="app.rediagnose()">
+          <button class="btn btn-outline" onclick="app.rediagnose()">
             重新診斷
           </button>
-          <button class="btn btn-secondary" onclick="app.navigate('diagnose')">
+          <button class="btn btn-ghost" onclick="app.navigate('diagnose')">
             ← 返回列表
           </button>
         </div>
@@ -4959,7 +4961,7 @@ canvas{display:block;margin:0 auto 24px}
           <h2>文化參數微調</h2>
           <p style="font-size:13px;color:var(--ink-dim);margin-top:2px">已套用地域預設值。有在地經驗？展開自行調整。</p>
         </div>
-        <div id="calToggleIcon" style="font-size:20px;color:var(--ink-dim);transition:transform .3s;flex-shrink:0;padding-left:8px">▾</div>
+        <div id="calToggleIcon" style="font-size:16px;color:var(--ink-muted);opacity:.5;transition:transform .3s;flex-shrink:0;padding-left:8px">▾</div>
       </div>
 
       <!-- 折疊內容 -->
