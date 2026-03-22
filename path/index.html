@@ -8965,7 +8965,7 @@ function loadHistory(){
           </div>
 
           <!-- Generate Button -->
-          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;text-align:center">
+          <div style="text-align:center;margin-top:4px">
             ${canGenerate ?
               `<button class="btn btn-accent" style="width:100%;padding:14px 24px;font-size:14px" onclick="app.generateMarketReport()">
                 ${ICONS.fileText} 生成${selectedType?.label || '市場報告'}
@@ -9755,9 +9755,7 @@ function loadHistory(){
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;color:var(--ink-muted)">體驗走查</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">平台功能</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">可視化報告 + 匯出</td><td style="text-align:center;padding:10px 8px">PATH 診斷報告</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">完整報告 · MD / PDF</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全部 + API</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">可管理品牌數</td><td style="text-align:center;padding:10px 8px">1 個</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">無限</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">無限</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">團隊協作</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">最多 10 人</td></tr>
-              <tr><td style="padding:10px 8px">專屬客戶經理</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">支援</td></tr>
+              <tr><td style="padding:10px 8px">歷史診斷紀錄</td><td style="text-align:center;padding:10px 8px">最近 5 筆</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">無限</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">無限 + 匯出</td></tr>
             </tbody>
           </table>
         </div>
@@ -11298,7 +11296,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                   <li>Lab AI 深度研究 1 次/月</li>
                   <li>模擬受訪者 16 / 32 人</li>
                   <li>PATH 診斷報告</li>
-                  <li>1 個可管理品牌數</li>
+                  <li>最近 5 筆診斷紀錄</li>
                 </ul>
                 <button class="btn-price" onclick="app.showLoginModal()">免費開始</button>
               </div>
@@ -11314,7 +11312,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                   <li>模擬受訪者 64 / 128 人</li>
                   <li>AI 模型切換（精準 / 快速模式）</li>
                   <li>完整可視化報告 + 匯出</li>
-                  <li>無限可管理品牌數</li>
+                  <li>無限診斷紀錄 + 匯出</li>
                 </ul>
                 <button class="btn-price featured" onclick="app.showLoginModal()">升級 Pro</button>
               </div>
