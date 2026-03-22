@@ -2408,7 +2408,7 @@ canvas{display:block;margin:0 auto 24px}
   function loadState() {
     const saved = {
       isLoggedIn: localStorage.getItem('bp_login') === 'true',
-      plan: localStorage.getItem('bp_plan') || 'free',
+      plan: 'pro', // Force Pro for testing (bypass localStorage)
       diagnoses: JSON.parse(localStorage.getItem('bp_diagnoses') || '[]'),
       researches: JSON.parse(localStorage.getItem('bp_researches') || '[]'),
       labCount: parseInt(localStorage.getItem('bp_labCount') || '0'),
