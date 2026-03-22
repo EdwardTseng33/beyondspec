@@ -7408,8 +7408,8 @@ function loadHistory(){
               </div>
             </div>
             <div class="report-card-actions">
-              <button class="btn btn-ghost" style="font-size:13px;padding:6px 12px" onclick="event.stopPropagation();app.exportResearchJSON('${r.id}')">匯出 JSON</button>
               <button class="btn btn-ghost" style="font-size:13px;padding:6px 12px" onclick="event.stopPropagation();app.exportResearchMD('${r.id}')">匯出 Markdown</button>
+              <button class="btn btn-ghost" style="font-size:13px;padding:6px 12px" onclick="event.stopPropagation();app.exportResearchPDF('${r.id}')">匯出 PDF</button>
               <button class="btn btn-ghost" style="font-size:13px;padding:6px 12px" onclick="event.stopPropagation();app.renameResearch('${r.id}')">重命名</button>
               <button class="btn btn-ghost" style="font-size:13px;padding:6px 12px;color:var(--ink-muted)" onclick="event.stopPropagation();app.deleteResearch('${r.id}')">刪除</button>
             </div>
@@ -7616,7 +7616,7 @@ function loadHistory(){
                 <th style="text-align:left;padding:10px 8px;color:var(--ink-muted);font-weight:600">功能</th>
                 <th style="text-align:center;padding:10px 8px;color:var(--ink-muted);font-weight:600">Free</th>
                 <th style="text-align:center;padding:10px 8px;color:var(--primary);font-weight:700">Pro NT$890/月</th>
-                <th style="text-align:center;padding:10px 8px;color:var(--teal);font-weight:700">Enterprise NT$2,990/月</th>
+                <th style="text-align:center;padding:10px 8px;color:var(--teal);font-weight:700">Enterprise</th>
               </tr>
             </thead>
             <tbody>
@@ -7624,14 +7624,14 @@ function loadHistory(){
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">Lab AI 研究</td><td style="text-align:center;padding:10px 8px">3 次/月</td><td style="text-align:center;padding:10px 8px">無限</td><td style="text-align:center;padding:10px 8px">無限</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">模擬受訪者</td><td style="text-align:center;padding:10px 8px">8 人</td><td style="text-align:center;padding:10px 8px">32 人</td><td style="text-align:center;padding:10px 8px">64 人</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">AI 深度分析</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">✓</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">匯出報告</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">MD / JSON / PDF</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全部 + API</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">匯出報告</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">MD / PDF</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全部 + API</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">團隊協作</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">最多 10 人</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">白標品牌</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓</td></tr>
               <tr><td style="padding:10px 8px">專屬客戶經理</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓</td></tr>
             </tbody>
           </table>
         </div>
-        ${plan==='free' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.handleUpgrade()">升級到 Pro · NT$890/月</button>' : plan==='pro' ? '<button class="btn btn-outline" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.showUpgradeInfo()">升級到 Enterprise · NT$2,990/月</button>' : ''}
+        ${plan==='free' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.handleUpgrade()">升級到 Pro · NT$890/月</button>' : plan==='pro' ? '<button class="btn btn-outline" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.showUpgradeInfo()">了解 Enterprise 方案</button>' : ''}
       </div>
 
       <!-- ═══ 團隊管理（Enterprise 預留）═══ -->
@@ -7667,9 +7667,9 @@ function loadHistory(){
         <div class="settings-item" style="border:none;padding:0">
           <div>
             <div style="font-size:14px;font-weight:600;color:var(--ink)">匯出所有資料</div>
-            <div style="font-size:13px;color:var(--ink-muted)">下載你的診斷與研究資料（JSON 格式）</div>
+            <div style="font-size:13px;color:var(--ink-muted)">下載你的所有診斷與研究資料備份</div>
           </div>
-          <button class="btn btn-outline" style="font-size:13px;padding:8px 16px" onclick="app.exportAsJSON()">匯出 JSON</button>
+          <button class="btn btn-outline" style="font-size:13px;padding:8px 16px" onclick="app.exportAllData()">匯出備份</button>
         </div>
       </div>
 
@@ -7890,32 +7890,36 @@ function loadHistory(){
 
   // ==================== RESEARCH EXPORT UTILITIES ====================
   function exportAsJSON() {
+    exportAllData();
+  }
+
+  function exportAllData() {
     const exportData = {
-      research: {
+      exportDate: new Date().toISOString(),
+      version: 'v0.6.5',
+      plan: state.plan,
+      diagnoses: state.diagnoses,
+      researches: state.researches,
+      currentResearch: {
         productName: state.labState.product.name,
         type: state.labState.config.type,
-        timestamp: new Date().toISOString(),
         region: state.labState.config.region,
-        sampleSize: state.labState.config.sampleSize
-      },
-      results: state.labState.results,
-      personas: state.labState.personas.map(p => ({
-        name: p.name,
-        age: p.age,
-        job: p.job,
-        location: p.location,
-        style: p.style
-      })),
-      interviews: state.labState.interviews
+        sampleSize: state.labState.config.sampleSize,
+        results: state.labState.results,
+        personas: state.labState.personas.map(p => ({
+          name: p.name, age: p.age, job: p.job, location: p.location, style: p.style
+        })),
+        interviews: state.labState.interviews
+      }
     };
-
     const dataStr = JSON.stringify(exportData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `beyond-path-research-${Date.now()}.json`;
+    link.download = 'beyondpath-backup-' + new Date().toISOString().slice(0,10) + '.json';
     link.click();
+    showToast('資料備份已下載');
   }
 
   function generateSummaryStatistics() {
@@ -8631,6 +8635,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     saveAISettings,
     showUpgradeInfo,
     exportAsJSON,
+    exportAllData,
     showLoginModal,
     hideLoginModal,
     showRegisterModal,
@@ -8774,12 +8779,12 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
               <div class="price-badge">最受歡迎</div>
               <h3>Pro</h3>
               <div class="price-amount">NT$890<small>/月</small></div>
-              <ul><li>完整 PATH 診斷（20 題）</li><li>無限 Lab 研究</li><li>32 位模擬受訪者</li><li>AI 深度分析報告</li><li>MD / JSON / PDF 匯出</li></ul>
+              <ul><li>完整 PATH 診斷（20 題）</li><li>無限 Lab 研究</li><li>32 位模擬受訪者</li><li>AI 深度分析報告</li><li>MD / PDF 報告匯出</li></ul>
               <button class="btn-price featured" onclick="app.showLoginModal()">升級 Pro</button>
             </div>
             <div class="price-card">
               <h3>Enterprise</h3>
-              <div class="price-amount">NT$2,990<small>/月</small></div>
+              <div class="price-amount" style="font-size:1.4rem">聯繫我們<small style="display:block;font-size:13px;margin-top:4px">客製化方案</small></div>
               <ul><li>全部 Pro 功能</li><li>團隊多人協作（10 人）</li><li>API 存取</li><li>自訂品牌白標</li><li>專屬客戶經理</li></ul>
               <button class="btn-price" onclick="app.showLoginModal()">聯絡銷售</button>
             </div>
