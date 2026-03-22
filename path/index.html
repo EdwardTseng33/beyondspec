@@ -3637,9 +3637,19 @@ canvas{display:block;margin:0 auto 24px}
           <div class="di-header">
             <div class="di-icon">${ICONS.upload}</div>
             <div>
-              <h2>產品資料匯入</h2>
-              <div class="di-sub">上傳產品簡報文件（.md），AI 自動產出 PATH 四維分數 · 1 分鐘</div>
+              <h2>資料匯入診斷</h2>
+              <div class="di-sub">上傳文件（.md），AI 自動產出 PATH 四維分數 · 1 分鐘</div>
             </div>
+          </div>
+
+          <!-- Import Type Selector -->
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <button id="importTypeProduct" class="btn" style="flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--primary);color:#fff;border:1.5px solid var(--primary)" onclick="app.switchImportType('product')">
+              ${ICONS.pulse} 產品診斷
+            </button>
+            <button id="importTypeFeature" class="btn" style="flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--bg);color:var(--ink-sec);border:1.5px solid var(--border)" onclick="app.switchImportType('feature')">
+              ${ICONS.crosshair} 功能診斷
+            </button>
           </div>
 
           <div class="doc-import-row">
@@ -3648,7 +3658,9 @@ canvas{display:block;margin:0 auto 24px}
                 <span style="font-size:14px;font-weight:700;color:var(--ink)">文件格式範例</span>
                 <button class="btn btn-ghost" style="padding:6px 14px;font-size:13px;display:flex;align-items:center;gap:4px;border:1.5px solid var(--border);border-radius:var(--r-sm)" onclick="app.downloadDocTemplate()"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 2v9M4 8l4 4 4-4"/><line x1="2" y1="14" x2="14" y2="14"/></svg>下載範本</button>
               </div>
-              <div class="doc-template-box">
+
+              <!-- Product Template -->
+              <div id="docTemplateProduct" class="doc-template-box">
                 <div class="dt-header">
                   <span>product-brief.md</span>
                   <button onclick="app.copyDocTemplate()">複製</button>
@@ -3675,10 +3687,43 @@ canvas{display:block;margin:0 auto 24px}
 <span class="hl">## 已有的驗證數據</span>　<span class="comment">（如有）</span>
 <span class="hl">## 你最想知道的事</span></pre>
               </div>
+
+              <!-- Feature Template -->
+              <div id="docTemplateFeature" class="doc-template-box" style="display:none">
+                <div class="dt-header">
+                  <span>feature-brief.md</span>
+                  <button onclick="app.copyDocTemplate()">複製</button>
+                </div>
+                <pre><span class="hl"># 功能評估簡報</span>
+
+<span class="hl">## 基本資訊</span> <span class="req-mark">*</span>
+- <span class="hl">**功能名稱**</span>：社群動態牆
+- <span class="hl">**所屬產品**</span>：ECHO 回聲
+- <span class="hl">**功能描述**</span>：讓家長分享親子任務成果的社群功能
+
+<span class="hl">## 用戶需求</span> <span class="req-mark">*</span>
+- <span class="hl">**需求來源**</span>：用戶反饋 / 競品觀察 / 團隊假設
+- <span class="hl">**反映人數**</span>：約 30 位用戶提過
+- <span class="hl">**目前替代方案**</span>：用戶自行截圖分享到 LINE 群組
+
+<span class="hl">## 問題頻率與影響</span> <span class="req-mark">*</span>
+  <span class="comment">（這個需求多常出現？影響多少用戶？）</span>
+
+<span class="hl">## 預期價值</span>
+  <span class="comment">（對留存率、活躍度等核心指標的預期影響）</span>
+
+<span class="hl">## 競品是否已有</span>
+<span class="hl">## 技術複雜度評估</span>
+  <span class="comment">（前端/後端/第三方串接？預估工時？）</span>
+<span class="hl">## 資源需求</span>
+  <span class="comment">（需要哪些人力？團隊能負擔嗎？）</span>
+<span class="hl">## 不做的風險</span>
+  <span class="comment">（如果不做這個功能，會發生什麼？）</span></pre>
+              </div>
             </div>
 
             <div>
-              <label>產品名稱 <span class="req">*</span></label>
+              <label id="importNameLabel">產品名稱 <span class="req">*</span></label>
               <input type="text" id="importProdName" placeholder="例：ECHO 回聲、Moodscape">
 
               <label>上傳文件</label>
@@ -10336,8 +10381,37 @@ function loadHistory(){
 
   // ==================== DOCUMENT IMPORT DIAGNOSIS ====================
 
-  function downloadDocTemplate() {
-    const template = `# 產品簡報
+  // Track which import type is selected
+  let _importType = 'product';
+
+  function switchImportType(type) {
+    _importType = type;
+    const productBtn = document.getElementById('importTypeProduct');
+    const featureBtn = document.getElementById('importTypeFeature');
+    const productTpl = document.getElementById('docTemplateProduct');
+    const featureTpl = document.getElementById('docTemplateFeature');
+    const nameLabel = document.getElementById('importNameLabel');
+    const nameInput = document.getElementById('importProdName');
+
+    if (type === 'feature') {
+      productBtn.style.cssText = 'flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--bg);color:var(--ink-sec);border:1.5px solid var(--border)';
+      featureBtn.style.cssText = 'flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--primary);color:#fff;border:1.5px solid var(--primary)';
+      if (productTpl) productTpl.style.display = 'none';
+      if (featureTpl) featureTpl.style.display = '';
+      if (nameLabel) nameLabel.innerHTML = '功能名稱 <span class="req">*</span>';
+      if (nameInput) nameInput.placeholder = '例：社群動態牆、AI 推薦系統';
+    } else {
+      productBtn.style.cssText = 'flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--primary);color:#fff;border:1.5px solid var(--primary)';
+      featureBtn.style.cssText = 'flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--bg);color:var(--ink-sec);border:1.5px solid var(--border)';
+      if (productTpl) productTpl.style.display = '';
+      if (featureTpl) featureTpl.style.display = 'none';
+      if (nameLabel) nameLabel.innerHTML = '產品名稱 <span class="req">*</span>';
+      if (nameInput) nameInput.placeholder = '例：ECHO 回聲、Moodscape';
+    }
+  }
+
+  const _docTemplates = {
+    product: `# 產品簡報
 
 ## 基本資訊 *
 - **產品名稱**：（填入你的產品名稱）
@@ -10367,19 +10441,54 @@ function loadHistory(){
 
 ## 你最想知道的事
 （關於這個產品，你最想驗證的假設是什麼？）
-`;
+`,
+    feature: `# 功能評估簡報
+
+## 基本資訊 *
+- **功能名稱**：（填入功能名稱）
+- **所屬產品**：（這個功能屬於哪個產品）
+- **功能描述**：（用一句話說明這個功能做什麼）
+
+## 用戶需求 *
+- **需求來源**：用戶反饋 / 競品觀察 / 團隊假設
+- **反映人數**：（多少用戶提過這個需求）
+- **目前替代方案**：（沒有這功能時用戶怎麼解決）
+
+## 問題頻率與影響 *
+（這個需求多常出現？影響多少比例的用戶？）
+
+## 預期價值
+（對留存率、活躍度、轉化率等核心指標的預期影響）
+
+## 競品是否已有
+（競品有類似功能嗎？做得如何？）
+
+## 技術複雜度評估
+（前端/後端/第三方串接？預估工時？）
+
+## 資源需求
+（需要哪些人力？團隊目前能負擔嗎？）
+
+## 不做的風險
+（如果不做這個功能，會發生什麼？用戶流失？競爭劣勢？）
+`
+  };
+
+  function downloadDocTemplate() {
+    const template = _docTemplates[_importType] || _docTemplates.product;
+    const filename = _importType === 'feature' ? 'PATH-feature-template.md' : 'PATH-product-template.md';
     const blob = new Blob([template], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'PATH-product-template.md';
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
     showToast('範例模板已下載');
   }
 
   function copyDocTemplate() {
-    const template = `# 產品簡報\n\n## 基本資訊 *\n- **產品名稱**：\n- **一句話描述**：\n- **產品類型**：App / SaaS / 服務\n- **目前階段**：概念 / MVP / Beta / 已上線\n\n## 目標受眾 *\n- **主要受眾**：\n- **地理範圍**：\n- **收入區間**：\n\n## 解決的問題 *\n\n\n## 產品核心功能\n\n\n## 定價模式\n\n\n## 競品 / 替代方案\n\n\n## 已有的驗證數據\n\n\n## 你最想知道的事\n`;
+    const template = _docTemplates[_importType] || _docTemplates.product;
     navigator.clipboard.writeText(template).then(() => {
       showToast('模板已複製到剪貼簿');
     });
@@ -10673,11 +10782,20 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
   function finishDocDiagnosis(prodName, scores, docText, aiSummary) {
     const normalized = scores;
     const total = Math.round((scores.P + scores.A + scores.T + scores.H) / 4);
+    const isFeatureImport = _importType === 'feature';
 
-    let pathType = '萌芽探索者';
-    if (total > 25) pathType = '摸索前進者';
-    if (total > 50) pathType = '蓄勢待發者';
-    if (total > 75) pathType = '準備起飛者';
+    let pathType;
+    if (isFeatureImport) {
+      pathType = '觀望評估中';
+      if (total > 25) pathType = '值得研究';
+      if (total > 50) pathType = '建議開發';
+      if (total > 75) pathType = '強烈建議';
+    } else {
+      pathType = '萌芽探索者';
+      if (total > 25) pathType = '摸索前進者';
+      if (total > 50) pathType = '蓄勢待發者';
+      if (total > 75) pathType = '準備起飛者';
+    }
 
     const dims = ['P', 'A', 'T', 'H'];
     const weakest = dims.slice().sort((a, b) => normalized[a] - normalized[b]);
@@ -10685,13 +10803,15 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     const weakDim = DIMENSIONS.find(d => d.id === weakest[0]);
     const strongDim = DIMENSIONS.find(d => d.id === strongest[0]);
 
-    const verdictData = getVerdict(normalized, total, weakDim, strongDim);
+    const verdictData = isFeatureImport ? getFeatureVerdict(normalized, total, weakDim, strongDim) : getVerdict(normalized, total, weakDim, strongDim);
 
     // Save to state
     const detectedAI = isAIProduct(docText);
+    const quizType = isFeatureImport ? 'feature' : (detectedAI ? 'ai' : 'standard');
     const diagnosis = {
       id: 'diag_' + Date.now(),
-      type: detectedAI ? 'ai' : 'standard',
+      type: isFeatureImport ? 'feature' : (detectedAI ? 'ai' : 'standard'),
+      quizType: quizType,
       date: new Date().toISOString(),
       scores: normalized,
       rawScores: { P: [normalized.P], A: [normalized.A], T: [normalized.T], H: [normalized.H] },
@@ -10701,21 +10821,22 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
       verdict: verdictData.verdict,
       verdictTitle: verdictData.title,
       source: 'doc_import',
-      isAIProduct: detectedAI,
+      isAIProduct: !isFeatureImport && detectedAI,
       docExcerpt: docText.substring(0, 200)
     };
     state.diagnoses.push(diagnosis);
     saveState();
 
     // Re-use the quiz results display
-    state.quizState.type = 'standard';
+    state.quizState.type = quizType;
+    state.quizState.quizType = quizType;
     state.quizState.productName = prodName;
     state.quizState.scores = { P: [normalized.P], A: [normalized.A], T: [normalized.T], H: [normalized.H] };
     state.quizState.results = { normalized, total, pathType };
     state.quizState._viewOnly = true;
 
     showQuizResults();
-    showToast('產品資料匯入診斷完成！');
+    showToast(isFeatureImport ? '功能評估匯入診斷完成！' : '產品資料匯入診斷完成！');
   }
 
   // ==================== PUBLIC API ====================
@@ -10809,6 +10930,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     exportDiagnosisPDF,
     exportResearchPDF,
     // Doc import diagnosis
+    switchImportType,
     downloadDocTemplate,
     copyDocTemplate,
     startDocImport,
