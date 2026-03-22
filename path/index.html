@@ -687,11 +687,12 @@ h3{font-size:16px;font-weight:600;color:var(--ink)}
 .input-group{margin-bottom:20px}
 .input-group label{display:block;font-size:var(--text-sm);font-weight:600;color:var(--ink-sec);margin-bottom:6px}
 .input-group label.required::after{content:' *';color:var(--rose)}
-input[type="text"],input[type="email"],input[type="url"],input[type="number"],textarea,select{width:100%;padding:10px 14px;font-size:var(--text-base);font-family:inherit;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);transition:all .2s;outline:none}
-select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:36px;cursor:pointer}
-select:hover{border-color:var(--primary);background-color:var(--bg-hover)}
-select option{background:var(--bg-card);color:var(--ink);padding:8px 14px;font-size:14px}
-input:focus,textarea:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+input[type="text"],input[type="email"],input[type="url"],input[type="number"],textarea,select{width:100%;padding:11px 14px;font-size:var(--text-base);font-family:inherit;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);transition:all .25s cubic-bezier(.4,0,.2,1);outline:none}
+select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237C5CFC' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:40px;cursor:pointer;font-weight:500;letter-spacing:.01em}
+select:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.08)}
+select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light),0 2px 8px rgba(124,92,252,.08)}
+select option{background:var(--bg-card);color:var(--ink);padding:10px 16px;font-size:14px}
+input:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
 input::placeholder,textarea::placeholder{color:var(--ink-placeholder)}
 textarea{resize:vertical;min-height:80px}
 
@@ -8060,7 +8061,7 @@ function loadHistory(){
           <input id="mkKw3" type="text" placeholder="第三關鍵字（選填）" style="flex:1;min-width:200px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
         </div>
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <select id="mkRegion" style="width:auto;min-width:120px">
+          <select id="mkRegion" style="width:auto;min-width:140px;font-size:14px">
             <option value="tw">台灣</option>
             <option value="hk">香港</option>
             <option value="sg">新加坡</option>
@@ -8383,14 +8384,14 @@ function loadHistory(){
           <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">研究目的</div>
           <textarea id="svGoal" rows="3" placeholder="例如：了解 25-35 歲台灣女性對寵物保健食品的購買動機與價格敏感度" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
           <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
-            <select id="svType" style="width:auto;min-width:140px">
+            <select id="svType" style="width:auto;min-width:150px;font-size:14px">
               <option value="market">市場驗證</option>
               <option value="ux">使用者體驗</option>
               <option value="pricing">定價研究</option>
               <option value="satisfaction">滿意度調查</option>
               <option value="brand">品牌認知</option>
             </select>
-            <select id="svLength" style="width:auto;min-width:160px">
+            <select id="svLength" style="width:auto;min-width:180px;font-size:14px">
               <option value="short">短問卷（8-10 題）</option>
               <option value="medium">中等（12-15 題）</option>
               <option value="long">完整（18-20 題）</option>
@@ -8839,7 +8840,7 @@ function loadHistory(){
         const verdictLabel = d.verdict === 'persevere' ? '繼續前進' : d.verdict === 'pivot' ? '建議轉向' : d.verdict === 'kill' ? '建議停止' : d.verdict === 'build' ? '建議開發' : d.verdict === 'validate' ? '需要驗證' : d.verdict === 'hold' ? '暫緩' : '';
         return `<option value="${d.id}" ${selectedDiag?.id === d.id ? 'selected' : ''}>[${typeLabel}] ${d.productName || '未命名'} — ${d.total} 分 · ${date}${verdictLabel ? ' · ' + verdictLabel : ''}</option>`;
       }).join('');
-      diagSelectHTML = `<select id="reportDiagSelect" style="width:100%" onchange="app.selectReportDiag(this.value)">
+      diagSelectHTML = `<select id="reportDiagSelect" style="width:100%;font-size:14px" onchange="app.selectReportDiag(this.value)">
         <option value="">選擇一筆 PATH 診斷結果...</option>
         ${diagOptions}
       </select>`;
@@ -9500,10 +9501,10 @@ function loadHistory(){
           <input id="cpUrl" type="text" placeholder="產品網址（選填）" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
         </div>
         <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
-          <select id="cpMarket" style="width:auto;min-width:140px">
-            <option value="tw">🇹🇼 台灣市場</option>
-            <option value="sea">🌏 東南亞市場</option>
-            <option value="global">🌍 全球市場</option>
+          <select id="cpMarket" style="width:auto;min-width:150px;font-size:14px">
+            <option value="tw">台灣市場</option>
+            <option value="sea">東南亞市場</option>
+            <option value="global">全球市場</option>
           </select>
           <button class="btn btn-gold" style="padding:10px 24px" onclick="app.runCompeteRadar()">
             ${ICONS.target} <span style="margin-left:6px">啟動競品掃描</span>
@@ -9694,7 +9695,7 @@ function loadHistory(){
               <div style="font-size:13px;font-weight:700;color:var(--ink)">Claude Sonnet 4.6</div>
               <div style="font-size:11px;color:var(--ink-muted);margin-top:4px">Free 方案固定使用 Sonnet</div>
             ` : `
-              <select style="width:100%;font-size:13px;font-weight:600" onchange="app.setAIModel(this.value)">
+              <select style="width:100%;font-size:14px" onchange="app.setAIModel(this.value)">
                 ${modelOptions.map(m => `<option value="${m.id}" ${aiModel === m.id ? 'selected' : ''}>${m.label}（${m.cost} credit）</option>`).join('')}
               </select>
               <div style="font-size:11px;color:var(--ink-muted);margin-top:6px">${currentModel.desc}</div>
