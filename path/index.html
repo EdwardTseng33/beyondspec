@@ -693,6 +693,20 @@ select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-i
 select:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.08)}
 select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light),0 2px 8px rgba(124,92,252,.08)}
 select option{background:var(--bg-card);color:var(--ink);padding:10px 16px;font-size:14px}
+.bp-select{position:relative;width:100%;user-select:none;-webkit-user-select:none}
+.bp-select-trigger{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;font-size:var(--text-base);font-family:inherit;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);font-weight:500;letter-spacing:.01em;gap:8px}
+.bp-select-trigger:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.08)}
+.bp-select-trigger.open{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light),0 2px 8px rgba(124,92,252,.08);border-radius:var(--r-sm) var(--r-sm) 0 0}
+.bp-select-trigger .bp-chev{width:14px;height:14px;flex-shrink:0;color:var(--primary);opacity:.6;transition:transform .2s}
+.bp-select-trigger.open .bp-chev{transform:rotate(180deg)}
+.bp-select-trigger .bp-placeholder{color:var(--ink-muted)}
+.bp-select-list{position:absolute;top:100%;left:0;right:0;max-height:240px;overflow-y:auto;background:var(--bg-card);border:1.5px solid var(--primary);border-top:none;border-radius:0 0 var(--r-sm) var(--r-sm);box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:999;display:none;scrollbar-width:thin}
+.bp-select-trigger.open+.bp-select-list{display:block;animation:bpDropIn .15s ease-out}
+@keyframes bpDropIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.bp-select-item{padding:10px 14px;font-size:14px;color:var(--ink);cursor:pointer;transition:background .12s,color .12s;display:flex;align-items:center;gap:8px}
+.bp-select-item:hover{background:var(--primary-light);color:var(--primary)}
+.bp-select-item.selected{background:rgba(124,92,252,.06);color:var(--primary);font-weight:600}
+.bp-select-item:last-child{border-radius:0 0 6px 6px}
 input:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
 input::placeholder,textarea::placeholder{color:var(--ink-placeholder)}
 textarea{resize:vertical;min-height:80px}
@@ -2504,6 +2518,53 @@ canvas{display:block;margin:0 auto 24px}
   function hideLoginGate() {
     hideLoginModal();
   }
+
+  // ── Custom Select Component ──
+  function bpSelect(opts) {
+    // opts: { id, options: [{value,label,selected}], placeholder, onChange, style }
+    const id = opts.id || 'bp_sel_' + Date.now();
+    const selOpt = opts.options.find(o => o.selected);
+    const label = selOpt ? selOpt.label : (opts.placeholder || '請選擇...');
+    const isPlaceholder = !selOpt;
+    return `<div class="bp-select" id="${id}_wrap" style="${opts.style||''}">
+      <div class="bp-select-trigger${isPlaceholder ? '' : ''}" id="${id}_trigger" onclick="app._bpToggle('${id}')">
+        <span id="${id}_label" class="${isPlaceholder ? 'bp-placeholder' : ''}">${label}</span>
+        <svg class="bp-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
+      </div>
+      <div class="bp-select-list" id="${id}_list">
+        ${opts.placeholder ? `<div class="bp-select-item${isPlaceholder?' selected':''}" data-val="" onclick="app._bpPick('${id}','','${opts.placeholder.replace(/'/g,"\\'")}','${opts.onChange||''}')">${opts.placeholder}</div>` : ''}
+        ${opts.options.map(o => `<div class="bp-select-item${o.selected?' selected':''}" data-val="${o.value}" onclick="app._bpPick('${id}','${o.value}','${o.label.replace(/'/g,"\\'")}','${opts.onChange||''}')">${o.label}</div>`).join('')}
+      </div>
+      <input type="hidden" id="${id}" value="${selOpt ? selOpt.value : ''}">
+    </div>`;
+  }
+  function _bpToggle(id) {
+    const trigger = document.getElementById(id + '_trigger');
+    const wasOpen = trigger.classList.contains('open');
+    // Close all open selects first
+    document.querySelectorAll('.bp-select-trigger.open').forEach(t => t.classList.remove('open'));
+    if (!wasOpen) trigger.classList.add('open');
+  }
+  function _bpPick(id, val, label, onChange) {
+    const trigger = document.getElementById(id + '_trigger');
+    const labelEl = document.getElementById(id + '_label');
+    const hidden = document.getElementById(id);
+    trigger.classList.remove('open');
+    labelEl.textContent = label;
+    labelEl.className = val ? '' : 'bp-placeholder';
+    hidden.value = val;
+    // Mark selected
+    const list = document.getElementById(id + '_list');
+    list.querySelectorAll('.bp-select-item').forEach(it => it.classList.toggle('selected', it.dataset.val === val));
+    // Fire callback
+    if (onChange && window.app[onChange]) window.app[onChange](val);
+  }
+  // Close selects on click outside
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.bp-select')) {
+      document.querySelectorAll('.bp-select-trigger.open').forEach(t => t.classList.remove('open'));
+    }
+  });
 
   function showToast(message, duration = 3000) {
     const container = document.getElementById('toastContainer');
@@ -8131,12 +8192,9 @@ function loadHistory(){
           <input id="mkKw3" type="text" placeholder="第三關鍵字（選填）" style="flex:1;min-width:200px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
         </div>
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <select id="mkRegion" style="width:auto;min-width:140px;font-size:14px">
-            <option value="tw">台灣</option>
-            <option value="hk">香港</option>
-            <option value="sg">新加坡</option>
-            <option value="global">全球</option>
-          </select>
+          ${bpSelect({id:'mkRegion', style:'width:auto;min-width:160px;font-size:14px', options:[
+            {value:'tw',label:'台灣',selected:true},{value:'hk',label:'香港'},{value:'sg',label:'新加坡'},{value:'global',label:'全球'}
+          ]})}
           <button id="mkRunBtn" class="btn btn-gold" style="padding:10px 24px" onclick="app.runMarketSignal()">
             ${ICONS.search} <span style="margin-left:6px">開始探測</span>
           </button>
@@ -8423,18 +8481,12 @@ function loadHistory(){
           <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">研究目的</div>
           <textarea id="svGoal" rows="3" placeholder="例如：了解 25-35 歲台灣女性對寵物保健食品的購買動機與價格敏感度" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
           <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
-            <select id="svType" style="width:auto;min-width:150px;font-size:14px">
-              <option value="market">市場驗證</option>
-              <option value="ux">使用者體驗</option>
-              <option value="pricing">定價研究</option>
-              <option value="satisfaction">滿意度調查</option>
-              <option value="brand">品牌認知</option>
-            </select>
-            <select id="svLength" style="width:auto;min-width:180px;font-size:14px">
-              <option value="short">短問卷（8-10 題）</option>
-              <option value="medium">中等（12-15 題）</option>
-              <option value="long">完整（18-20 題）</option>
-            </select>
+            ${bpSelect({id:'svType', style:'width:auto;min-width:160px;font-size:14px', options:[
+              {value:'market',label:'市場驗證',selected:true},{value:'ux',label:'使用者體驗'},{value:'pricing',label:'定價研究'},{value:'satisfaction',label:'滿意度調查'},{value:'brand',label:'品牌認知'}
+            ]})}
+            ${bpSelect({id:'svLength', style:'width:auto;min-width:200px;font-size:14px', options:[
+              {value:'short',label:'短問卷（8-10 題）',selected:true},{value:'medium',label:'中等（12-15 題）'},{value:'long',label:'完整（18-20 題）'}
+            ]})}
             <button id="svGenBtn" class="btn btn-gold" style="padding:10px 24px" onclick="app.generateSurvey()">
               ${ICONS.zap} <span style="margin-left:6px">AI 生成問卷</span>
             </button>
@@ -8892,10 +8944,13 @@ function loadHistory(){
         const verdictLabel = d.verdict === 'persevere' ? '繼續前進' : d.verdict === 'pivot' ? '建議轉向' : d.verdict === 'kill' ? '建議停止' : d.verdict === 'build' ? '建議開發' : d.verdict === 'validate' ? '需要驗證' : d.verdict === 'hold' ? '暫緩' : '';
         return `<option value="${d.id}" ${selectedDiag?.id === d.id ? 'selected' : ''}>[${typeLabel}] ${d.productName || '未命名'} — ${d.total} 分 · ${date}${verdictLabel ? ' · ' + verdictLabel : ''}</option>`;
       }).join('');
-      diagSelectHTML = `<select id="reportDiagSelect" style="width:100%;font-size:14px" onchange="app.selectReportDiag(this.value)">
-        <option value="">選擇一筆 PATH 診斷結果...</option>
-        ${diagOptions}
-      </select>`;
+      const diagOptsArr = diags.map(d => {
+        const date2 = new Date(d.date).toLocaleDateString('zh-TW', {month:'short', day:'numeric'});
+        const tl = d.quizType === 'feature' ? '功能' : d.quizType === 'ai' ? 'AI' : '產品';
+        const vl = d.verdict === 'persevere' ? '繼續前進' : d.verdict === 'pivot' ? '轉向' : d.verdict === 'kill' ? '停止' : d.verdict === 'build' ? '開發' : d.verdict === 'validate' ? '驗證' : d.verdict === 'hold' ? '暫緩' : '';
+        return {value: d.id, label: `[${tl}] ${d.productName || '未命名'} — ${d.total} 分 · ${date2}${vl ? ' · '+vl : ''}`, selected: selectedDiag?.id === d.id};
+      });
+      diagSelectHTML = bpSelect({id:'reportDiagSelect', style:'width:100%;font-size:14px', placeholder:'選擇一筆 PATH 診斷結果...', onChange:'selectReportDiag', options: diagOptsArr});
     } else {
       diagSelectHTML = `<div style="text-align:center;padding:24px;color:var(--ink-muted)">
         <div style="margin-bottom:8px">${ICONS.pulse}</div>
@@ -9630,11 +9685,9 @@ function loadHistory(){
           <input id="cpUrl" type="text" placeholder="產品網址（選填）" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
         </div>
         <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
-          <select id="cpMarket" style="width:auto;min-width:150px;font-size:14px">
-            <option value="tw">台灣市場</option>
-            <option value="sea">東南亞市場</option>
-            <option value="global">全球市場</option>
-          </select>
+          ${bpSelect({id:'cpMarket', style:'width:auto;min-width:170px;font-size:14px', options:[
+            {value:'tw',label:'台灣市場',selected:true},{value:'sea',label:'東南亞市場'},{value:'global',label:'全球市場'}
+          ]})}
           <button class="btn btn-gold" style="padding:10px 24px" onclick="app.runCompeteRadar()">
             ${ICONS.target} <span style="margin-left:6px">啟動競品掃描</span>
           </button>
@@ -9824,9 +9877,7 @@ function loadHistory(){
               <div style="font-size:13px;font-weight:700;color:var(--ink)">Claude Sonnet 4.6</div>
               <div style="font-size:11px;color:var(--ink-muted);margin-top:4px">Free 方案固定使用 Sonnet</div>
             ` : `
-              <select style="width:100%;font-size:14px" onchange="app.setAIModel(this.value)">
-                ${modelOptions.map(m => `<option value="${m.id}" ${aiModel === m.id ? 'selected' : ''}>${m.label}（${m.cost} credit）</option>`).join('')}
-              </select>
+              ${bpSelect({id:'aiModelSelect', style:'width:100%;font-size:14px', onChange:'setAIModel', options: modelOptions.map(m => ({value:m.id, label:m.label+'（'+m.cost+' credit）', selected: aiModel===m.id}))})}
               <div style="font-size:11px;color:var(--ink-muted);margin-top:6px">${currentModel.desc}</div>
             `}
           </div>
@@ -11080,6 +11131,8 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     backToReportPrep,
     exportMarketReportMD,
     exportMarketReportPDF,
+    _bpToggle,
+    _bpPick,
     runCompeteRadar,
     runPricingTest,
     setPricingMethod,
