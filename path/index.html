@@ -11,12 +11,12 @@
 
 /* ===== THEME VARIABLES ===== */
 :root{
-  --primary:#7C5CFC;--primary-hover:#6A4BE8;--primary-light:rgba(124,92,252,.08);--primary-glow:rgba(124,92,252,.18);
+  --primary:#7C5CFC;--primary-hover:#6A4BE8;--primary-light:rgba(124,92,252,.14);--primary-glow:rgba(124,92,252,.28);
   --bg-app:#F0F0F3;--bg-card:#FFF;--bg-sidebar:#6B4FCF;--bg-input:#FFF;--bg-hover:#E8E8EC;--bg-overlay:rgba(0,0,0,.45);
   --ink:#111122;--ink-sec:#44445E;--ink-muted:#66667A;--ink-placeholder:#9999AA;
   --border:#E2E2EA;--border-hover:#CCCCD6;
-  --teal:#2DBDA8;--teal-bg:rgba(45,189,168,.08);--rose:#E8627C;--rose-bg:rgba(232,98,124,.06);
-  --gold:#F0A05A;--gold-bg:rgba(240,160,90,.1);--violet:#7C5CFC;--violet-bg:rgba(124,92,252,.08);
+  --teal:#1BA891;--teal-bg:rgba(27,168,145,.14);--rose:#D94462;--rose-bg:rgba(217,68,98,.12);
+  --gold:#E08A3A;--gold-bg:rgba(224,138,58,.14);--violet:#7C5CFC;--violet-bg:rgba(124,92,252,.14);
   --shadow-sm:0 1px 2px rgba(0,0,0,.04);--shadow-card:0 2px 8px rgba(0,0,0,.06);--shadow-lg:0 4px 20px rgba(0,0,0,.08);--shadow-xl:0 8px 32px rgba(0,0,0,.12);
   --sidebar-w:80px;--r-sm:10px;--r-md:14px;--r-lg:18px;--r-xl:24px;
   --text-xs:14px;--text-sm:16px;--text-base:17px;--text-lg:22px;--text-xl:28px;--text-2xl:36px;--text-3xl:48px;
@@ -28,15 +28,15 @@
   --shadow-sm:0 1px 2px rgba(0,0,0,.2);--shadow-card:0 2px 8px rgba(0,0,0,.3);--shadow-lg:0 4px 20px rgba(0,0,0,.4);--shadow-xl:0 8px 32px rgba(0,0,0,.5);
 }
 
-html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg-app);color:var(--ink);transition:background .25s cubic-bezier(.4,0,.2,1),color .25s cubic-bezier(.4,0,.2,1);font-size:16px;line-height:1.6;font-weight:450;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg-app);color:var(--ink);transition:background .25s cubic-bezier(.4,0,.2,1),color .25s cubic-bezier(.4,0,.2,1);font-size:16px;line-height:1.6;font-weight:450;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior:none}
 
 /* ===== LANDING PAGE — LIGHT PREMIUM ===== */
 .landing-page{min-height:100vh;background:#FAFAFA;overflow-x:hidden;position:relative;color:#111122}
 
 /* — dot-grid background — */
-.landing-page::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(124,92,252,.06) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;opacity:.4}
+.landing-page::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(124,92,252,.14) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;opacity:.4}
 /* — ambient gradient orbs — */
-.landing-page::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 30%,rgba(124,92,252,.05),transparent 70%),radial-gradient(ellipse 50% 40% at 80% 70%,rgba(124,92,252,.03),transparent 70%);pointer-events:none;z-index:0}
+.landing-page::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 30%,rgba(124,92,252,.12),transparent 70%),radial-gradient(ellipse 50% 40% at 80% 70%,rgba(124,92,252,.10),transparent 70%);pointer-events:none;z-index:0}
 
 /* — NAV — */
 .landing-nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 3rem;background:rgba(255,255,255,.85);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-bottom:1px solid rgba(0,0,0,.06);position:sticky;top:0;z-index:100;transition:background .3s}
@@ -53,10 +53,10 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 
 /* — HERO — */
 .hero{padding:12rem 3rem 6rem;text-align:center;position:relative;z-index:2}
-.hero::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:min(900px,90vw);height:min(900px,90vw);background:radial-gradient(circle,rgba(124,92,252,.06) 0%,rgba(124,92,252,.02) 40%,transparent 70%);pointer-events:none;border-radius:50%;animation:hero-pulse 6s ease-in-out infinite}
+.hero::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:min(900px,90vw);height:min(900px,90vw);background:radial-gradient(circle,rgba(124,92,252,.14) 0%,rgba(124,92,252,.08) 40%,transparent 70%);pointer-events:none;border-radius:50%;animation:hero-pulse 6s ease-in-out infinite}
 .hero-inner{max-width:860px;margin:0 auto;position:relative;z-index:2}
 
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,92,252,.06);color:var(--primary);padding:10px 22px;border-radius:100px;font-size:.78rem;font-weight:600;margin-bottom:2.5rem;border:1px solid rgba(124,92,252,.15);letter-spacing:.6px;text-transform:uppercase;animation:fadeInDown .7s cubic-bezier(.16,1,.3,1)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,92,252,.14);color:var(--primary);padding:10px 22px;border-radius:100px;font-size:.78rem;font-weight:600;margin-bottom:2.5rem;border:1px solid rgba(124,92,252,.22);letter-spacing:.6px;text-transform:uppercase;animation:fadeInDown .7s cubic-bezier(.16,1,.3,1)}
 .hero-badge .badge-dot{width:6px;height:6px;border-radius:50%;background:#7C5CFC;animation:badge-pulse 2s ease-in-out infinite;box-shadow:0 0 8px rgba(124,92,252,.4)}
 
 .hero h1{font-size:clamp(3rem,6vw,5rem);font-weight:900;line-height:1.08;margin-bottom:2rem;letter-spacing:-2.5px;animation:fadeInDown .7s cubic-bezier(.16,1,.3,1) .08s backwards}
@@ -77,12 +77,12 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 .landing-page .btn-primary:hover{background:var(--primary-hover);transform:translateY(-3px);box-shadow:0 8px 32px rgba(124,92,252,.35)}
 .landing-page .btn-primary:hover::before{left:120%}
 .landing-page .btn-outline{background:#fff;color:rgba(17,17,34,.6);border:1px solid rgba(0,0,0,.1);padding:1rem 2.4rem;border-radius:10px;font-weight:600;font-size:1rem;cursor:pointer;transition:all .25s cubic-bezier(.16,1,.3,1);font-family:inherit}
-.landing-page .btn-outline:hover{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.04);transform:translateY(-2px)}
+.landing-page .btn-outline:hover{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.12);transform:translateY(-2px)}
 
 /* — SECTIONS — */
 .l-section{padding:7rem 3rem;position:relative;z-index:2}
 .l-section.bg-dark{background:#fff}
-.l-section.bg-subtle{background:#F5F3FF;border-top:1px solid rgba(124,92,252,.06);border-bottom:1px solid rgba(124,92,252,.06)}
+.l-section.bg-subtle{background:#EDE8FF;border-top:1px solid rgba(124,92,252,.20);border-bottom:1px solid rgba(124,92,252,.20)}
 .section-center{max-width:1100px;margin:0 auto}
 .section-header{text-align:center;margin-bottom:4.5rem}
 .section-header h2{font-size:clamp(2rem,4vw,3rem);font-weight:900;margin-bottom:1.2rem;color:#111122;letter-spacing:-1px;line-height:1.15}
@@ -108,11 +108,11 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 .ai-features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:4rem}
 .ai-feat-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:2.8rem 2rem;text-align:left;transition:all .35s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 .ai-feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(124,92,252,.4),transparent);opacity:0;transition:opacity .35s}
-.ai-feat-card:hover{border-color:rgba(124,92,252,.2);background:#fff;transform:translateY(-6px);box-shadow:0 12px 40px rgba(124,92,252,.08)}
+.ai-feat-card:hover{border-color:rgba(124,92,252,.2);background:#fff;transform:translateY(-6px);box-shadow:0 12px 40px rgba(124,92,252,.16)}
 .ai-feat-card:hover::before{opacity:1}
 .ai-feat-card h3{font-size:1.1rem;font-weight:750;margin:1.5rem 0 .8rem;color:#111122;line-height:1.35;letter-spacing:-.2px}
 .ai-feat-card p{font-size:.88rem;color:rgba(17,17,34,.45);line-height:1.75;font-weight:450}
-.ai-feat-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.12);transition:all .35s cubic-bezier(.16,1,.3,1);color:var(--primary)}
+.ai-feat-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(124,92,252,.16);border:1px solid rgba(124,92,252,.12);transition:all .35s cubic-bezier(.16,1,.3,1);color:var(--primary)}
 .ai-feat-icon svg{width:26px;height:26px}
 .ai-feat-card:hover .ai-feat-icon{background:rgba(124,92,252,.14);border-color:rgba(124,92,252,.25);transform:scale(1.08);box-shadow:0 0 20px rgba(124,92,252,.12)}
 
@@ -125,47 +125,47 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 .comparison-table td:first-child{font-weight:650;color:rgba(17,17,34,.7);width:26%}
 .comparison-table td{color:rgba(17,17,34,.4)}
 .comparison-table tr{transition:background .2s}
-.comparison-table tr:hover{background:rgba(124,92,252,.02)}
+.comparison-table tr:hover{background:rgba(124,92,252,.08)}
 .comparison-table .check{color:#2DBDA8;font-weight:800}
 .comparison-table .cross{color:rgba(17,17,34,.2);font-weight:600}
-.comparison-table .highlight{color:rgba(17,17,34,.7);font-weight:600;border-left:2px solid var(--primary);padding-left:1.2rem;background:rgba(124,92,252,.03)}
+.comparison-table .highlight{color:rgba(17,17,34,.7);font-weight:600;border-left:2px solid var(--primary);padding-left:1.2rem;background:rgba(124,92,252,.10)}
 
 /* — FEATURES GRID (tool chain) — */
 .features{padding:7rem 3rem;position:relative;z-index:2}
 .features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:4rem}
 .feat-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:2.5rem 2rem;text-align:left;transition:all .35s cubic-bezier(.16,1,.3,1);position:relative;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.feat-card:hover{border-color:rgba(124,92,252,.2);background:#fff;transform:translateY(-6px);box-shadow:0 12px 40px rgba(124,92,252,.08)}
+.feat-card:hover{border-color:rgba(124,92,252,.2);background:#fff;transform:translateY(-6px);box-shadow:0 12px 40px rgba(124,92,252,.16)}
 .feat-card h3{font-size:1.05rem;font-weight:750;margin:1.3rem 0 .7rem;color:#111122;letter-spacing:-.2px}
 .feat-card p{font-size:.85rem;color:rgba(17,17,34,.42);line-height:1.75;font-weight:450}
 .feat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:all .35s cubic-bezier(.16,1,.3,1)}
 .feat-icon svg{width:22px;height:22px}
-.feat-icon.purple{background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.12);color:var(--primary)}
+.feat-icon.purple{background:rgba(124,92,252,.16);border:1px solid rgba(124,92,252,.12);color:var(--primary)}
 .feat-icon.gold{background:rgba(240,160,90,.08);border:1px solid rgba(240,160,90,.12);color:#D4862E}
 .feat-icon.teal{background:rgba(45,189,168,.08);border:1px solid rgba(45,189,168,.12);color:#1E9E88}
 .feat-icon.rose{background:rgba(232,98,124,.08);border:1px solid rgba(232,98,124,.12);color:#D44060}
-.feat-card:hover .feat-icon{transform:scale(1.1);box-shadow:0 0 16px rgba(124,92,252,.1)}
+.feat-card:hover .feat-icon{transform:scale(1.1);box-shadow:0 0 16px rgba(124,92,252,.18)}
 
 /* — METHODOLOGY / TRUST — */
 .method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3.5rem}
 .method-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:2.5rem 2rem;text-align:left;position:relative;transition:all .35s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.method-card:hover{border-color:rgba(124,92,252,.2);background:#fff;transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,92,252,.08)}
-.method-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.12);color:var(--primary);margin-bottom:1.3rem}
+.method-card:hover{border-color:rgba(124,92,252,.2);background:#fff;transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,92,252,.16)}
+.method-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(124,92,252,.16);border:1px solid rgba(124,92,252,.12);color:var(--primary);margin-bottom:1.3rem}
 .method-icon svg{width:22px;height:22px}
 .method-card h3{font-size:1.05rem;font-weight:750;color:#111122;margin-bottom:.7rem;letter-spacing:-.2px}
 .method-card p{font-size:.85rem;color:rgba(17,17,34,.45);line-height:1.75;font-weight:450}
-.method-note{margin-top:2.5rem;padding:1.5rem 2rem;background:rgba(124,92,252,.04);border:1px solid rgba(124,92,252,.1);border-radius:12px;font-size:.85rem;color:rgba(17,17,34,.5);line-height:1.75}
+.method-note{margin-top:2.5rem;padding:1.5rem 2rem;background:rgba(124,92,252,.12);border:1px solid rgba(124,92,252,.18);border-radius:12px;font-size:.85rem;color:rgba(17,17,34,.5);line-height:1.75}
 .method-note strong{color:rgba(17,17,34,.75)}
 
 /* — BLOG / JOURNAL — */
 .blog-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:3.5rem}
 .blog-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:16px;overflow:hidden;transition:all .35s cubic-bezier(.16,1,.3,1);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.blog-card:hover{border-color:rgba(124,92,252,.2);transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,92,252,.08)}
-.blog-thumb{width:100%;height:200px;object-fit:cover;display:block;background:linear-gradient(135deg,rgba(124,92,252,.08),rgba(124,92,252,.03));position:relative}
+.blog-card:hover{border-color:rgba(124,92,252,.2);transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,92,252,.16)}
+.blog-thumb{width:100%;height:200px;object-fit:cover;display:block;background:linear-gradient(135deg,rgba(124,92,252,.16),rgba(124,92,252,.10));position:relative}
 .blog-thumb-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:2rem}
 .blog-thumb-inner svg{width:80px;height:80px;color:rgba(124,92,252,.3)}
 .blog-body{padding:2rem}
 .blog-meta{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem}
-.blog-tag{font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--primary);background:rgba(124,92,252,.08);padding:.3rem .8rem;border-radius:20px}
+.blog-tag{font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--primary);background:rgba(124,92,252,.16);padding:.3rem .8rem;border-radius:20px}
 .blog-date{font-size:.75rem;color:rgba(17,17,34,.35);font-weight:500}
 .blog-card h3{font-size:1.1rem;font-weight:750;color:#111122;margin-bottom:.7rem;letter-spacing:-.2px;line-height:1.4}
 .blog-card p{font-size:.85rem;color:rgba(17,17,34,.42);line-height:1.75;font-weight:450;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -175,7 +175,7 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 .blog-overlay.active{display:block}
 .blog-article{max-width:720px;margin:0 auto;padding:2rem 0}
 .blog-article-close{position:fixed;top:1.5rem;right:1.5rem;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.08);color:#111122;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:10000}
-.blog-article-close:hover{background:rgba(124,92,252,.1);border-color:rgba(124,92,252,.2)}
+.blog-article-close:hover{background:rgba(124,92,252,.18);border-color:rgba(124,92,252,.2)}
 .blog-article h1{font-size:clamp(1.8rem,3vw,2.4rem);font-weight:900;color:#111122;letter-spacing:-.5px;line-height:1.25;margin-bottom:1.5rem}
 .blog-article .article-meta{display:flex;align-items:center;gap:1rem;margin-bottom:2.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(0,0,0,.06)}
 .blog-article .article-meta span{font-size:.82rem;color:rgba(17,17,34,.4)}
@@ -183,9 +183,9 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 .blog-article h3{font-size:1.1rem;font-weight:700;color:rgba(17,17,34,.8);margin:2rem 0 .8rem}
 .blog-article p{font-size:.95rem;color:rgba(17,17,34,.55);line-height:1.85;margin-bottom:1.2rem}
 .blog-article strong{color:rgba(17,17,34,.8)}
-.blog-article blockquote{border-left:3px solid var(--primary);padding:.8rem 0 .8rem 1.5rem;margin:1.5rem 0;background:rgba(124,92,252,.03);border-radius:0 8px 8px 0}
+.blog-article blockquote{border-left:3px solid var(--primary);padding:.8rem 0 .8rem 1.5rem;margin:1.5rem 0;background:rgba(124,92,252,.10);border-radius:0 8px 8px 0}
 .blog-article blockquote p{color:rgba(17,17,34,.5);font-style:italic;margin-bottom:0}
-.blog-article .article-highlight{background:rgba(124,92,252,.04);border:1px solid rgba(124,92,252,.1);border-radius:12px;padding:1.5rem 2rem;margin:2rem 0}
+.blog-article .article-highlight{background:rgba(124,92,252,.12);border:1px solid rgba(124,92,252,.18);border-radius:12px;padding:1.5rem 2rem;margin:2rem 0}
 .blog-article .article-highlight p{margin-bottom:0}
 .blog-article .article-stat{display:inline-block;font-size:1.4rem;font-weight:900;color:var(--primary);margin-right:.3rem}
 
@@ -200,8 +200,8 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 .pricing{padding:7rem 3rem;position:relative;z-index:2}
 .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:1000px;margin:4rem auto 0}
 .price-card{background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:20px;padding:3rem 2.5rem;text-align:center;position:relative;transition:all .35s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.price-card:hover{border-color:rgba(124,92,252,.2);transform:translateY(-6px);box-shadow:0 12px 40px rgba(124,92,252,.08)}
-.price-card.featured{border-color:rgba(124,92,252,.25);background:rgba(124,92,252,.02);box-shadow:0 4px 24px rgba(124,92,252,.08)}
+.price-card:hover{border-color:rgba(124,92,252,.2);transform:translateY(-6px);box-shadow:0 12px 40px rgba(124,92,252,.16)}
+.price-card.featured{border-color:rgba(124,92,252,.25);background:rgba(124,92,252,.08);box-shadow:0 4px 24px rgba(124,92,252,.16)}
 .price-card.featured:hover{transform:translateY(-10px);box-shadow:0 16px 48px rgba(124,92,252,.12)}
 .price-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:6px 18px;border-radius:100px;font-size:.7rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;box-shadow:0 4px 16px rgba(124,92,252,.25)}
 .price-card h3{font-size:1.15rem;font-weight:750;margin-bottom:1.2rem;color:#111122;letter-spacing:-.2px}
@@ -213,7 +213,7 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 .price-card li:last-child{border:none}
 .price-card li::before{content:'';display:inline-block;width:16px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%237C5CFC'%3E%3Cpath d='M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z'/%3E%3C/svg%3E") no-repeat center;flex-shrink:0}
 .btn-price{width:100%;padding:.9rem;background:transparent;border:1px solid rgba(0,0,0,.1);border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .3s cubic-bezier(.16,1,.3,1);color:rgba(17,17,34,.5);font-family:inherit}
-.btn-price:hover{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.04);transform:translateY(-2px)}
+.btn-price:hover{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.12);transform:translateY(-2px)}
 .btn-price.featured{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 4px 20px rgba(124,92,252,.2)}
 .btn-price.featured:hover{background:var(--primary-hover);transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,92,252,.3)}
 
@@ -495,7 +495,7 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
   display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:14px;color:#fff;cursor:pointer;
   transition:all .25s cubic-bezier(.4,0,.2,1);
-  box-shadow:0 2px 8px rgba(124,92,252,.15);
+  box-shadow:0 2px 8px rgba(124,92,252,.22);
 }
 .header-avatar:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(124,92,252,.25)}
 .header-name{font-weight:600;font-size:14px;color:var(--ink);display:flex;align-items:center;gap:4px}
@@ -690,13 +690,13 @@ h3{font-size:16px;font-weight:600;color:var(--ink)}
 .input-group label.required::after{content:' *';color:var(--rose)}
 input[type="text"],input[type="email"],input[type="url"],input[type="number"],textarea,select{width:100%;padding:11px 14px;font-size:var(--text-base);font-family:inherit;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);transition:all .25s cubic-bezier(.4,0,.2,1);outline:none}
 select{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237C5CFC' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:40px;cursor:pointer;font-weight:500;letter-spacing:.01em}
-select:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.08)}
-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light),0 2px 8px rgba(124,92,252,.08)}
+select:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.16)}
+select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light),0 2px 8px rgba(124,92,252,.16)}
 select option{background:var(--bg-card);color:var(--ink);padding:10px 16px;font-size:14px}
 .bp-select{position:relative;width:100%;user-select:none;-webkit-user-select:none}
 .bp-select-trigger{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;font-size:var(--text-base);font-family:inherit;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);font-weight:500;letter-spacing:.01em;gap:8px}
-.bp-select-trigger:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.08)}
-.bp-select-trigger.open{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light),0 2px 8px rgba(124,92,252,.08);border-radius:var(--r-sm) var(--r-sm) 0 0}
+.bp-select-trigger:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.16)}
+.bp-select-trigger.open{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light),0 2px 8px rgba(124,92,252,.16);border-radius:var(--r-sm) var(--r-sm) 0 0}
 .bp-select-trigger .bp-chev{width:14px;height:14px;flex-shrink:0;color:var(--primary);opacity:.6;transition:transform .2s}
 .bp-select-trigger.open .bp-chev{transform:rotate(180deg)}
 .bp-select-trigger .bp-placeholder{color:var(--ink-muted)}
@@ -705,7 +705,7 @@ select option{background:var(--bg-card);color:var(--ink);padding:10px 16px;font-
 @keyframes bpDropIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .bp-select-item{padding:10px 14px;font-size:14px;color:var(--ink);cursor:pointer;transition:background .12s,color .12s;display:flex;align-items:center;gap:8px}
 .bp-select-item:hover{background:var(--primary-light);color:var(--primary)}
-.bp-select-item.selected{background:rgba(124,92,252,.06);color:var(--primary);font-weight:600}
+.bp-select-item.selected{background:rgba(124,92,252,.14);color:var(--primary);font-weight:600}
 .bp-select-item:last-child{border-radius:0 0 6px 6px}
 input:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
 input::placeholder,textarea::placeholder{color:var(--ink-placeholder)}
@@ -729,7 +729,7 @@ textarea{resize:vertical;min-height:80px}
 .question-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:28px;margin-bottom:20px}
 .question-text{font-size:var(--text-lg);font-weight:500;margin-bottom:20px;line-height:1.6;color:var(--ink)}
 .question-type-badge{font-size:var(--text-xs);font-weight:600;padding:3px 10px;border-radius:12px;margin-bottom:12px;display:inline-block;text-transform:uppercase;letter-spacing:.5px}
-.question-type-badge.quant{background:rgba(124,92,252,.1);color:var(--primary)}
+.question-type-badge.quant{background:rgba(124,92,252,.18);color:var(--primary)}
 .question-type-badge.qual{background:var(--gold-bg);color:var(--gold)}
 .score-row{display:flex;gap:6px;flex-wrap:wrap}
 .score-btn{width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg-card);color:var(--ink-sec);font-weight:600;font-size:var(--text-sm);cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;outline:none;-webkit-tap-highlight-color:transparent}
@@ -914,7 +914,7 @@ canvas{display:block;margin:0 auto 24px}
 .quiz-select-card h3{font-size:var(--text-lg);font-weight:700;margin-bottom:6px;color:var(--ink)}
 .quiz-select-card p{font-size:13.5px;color:var(--ink-muted);margin:0;line-height:1.6}
 .quiz-card-input{margin-top:16px;padding-top:16px;border-top:1px solid var(--border);text-align:left}
-.quiz-select-card.expanded{border-color:rgba(124,92,252,.35);background:var(--primary-light);cursor:default;box-shadow:0 2px 12px rgba(124,92,252,.08)}
+.quiz-select-card.expanded{border-color:rgba(124,92,252,.35);background:var(--primary-light);cursor:default;box-shadow:0 2px 12px rgba(124,92,252,.16)}
 .doc-import-section{margin-top:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:28px 28px 24px}
 .doc-import-section .di-header{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
 .doc-import-section .di-icon{width:40px;height:40px;border-radius:12px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--primary)}
@@ -943,7 +943,7 @@ canvas{display:block;margin:0 auto 24px}
 .doc-template-box pre .req-mark{color:var(--rose)}
 .doc-template-box pre .comment{color:rgba(255,255,255,.3);font-style:italic}
 .di-upload-zone{background:var(--primary-light);border:2px dashed rgba(124,92,252,.25);border-radius:16px;padding:28px 24px;text-align:center;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1)}
-.di-upload-zone:hover{border-color:var(--primary);background:rgba(124,92,252,.08);border-style:solid}
+.di-upload-zone:hover{border-color:var(--primary);background:rgba(124,92,252,.16);border-style:solid}
 .di-upload-zone .uz-icon{margin-bottom:8px;opacity:.6;line-height:1;color:var(--primary)}
 .di-upload-zone .uz-title{font-size:15px;font-weight:600;color:var(--ink)}
 .di-upload-zone .uz-hint{font-size:13px;color:var(--ink-muted);margin-top:4px}
@@ -1215,7 +1215,7 @@ canvas{display:block;margin:0 auto 24px}
   cursor: pointer;
   transition: all .25s cubic-bezier(.4,0,.2,1);
 }
-#labContainer .upload-zone:hover{ border-color: var(--primary); background: rgba(124,92,252,.08); border-style: solid; }
+#labContainer .upload-zone:hover{ border-color: var(--primary); background: rgba(124,92,252,.16); border-style: solid; }
 #labContainer .upload-zone .uz-icon{ margin-bottom: 8px; opacity: .6; line-height: 1; color: var(--primary); }
 #labContainer .upload-zone .uz-title{ font-size: 15px; font-weight: 600; color: var(--ink); }
 #labContainer .upload-zone .uz-hint{ font-size:13px; color: var(--ink-muted); margin-top: 4px; }
@@ -1292,7 +1292,7 @@ canvas{display:block;margin:0 auto 24px}
 }
 #labContainer .slider-card:hover{
   border-color: rgba(124,92,252,.4);
-  box-shadow: 0 2px 12px rgba(124,92,252,.06);
+  box-shadow: 0 2px 12px rgba(124,92,252,.14);
 }
 #labContainer .sc-dot{
   width: 8px; height: 8px; border-radius: 50%;
@@ -1407,7 +1407,7 @@ canvas{display:block;margin:0 auto 24px}
   animation: progShine 1.5s infinite;
 }
 @keyframes progShine { to { left: 100%; } }
-@keyframes pulse { 0%,100%{box-shadow:0 4px 20px var(--primary-glow)} 50%{box-shadow:0 4px 32px var(--primary-glow),0 0 0 8px rgba(124,92,252,.1)} }
+@keyframes pulse { 0%,100%{box-shadow:0 4px 20px var(--primary-glow)} 50%{box-shadow:0 4px 32px var(--primary-glow),0 0 0 8px rgba(124,92,252,.18)} }
 
 /* ===== PERSONA MINI CARDS ===== */
 .persona-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
@@ -1463,11 +1463,11 @@ canvas{display:block;margin:0 auto 24px}
 #labContainer .log-chat-followup .log-chat-q{ border-left-color: var(--violet); }
 #labContainer .log-chat-followup .log-chat-a{ color: var(--ink-dim); font-style: italic; }
 #labContainer .log-q{ font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 4px; display:flex; align-items:center; gap:7px; }
-#labContainer .log-q-icon{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:4px; background:rgba(124,92,252,.15); color:var(--primary); font-size:13px; font-weight:800; letter-spacing:.3px; flex-shrink:0; }
+#labContainer .log-q-icon{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:4px; background:rgba(124,92,252,.22); color:var(--primary); font-size:13px; font-weight:800; letter-spacing:.3px; flex-shrink:0; }
 #labContainer .log-a{ font-size: 13px; color: var(--ink); line-height: 1.8; }
 #labContainer .log-tags{ display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
 #labContainer .ltag{ font-size:13px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
-#labContainer .ltag-quant{ background: rgba(108,75,219,.08); color: var(--violet); }
+#labContainer .ltag-quant{ background: rgba(108,75,219,.16); color: var(--violet); }
 #labContainer .ltag-qual{ background: var(--primary-light); color: var(--primary); }
 #labContainer .ltag-culture{ background: rgba(196,132,29,.08); color: var(--amber); }
 
@@ -1556,7 +1556,7 @@ canvas{display:block;margin:0 auto 24px}
 #labContainer .rpt-summary strong{ color: var(--ink); }
 #labContainer .rpt-summary .rs-highlight{
   color: var(--primary); font-weight: 600;
-  background: rgba(124,92,252,.06); padding: 1px 6px; border-radius: 4px;
+  background: rgba(124,92,252,.14); padding: 1px 6px; border-radius: 4px;
 }
 
 /* ── Sections ── */
@@ -1640,9 +1640,9 @@ canvas{display:block;margin:0 auto 24px}
   border: 2px solid transparent;
 }
 /* Alternate avatar colors for visual variety */
-#labContainer .rpt-voice:nth-child(4n+1) .rv-avatar{ background: rgba(124,92,252,.1); color: var(--primary); border-color: rgba(124,92,252,.15); }
-#labContainer .rpt-voice:nth-child(4n+2) .rv-avatar{ background: rgba(45,189,168,.1); color: var(--teal); border-color: rgba(45,189,168,.15); }
-#labContainer .rpt-voice:nth-child(4n+3) .rv-avatar{ background: rgba(240,160,90,.1); color: var(--gold); border-color: rgba(240,160,90,.15); }
+#labContainer .rpt-voice:nth-child(4n+1) .rv-avatar{ background: rgba(124,92,252,.18); color: var(--primary); border-color: rgba(124,92,252,.22); }
+#labContainer .rpt-voice:nth-child(4n+2) .rv-avatar{ background: rgba(27,168,145,.18); color: var(--teal); border-color: rgba(45,189,168,.15); }
+#labContainer .rpt-voice:nth-child(4n+3) .rv-avatar{ background: rgba(224,138,58,.18); color: var(--gold); border-color: rgba(240,160,90,.15); }
 #labContainer .rpt-voice:nth-child(4n+4) .rv-avatar{ background: rgba(232,98,124,.1); color: var(--rose); border-color: rgba(232,98,124,.15); }
 #labContainer .rv-body{}
 #labContainer .rv-meta{
@@ -1853,7 +1853,7 @@ canvas{display:block;margin:0 auto 24px}
 /* ── Upsell ── */
 #labContainer .rpt-upsell{
   display: flex; align-items: center; gap: 16px;
-  background: rgba(124,92,252,.06);
+  background: rgba(124,92,252,.14);
   border: 1px solid var(--primary-light);
   border-radius: var(--r);
   padding: 20px 24px;
@@ -3096,7 +3096,7 @@ canvas{display:block;margin:0 auto 24px}
               </div>
 
               <!-- RQS -->
-              <div class="learn-card" onclick="this.classList.toggle('is-open')" style="font-size:13px;padding:10px 14px;background:rgba(124,92,252,.05);border-radius:var(--r-sm);cursor:pointer;transition:all .15s" onmouseover="this.style.background='rgba(124,92,252,.1)'" onmouseout="this.style.background='rgba(124,92,252,.05)'">
+              <div class="learn-card" onclick="this.classList.toggle('is-open')" style="font-size:13px;padding:10px 14px;background:rgba(124,92,252,.12);border-radius:var(--r-sm);cursor:pointer;transition:all .15s" onmouseover="this.style.background='rgba(124,92,252,.18)'" onmouseout="this.style.background='rgba(124,92,252,.12)'">
                 <div style="display:flex;justify-content:space-between;align-items:center">
                   <div>
                     <div style="font-weight:600;color:var(--violet);margin-bottom:1px">RQS 研究品質分數</div>
@@ -3104,7 +3104,7 @@ canvas{display:block;margin:0 auto 24px}
                   </div>
                   <svg class="learn-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>
                 </div>
-                <div class="learn-body" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(124,92,252,.1);color:var(--ink-sec);line-height:1.7;font-size:12px" onclick="event.stopPropagation()">
+                <div class="learn-body" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(124,92,252,.18);color:var(--ink-sec);line-height:1.7;font-size:12px" onclick="event.stopPropagation()">
                   衡量「這次研究在方法論上做對了多少事」，<strong>不是</strong>統計精度或預測準確率。0–100 分，四項因子加總：<br><br>
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin:4px 0">
                     <div><strong>1. 樣本規模</strong>：最高 85</div>
@@ -3859,7 +3859,7 @@ canvas{display:block;margin:0 auto 24px}
               <label>上傳文件</label>
               <div class="di-upload-zone" id="docDropZone"
                 onclick="document.getElementById('docFileInput').click()"
-                ondragover="event.preventDefault();this.style.borderColor='var(--primary)';this.style.background='rgba(124,92,252,.08)';this.style.borderStyle='solid'"
+                ondragover="event.preventDefault();this.style.borderColor='var(--primary)';this.style.background='rgba(124,92,252,.16)';this.style.borderStyle='solid'"
                 ondragleave="this.style.borderColor='';this.style.background='';this.style.borderStyle=''"
                 ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';this.style.borderStyle='';app.handleDocDrop(event)">
                 <div class="uz-icon">${ICONS.upload}</div>
@@ -4639,7 +4639,7 @@ canvas{display:block;margin:0 auto 24px}
       const x = centerX + Math.cos(angle) * radius * value;
       const y = centerY + Math.sin(angle) * radius * value;
       // Glow
-      ctx.fillStyle = 'rgba(124,92,252,.15)';
+      ctx.fillStyle = 'rgba(124,92,252,.22)';
       ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill();
       // White ring
       ctx.fillStyle = isDark ? '#1A1A24' : '#fff';
@@ -4908,7 +4908,7 @@ canvas{display:block;margin:0 auto 24px}
       </div>
 
       <div class="file-preview hidden" id="realFilePrev" style="border-color:rgba(45,189,168,.3)">
-        <div class="fp-icon" style="background:rgba(45,189,168,.1);color:var(--teal)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
+        <div class="fp-icon" style="background:rgba(27,168,145,.18);color:var(--teal)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
         <div style="flex:1;min-width:0">
           <div class="fp-name" id="realFpName"></div>
           <div class="fp-meta" id="realFpMeta"></div>
@@ -5010,7 +5010,7 @@ canvas{display:block;margin:0 auto 24px}
 
       <!-- ── To C PANEL（個人消費者模式）── -->
       <div id="b2cPanel">
-      <div style="margin-bottom:12px;padding:10px 14px;background:var(--violet-bg);border:1px solid rgba(124,92,252,.15);border-radius:var(--r-sm);font-size:13px;color:var(--ink-sec);line-height:1.6">
+      <div style="margin-bottom:12px;padding:10px 14px;background:var(--violet-bg);border:1px solid rgba(124,92,252,.22);border-radius:var(--r-sm);font-size:13px;color:var(--ink-sec);line-height:1.6">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <strong style="color:var(--primary)">研究品質因子</strong> — 受眾描述越精準，合成用戶的行為模擬越貼近目標族群。建議每個維度選 1–3 個選項，選太多等於不設限，會降低 RQS。
       </div>
@@ -5217,7 +5217,7 @@ canvas{display:block;margin:0 auto 24px}
     <!-- ③b RQS BREAKDOWN（研究品質因子分解）── -->
     <div class="rpt-section" id="rptAccuracySection" style="display:none">
       <div class="rpt-sec-label">
-        <div class="rpt-sec-icon" style="background:rgba(124,92,252,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12s4.5 10 10 10z"/><path d="M12 6v6l4 2"/></svg></div>
+        <div class="rpt-sec-icon" style="background:rgba(124,92,252,.18)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12s4.5 10 10 10z"/><path d="M12 6v6l4 2"/></svg></div>
         研究品質分數
       </div>
       <div id="rptAccuracyBody"></div>
@@ -5226,7 +5226,7 @@ canvas{display:block;margin:0 auto 24px}
     <!-- ③b REAL vs AI COMPARISON（真人 vs AI 對照）── -->
     <div class="rpt-section" id="rptRealVsAiSection" style="display:none">
       <div class="rpt-sec-label">
-        <div class="rpt-sec-icon" style="background:rgba(45,189,168,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="rpt-sec-icon" style="background:rgba(27,168,145,.18)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         真人 vs AI 對照
       </div>
       <div id="rptRealVsAiBody"></div>
@@ -5235,7 +5235,7 @@ canvas{display:block;margin:0 auto 24px}
     <!-- ④ INSIGHTS（關鍵洞察）─────────────── -->
     <div class="rpt-section">
       <div class="rpt-sec-label">
-        <div class="rpt-sec-icon" style="background:rgba(240,160,90,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>
+        <div class="rpt-sec-icon" style="background:rgba(224,138,58,.18)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>
         關鍵洞察
       </div>
       <div class="rpt-insights" id="insightsArea"></div>
@@ -5244,7 +5244,7 @@ canvas{display:block;margin:0 auto 24px}
     <!-- ⑤ ACTIONS（建議行動）────────────────── -->
     <div class="rpt-section">
       <div class="rpt-sec-label">
-        <div class="rpt-sec-icon" style="background:rgba(124,92,252,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div class="rpt-sec-icon" style="background:rgba(124,92,252,.18)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
         建議行動
       </div>
       <div class="rpt-actions" id="actionsArea"></div>
@@ -5253,7 +5253,7 @@ canvas{display:block;margin:0 auto 24px}
     <!-- ⑥ QUANTITATIVE DIMS（量化數據）──────── -->
     <div class="rpt-section">
       <div class="rpt-sec-label">
-        <div class="rpt-sec-icon" style="background:rgba(124,92,252,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div class="rpt-sec-icon" style="background:rgba(124,92,252,.18)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
         量化評分
       </div>
       <div class="rpt-dims" id="rptDims"></div>
@@ -5262,7 +5262,7 @@ canvas{display:block;margin:0 auto 24px}
     <!-- ⑦ QUAL VOICES（用戶聲音）──────────── -->
     <div class="rpt-section">
       <div class="rpt-sec-label">
-        <div class="rpt-sec-icon" style="background:rgba(45,189,168,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="rpt-sec-icon" style="background:rgba(27,168,145,.18)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
         用戶聲音抽樣
       </div>
       <div class="rpt-voices" id="qualVoicesArea"></div>
@@ -5280,7 +5280,7 @@ canvas{display:block;margin:0 auto 24px}
     <!-- ⑩ KEYWORD MAP ─────────────────────── -->
     <div class="rpt-section">
       <div class="rpt-sec-label">
-        <div class="rpt-sec-icon" style="background:rgba(108,75,219,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></div>
+        <div class="rpt-sec-icon" style="background:rgba(108,75,219,.18)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></div>
         關鍵詞圖譜
       </div>
       <div class="rpt-keyword-map" id="rptKeywordMap"></div>
@@ -5289,7 +5289,7 @@ canvas{display:block;margin:0 auto 24px}
     <!-- ⑪ TRANSCRIPTS（訪談記錄）──────────── -->
     <div class="rpt-section">
       <div class="rpt-sec-label">
-        <div class="rpt-sec-icon" style="background:rgba(45,189,168,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="rpt-sec-icon" style="background:rgba(27,168,145,.18)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
         訪談記錄
       </div>
       <div class="rpt-transcripts" id="rptTranscripts"></div>
@@ -6970,11 +6970,11 @@ async function startResearch(){
       <div class="pm-name"><span class="pm-initial">${p.initial}</span>${p.name}</div>
       <div class="pm-demo">${p.age}歲 ${p.gender}｜${p.job}｜${p.loc}</div>
       <div class="pm-tags">
-        ${p.lifeLabel?`<span class="pm-tag" style="background:rgba(124,92,252,.12);color:var(--gold)">${p.lifeLabel}</span>`:''}
-        ${p.roleFocus?`<span class="pm-tag" style="background:rgba(108,75,219,.08);color:var(--violet)">${p.roleFocus.split('、')[0]}</span>`:''}
+        ${p.lifeLabel?`<span class="pm-tag" style="background:rgba(124,92,252,.12);color:var(--primary)">${p.lifeLabel}</span>`:''}
+        ${p.roleFocus?`<span class="pm-tag" style="background:rgba(108,75,219,.16);color:var(--violet)">${p.roleFocus.split('、')[0]}</span>`:''}
         ${p.traits.map(t=>`<span class="pm-tag">${t}</span>`).join('')}
         <span class="pm-tag" style="background:rgba(10,143,108,.08);color:var(--teal)">${p.com}</span>
-        ${p.ocean?`<span class="pm-tag" style="background:rgba(124,92,252,.08);color:var(--gold);font-family:var(--font-mono);font-size:13px;letter-spacing:.3px">O${Math.round(p.ocean.O/10)} C${Math.round(p.ocean.C/10)} E${Math.round(p.ocean.E/10)} A${Math.round(p.ocean.A/10)} N${Math.round(p.ocean.N/10)}</span>`:''}
+        ${p.ocean?`<span class="pm-tag" style="background:rgba(124,92,252,.16);color:var(--primary);font-family:var(--font-mono);font-size:13px;letter-spacing:.3px">O${Math.round(p.ocean.O/10)} C${Math.round(p.ocean.C/10)} E${Math.round(p.ocean.E/10)} A${Math.round(p.ocean.A/10)} N${Math.round(p.ocean.N/10)}</span>`:''}
       </div>
     </div>
   `).join('')+(n>show?`<div class="persona-mini" style="display:flex;align-items:center;justify-content:center;color:var(--ink-dim)">+${n-show} 位</div>`:'');
@@ -7057,7 +7057,7 @@ async function startResearch(){
       allR.push({q,persona:p,answer:ans});
 
       // 研究記錄：chat bubble 格式（AI 回覆加微標記）
-      const aiTag = isAIGenerated ? '<span style="font-size:8px;color:var(--gold);background:rgba(124,92,252,.1);padding:1px 4px;border-radius:3px;margin-left:4px;vertical-align:1px;font-weight:600">AI</span>' : '';
+      const aiTag = isAIGenerated ? '<span style="font-size:8px;color:var(--primary);background:rgba(124,92,252,.18);padding:1px 4px;border-radius:3px;margin-left:4px;vertical-align:1px;font-weight:600">AI</span>' : '';
       if(q.t==='quant'){
         log.innerHTML+=`<div class="log-chat"><div class="log-chat-q">${q.q}</div><div class="log-chat-a"><strong>${ans.text}</strong></div></div>`;
       } else {
@@ -7085,7 +7085,7 @@ async function startResearch(){
 
           transcript.push({role:'interviewer',text:fu.q,dim:fu.d,isFollowUp:true});
           transcript.push({role:'user',text:fuAns.text,type:fuAns.t,isAI:fuIsAI});
-          const fuAiTag = fuIsAI ? '<span style="font-size:8px;color:var(--gold);background:rgba(124,92,252,.1);padding:1px 4px;border-radius:3px;margin-left:4px;vertical-align:1px;font-weight:600">AI</span>' : '';
+          const fuAiTag = fuIsAI ? '<span style="font-size:8px;color:var(--primary);background:rgba(124,92,252,.18);padding:1px 4px;border-radius:3px;margin-left:4px;vertical-align:1px;font-weight:600">AI</span>' : '';
           log.innerHTML+=`<div class="log-chat log-chat-followup"><div class="log-chat-q" style="color:var(--violet)">↳ ${fu.q}</div><div class="log-chat-a">${fuAns.text}${fuAiTag}</div></div>`;
           allR.push({q:fu,persona:p,answer:fuAns});
         }
@@ -7240,7 +7240,7 @@ function renderResults(){
         <div class="rv-meta">
           <span class="rv-name">${s.name}</span>
           ${persona.job?`<span class="rv-tag">${persona.job}</span>`:''}
-          ${persona.ocean?`<span class="rv-tag" style="background:rgba(124,92,252,.06);color:var(--gold);font-family:var(--font-mono);font-size:13px">O${Math.round(persona.ocean.O/10)} C${Math.round(persona.ocean.C/10)} E${Math.round(persona.ocean.E/10)}</span>`:''}
+          ${persona.ocean?`<span class="rv-tag" style="background:rgba(124,92,252,.14);color:var(--primary);font-family:var(--font-mono);font-size:13px">O${Math.round(persona.ocean.O/10)} C${Math.round(persona.ocean.C/10)} E${Math.round(persona.ocean.E/10)}</span>`:''}
           <span class="rv-dim">${item.dim}</span>
         </div>
         <div class="rv-quote">${s.text}</div>
@@ -7262,21 +7262,21 @@ function renderResults(){
   // ── ⑤ Insights ──
   const ins=[];
   if(topDim) ins.push({
-    col:'var(--teal)',bg:'rgba(10,143,108,.1)',
+    col:'var(--teal)',bg:'rgba(10,143,108,.18)',
     icon:`<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="1,11 5.5,6.5 8.5,9 15,2"/><polyline points="11,2 15,2 15,6"/></svg>`,
     tag:'最強信號',
     body:`「${topDim[0]}」拿到 <strong>${topDim[1].avg}/10</strong>，是本次最高分維度。${topDim[1].sd<1.5?'受眾態度高度一致，信號明確。':'受眾反應略有分散，建議真人確認。'}`
   });
   if(botDim&&botDim[0]!==topDim?.[0]) ins.push({
     col: botDim[1].avg<=4.5?'var(--amber)':'var(--gold)',
-    bg:  botDim[1].avg<=4.5?'rgba(240,160,90,.1)':'rgba(124,92,252,.1)',
+    bg:  botDim[1].avg<=4.5?'rgba(224,138,58,.18)':'rgba(124,92,252,.18)',
     icon:`<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5.5" x2="8" y2="8.5"/><line x1="8" y1="10.5" x2="8.01" y2="10.5" stroke-width="2"/></svg>`,
     tag: botDim[1].avg<=4.5?'警示區間':'需關注',
     body:`「${botDim[0]}」僅 <strong>${botDim[1].avg}/10</strong>${botDim[1].avg<=4.5?'，建議立刻安排 5 位真人訪談確認痛點深度。':'，處於中低區，有改善空間。'}`
   });
   entries.forEach(([d,v])=>{
     if(v.sd>2.5) ins.push({
-      col:'var(--violet)',bg:'rgba(108,75,219,.1)',
+      col:'var(--violet)',bg:'rgba(108,75,219,.18)',
       icon:`<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="14" x2="3" y2="8"/><line x1="8" y1="14" x2="8" y2="4"/><line x1="13" y1="14" x2="13" y2="10"/></svg>`,
       tag:'意見分歧',
       body:`「${d}」標準差 <strong>${v.sd}</strong>，受眾內部態度明顯分歧。可能存在兩個截然不同的細分市場，值得個別深探。`
@@ -7355,7 +7355,7 @@ function renderResults(){
       {re:/工具|App|軟體/g,label:'工具選擇',cat:'product'},
     ];
     const catColors={price:'var(--amber)',channel:'var(--violet)',social:'var(--teal)',insight:'var(--gold)',risk:'var(--rose)',ux:'#5B8FB9',compete:'#8B6BB8',product:'var(--ink-dim)'};
-    const catBg={price:'rgba(124,92,252,.1)',channel:'rgba(108,75,219,.1)',social:'rgba(10,143,108,.1)',insight:'rgba(124,92,252,.1)',risk:'rgba(201,61,84,.1)',ux:'rgba(91,143,185,.1)',compete:'rgba(139,107,184,.1)',product:'rgba(136,136,160,.1)'};
+    const catBg={price:'rgba(124,92,252,.18)',channel:'rgba(108,75,219,.18)',social:'rgba(10,143,108,.18)',insight:'rgba(124,92,252,.18)',risk:'rgba(201,61,84,.18)',ux:'rgba(91,143,185,.18)',compete:'rgba(139,107,184,.18)',product:'rgba(136,136,160,.1)'};
     const kwResults=kwPatterns.map(kw=>{
       const matches=allTexts.match(kw.re);
       return{label:kw.label,count:matches?matches.length:0,cat:kw.cat};
@@ -7576,7 +7576,7 @@ function renderResults(){
       rvHTML+=`<div style="margin-top:16px"><div style="font-size:12px;font-weight:700;color:var(--ink-dim);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">真人聲音抽樣</div>`;
       rvHTML+=realQualSamples.map(s=>`
         <div style="background:var(--bg-alt);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:6px;border-left:3px solid var(--teal)">
-          <div style="font-size:12px;color:var(--teal);font-weight:600;margin-bottom:3px"><span style="background:rgba(45,189,168,.1);padding:1px 6px;border-radius:3px;font-size:10px;margin-right:4px">真人</span>${s.person}</div>
+          <div style="font-size:12px;color:var(--teal);font-weight:600;margin-bottom:3px"><span style="background:rgba(27,168,145,.18);padding:1px 6px;border-radius:3px;font-size:10px;margin-right:4px">真人</span>${s.person}</div>
           <div style="font-size:13px;color:var(--ink-sec);line-height:1.5">${s.text}</div>
         </div>
       `).join('');
@@ -7630,7 +7630,7 @@ async function triggerAISummary(Q, entries, overallAvg) {
         const statsTag = document.createElement('div');
         statsTag.style.cssText = 'margin-top:12px;font-size:13px;color:var(--ink-dim);display:flex;align-items:center;gap:6px;flex-wrap:wrap';
         const mode = aiResult.source === 'dev-sim' ? 'AI 模擬模式' : 'LLM 生成';
-        statsTag.innerHTML = `<span style="background:rgba(124,92,252,.1);color:var(--gold);padding:2px 6px;border-radius:3px;font-weight:600">${mode}</span>`;
+        statsTag.innerHTML = `<span style="background:rgba(124,92,252,.18);color:var(--primary);padding:2px 6px;border-radius:3px;font-weight:600">${mode}</span>`;
         if (S.aiStats.used > 0) statsTag.innerHTML += `<span>${S.aiStats.used} 則 AI 回覆</span>`;
         if (S.aiStats.fallback > 0) statsTag.innerHTML += `<span>${S.aiStats.fallback} 則規則引擎回覆</span>`;
         textEl.appendChild(statsTag);
@@ -7784,7 +7784,7 @@ function initFromURL(){
 
   // 在 Phase A 卡片頂部插入「來自 PATH 診斷」提示橫幅
   const fromBadge = document.createElement('div');
-  fromBadge.style.cssText = 'background:rgba(124,92,252,.1);border:1px solid rgba(124,92,252,.25);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--gold);display:flex;align-items:center;gap:8px;';
+  fromBadge.style.cssText = 'background:rgba(124,92,252,.18);border:1px solid rgba(124,92,252,.25);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--primary);display:flex;align-items:center;gap:8px;';
   fromBadge.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M14 2L2 8l5 2 2 5 5-13Z"/><line x1="9" y1="10" x2="12" y2="7"/></svg><div><strong>來自 PATH 診斷結果</strong>——最弱維度：<strong>${
     {P:'P · 問題驗證',A:'A · 受眾輪廓',T:'T · 牽引力',H:'H · 執行力'}[weak]
   }（${[pathP,pathA,pathT,pathH][['P','A','T','H'].indexOf(weak)]}/100）</strong>。<br>研究類型已自動設定，核心假設已預填。</div>`;
@@ -8443,7 +8443,7 @@ function loadHistory(){
       </div>
 
       <!-- History trend -->
-      <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px">
+      <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.16));border:1px solid rgba(124,92,252,.22);border-radius:var(--r-lg);padding:24px">
         <div style="display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px">${ICONS.trendUp} PMF 趨勢追蹤</div>
         <p style="color:var(--ink-sec);font-size:14px;line-height:1.6;margin:0">每次重新診斷都會更新 PMF 分數。持續追蹤分數變化，確認產品迭代是否讓你更接近 Product-Market Fit。目前已完成 <strong>${diagCount}</strong> 次診斷、<strong>${labCount}</strong> 次 Lab 研究。</p>
       </div>`;
@@ -8501,7 +8501,7 @@ function loadHistory(){
           <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">匯入你的問卷文件</div>
           <div class="di-upload-zone" id="svAuditDropZone"
             onclick="document.getElementById('svAuditFileInput').click()"
-            ondragover="event.preventDefault();this.style.borderColor='var(--primary)';this.style.background='rgba(124,92,252,.08)';this.style.borderStyle='solid'"
+            ondragover="event.preventDefault();this.style.borderColor='var(--primary)';this.style.background='rgba(124,92,252,.16)';this.style.borderStyle='solid'"
             ondragleave="this.style.borderColor='';this.style.background='';this.style.borderStyle=''"
             ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';this.style.borderStyle='';app.handleSurveyAuditDrop(event)"
             style="border:2px dashed var(--border);border-radius:var(--r-lg);padding:32px;text-align:center;cursor:pointer;transition:all .2s">
@@ -9042,7 +9042,7 @@ function loadHistory(){
             <div style="display:flex;flex-direction:column;gap:8px">
               ${reportTypes.map(rt => {
                 const isSel = reportState.reportType === rt.id;
-                return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:${isSel ? 'rgba(124,92,252,.06)' : 'var(--bg)'};border:1.5px solid ${isSel ? 'var(--primary)' : 'var(--border)'};border-radius:var(--r-md);cursor:pointer;transition:all .2s" onclick="app.selectReportType('${rt.id}')">
+                return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:${isSel ? 'rgba(124,92,252,.14)' : 'var(--bg)'};border:1.5px solid ${isSel ? 'var(--primary)' : 'var(--border)'};border-radius:var(--r-md);cursor:pointer;transition:all .2s" onclick="app.selectReportType('${rt.id}')">
                   <div style="color:${isSel ? 'var(--primary)' : 'var(--ink-muted)'};flex-shrink:0">${ICONS[rt.icon]}</div>
                   <div style="flex:1">
                     <div style="font-size:13px;font-weight:700;color:var(--ink)">${rt.label}</div>
@@ -9064,7 +9064,7 @@ function loadHistory(){
             </div>
             ${dataItemsHTML || '<div style="color:var(--ink-muted);font-size:13px;padding:12px 0">請先選擇報告類型</div>'}
 
-            ${isFeatureType && reportState.reportType ? `<div style="margin-top:12px;padding:10px 14px;background:rgba(124,92,252,.04);border:1px solid rgba(124,92,252,.1);border-radius:var(--r-md)">
+            ${isFeatureType && reportState.reportType ? `<div style="margin-top:12px;padding:10px 14px;background:rgba(124,92,252,.12);border:1px solid rgba(124,92,252,.18);border-radius:var(--r-md)">
               <div style="font-size:12px;color:var(--primary);line-height:1.5">${ICONS.zap} <strong>功能可行性報告</strong>只需要 PATH 診斷即可生成。Lab 研究為選填，市場探測不適用於單功能評估。</div>
             </div>` : ''}
 
@@ -9333,7 +9333,7 @@ function loadHistory(){
     const ch3HTML = `
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-          <div style="width:32px;height:32px;border-radius:8px;background:rgba(45,189,168,.1);color:var(--teal);display:flex;align-items:center;justify-content:center">${ICONS.user}</div>
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(27,168,145,.18);color:var(--teal);display:flex;align-items:center;justify-content:center">${ICONS.user}</div>
           <div style="font-size:18px;font-weight:700;color:var(--ink)">三、${isFeature ? '用戶' : '受眾'}洞察</div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
@@ -9369,9 +9369,9 @@ function loadHistory(){
     if (isFeature) {
       // Feature report: replace market signals with Implementation Assessment
       ch4HTML = `
-      <div style="background:linear-gradient(180deg,var(--bg-card),rgba(124,92,252,.03));border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+      <div style="background:linear-gradient(180deg,var(--bg-card),rgba(124,92,252,.10));border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-          <div style="width:32px;height:32px;border-radius:8px;background:rgba(124,92,252,.1);color:var(--primary);display:flex;align-items:center;justify-content:center">${ICONS.cpu}</div>
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(124,92,252,.18);color:var(--primary);display:flex;align-items:center;justify-content:center">${ICONS.cpu}</div>
           <div style="font-size:18px;font-weight:700;color:var(--ink)">四、實作評估</div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
@@ -9398,9 +9398,9 @@ function loadHistory(){
       </div>`;
     } else if (hasMarketDataForReport) {
       ch4HTML = `
-      <div style="background:linear-gradient(180deg,var(--bg-card),rgba(124,92,252,.03));border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+      <div style="background:linear-gradient(180deg,var(--bg-card),rgba(124,92,252,.10));border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-          <div style="width:32px;height:32px;border-radius:8px;background:rgba(124,92,252,.1);color:var(--primary);display:flex;align-items:center;justify-content:center">${ICONS.trendUp}</div>
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(124,92,252,.18);color:var(--primary);display:flex;align-items:center;justify-content:center">${ICONS.trendUp}</div>
           <div style="font-size:18px;font-weight:700;color:var(--ink)">四、市場訊號</div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
@@ -9429,11 +9429,11 @@ function loadHistory(){
     } else {
       // No market data — show notice
       ch4HTML = `
-      <div style="background:linear-gradient(180deg,var(--bg-card),rgba(124,92,252,.03));border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+      <div style="background:linear-gradient(180deg,var(--bg-card),rgba(124,92,252,.10));border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-          <div style="width:32px;height:32px;border-radius:8px;background:rgba(124,92,252,.1);color:var(--primary);display:flex;align-items:center;justify-content:center">${ICONS.trendUp}</div>
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(124,92,252,.18);color:var(--primary);display:flex;align-items:center;justify-content:center">${ICONS.trendUp}</div>
           <div style="font-size:18px;font-weight:700;color:var(--ink)">四、市場訊號</div>
-          <span style="font-size:11px;font-weight:600;color:var(--gold);padding:2px 8px;background:rgba(240,160,90,.1);border-radius:var(--r-sm)">數據不足</span>
+          <span style="font-size:11px;font-weight:600;color:var(--gold);padding:2px 8px;background:rgba(224,138,58,.18);border-radius:var(--r-sm)">數據不足</span>
         </div>
         <div style="text-align:center;padding:32px;color:var(--ink-muted)">
           <div style="margin-bottom:8px">${ICONS.trendUp}</div>
@@ -9466,12 +9466,12 @@ function loadHistory(){
     const ch5HTML = `
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-          <div style="width:32px;height:32px;border-radius:8px;background:rgba(240,160,90,.1);color:var(--gold);display:flex;align-items:center;justify-content:center">${ICONS.target}</div>
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(224,138,58,.18);color:var(--gold);display:flex;align-items:center;justify-content:center">${ICONS.target}</div>
           <div style="font-size:18px;font-weight:700;color:var(--ink)">五、策略建議</div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-          <div style="background:linear-gradient(135deg,rgba(124,92,252,.06),rgba(124,92,252,.02));border:1px solid rgba(124,92,252,.12);border-radius:var(--r-lg);padding:20px">
+          <div style="background:linear-gradient(135deg,rgba(124,92,252,.14),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.12);border-radius:var(--r-lg);padding:20px">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
               <div style="width:28px;height:28px;border-radius:6px;background:rgba(124,92,252,.12);color:var(--primary);display:flex;align-items:center;justify-content:center">${ICONS.zap}</div>
               <div style="font-size:14px;font-weight:700;color:var(--primary)">${isFeature ? '上線策略' : '進入策略'}</div>
@@ -9592,7 +9592,7 @@ function loadHistory(){
       ${ch5HTML}
 
       <!-- Report Footer -->
-      <div style="background:linear-gradient(135deg,rgba(124,92,252,.04),rgba(45,189,168,.04));border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center">
+      <div style="background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(45,189,168,.04));border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center">
         <div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">此報告由 BeyondPath AI 引擎根據 PATH 診斷、Lab 研究及市場探測數據整合生成</div>
         <div style="font-size:11px;color:var(--ink-muted);margin-bottom:16px">${today}</div>
         <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap">
@@ -9717,7 +9717,7 @@ function loadHistory(){
       </div>
 
       <!-- Strategy section -->
-      <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px">
+      <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.16));border:1px solid rgba(124,92,252,.22);border-radius:var(--r-lg);padding:24px">
         <div style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px">⚔️ 策略建議引擎</div>
         <p style="color:var(--ink-sec);font-size:14px;line-height:1.6;margin:0">完成競品掃描後，系統將結合你的 PATH 診斷結果，自動生成差異化策略建議、進入壁壘分析、以及最佳切入角度。</p>
       </div>`;
@@ -11210,7 +11210,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     el.innerHTML = `
       <div class="landing-page">
         <nav class="landing-nav">
-          <div class="landing-logo"><img src="data:image/png;base64,${LOGO_LIGHT}" alt="BeyondPath"></div>
+          <div class="landing-logo"><img class="logo-light" src="data:image/png;base64,${LOGO_LIGHT}" alt="BeyondPath"><img class="logo-dark" src="data:image/png;base64,${LOGO_DARK}" alt="BeyondPath"></div>
           <div class="landing-links">
             <a href="#ai-features">AI 功能</a>
             <a href="#methodology">方法論</a>
@@ -11540,25 +11540,14 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
             <div class="footer-section">
               <h4>資源</h4>
               <ul>
-                <li><a href="#">使用指南</a></li>
-                <li><a href="#">案例研究</a></li>
-                <li><a href="#">API 文檔</a></li>
+                <li><a href="#methodology">方法論</a></li>
+                <li><a href="#journal">期刊</a></li>
               </ul>
             </div>
             <div class="footer-section">
-              <h4>公司</h4>
+              <h4>聯絡</h4>
               <ul>
-                <li><a href="#">關於我們</a></li>
-                <li><a href="#">聯繫我們</a></li>
-                <li><a href="#">隱私政策</a></li>
-              </ul>
-            </div>
-            <div class="footer-section">
-              <h4>連接</h4>
-              <ul>
-                <li><a href="#">Twitter</a></li>
-                <li><a href="#">Discord</a></li>
-                <li><a href="#">Instagram</a></li>
+                <li><a href="mailto:edwardt0303@gmail.com">聯繫我們</a></li>
               </ul>
             </div>
           </div>
