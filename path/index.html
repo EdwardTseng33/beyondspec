@@ -7789,7 +7789,7 @@ function loadHistory(){
   function renderLockedModule(moduleId) {
     const names = {survey:'問卷引擎',market:'市場探測'};
     const descs = {
-      survey:'AI 自動生成最佳化問卷，合成用戶預測試——發給真人之前先確保問卷品質。',
+      survey:'AI 自動生成最佳化問卷，匯出分享給真人填答，並提供問卷品質檢測。',
       market:'真實搜尋關鍵字熱度、趨勢走向、需求缺口——用數據佐證你的產品方向。'
     };
     const icons = {survey:'clipboard',market:'trendUp'};
@@ -8127,7 +8127,7 @@ function loadHistory(){
     content.innerHTML = `
       <div class="page-title-area">
         <h1>${ICONS.clipboard} 問卷引擎</h1>
-        <div class="subtitle">AI 自動生成最佳化問卷 + 合成用戶預測試</div>
+        <div class="subtitle">AI 自動生成最佳化問卷 + 問卷品質檢測</div>
       </div>
 
       <!-- Mode Selection -->
@@ -8140,7 +8140,7 @@ function loadHistory(){
         <div id="svModeAudit" style="background:var(--bg-card);border:2px solid ${surveyMode==='audit'?'var(--primary)':'var(--border)'};border-radius:var(--r-lg);padding:24px;cursor:pointer;transition:all .2s" onclick="app.setSurveyMode('audit')">
           <div style="color:var(--teal);margin-bottom:8px">${ICONS.search}</div>
           <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px">問卷品質檢測</div>
-          <div style="font-size:13px;color:var(--ink-muted);line-height:1.5">貼上你已有的問卷，AI 幫你抓出問題</div>
+          <div style="font-size:13px;color:var(--ink-muted);line-height:1.5">匯入你已有的問卷文件，AI 幫你抓出問題</div>
         </div>
       </div>
 
@@ -8173,9 +8173,27 @@ function loadHistory(){
       <!-- Audit Mode -->
       <div id="surveyAudit" style="display:${surveyMode==='audit'?'block':'none'}">
         <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
-          <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">貼上你的問卷內容</div>
-          <textarea id="svAuditInput" rows="8" placeholder="將問卷題目貼在這裡，每題一行，例如：\n1. 你目前使用什麼產品來解決這個問題？\n2. 你願意花多少錢？\n3. 你滿意目前的解決方案嗎？（1-10 分）" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box;line-height:1.6"></textarea>
-          <button id="svAuditBtn" class="btn btn-gold" style="padding:10px 24px;margin-top:16px" onclick="app.auditSurvey()">
+          <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">匯入你的問卷文件</div>
+          <div class="di-upload-zone" id="svAuditDropZone"
+            onclick="document.getElementById('svAuditFileInput').click()"
+            ondragover="event.preventDefault();this.style.borderColor='var(--primary)';this.style.background='rgba(124,92,252,.08)';this.style.borderStyle='solid'"
+            ondragleave="this.style.borderColor='';this.style.background='';this.style.borderStyle=''"
+            ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';this.style.borderStyle='';app.handleSurveyAuditDrop(event)"
+            style="border:2px dashed var(--border);border-radius:var(--r-lg);padding:32px;text-align:center;cursor:pointer;transition:all .2s">
+            <div style="color:var(--primary);margin-bottom:8px">${ICONS.upload}</div>
+            <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px">拖曳問卷文件到此處，或點擊選擇</div>
+            <div style="font-size:12px;color:var(--ink-muted)">支援 .txt .md（每題一行，最大 2MB）</div>
+          </div>
+          <input type="file" id="svAuditFileInput" accept=".txt,.md" style="display:none" onchange="app.handleSurveyAuditFile(this.files[0])">
+          <div id="svAuditFileName" style="margin-top:8px;font-size:13px;color:var(--ink-muted);display:none"></div>
+
+          <div id="svAuditPreviewArea" style="display:none;margin-top:16px">
+            <label style="font-size:13px;font-weight:600;color:var(--ink);display:block;margin-bottom:6px">文件內容預覽</label>
+            <textarea id="svAuditInput" rows="8" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box;line-height:1.6;font-family:var(--font-mono,'SF Mono',monospace)" placeholder="文件內容將顯示在此..." readonly></textarea>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">匯入後可在此確認內容，再進行 AI 檢測</div>
+          </div>
+
+          <button id="svAuditBtn" class="btn btn-gold" style="padding:10px 24px;margin-top:16px" onclick="app.auditSurvey()" disabled>
             ${ICONS.search} <span style="margin-left:6px">開始檢測</span>
           </button>
         </div>
@@ -8364,107 +8382,13 @@ function loadHistory(){
         <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
           <div style="font-size:16px;font-weight:700;color:var(--ink)">生成問卷 · ${questions.length} 題</div>
           <div style="display:flex;gap:8px">
-            <button class="btn" style="padding:6px 14px;font-size:12px;background:var(--bg);border:1px solid var(--border);color:var(--ink)" onclick="app.runSurveyPretest()">
-              ${ICONS.flask} <span style="margin-left:4px">合成用戶預測試</span>
+            <button class="btn" style="padding:6px 14px;font-size:12px;background:var(--bg);border:1px solid var(--border);color:var(--ink)" onclick="app.exportSurvey()">
+              ${ICONS.download} <span style="margin-left:4px">匯出問卷</span>
             </button>
           </div>
         </div>
         ${qHTML}
-      </div>
-
-      <!-- Pre-test results area -->
-      <div id="svPretestResults"></div>`;
-  }
-
-  function runSurveyPretest() {
-    if (!generatedSurvey) { showToast('請先生成問卷'); return; }
-    const container = document.getElementById('svPretestResults');
-    if (!container) return;
-
-    container.innerHTML = `<div style="text-align:center;padding:32px;color:var(--ink-muted)">
-      <span class="spinner" style="display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite;margin-right:8px;vertical-align:middle"></span>
-      合成用戶正在作答中...
-    </div>`;
-
-    setTimeout(() => {
-      const personas = [
-        { name: '林小美', age: 28, job: '行銷企劃', style: '直接回饋型' },
-        { name: '陳志偉', age: 35, job: '工程師', style: '沉默觀察型' },
-        { name: '王雅婷', age: 42, job: '中小企業主', style: '直接回饋型' },
-        { name: '張家豪', age: 24, job: '研究生', style: '委婉迴避型' },
-        { name: '黃淑芬', age: 51, job: '會計主管', style: '沉默觀察型' }
-      ];
-
-      const issues = [];
-      const qResults = generatedSurvey.questions.map((q, i) => {
-        const dropRate = Math.random() * 15;
-        const avgTime = Math.floor(Math.random() * 40) + 10;
-        const qualityScore = Math.floor(Math.random() * 30) + 70;
-        if (qualityScore < 80) issues.push({ qId: q.id, q: q.q, issue: qualityScore < 75 ? '回答品質偏低，建議簡化題目用語' : '部分受訪者理解有歧義' });
-        if (dropRate > 10) issues.push({ qId: q.id, q: q.q, issue: '跳出率偏高（' + dropRate.toFixed(1) + '%），建議調整題序或改為非必填' });
-        return { ...q, dropRate, avgTime, qualityScore };
-      });
-
-      const overallCompletion = Math.floor(Math.random() * 10) + 85;
-      const avgDuration = Math.floor(Math.random() * 3) + (generatedSurvey.questions.length > 12 ? 6 : 4);
-
-      let issuesHTML = issues.length > 0 ? issues.map(iss => `
-        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start">
-          <div style="flex-shrink:0;width:32px;height:32px;border-radius:50%;background:#FEF3C7;display:flex;align-items:center;justify-content:center;color:#D97706;font-size:12px;font-weight:700">Q${iss.qId}</div>
-          <div>
-            <div style="font-size:13px;color:var(--ink);line-height:1.5">${iss.q}</div>
-            <div style="font-size:12px;color:#D97706;margin-top:4px">${iss.issue}</div>
-          </div>
-        </div>`).join('') : `<div style="padding:24px;text-align:center;color:var(--teal);font-size:14px">所有題目回答品質良好，未偵測到明顯問題</div>`;
-
-      let personaHTML = personas.map(p => `
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-          <div style="width:32px;height:32px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--primary)">${p.name[0]}</div>
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:600;color:var(--ink)">${p.name}・${p.age}歲・${p.job}</div>
-            <div style="font-size:12px;color:var(--ink-muted)">${p.style}｜完成 ${Math.floor(Math.random()*3)+generatedSurvey.questions.length-2}/${generatedSurvey.questions.length} 題</div>
-          </div>
-          <div style="font-size:12px;color:var(--ink-muted)">${Math.floor(Math.random()*3)+avgDuration} 分鐘</div>
-        </div>`).join('');
-
-      container.innerHTML = `
-        <!-- Pre-test Summary -->
-        <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;color:var(--primary);margin-bottom:16px">${ICONS.flask} 合成用戶預測試結果</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px">
-            <div style="text-align:center">
-              <div style="font-size:24px;font-weight:800;color:var(--primary)">${personas.length}</div>
-              <div style="font-size:12px;color:var(--ink-sec)">合成受訪者</div>
-            </div>
-            <div style="text-align:center">
-              <div style="font-size:24px;font-weight:800;color:var(--teal)">${overallCompletion}%</div>
-              <div style="font-size:12px;color:var(--ink-sec)">完成率</div>
-            </div>
-            <div style="text-align:center">
-              <div style="font-size:24px;font-weight:800;color:var(--ink)">~${avgDuration} 分</div>
-              <div style="font-size:12px;color:var(--ink-sec)">平均作答時間</div>
-            </div>
-            <div style="text-align:center">
-              <div style="font-size:24px;font-weight:800;color:${issues.length<=2?'var(--teal)':'#D97706'}">${issues.length}</div>
-              <div style="font-size:12px;color:var(--ink-sec)">偵測到的問題</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Issue List -->
-        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px">
-          <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
-            <div style="font-size:16px;font-weight:700;color:var(--ink)">${ICONS.alert} 問題偵測</div>
-          </div>
-          ${issuesHTML}
-        </div>
-
-        <!-- Synthetic Respondents -->
-        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:20px">
-          <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:12px">合成受訪者</div>
-          ${personaHTML}
-        </div>`;
-    }, 2000);
+      </div>`;
   }
 
   function auditSurvey() {
@@ -8558,6 +8482,78 @@ function loadHistory(){
       btn.disabled = false;
       btn.innerHTML = `${ICONS.search} <span style="margin-left:6px">重新檢測</span>`;
     }, 1800);
+  }
+
+  // ---- Survey Audit File Import ----
+  function handleSurveyAuditDrop(e) {
+    const file = e.dataTransfer?.files?.[0];
+    if (file) handleSurveyAuditFile(file);
+  }
+
+  async function handleSurveyAuditFile(file) {
+    if (!file) return;
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) { showToast('文件超過 2MB 限制'); return; }
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['txt', 'md'].includes(ext)) { showToast('不支援的文件格式，請使用 .txt 或 .md'); return; }
+
+    const nameEl = document.getElementById('svAuditFileName');
+    if (nameEl) {
+      nameEl.style.display = 'block';
+      nameEl.innerHTML = '<span style="color:var(--primary);font-weight:600">' + ICONS.fileText + '</span> ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+    }
+
+    try {
+      const text = await file.text();
+      if (!text || text.trim().length < 5) { showToast('文件內容太少'); return; }
+
+      const previewArea = document.getElementById('svAuditPreviewArea');
+      const previewText = document.getElementById('svAuditInput');
+      const auditBtn = document.getElementById('svAuditBtn');
+      if (previewArea) previewArea.style.display = 'block';
+      if (previewText) { previewText.value = text.trim(); previewText.removeAttribute('readonly'); }
+      if (auditBtn) auditBtn.disabled = false;
+    } catch (err) {
+      showToast('文件讀取失敗：' + err.message);
+    }
+  }
+
+  // ---- Survey Export as .md ----
+  function exportSurvey() {
+    if (!generatedSurvey) { showToast('請先生成問卷'); return; }
+
+    let md = '# ' + generatedSurvey.typeName + '問卷\n\n';
+    md += '> 研究目的：' + generatedSurvey.goal + '\n\n';
+    md += '---\n\n';
+
+    generatedSurvey.questions.forEach((q, i) => {
+      md += '### Q' + (i + 1) + '. ' + q.q + '\n';
+      md += '*題型：' + q.type + ' | 區塊：' + q.section + '*\n\n';
+      if (q.options) {
+        q.options.forEach((opt, j) => {
+          md += '- [ ] ' + opt + '\n';
+        });
+        md += '\n';
+      } else if (q.scale) {
+        md += '量表範圍：' + q.scale + '\n\n';
+      } else {
+        md += '回答：____________________\n\n';
+      }
+    });
+
+    md += '---\n\n感謝您的填答！\n';
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = generatedSurvey.typeName + '_問卷_' + new Date().toISOString().slice(0, 10) + '.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('問卷已匯出');
   }
 
   // ==================== MODULE: 市場報告 (Market Report) ====================
@@ -10398,8 +10394,10 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     runMarketSignal,
     generateSurvey,
     setSurveyMode,
-    runSurveyPretest,
+    exportSurvey,
     auditSurvey,
+    handleSurveyAuditDrop,
+    handleSurveyAuditFile,
     selectReportDiag,
     selectReportType,
     generateMarketReport,
