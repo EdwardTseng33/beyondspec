@@ -1188,7 +1188,7 @@ canvas{display:block;margin:0 auto 24px}
 #labContainer .conf-low{ background: rgba(201,61,84,.08);  color: var(--rose);  }
 
 /* ===== REGION CARDS ===== */
-#labContainer .region-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+#labContainer .region-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
 #labContainer .region-card{
   background: var(--bg-card);
   border: 1.5px solid var(--border);
@@ -5636,7 +5636,6 @@ function renderRegions(){
       <div class="r-flag">${r.flag}</div>
       <div style="flex:1;min-width:0">
         <div class="r-name">${r.name}</div>
-        <div class="r-sub">${r.sub}</div>
       </div>
       <div class="r-check" id="rchk-${r.id}"></div>
     </div>
