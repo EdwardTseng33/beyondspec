@@ -379,6 +379,28 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 }
 .nav-item.nav-home svg{width:24px;height:24px;min-width:24px}
 
+/* Category labels in sidebar */
+.nav-category{
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+  color:rgba(255,255,255,.25);padding:12px 0 4px;text-align:center;
+  white-space:nowrap;overflow:hidden;
+}
+#sidebar.expanded .nav-category{text-align:left;padding:14px 18px 4px;font-size:10px}
+
+/* Locked / SOON badge on nav items */
+.nav-badge{
+  font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;
+  background:rgba(255,255,255,.12);color:rgba(255,255,255,.5);
+  margin-left:auto;display:none;letter-spacing:.05em;
+}
+#sidebar.expanded .nav-badge{display:inline-block}
+.nav-badge.soon{background:rgba(255,200,50,.2);color:rgba(255,200,50,.8)}
+.nav-badge.locked{background:rgba(255,255,255,.08);color:rgba(255,255,255,.35)}
+
+.nav-item.disabled{opacity:.4;cursor:default;pointer-events:none}
+.nav-item.locked-item{opacity:.55;cursor:pointer}
+.nav-item.locked-item:hover{opacity:.75;background:rgba(255,255,255,.06)}
+
 /* --- Bottom section (theme, toggle, user) --- */
 .sidebar-bottom{
   padding:6px 0 10px;display:flex;flex-direction:column;gap:4px;
@@ -2305,7 +2327,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.7.1</div>
+        <div class="sidebar-version">v0.8.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -2340,7 +2362,15 @@ canvas{display:block;margin:0 auto 24px}
     globe: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>',
     message: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
     alert: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
-    upload: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'
+    upload: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+    // New module icons (v0.8)
+    trendUp: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+    target: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+    clipboard: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>',
+    dollarSign: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
+    gauge: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>',
+    video: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
+    footprints: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5 10 7.89 8 10 8 12h3c0-2 2-4.1 2-6.5C13 3.8 13.63 2 15.5 2c3.01 0 4.47 3.28 4.5 6 .03 2.5-1 3.5-1 5.62V16"/><path d="M7.5 16H4v2c0 1.1.9 2 2 2h1.5c1.1 0 2-.9 2-2v-2H7.5z"/><path d="M16.5 16H14v2c0 1.1.9 2 2 2h1.5c1.1 0 2-.9 2-2v-2h-3z"/></svg>'
   };
 
   // ==================== STATE MANAGEMENT ====================
@@ -2503,19 +2533,58 @@ canvas{display:block;margin:0 auto 24px}
 
   function renderSidebar() {
     const nav = document.getElementById('nav');
-    const navItems = [
-      { id: 'home', label: '首頁', icon: 'home' },
-      { id: 'diagnose', label: '產品診斷', icon: 'pulse' },
-      { id: 'lab', label: '受眾研究室', icon: 'flask' },
-      { id: 'settings', label: '設定', icon: 'sliders' }
+    const plan = state.plan || 'free';
+    const isPro = plan === 'pro' || plan === 'enterprise';
+
+    // Navigation structure with categories
+    const navStructure = [
+      { id: 'home', label: '首頁', icon: 'home', type: 'item' },
+      { type: 'category', label: '產品研究' },
+      { id: 'diagnose', label: 'PATH 診斷', icon: 'pulse', type: 'item' },
+      { id: 'lab', label: 'Lab 研究', icon: 'flask', type: 'item' },
+      { id: 'survey', label: '問卷引擎', icon: 'clipboard', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
+      { type: 'category', label: '市場情報' },
+      { id: 'market', label: '市場探測', icon: 'trendUp', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
+      { id: 'compete', label: '競品雷達', icon: 'target', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
+      { id: 'pricing', label: '定價實驗室', icon: 'dollarSign', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
+      { type: 'category', label: '成長追蹤' },
+      { id: 'pmf', label: 'PMF 儀表板', icon: 'gauge', type: 'item' },
+      { type: 'category', label: '即將推出' },
+      { id: 'focusgroup', label: '焦點小組', icon: 'video', type: 'item', soon: true },
+      { id: 'uxwalk', label: '體驗走查', icon: 'footprints', type: 'item', soon: true },
+      { type: 'divider' },
+      { id: 'settings', label: '設定', icon: 'sliders', type: 'item' }
     ];
 
-    nav.innerHTML = navItems.map(item => `
-      <div class="nav-item ${item.id === 'home' ? 'nav-home' : ''} ${state.currentModule === item.id ? 'active' : ''}" onclick="app.navClick(event,'${item.id}')" title="${item.label}">
+    nav.innerHTML = navStructure.map(item => {
+      if (item.type === 'category') {
+        return `<div class="nav-category">${item.label}</div>`;
+      }
+      if (item.type === 'divider') {
+        return `<div style="height:1px;background:rgba(255,255,255,.08);margin:8px 12px"></div>`;
+      }
+      const isHome = item.id === 'home';
+      const isActive = state.currentModule === item.id;
+      const isLocked = item.locked;
+      const isSoon = item.soon;
+      const classes = ['nav-item'];
+      if (isHome) classes.push('nav-home');
+      if (isActive) classes.push('active');
+      if (isSoon) classes.push('disabled');
+      if (isLocked) classes.push('locked-item');
+
+      const badgeHtml = isSoon ? '<span class="nav-badge soon">SOON</span>' :
+                        isLocked ? '<span class="nav-badge locked">PRO</span>' : '';
+
+      const onclick = isSoon ? '' : isLocked ?
+        `onclick="app.navClick(event,'${item.id}')"` :
+        `onclick="app.navClick(event,'${item.id}')"`;
+
+      return `<div class="${classes.join(' ')}" ${onclick} title="${item.label}">
         ${ICONS[item.icon]}
-        <span>${item.label}</span>
-      </div>
-    `).join('');
+        <span>${item.label}</span>${badgeHtml}
+      </div>`;
+    }).join('');
 
     renderThemeToggle();
   }
@@ -2574,11 +2643,24 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   function renderModule(moduleId) {
+    const plan = state.plan || 'free';
+    const isPro = plan === 'pro' || plan === 'enterprise';
+    // Locked modules for free users → show upgrade prompt
+    const proModules = ['survey','market','compete','pricing'];
+    if (!isPro && proModules.includes(moduleId)) {
+      renderLockedModule(moduleId);
+      return;
+    }
     switch(moduleId) {
       case 'home': renderHome(); break;
       case 'diagnose': resetQuizState(); renderDiagnose(); break;
       case 'lab': renderLab(); break;
       case 'reports': renderHome(); break;
+      case 'survey': renderSurveyEngine(); break;
+      case 'market': renderMarketSignal(); break;
+      case 'compete': renderCompeteRadar(); break;
+      case 'pricing': renderPricingLab(); break;
+      case 'pmf': renderPMFDashboard(); break;
       case 'settings': renderSettings(); break;
     }
   }
@@ -4932,7 +5014,7 @@ canvas{display:block;margin:0 auto 24px}
 
     <!-- VERSION FOOTER ──────────────────── -->
     <div style="text-align:center;padding:24px 0 8px;font-size:13px;color:var(--ink-muted);letter-spacing:.5px">
-      PATH 受眾研究室 v0.7.1 · <a href="https://beyondspec.tw" style="color:var(--ink-muted);text-decoration:none">BeyondSpec 規格外工作室</a> · 華語市場合成用戶研究引擎
+      PATH 受眾研究室 v0.8.0 · <a href="https://beyondspec.tw" style="color:var(--ink-muted);text-decoration:none">BeyondSpec 規格外工作室</a> · 華語市場合成用戶研究引擎
     </div>
       </div>
     </div>
@@ -7284,7 +7366,7 @@ function exportMarkdown(){
       qualSamples.forEach(s=>md+=`> **${s.id}：** ${s.text}\n\n`);
     }
   }
-  md+=`\n\n---\n\n*由 PATH 受眾研究室 v0.7.1 生成 · ${new Date().toLocaleDateString('zh-TW')} · BeyondSpec*\n`;
+  md+=`\n\n---\n\n*由 PATH 受眾研究室 v0.8.0 生成 · ${new Date().toLocaleDateString('zh-TW')} · BeyondSpec*\n`;
   const blob=new Blob([md],{type:'text/markdown'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -7323,7 +7405,7 @@ function copyReportSummary(){
 }
 
 
-// (monkey-patch merged into goPhase — cleaned up in v0.7.1)
+// (monkey-patch merged into goPhase — cleaned up in v0.8.0)
 
 // ========================================
 // URL 參數帶入（從 PATH L1 結果頁跳轉）
@@ -7722,6 +7804,395 @@ function loadHistory(){
     showToast('Markdown 已下載');
   }
 
+  // ==================== LOCKED MODULE (FREE USERS) ====================
+  function renderLockedModule(moduleId) {
+    const names = {survey:'問卷引擎',market:'市場探測',compete:'競品雷達',pricing:'定價實驗室'};
+    const descs = {
+      survey:'AI 自動生成最佳化問卷，合成用戶預測試——發給真人之前先確保問卷品質。',
+      market:'真實搜尋關鍵字熱度、趨勢走向、需求缺口——用數據佐證你的產品方向。',
+      compete:'自動辨識 3-5 個直接競品，功能 / 定價 / 定位全面比較分析。',
+      pricing:'Van Westendorp & Conjoint 定價模型，AI 受訪者告訴你最佳價格帶。'
+    };
+    const icons = {survey:'clipboard',market:'trendUp',compete:'target',pricing:'dollarSign'};
+    const content = document.getElementById('content');
+    content.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px 20px">
+        <div style="width:80px;height:80px;border-radius:24px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin-bottom:24px">
+          <div style="color:var(--primary);transform:scale(2)">${ICONS[icons[moduleId]]}</div>
+        </div>
+        <h2 style="font-size:24px;font-weight:700;color:var(--ink);margin-bottom:8px">${names[moduleId]}</h2>
+        <p style="color:var(--ink-muted);font-size:15px;max-width:420px;line-height:1.6;margin-bottom:28px">${descs[moduleId]}</p>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--bg-hover);border-radius:10px;margin-bottom:24px">
+          ${ICONS.lock}
+          <span style="font-size:13px;color:var(--ink-sec)">此功能僅限 <strong style="color:var(--primary)">Pro 方案</strong> 使用</span>
+        </div>
+        <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="app.handleUpgrade()">升級到 Pro · NT$890/月</button>
+      </div>`;
+  }
+
+  // ==================== MODULE: 市場探測 (Market Signal) ====================
+  function renderMarketSignal() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+      <div class="page-title-area">
+        <h1>🔍 市場探測</h1>
+        <div class="subtitle">真實搜尋數據驗證你的產品方向</div>
+      </div>
+
+      <!-- Input Section -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">輸入產品關鍵字</div>
+        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+          <input id="mkKw1" type="text" placeholder="主要關鍵字（如：寵物保健食品）" style="flex:1;min-width:200px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
+          <input id="mkKw2" type="text" placeholder="次要關鍵字（選填）" style="flex:1;min-width:200px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
+          <input id="mkKw3" type="text" placeholder="第三關鍵字（選填）" style="flex:1;min-width:200px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <select id="mkRegion" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
+            <option value="tw">🇹🇼 台灣</option>
+            <option value="hk">🇭🇰 香港</option>
+            <option value="sg">🇸🇬 新加坡</option>
+            <option value="global">🌍 全球</option>
+          </select>
+          <button class="btn btn-gold" style="padding:10px 24px" onclick="app.runMarketSignal()">
+            ${ICONS.search} <span style="margin-left:6px">開始探測</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Area -->
+      <div id="mkResults">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center">
+            <div style="font-size:13px;color:var(--ink-muted);margin-bottom:8px">月搜尋量</div>
+            <div style="font-size:32px;font-weight:800;color:var(--primary)">—</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">輸入關鍵字後顯示</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center">
+            <div style="font-size:13px;color:var(--ink-muted);margin-bottom:8px">競爭強度</div>
+            <div style="font-size:32px;font-weight:800;color:var(--ink)">—</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">低 / 中 / 高</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center">
+            <div style="font-size:13px;color:var(--ink-muted);margin-bottom:8px">趨勢方向</div>
+            <div style="font-size:32px;font-weight:800;color:var(--teal)">—</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">上升 / 持平 / 下降</div>
+          </div>
+        </div>
+
+        <!-- Keyword table placeholder -->
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+          <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">關聯關鍵字 & 需求缺口</div>
+          <div style="color:var(--ink-muted);font-size:14px;text-align:center;padding:32px 0">
+            ${ICONS.search}
+            <div style="margin-top:8px">輸入關鍵字並點擊「開始探測」，系統將分析搜尋趨勢、關聯詞與需求缺口</div>
+          </div>
+        </div>
+
+        <!-- Cross-validation section -->
+        <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px">
+          <div style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px">🔗 交叉驗證引擎</div>
+          <p style="color:var(--ink-sec);font-size:14px;line-height:1.6;margin:0">市場探測的結果會自動與你的 PATH 診斷和 Lab 研究交叉比對。當 AI 洞察與真實搜尋數據一致時，報告可信度將獲得額外加分。</p>
+        </div>
+      </div>`;
+  }
+
+  function runMarketSignal() {
+    const kw1 = document.getElementById('mkKw1')?.value?.trim();
+    if (!kw1) { showToast('請輸入至少一個關鍵字'); return; }
+    showToast('市場探測分析中⋯⋯（API 串接開發中）');
+  }
+
+  // ==================== MODULE: PMF 儀表板 ====================
+  function renderPMFDashboard() {
+    const content = document.getElementById('content');
+    const diagCount = state.diagnoses?.length || 0;
+    const labCount = state.researches?.length || 0;
+
+    // Calculate a basic PMF score from existing PATH data
+    let pmfScore = 0;
+    let pmfLevel = '尚未評估';
+    let pmfColor = 'var(--ink-muted)';
+    if (diagCount > 0) {
+      const latest = state.diagnoses[state.diagnoses.length - 1];
+      const scores = latest?.scores || {};
+      const avg = Object.values(scores).reduce((a,b) => a + (b||0), 0) / Math.max(Object.values(scores).length, 1);
+      pmfScore = Math.round(avg);
+      if (pmfScore >= 75) { pmfLevel = '強 PMF 信號'; pmfColor = 'var(--teal)'; }
+      else if (pmfScore >= 50) { pmfLevel = '中等 PMF 信號'; pmfColor = 'var(--primary)'; }
+      else if (pmfScore >= 25) { pmfLevel = '弱 PMF 信號'; pmfColor = '#F59E0B'; }
+      else { pmfLevel = 'PMF 尚未達標'; pmfColor = '#EF4444'; }
+    }
+
+    content.innerHTML = `
+      <div class="page-title-area">
+        <h1>📈 PMF 儀表板</h1>
+        <div class="subtitle">追蹤你的 Product-Market Fit 進度</div>
+      </div>
+
+      <!-- Score Card -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:32px;margin-bottom:20px;text-align:center">
+        <div style="font-size:14px;color:var(--ink-muted);margin-bottom:12px">PMF 綜合分數</div>
+        <div style="position:relative;width:160px;height:160px;margin:0 auto 16px">
+          <svg viewBox="0 0 160 160" style="transform:rotate(-90deg)">
+            <circle cx="80" cy="80" r="70" fill="none" stroke="var(--border)" stroke-width="10"/>
+            <circle cx="80" cy="80" r="70" fill="none" stroke="${pmfColor}" stroke-width="10"
+              stroke-dasharray="${2 * Math.PI * 70}" stroke-dashoffset="${2 * Math.PI * 70 * (1 - pmfScore / 100)}"
+              stroke-linecap="round" style="transition:stroke-dashoffset .8s ease"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div style="font-size:42px;font-weight:800;color:${pmfColor}">${diagCount > 0 ? pmfScore : '—'}</div>
+            <div style="font-size:12px;color:var(--ink-muted)">/100</div>
+          </div>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:${pmfColor}">${pmfLevel}</div>
+        ${diagCount === 0 ? '<div style="font-size:13px;color:var(--ink-muted);margin-top:8px">完成第一次 PATH 診斷後即可計算 PMF 分數</div>' : ''}
+      </div>
+
+      <!-- Dimension Breakdown -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px">
+        ${['P|問題驗證|用戶痛點是否真實存在','A|受眾匹配|你能否精準觸達目標族群','T|牽引力|市場是否有付費意願','H|競爭優勢|你的解法是否有差異化'].map(dim => {
+          const [key, name, desc] = dim.split('|');
+          const score = diagCount > 0 ? Math.round(state.diagnoses[state.diagnoses.length-1]?.scores?.[key] || 0) : 0;
+          const barColor = score >= 70 ? 'var(--teal)' : score >= 40 ? 'var(--primary)' : '#EF4444';
+          return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <div style="font-size:14px;font-weight:700;color:var(--ink)">${name}</div>
+              <div style="font-size:18px;font-weight:800;color:${barColor}">${diagCount > 0 ? score : '—'}</div>
+            </div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-bottom:10px">${desc}</div>
+            <div style="height:6px;background:var(--bg-hover);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${score}%;background:${barColor};border-radius:3px;transition:width .6s ease"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- Action Items -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">📋 改善建議</div>
+        ${diagCount === 0 ?
+          '<div style="color:var(--ink-muted);font-size:14px;text-align:center;padding:20px 0">完成 PATH 診斷後，系統將自動生成改善建議與行動項目</div>' :
+          `<div style="display:flex;flex-direction:column;gap:12px">
+            ${Object.entries(state.diagnoses[state.diagnoses.length-1]?.scores || {}).sort((a,b) => a[1]-b[1]).slice(0,2).map(([k,v]) => {
+              const labels = {P:'問題驗證',A:'受眾匹配',T:'牽引力',H:'競爭優勢'};
+              const actions = {
+                P:'建議使用 Lab 做痛點深度研究，確認用戶痛點的優先序',
+                A:'建議使用問卷引擎測試受眾輪廓假設，或用市場探測確認搜尋需求',
+                T:'建議使用定價實驗室測試最佳價格帶，或用 Lab 做付費意願研究',
+                H:'建議使用競品雷達分析競爭對手，找出差異化切入點'
+              };
+              return `<div style="display:flex;gap:12px;padding:12px 16px;background:var(--bg-hover);border-radius:var(--r-sm)">
+                <div style="color:#EF4444;font-weight:700;min-width:36px">${Math.round(v)}</div>
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--ink)">${labels[k]} — 需要加強</div>
+                  <div style="font-size:13px;color:var(--ink-muted);margin-top:2px">${actions[k]}</div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>`
+        }
+      </div>
+
+      <!-- History trend -->
+      <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px">
+        <div style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px">📊 PMF 趨勢追蹤</div>
+        <p style="color:var(--ink-sec);font-size:14px;line-height:1.6;margin:0">每次重新診斷都會更新 PMF 分數。持續追蹤分數變化，確認產品迭代是否讓你更接近 Product-Market Fit。目前已完成 <strong>${diagCount}</strong> 次診斷、<strong>${labCount}</strong> 次 Lab 研究。</p>
+      </div>`;
+  }
+
+  // ==================== MODULE: 問卷引擎 (Survey Engine) ====================
+  function renderSurveyEngine() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+      <div class="page-title-area">
+        <h1>📋 問卷引擎</h1>
+        <div class="subtitle">AI 自動生成最佳化問卷 + 合成用戶預測試</div>
+      </div>
+
+      <!-- Mode Selection -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div style="background:var(--bg-card);border:2px solid var(--primary);border-radius:var(--r-lg);padding:24px;cursor:pointer;transition:all .2s" onclick="app.setSurveyMode('generate')">
+          <div style="font-size:20px;margin-bottom:8px">🤖</div>
+          <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px">AI 問卷生成</div>
+          <div style="font-size:13px;color:var(--ink-muted);line-height:1.5">描述你的研究目的，AI 自動產出專業問卷</div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;cursor:pointer;transition:all .2s" onclick="app.setSurveyMode('audit')">
+          <div style="font-size:20px;margin-bottom:8px">🔍</div>
+          <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px">問卷品質檢測</div>
+          <div style="font-size:13px;color:var(--ink-muted);line-height:1.5">貼上你已有的問卷，AI 幫你抓出問題</div>
+        </div>
+      </div>
+
+      <!-- Generate Mode -->
+      <div id="surveyGenerate" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">研究目的</div>
+        <textarea id="svGoal" rows="3" placeholder="例如：了解 25-35 歲台灣女性對寵物保健食品的購買動機與價格敏感度" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
+        <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+          <select id="svType" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
+            <option value="market">市場驗證</option>
+            <option value="ux">使用者體驗</option>
+            <option value="pricing">定價研究</option>
+            <option value="satisfaction">滿意度調查</option>
+            <option value="brand">品牌認知</option>
+          </select>
+          <select id="svLength" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
+            <option value="short">短問卷（8-10 題）</option>
+            <option value="medium">中等（12-15 題）</option>
+            <option value="long">完整（18-20 題）</option>
+          </select>
+          <button class="btn btn-gold" style="padding:10px 24px" onclick="app.generateSurvey()">
+            ${ICONS.zap} <span style="margin-left:6px">AI 生成問卷</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pre-test Section -->
+      <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px">
+        <div style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px">🧪 合成用戶預測試</div>
+        <p style="color:var(--ink-sec);font-size:14px;line-height:1.6;margin:0">問卷生成後，系統會自動用 AI 合成受訪者試跑一輪，告訴你：預計完成率、哪幾題回答品質低、是否有誘導性問題、建議修改方向。</p>
+      </div>`;
+  }
+
+  function setSurveyMode(mode) { showToast(mode === 'generate' ? '已選擇 AI 問卷生成模式' : '已選擇問卷品質檢測模式'); }
+  function generateSurvey() {
+    const goal = document.getElementById('svGoal')?.value?.trim();
+    if (!goal) { showToast('請輸入研究目的'); return; }
+    showToast('AI 問卷生成中⋯⋯（引擎開發中）');
+  }
+
+  // ==================== MODULE: 競品雷達 (Compete Radar) ====================
+  function renderCompeteRadar() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+      <div class="page-title-area">
+        <h1>🎯 競品雷達</h1>
+        <div class="subtitle">自動辨識競品、功能對照、策略分析</div>
+      </div>
+
+      <!-- Input -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">你的產品資訊</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <input id="cpName" type="text" placeholder="產品名稱" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
+          <textarea id="cpDesc" rows="2" placeholder="一句話描述你的產品（如：為台灣中小企業提供 AI 自動記帳與稅務申報）" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
+          <input id="cpUrl" type="text" placeholder="產品網址（選填）" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
+        </div>
+        <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+          <select id="cpMarket" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
+            <option value="tw">🇹🇼 台灣市場</option>
+            <option value="sea">🌏 東南亞市場</option>
+            <option value="global">🌍 全球市場</option>
+          </select>
+          <button class="btn btn-gold" style="padding:10px 24px" onclick="app.runCompeteRadar()">
+            ${ICONS.target} <span style="margin-left:6px">啟動競品掃描</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Placeholder -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px">
+        ${[1,2,3].map(i => `
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px">
+            <div style="width:48px;height:48px;border-radius:12px;background:var(--bg-hover);margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:var(--ink-muted)">
+              ${ICONS.target}
+            </div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink-muted);margin-bottom:4px">競品 ${i}</div>
+            <div style="font-size:13px;color:var(--ink-muted)">掃描後自動辨識</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Feature matrix placeholder -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">功能對照矩陣</div>
+        <div style="color:var(--ink-muted);font-size:14px;text-align:center;padding:32px 0">
+          ${ICONS.target}
+          <div style="margin-top:8px">輸入產品資訊後，AI 將自動辨識競品並生成功能 / 定價 / 定位對照表</div>
+        </div>
+      </div>
+
+      <!-- Strategy section -->
+      <div style="background:linear-gradient(135deg,var(--primary-light),rgba(124,92,252,.08));border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg);padding:24px">
+        <div style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px">⚔️ 策略建議引擎</div>
+        <p style="color:var(--ink-sec);font-size:14px;line-height:1.6;margin:0">完成競品掃描後，系統將結合你的 PATH 診斷結果，自動生成差異化策略建議、進入壁壘分析、以及最佳切入角度。</p>
+      </div>`;
+  }
+
+  function runCompeteRadar() {
+    const name = document.getElementById('cpName')?.value?.trim();
+    if (!name) { showToast('請輸入產品名稱'); return; }
+    showToast('競品掃描啟動中⋯⋯（引擎開發中）');
+  }
+
+  // ==================== MODULE: 定價實驗室 (Pricing Lab) ====================
+  function renderPricingLab() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+      <div class="page-title-area">
+        <h1>💰 定價實驗室</h1>
+        <div class="subtitle">找到你的最佳價格帶</div>
+      </div>
+
+      <!-- Method Selection -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div style="background:var(--bg-card);border:2px solid var(--primary);border-radius:var(--r-lg);padding:24px;cursor:pointer" onclick="app.setPricingMethod('vw')">
+          <div style="font-size:20px;margin-bottom:8px">📊</div>
+          <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px">Van Westendorp</div>
+          <div style="font-size:13px;color:var(--ink-muted);line-height:1.5">四條價格曲線交叉法——找出「太便宜 / 便宜 / 有點貴 / 太貴」的最佳區間</div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;cursor:pointer" onclick="app.setPricingMethod('conjoint')">
+          <div style="font-size:20px;margin-bottom:8px">🧩</div>
+          <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px">Conjoint 聯合分析</div>
+          <div style="font-size:13px;color:var(--ink-muted);line-height:1.5">多功能 × 多價位組合測試——了解每個功能對付費意願的影響</div>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">產品定價設定</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <input id="prName" type="text" placeholder="產品 / 服務名稱" style="padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px">
+          <textarea id="prDesc" rows="2" placeholder="產品核心價值描述（AI 受訪者需要知道這是什麼才能判斷價格）" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="flex:1;min-width:150px">
+              <label style="font-size:12px;color:var(--ink-muted);display:block;margin-bottom:4px">目前定價（若有）</label>
+              <input id="prCurrent" type="text" placeholder="例：NT$890/月" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px;box-sizing:border-box">
+            </div>
+            <div style="flex:1;min-width:150px">
+              <label style="font-size:12px;color:var(--ink-muted);display:block;margin-bottom:4px">目標受眾</label>
+              <input id="prAud" type="text" placeholder="例：台灣中小企業主" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);font-size:14px;box-sizing:border-box">
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-gold" style="padding:10px 24px;margin-top:16px" onclick="app.runPricingTest()">
+          ${ICONS.dollarSign} <span style="margin-left:6px">啟動定價測試</span>
+        </button>
+      </div>
+
+      <!-- Results placeholder -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:16px">定價分析結果</div>
+        <div style="color:var(--ink-muted);font-size:14px;text-align:center;padding:32px 0">
+          ${ICONS.dollarSign}
+          <div style="margin-top:8px">設定好產品資訊後，AI 受訪者將模擬回答定價問題，系統自動計算最佳價格帶</div>
+        </div>
+      </div>
+
+      <!-- Output preview -->
+      <div style="background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.03));border:1px solid rgba(16,185,129,.15);border-radius:var(--r-lg);padding:24px">
+        <div style="font-size:16px;font-weight:700;color:var(--teal);margin-bottom:8px">💎 產出預覽</div>
+        <p style="color:var(--ink-sec);font-size:14px;line-height:1.6;margin:0">最佳價格區間圖 · 各價位的購買意願百分比 · 與競品定價的比較分析 · AI 受訪者的價格感受語錄 · 定價策略建議書（可匯出 PDF）</p>
+      </div>`;
+  }
+
+  function setPricingMethod(method) { showToast(method === 'vw' ? '已選擇 Van Westendorp 模型' : '已選擇 Conjoint 聯合分析'); }
+  function runPricingTest() {
+    const name = document.getElementById('prName')?.value?.trim();
+    if (!name) { showToast('請輸入產品名稱'); return; }
+    showToast('定價測試啟動中⋯⋯（引擎開發中）');
+  }
+
   // ==================== MODULE 5: SETTINGS ====================
   function renderSettings() {
     const content = document.getElementById('content');
@@ -7819,9 +8290,21 @@ function loadHistory(){
               </tr>
             </thead>
             <tbody>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">產品研究</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">PATH 診斷</td><td style="text-align:center;padding:10px 8px">3 次/月</td><td style="text-align:center;padding:10px 8px">20 次/月</td><td style="text-align:center;padding:10px 8px">自訂</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">Lab AI 深度研究</td><td style="text-align:center;padding:10px 8px">1 次/月</td><td style="text-align:center;padding:10px 8px">5 次/月</td><td style="text-align:center;padding:10px 8px">自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">問卷引擎</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">模擬受訪者</td><td style="text-align:center;padding:10px 8px">16 / 32 人</td><td style="text-align:center;padding:10px 8px">64 / 128 人</td><td style="text-align:center;padding:10px 8px">自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">市場情報</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">市場探測</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">競品雷達</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">5 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">定價實驗室</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">3 次/月</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂</td></tr>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">成長追蹤</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">PMF 儀表板</td><td style="text-align:center;padding:10px 8px">✓ 基礎版</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">✓ 完整版</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">✓ 完整版</td></tr>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">即將推出</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;color:var(--ink-muted)">焦點小組</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;color:var(--ink-muted)">體驗走查</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">即將推出</td></tr>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="4" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">平台功能</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">AI 模型切換</td><td style="text-align:center;padding:10px 8px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">精準 / 快速</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">自訂調校</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">可視化報告 + 匯出</td><td style="text-align:center;padding:10px 8px">PATH 診斷報告</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">完整報告 · MD / PDF</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">全部 + API</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px">可管理品牌數</td><td style="text-align:center;padding:10px 8px">1 個</td><td style="text-align:center;padding:10px 8px;color:var(--primary)">無限</td><td style="text-align:center;padding:10px 8px;color:var(--teal)">無限</td></tr>
@@ -7876,7 +8359,7 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v0.7.1</span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v0.8.0</span></div>
             <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 產品驗證平台</div>
           </div>
           <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
@@ -8107,7 +8590,7 @@ function loadHistory(){
   function exportAllData() {
     const exportData = {
       exportDate: new Date().toISOString(),
-      version: 'v0.7.1',
+      version: 'v0.8.0',
       plan: state.plan,
       diagnoses: state.diagnoses,
       researches: state.researches,
@@ -8381,7 +8864,7 @@ function loadHistory(){
     ['P','A','T','H'].forEach(dim => {
       md += '| ' + dim + ' · ' + dimNames[dim] + ' | ' + Math.round(d.scores[dim] || 0) + ' |\n';
     });
-    md += '\n---\n\n*由 BeyondPath PATH 診斷 v0.7.1 生成 · ' + date + '*\n';
+    md += '\n---\n\n*由 BeyondPath PATH 診斷 v0.8.0 生成 · ' + date + '*\n';
     const blob = new Blob([md], {type:'text/markdown'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -8405,7 +8888,7 @@ function loadHistory(){
       (d.verdict ? '<div class="verdict" style="margin-top:8px;background:' + (d.verdict==='kill'?'#ffe0e0;color:#d32f2f':d.verdict==='pivot'?'#fff3e0;color:#e65100':'#e0f5f0;color:#00796b') + '">' + d.verdict.toUpperCase() + '</div>' : '') +
       '</div>' +
       '<table><tr style="background:#f5f5f5"><th style="padding:6px 12px;border:1px solid #ddd;text-align:left">維度</th><th style="padding:6px 12px;border:1px solid #ddd">分數</th></tr>' + rows + '</table>' +
-      '<div style="margin-top:32px;color:#999;font-size:11px;text-align:center">BeyondPath PATH 診斷 v0.7.1 · ' + date + '</div>' +
+      '<div style="margin-top:32px;color:#999;font-size:11px;text-align:center">BeyondPath PATH 診斷 v0.8.0 · ' + date + '</div>' +
       '<script>window.onload=function(){window.print()}<\/script></body></html>';
     const w = window.open('','_blank');
     if(w){ w.document.write(html); w.document.close(); }
@@ -8428,7 +8911,7 @@ function loadHistory(){
       '<div class="meta"><span class="badge">' + r.type + '</span><span class="badge">' + audLabel + '</span><span class="badge">' + (r.region||'') + '</span> · ' + date + ' · ' + (r.sampleSize||'—') + ' 人樣本</div>' +
       (r.verdict ? '<div style="background:#f8f8ff;padding:12px 16px;border-radius:8px;margin:16px 0;font-size:14px;line-height:1.6">' + r.verdict + '</div>' : '') +
       (quantRows ? '<h2 style="font-size:16px;margin-top:24px">量化指標</h2><table><tr style="background:#f5f5f5"><th style="padding:6px 12px;border:1px solid #ddd;text-align:left">指標</th><th style="padding:6px 12px;border:1px solid #ddd">均分</th></tr>' + quantRows + '</table>' : '') +
-      '<div style="margin-top:32px;color:#999;font-size:11px;text-align:center">BeyondPath 受眾研究 v0.7.1 · ' + date + '</div>' +
+      '<div style="margin-top:32px;color:#999;font-size:11px;text-align:center">BeyondPath 受眾研究 v0.8.0 · ' + date + '</div>' +
       '<script>window.onload=function(){window.print()}<\/script></body></html>';
     const w = window.open('','_blank');
     if(w){ w.document.write(html); w.document.close(); }
@@ -8919,6 +9402,13 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     openBlogPost,
     closeBlogPost,
     toggleAIMode,
+    // v0.8 new modules
+    runMarketSignal,
+    generateSurvey,
+    setSurveyMode,
+    runCompeteRadar,
+    runPricingTest,
+    setPricingMethod,
   };
 
   // ==================== BLOG FUNCTIONS ====================
@@ -9261,8 +9751,9 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                 <div class="price-amount">免費</div>
                 <small>永久免費方案</small>
                 <ul>
-                  <li>PATH 四維診斷 3 次</li>
-                  <li>Lab AI 深度研究 1 次</li>
+                  <li>PATH 四維診斷 3 次/月</li>
+                  <li>Lab AI 深度研究 1 次/月</li>
+                  <li>PMF 儀表板（基礎版）</li>
                   <li>模擬受訪者 16 / 32 人</li>
                   <li>PATH 診斷報告</li>
                   <li>1 個可管理品牌數</li>
@@ -9277,11 +9768,12 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                 <ul>
                   <li>PATH 診斷 每月 20 次</li>
                   <li>Lab AI 深度研究 每月 5 次</li>
+                  <li>問卷引擎 · 市場探測 · 競品雷達</li>
+                  <li>定價實驗室 · PMF 儀表板完整版</li>
                   <li>模擬受訪者 64 / 128 人</li>
                   <li>AI 模型切換（精準 / 快速模式）</li>
                   <li>完整可視化報告 + 匯出</li>
                   <li>無限可管理品牌數</li>
-                  <li>優先客服支持</li>
                 </ul>
                 <button class="btn-price featured" onclick="app.showLoginModal()">升級 Pro</button>
               </div>
