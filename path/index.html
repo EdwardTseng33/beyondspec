@@ -2536,51 +2536,21 @@ canvas{display:block;margin:0 auto 24px}
     const plan = state.plan || 'free';
     const isPro = plan === 'pro' || plan === 'enterprise';
 
-    // Navigation structure with categories
-    const navStructure = [
-      { id: 'home', label: '首頁', icon: 'home', type: 'item' },
-      { type: 'category', label: '產品研究' },
-      { id: 'diagnose', label: 'PATH 診斷', icon: 'pulse', type: 'item' },
-      { id: 'lab', label: 'Lab 研究', icon: 'flask', type: 'item' },
-      { id: 'survey', label: '問卷引擎', icon: 'clipboard', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
-      { type: 'category', label: '市場情報' },
-      { id: 'market', label: '市場探測', icon: 'trendUp', type: 'item', locked: !isPro, badge: !isPro ? '🔒' : '' },
-      { type: 'category', label: '即將推出' },
-      { id: 'focusgroup', label: '焦點小組', icon: 'video', type: 'item', soon: true },
-      { id: 'uxwalk', label: '體驗走查', icon: 'footprints', type: 'item', soon: true },
-      { type: 'divider' },
-      { id: 'settings', label: '設定', icon: 'sliders', type: 'item' }
+    const navItems = [
+      { id: 'home', label: '首頁', icon: 'home' },
+      { id: 'diagnose', label: 'PATH 診斷', icon: 'pulse' },
+      { id: 'lab', label: 'Lab 研究', icon: 'flask' },
+      { id: 'survey', label: '問卷引擎', icon: 'clipboard' },
+      { id: 'market', label: '市場探測', icon: 'trendUp' },
+      { id: 'settings', label: '設定', icon: 'sliders' }
     ];
 
-    nav.innerHTML = navStructure.map(item => {
-      if (item.type === 'category') {
-        return `<div class="nav-category">${item.label}</div>`;
-      }
-      if (item.type === 'divider') {
-        return `<div style="height:1px;background:rgba(255,255,255,.08);margin:8px 12px"></div>`;
-      }
-      const isHome = item.id === 'home';
-      const isActive = state.currentModule === item.id;
-      const isLocked = item.locked;
-      const isSoon = item.soon;
-      const classes = ['nav-item'];
-      if (isHome) classes.push('nav-home');
-      if (isActive) classes.push('active');
-      if (isSoon) classes.push('disabled');
-      if (isLocked) classes.push('locked-item');
-
-      const badgeHtml = isSoon ? '<span class="nav-badge soon">SOON</span>' :
-                        isLocked ? '<span class="nav-badge locked">PRO</span>' : '';
-
-      const onclick = isSoon ? '' : isLocked ?
-        `onclick="app.navClick(event,'${item.id}')"` :
-        `onclick="app.navClick(event,'${item.id}')"`;
-
-      return `<div class="${classes.join(' ')}" ${onclick} title="${item.label}">
+    nav.innerHTML = navItems.map(item => `
+      <div class="nav-item ${item.id === 'home' ? 'nav-home' : ''} ${state.currentModule === item.id ? 'active' : ''}" onclick="app.navClick(event,'${item.id}')" title="${item.label}">
         ${ICONS[item.icon]}
-        <span>${item.label}</span>${badgeHtml}
-      </div>`;
-    }).join('');
+        <span>${item.label}</span>
+      </div>
+    `).join('');
 
     renderThemeToggle();
   }
