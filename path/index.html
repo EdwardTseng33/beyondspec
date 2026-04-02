@@ -2675,7 +2675,7 @@ canvas{display:block;margin:0 auto 24px}
 .qt-item-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;transition:border-color .2s;position:relative}
 .qt-item-card:hover{border-color:rgba(124,92,252,.25)}
 .qt-item-card:last-child{margin-bottom:0}
-.qt-item-card-grid{display:grid;grid-template-columns:1fr 72px 100px;gap:10px;align-items:end;margin-top:10px}
+.qt-item-card-grid{display:grid;grid-template-columns:100px 72px 1fr;gap:10px;align-items:end;margin-top:10px}
 .qt-item-card-desc{position:relative}
 .qt-item-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
 .qt-item-card-total{font-size:15px;font-weight:700;color:var(--ink);font-family:'JetBrains Mono',monospace;letter-spacing:-.3px}
@@ -2809,7 +2809,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.6</div>
+        <div class="sidebar-version">v1.3.7</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3333,27 +3333,39 @@ canvas{display:block;margin:0 auto 24px}
     var cfg = _BIZ_HEADERS[tab];
     if (!cfg) return;
 
-    // Find the first padded container inside biz-root (the React content wrapper)
-    var container = root.querySelector('[style*="padding"]') || root;
-    // Find the page icon for this tab
+    // --- Step 1: Hide React's own duplicate header ---
+    // React renders its own h2 + subtitle for meetings/docs tabs.
+    // Find and hide any element containing the exact title text that ISN'T ours.
+    root.querySelectorAll('h1, h2, h3').forEach(function(el) {
+      if (el.id === 'bp-biz-header') return;
+      var txt = (el.textContent || '').trim();
+      if (txt.indexOf(cfg.title) !== -1) {
+        // Hide the header's parent row (icon + title + subtitle container)
+        var wrapper = el.closest('[style*="display"]') || el.parentElement;
+        if (wrapper && wrapper.id !== 'bp-biz-header' && wrapper.id !== 'biz-root') {
+          wrapper.style.display = 'none';
+        }
+      }
+    });
+
+    // --- Step 2: Build our header with proper padding ---
     var iconMap = { 'meetings': 'calendar', 'docs': 'folder' };
     var iconKey = iconMap[tab] || '';
     var iconSvg = (typeof IC !== 'undefined' && IC[iconKey]) ? IC[iconKey] : '';
 
-    // Build a proper page header matching other modules' style
     var hdr = document.createElement('div');
     hdr.id = 'bp-biz-header';
-    hdr.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;padding-bottom:0';
+    hdr.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;padding:28px 32px 0 32px;margin-bottom:0';
     hdr.innerHTML = '<div style="display:flex;align-items:center;gap:10px">' +
       (iconSvg ? '<span style="color:var(--ink-muted);display:flex;align-items:center">' + iconSvg + '</span>' : '') +
       '<div><h2 style="font-size:22px;font-weight:800;color:var(--ink);margin:0;line-height:1.2">' + cfg.title + '</h2>' +
       '<p style="color:var(--ink-muted);font-size:13px;margin:4px 0 0;font-weight:400">' + cfg.sub + '</p></div></div>';
 
-    // Insert as first child of the container
-    if (container.firstChild) {
-      container.insertBefore(hdr, container.firstChild);
+    // --- Step 3: Insert as FIRST child of biz-root (before all React content) ---
+    if (root.firstChild) {
+      root.insertBefore(hdr, root.firstChild);
     } else {
-      container.appendChild(hdr);
+      root.appendChild(hdr);
     }
   }
 
@@ -3403,11 +3415,26 @@ canvas{display:block;margin:0 auto 24px}
       });
     }
 
-    // 5. Inject headers for meetings/docs tabs
+    // 5. Hide React's own duplicate headers for meetings/docs
     var currentBiz = state.currentModule || '';
     var tabMap = {'biz-meetings':'meetings', 'biz-docs':'docs'};
-    if (tabMap[currentBiz]) {
-      _bizInjectHeader(tabMap[currentBiz]);
+    var activeTab = tabMap[currentBiz];
+    if (activeTab && _BIZ_HEADERS[activeTab]) {
+      var title = _BIZ_HEADERS[activeTab].title;
+      root.querySelectorAll('h1, h2, h3').forEach(function(el) {
+        if (el.closest('#bp-biz-header')) return;
+        var txt = (el.textContent || '').trim();
+        if (txt.indexOf(title) !== -1) {
+          var wrapper = el.closest('[style*="display"]') || el.parentElement;
+          if (wrapper && wrapper.id !== 'bp-biz-header' && wrapper.id !== 'biz-root') {
+            wrapper.style.display = 'none';
+          }
+        }
+      });
+      // Re-inject header if missing
+      if (!root.querySelector('#bp-biz-header')) {
+        _bizInjectHeader(activeTab);
+      }
     }
   }
 
@@ -5821,7 +5848,7 @@ canvas{display:block;margin:0 auto 24px}
         // Footer
         h += '<div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:8px">';
         h += '<button id="qt-cancel" style="flex:1;padding:10px;border:1px solid var(--border);background:var(--bg-card);border-radius:var(--r-md);cursor:pointer;font-weight:600;font-family:inherit;color:var(--ink)">取消</button>';
-        h += '<button id="qt-save" style="flex:1;padding:10px;border:none;background:var(--teal);color:#fff;border-radius:var(--r-md);cursor:pointer;font-weight:700;font-family:inherit;font-size:14px">儲存報價單</button>';
+        h += '<button id="qt-save" style="flex:1;padding:10px;border:none;background:var(--primary);color:#fff;border-radius:var(--r-md);cursor:pointer;font-weight:700;font-family:inherit;font-size:14px">儲存報價單</button>';
         h += '</div>';
         h += '</div>';
         return h;
@@ -6024,7 +6051,7 @@ canvas{display:block;margin:0 auto 24px}
         var totals = calcQuoteTotals(q.items, taxOpt, q.discount);
         var totalEl = document.getElementById('qt-total-display');
         if (totalEl) {
-          var th = '<div style="font-size:16px;font-weight:800;color:var(--gold)">' + fmtMoney(totals.total) + '</div>';
+          var th = '<div style="font-size:16px;font-weight:800;color:var(--primary)">' + fmtMoney(totals.total) + '</div>';
           if (totals.taxType === 'included' && totals.taxAmount > 0) th += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">含稅額 ' + fmtMoney(totals.taxAmount) + '</div>';
           if (totals.taxType === 'added' && totals.taxAmount > 0) th += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">含外加稅 ' + fmtMoney(totals.taxAmount) + '</div>';
           totalEl.innerHTML = th;
@@ -6042,7 +6069,7 @@ canvas{display:block;margin:0 auto 24px}
         (q.items || []).forEach(function(item, idx) {
           var card = document.createElement('div');
           card.className = 'qt-item-card';
-          if (idx === flashIdx) { card.style.borderColor = 'var(--teal)'; card.style.boxShadow = '0 0 8px rgba(27,168,145,.12)'; }
+          if (idx === flashIdx) { card.style.borderColor = 'var(--primary)'; card.style.boxShadow = '0 0 8px rgba(124,92,252,.15)'; }
 
           // Description with AutoSuggest
           var descWrap = document.createElement('div');
@@ -6053,7 +6080,7 @@ canvas{display:block;margin:0 auto 24px}
             placeholder: '輸入或選擇服務項目...',
             style: {fontSize: '13px'},
             renderItem: function(s) {
-              return '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><span>' + (s.label || '') + '</span><span style="color:var(--gold);font-size:11px;white-space:nowrap">' + fmtMoney(s.unitPrice) + '/' + s.unit + '</span></div>';
+              return '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><span>' + (s.label || '') + '</span><span style="color:var(--primary);font-size:11px;white-space:nowrap">' + fmtMoney(s.unitPrice) + '/' + s.unit + '</span></div>';
             },
             onSelect: function(tpl, inp) {
               if (tpl.desc) {
@@ -6155,7 +6182,7 @@ canvas{display:block;margin:0 auto 24px}
           row.appendChild(priceInp);
 
           var addBtn = document.createElement('button');
-          addBtn.style.cssText = 'background:rgba(27,168,145,.12);border:1px solid rgba(27,168,145,.3);color:var(--teal);font-size:11px;font-weight:700;border-radius:6px;padding:5px 10px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0';
+          addBtn.style.cssText = 'background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.25);color:var(--primary);font-size:11px;font-weight:700;border-radius:6px;padding:5px 10px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0';
           addBtn.textContent = '+ 加入';
           addBtn.setAttribute('data-tpl-add-idx', i);
           addBtn.addEventListener('click', function() {
@@ -16353,4 +16380,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.3.6 -->
+</html><!-- v1.3.7 -->
