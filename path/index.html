@@ -2815,7 +2815,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.2</div>
+        <div class="sidebar-version">v1.4.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -5813,7 +5813,7 @@ canvas{display:block;margin:0 auto 24px}
         // ── Tax / Discount / Total (3 col) ──
         h += '<div style="display:grid;grid-template-columns:' + (isMobile ? '1fr' : '1fr 1fr 1fr') + ';gap:12px">';
         h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">稅率</label>';
-        h += '<select id="qt-tax" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;background:var(--bg-card);color:var(--ink)">';
+        h += '<select id="qt-tax" style="width:100%;height:40px;padding:8px 28px 8px 10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;-webkit-appearance:none;-moz-appearance:none;appearance:none;background:var(--bg-card) url(' + "'" + 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23888%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%27M6 9l6 6 6-6%27/%3E%3C/svg%3E' + "'" + ') no-repeat right 8px center;color:var(--ink);cursor:pointer">';
         QT_CONSTANTS.TAX_OPTIONS.forEach(function(t) {
           h += '<option value="' + t.id + '" ' + (q.taxType === t.id ? 'selected' : '') + '>' + t.label + '</option>';
         });
@@ -5821,7 +5821,7 @@ canvas{display:block;margin:0 auto 24px}
         h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">折扣 (NT$)</label>';
         h += '<input type="number" id="qt-discount" step="1000" value="' + (q.discount || 0) + '" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
         h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">總計</label>';
-        h += '<div id="qt-total-display" style="height:40px;padding:0 10px;border-radius:var(--r-md);background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;box-sizing:border-box"></div></div>';
+        h += '<div id="qt-total-display" style="min-height:40px;padding:8px 10px;border-radius:var(--r-md);background:var(--bg-card);border:1px solid var(--border);box-sizing:border-box"></div></div>';
         h += '</div>';
 
         // ── Payment Schedule (keep existing logic) ──
@@ -6057,9 +6057,9 @@ canvas{display:block;margin:0 auto 24px}
         var totals = calcQuoteTotals(q.items, taxOpt, q.discount);
         var totalEl = document.getElementById('qt-total-display');
         if (totalEl) {
-          var th = '<div style="font-size:16px;font-weight:800;color:var(--gold)">' + fmtMoney(totals.total) + '</div>';
-          if (totals.taxType === 'included' && totals.taxAmount > 0) th += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">含稅額 ' + fmtMoney(totals.taxAmount) + '</div>';
-          if (totals.taxType === 'added' && totals.taxAmount > 0) th += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">含外加稅 ' + fmtMoney(totals.taxAmount) + '</div>';
+          var th = '<div style="font-size:16px;font-weight:800;color:var(--gold);line-height:1.2">' + fmtMoney(totals.total) + '</div>';
+          if (totals.taxType === 'included' && totals.taxAmount > 0) th += '<div style="font-size:10px;color:var(--ink-muted);margin-top:3px;line-height:1">含稅額 ' + fmtMoney(totals.taxAmount) + '</div>';
+          if (totals.taxType === 'added' && totals.taxAmount > 0) th += '<div style="font-size:10px;color:var(--ink-muted);margin-top:3px;line-height:1">含外加稅 ' + fmtMoney(totals.taxAmount) + '</div>';
           totalEl.innerHTML = th;
         }
         renderPaymentSchedule();
@@ -16396,4 +16396,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.4.2 -->
+</html><!-- v1.4.3 -->
