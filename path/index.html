@@ -2681,6 +2681,7 @@ canvas{display:block;margin:0 auto 24px}
 .qt-items-table th:last-child{width:32px}
 .qt-items-table td{padding:4px;vertical-align:middle}
 .qt-items-table .qt-row-input{width:100%;height:40px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);font-family:inherit;font-size:13px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)}
+select.qt-row-input{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:26px;cursor:pointer}
 .qt-items-table .qt-row-input:focus{border-color:var(--primary);outline:none}
 .qt-items-table td:nth-child(2) .qt-row-input{text-align:center}
 .qt-items-table td:nth-child(4) .qt-row-input{text-align:right}
@@ -2814,7 +2815,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.1</div>
+        <div class="sidebar-version">v1.4.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -5780,7 +5781,7 @@ canvas{display:block;margin:0 auto 24px}
         h += '<div>';
         h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;margin-top:8px">';
         h += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);letter-spacing:.04em" id="items-label">報價項目 <span style="color:var(--rose)">*</span></div>';
-        h += '<button id="tpl-toggle" style="font-size:11px;padding:4px 10px;border:1px solid var(--primary);background:rgba(124,92,252,.06);color:var(--primary);border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600">' + IC.file + ' 從範本選取</button>';
+        h += '<button id="tpl-toggle" style="font-size:11px;padding:4px 10px;border:1px solid var(--primary);background:rgba(124,92,252,.06);color:var(--primary);border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;display:inline-flex;align-items:center;gap:4px;line-height:1">' + IC.file + '<span>從範本選取</span></button>';
         h += '</div>';
 
         // Service template picker (hidden by default)
@@ -5820,7 +5821,7 @@ canvas{display:block;margin:0 auto 24px}
         h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">折扣 (NT$)</label>';
         h += '<input type="number" id="qt-discount" step="1000" value="' + (q.discount || 0) + '" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
         h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">總計</label>';
-        h += '<div id="qt-total-display" style="padding:10px 14px;border-radius:10px;background:var(--bg-card)"></div></div>';
+        h += '<div id="qt-total-display" style="height:40px;padding:0 10px;border-radius:var(--r-md);background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;box-sizing:border-box"></div></div>';
         h += '</div>';
 
         // ── Payment Schedule (keep existing logic) ──
@@ -5984,7 +5985,7 @@ canvas{display:block;margin:0 auto 24px}
       if (tplToggle) tplToggle.addEventListener('click', function() {
         tplPickerOpen = !tplPickerOpen;
         tplPicker.style.display = tplPickerOpen ? 'block' : 'none';
-        this.textContent = tplPickerOpen ? '✕ 收合' : '從範本選取';
+        this.innerHTML = tplPickerOpen ? '✕ <span>收合</span>' : IC.file + '<span>從範本選取</span>';
       });
 
       var tplAddBtn = document.getElementById('tpl-add-btn');
@@ -6494,7 +6495,7 @@ canvas{display:block;margin:0 auto 24px}
         var tt = document.getElementById('tpl-toggle');
         var tp = document.getElementById('tpl-picker');
         var tpOpen = false;
-        if (tt) tt.addEventListener('click', function() { tpOpen = !tpOpen; tp.style.display = tpOpen ? 'block' : 'none'; this.textContent = tpOpen ? '✕ 收合' : '從範本選取'; });
+        if (tt) tt.addEventListener('click', function() { tpOpen = !tpOpen; tp.style.display = tpOpen ? 'block' : 'none'; this.innerHTML = tpOpen ? '✕ <span>收合</span>' : IC.file + '<span>從範本選取</span>'; });
         var tab = document.getElementById('tpl-add-btn');
         var taf = document.getElementById('tpl-add-form');
         if (tab) tab.addEventListener('click', function() { taf.style.display = 'block'; tab.style.display = 'none'; });
@@ -16395,4 +16396,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.4.1 -->
+</html><!-- v1.4.2 -->
