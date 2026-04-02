@@ -2675,7 +2675,7 @@ canvas{display:block;margin:0 auto 24px}
 .qt-item-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;transition:border-color .2s;position:relative}
 .qt-item-card:hover{border-color:rgba(124,92,252,.25)}
 .qt-item-card:last-child{margin-bottom:0}
-.qt-item-card-grid{display:grid;grid-template-columns:90px 72px 1fr;gap:12px;align-items:end;margin-top:10px}
+.qt-item-card-grid{display:grid;grid-template-columns:1fr 72px 100px;gap:10px;align-items:end;margin-top:10px}
 .qt-item-card-desc{position:relative}
 .qt-item-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
 .qt-item-card-total{font-size:15px;font-weight:700;color:var(--ink);font-family:'JetBrains Mono',monospace;letter-spacing:-.3px}
@@ -2809,7 +2809,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.5</div>
+        <div class="sidebar-version">v1.3.6</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3301,8 +3301,9 @@ canvas{display:block;margin:0 auto 24px}
               state.currentModule = bizId;
               renderSidebar();
             }
-            // Inject header for meetings/docs tabs
-            setTimeout(function() { _bizInjectHeader(tab); }, 150);
+            // Inject header + cleanup for meetings/docs tabs
+            setTimeout(function() { _bizPostMountClean(); _bizInjectHeader(tab); }, 150);
+            setTimeout(function() { _bizPostMountClean(); }, 600);
           }
         })
       );
@@ -3326,62 +3327,34 @@ canvas{display:block;margin:0 auto 24px}
   function _bizInjectHeader(tab) {
     var root = document.getElementById('biz-root');
     if (!root) return;
-    // Remove any previously injected header
     var old = root.querySelector('#bp-biz-header');
     if (old) old.remove();
 
     var cfg = _BIZ_HEADERS[tab];
     if (!cfg) return;
 
-    // Strategy: find the search bar row (flex div with SearchBar input + Btn)
-    // and insert the header BEFORE it. This works for meetings/docs tabs
-    // where React renders: [SearchBar+Btn] [ContentView] with no title.
-    var container = null;
-    var insertRef = null;
+    // Find the first padded container inside biz-root (the React content wrapper)
+    var container = root.querySelector('[style*="padding"]') || root;
+    // Find the page icon for this tab
+    var iconMap = { 'meetings': 'calendar', 'docs': 'folder' };
+    var iconKey = iconMap[tab] || '';
+    var iconSvg = (typeof IC !== 'undefined' && IC[iconKey]) ? IC[iconKey] : '';
 
-    // Look for the search input inside biz-root to find the search bar row
-    var searchInputs = root.querySelectorAll('input[placeholder]');
-    for (var si = 0; si < searchInputs.length; si++) {
-      var ph = searchInputs[si].getAttribute('placeholder') || '';
-      if (ph.indexOf('搜尋') !== -1 || ph.indexOf('搜索') !== -1) {
-        // Walk up to find the flex row container (the div wrapping search + button)
-        var row = searchInputs[si].closest('div[style*="display"]');
-        // Walk further up to find the parent that has padding
-        if (row) {
-          var parent = row.parentElement;
-          while (parent && parent !== root) {
-            var ps = parent.style.padding || '';
-            if (ps || (parent.getAttribute('style') || '').indexOf('padding') !== -1) {
-              container = parent;
-              insertRef = row;
-              break;
-            }
-            parent = parent.parentElement;
-          }
-          // Fallback: if no padded parent found, use row's direct parent
-          if (!container && row.parentElement) {
-            container = row.parentElement;
-            insertRef = row;
-          }
-        }
-        break;
-      }
-    }
-
-    // Fallback: original approach
-    if (!container) {
-      container = root.querySelector('[style*="padding"]');
-      insertRef = container ? container.firstChild : null;
-    }
-    if (!container) return;
-
-    // Create header element
+    // Build a proper page header matching other modules' style
     var hdr = document.createElement('div');
     hdr.id = 'bp-biz-header';
-    hdr.style.cssText = 'margin-bottom:20px';
-    hdr.innerHTML = '<h2 style="font-size:22px;font-weight:800;color:var(--ink);margin:0">' + cfg.title + '</h2>' +
-      '<p style="color:var(--ink-muted);font-size:14px;margin-top:2px">' + cfg.sub + '</p>';
-    container.insertBefore(hdr, insertRef);
+    hdr.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;padding-bottom:0';
+    hdr.innerHTML = '<div style="display:flex;align-items:center;gap:10px">' +
+      (iconSvg ? '<span style="color:var(--ink-muted);display:flex;align-items:center">' + iconSvg + '</span>' : '') +
+      '<div><h2 style="font-size:22px;font-weight:800;color:var(--ink);margin:0;line-height:1.2">' + cfg.title + '</h2>' +
+      '<p style="color:var(--ink-muted);font-size:13px;margin:4px 0 0;font-weight:400">' + cfg.sub + '</p></div></div>';
+
+    // Insert as first child of the container
+    if (container.firstChild) {
+      container.insertBefore(hdr, container.firstChild);
+    } else {
+      container.appendChild(hdr);
+    }
   }
 
   // ── Business Module Post-Mount Cleanup ──
@@ -5677,16 +5650,16 @@ canvas{display:block;margin:0 auto 24px}
         var isMobile = window.innerWidth < 640;
         var isEdit = !!quoteId;
         var h = '';
-        h += '<div style="background:var(--bg-app);border-radius:var(--r-xl);width:100%;max-width:860px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)">';
+        h += '<div style="background:var(--bg-app);border-radius:var(--r-xl);width:100%;max-width:720px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)">';
 
         // Header
-        h += '<div style="padding:24px 28px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">';
+        h += '<div style="padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">';
         h += '<h3 style="margin:0;font-size:18px;font-weight:800">' + (isEdit ? '編輯報價' : '新增報價') + '</h3>';
-        h += '<button id="qt-close-btn" style="background:none;border:none;cursor:pointer;color:var(--ink-muted);padding:6px;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'">' + IC.close + '</button>';
+        h += '<button id="qt-close-btn" style="background:none;border:none;cursor:pointer;color:var(--ink-muted);padding:4px">' + IC.close + '</button>';
         h += '</div>';
 
         // Body
-        h += '<div style="flex:1;overflow-y:auto;padding:28px 32px;display:flex;flex-direction:column;gap:0" id="qt-form-body">';
+        h += '<div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px" id="qt-form-body">';
 
         // ── Company Profile (expand/collapse button, not <details>) ──
         h += '<div id="cp-section">';
@@ -5734,14 +5707,8 @@ canvas{display:block;margin:0 auto 24px}
         h += '<div style="font-size:11px;color:var(--ink-muted);margin-top:4px;padding:0 2px">這些設定會自動儲存，套用到所有報價單。</div>';
         h += '</div></div>';
 
-        // ── Section 1: 基本資訊 ──
-        h += '<div style="padding-top:24px;margin-top:20px;border-top:1px solid var(--border)">';
-        h += '<div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:4px">基本資訊</div>';
-        h += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:18px">報價對象與基本設定</div>';
-        h += '</div>';
-
         // ── Quote Type Card Selector ──
-        h += '<div style="margin-bottom:18px"><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:600">報價類型</label>';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:600">報價類型</label>';
         h += '<div style="display:flex;gap:8px">';
         QT_CONSTANTS.QUOTE_TYPES.forEach(function(qt) {
           var sel = q.quoteType === qt.id;
@@ -5752,40 +5719,35 @@ canvas{display:block;margin:0 auto 24px}
         h += '</div></div>';
 
         // ── Basic fields: number + validUntil row ──
-        h += '<div style="display:grid;grid-template-columns:' + (isMobile ? '1fr' : '1fr 1fr') + ';gap:14px;margin-bottom:18px">';
-        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:600">報價單編號</label>';
-        h += '<input type="text" id="qt-number" value="' + (q.number || '') + '" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
-        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:600">有效期限</label>';
-        h += '<input type="date" id="qt-validUntil" value="' + (q.validUntil || '') + '" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
+        h += '<div style="display:grid;grid-template-columns:' + (isMobile ? '1fr' : '1fr 1fr') + ';gap:12px">';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">報價單編號</label>';
+        h += '<input type="text" id="qt-number" value="' + (q.number || '') + '" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">有效期限</label>';
+        h += '<input type="date" id="qt-validUntil" value="' + (q.validUntil || '') + '" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
         h += '</div>';
 
         // ── Title with AutoSuggest ──
-        h += '<div style="margin-bottom:18px"><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:600">提案標題 <span style="color:var(--rose)">*</span></label>';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">提案標題 <span style="color:var(--rose)">*</span></label>';
         h += '<div id="qt-title-wrap"></div>';
         h += '<div id="err-title" style="display:none;font-size:11px;color:var(--rose);margin-top:4px"></div>';
         h += '</div>';
 
         // ── Client fields (2 col) ──
-        h += '<div style="display:grid;grid-template-columns:' + (isMobile ? '1fr' : '1fr 1fr') + ';gap:14px;margin-bottom:18px">';
-        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:600">' + (q.quoteType === 'outsource' ? '外包公司 / 個人名稱' : '客戶公司') + ' <span style="color:var(--rose)">*</span></label>';
+        h += '<div style="display:grid;grid-template-columns:' + (isMobile ? '1fr' : '1fr 1fr') + ';gap:12px">';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">' + (q.quoteType === 'outsource' ? '外包公司 / 個人名稱' : '客戶公司') + ' <span style="color:var(--rose)">*</span></label>';
         h += '<div id="qt-client-name-wrap"></div>';
         h += '<div id="err-client-name" style="display:none;font-size:11px;color:var(--rose);margin-top:4px"></div></div>';
-        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:600">聯繫人 <span style="color:var(--rose)">*</span></label>';
-        h += '<input type="text" id="qt-client-contact" value="' + (q.client.contact || '').replace(/"/g,'&quot;') + '" placeholder="聯繫窗口姓名" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)">';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">聯繫人 <span style="color:var(--rose)">*</span></label>';
+        h += '<input type="text" id="qt-client-contact" value="' + (q.client.contact || '').replace(/"/g,'&quot;') + '" placeholder="聯繫窗口姓名" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)">';
         h += '<div id="err-client-contact" style="display:none;font-size:11px;color:var(--rose);margin-top:4px"></div></div>';
         h += '</div>';
-        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:600">Email</label>';
-        h += '<input type="email" id="qt-client-email" value="' + (q.client.email || '').replace(/"/g,'&quot;') + '" placeholder="email@example.com" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">Email</label>';
+        h += '<input type="email" id="qt-client-email" value="' + (q.client.email || '').replace(/"/g,'&quot;') + '" placeholder="email@example.com" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
 
-        // ── Section 2: 報價項目 ──
-        h += '<div style="padding-top:24px;margin-top:6px;border-top:1px solid var(--border)">';
-        h += '<div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:4px">報價項目</div>';
-        h += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:18px">列出服務內容與報價金額</div>';
-        h += '</div>';
-
+        // ── Line Items ──
         h += '<div>';
-        h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
-        h += '<div style="font-size:13px;font-weight:700;color:var(--ink-sec);letter-spacing:.02em" id="items-label">項目明細 <span style="color:var(--rose)">*</span></div>';
+        h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;margin-top:8px">';
+        h += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);letter-spacing:.04em" id="items-label">報價項目 <span style="color:var(--rose)">*</span></div>';
         h += '<button id="tpl-toggle" style="font-size:11px;padding:4px 10px;border:1px solid var(--primary);background:rgba(124,92,252,.06);color:var(--primary);border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600">' + IC.file + ' 從範本選取</button>';
         h += '</div>';
 
@@ -5800,7 +5762,9 @@ canvas{display:block;margin:0 auto 24px}
         h += '<div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:8px">新增範本</div>';
         h += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
         h += '<input type="text" id="tpl-new-desc" placeholder="服務項目名稱" style="flex:1;min-width:120px;padding:8px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:12px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)">';
-        h += bpSelect({id: 'tpl-new-unit', style: 'width:70px', options: QT_CONSTANTS.UNIT_OPTIONS.map(function(u) { return {value: u, label: u, selected: u === '式'}; })});
+        h += '<select id="tpl-new-unit" style="padding:8px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:12px;width:70px;background:var(--bg-card);color:var(--ink)">';
+        QT_CONSTANTS.UNIT_OPTIONS.forEach(function(u) { h += '<option value="' + u + '">' + u + '</option>'; });
+        h += '</select>';
         h += '<input type="number" id="tpl-new-price" step="1000" placeholder="單價" style="width:90px;padding:8px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:12px;text-align:right;box-sizing:border-box;background:var(--bg-card);color:var(--ink)">';
         h += '<button id="tpl-save-new" style="background:var(--primary);border:none;color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit;white-space:nowrap">儲存</button>';
         h += '<button id="tpl-cancel-new" style="background:none;border:none;color:var(--ink-muted);font-size:12px;cursor:pointer;font-family:inherit;padding:4px 6px">取消</button>';
@@ -5813,46 +5777,39 @@ canvas{display:block;margin:0 auto 24px}
         h += '<button id="add-empty-item" style="margin-top:8px;padding:8px 14px;border:1px dashed var(--border);border-radius:var(--r-md);background:transparent;color:var(--ink-muted);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;width:100%;transition:all .15s">+ 新增空白項目</button>';
         h += '</div>';
 
-        // ── Section 3: 金額與付款 ──
-        h += '<div style="padding-top:24px;margin-top:6px;border-top:1px solid var(--border)">';
-        h += '<div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:4px">金額與付款</div>';
-        h += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:18px">稅率、折扣與付款條件設定</div>';
+        // ── Tax / Discount / Total (3 col) ──
+        h += '<div style="display:grid;grid-template-columns:' + (isMobile ? '1fr' : '1fr 1fr 1fr') + ';gap:12px">';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">稅率</label>';
+        h += '<select id="qt-tax" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;background:var(--bg-card);color:var(--ink)">';
+        QT_CONSTANTS.TAX_OPTIONS.forEach(function(t) {
+          h += '<option value="' + t.id + '" ' + (q.taxType === t.id ? 'selected' : '') + '>' + t.label + '</option>';
+        });
+        h += '</select></div>';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">折扣 (NT$)</label>';
+        h += '<input type="number" id="qt-discount" step="1000" value="' + (q.discount || 0) + '" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">總計</label>';
+        h += '<div id="qt-total-display" style="padding:10px 14px;border-radius:10px;background:var(--bg-card)"></div></div>';
         h += '</div>';
 
-        // Tax + Discount row
-        h += '<div style="display:grid;grid-template-columns:' + (isMobile ? '1fr' : '1fr 1fr') + ';gap:14px;margin-bottom:16px">';
-        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:600">稅率</label>';
-        h += bpSelect({id:'qt-tax', onChange:'_qtTaxChange', options: QT_CONSTANTS.TAX_OPTIONS.map(function(t){return {value:t.id, label:t.label, selected:q.taxType===t.id};})});
-        h += '</div>';
-        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:600">折扣 (NT$)</label>';
-        h += '<input type="number" id="qt-discount" step="1000" value="' + (q.discount || 0) + '" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
-        h += '</div>';
-
-        // Summary block (right-aligned)
-        h += '<div style="display:flex;justify-content:flex-end;margin-bottom:22px">';
-        h += '<div id="qt-total-display" style="min-width:' + (isMobile ? '100%' : '280px') + ';padding:16px 20px;border-radius:var(--r-md);background:rgba(124,92,252,.04);border:1px solid rgba(124,92,252,.10)"></div>';
-        h += '</div>';
-
-        // ── Payment Schedule ──
-        h += '<div style="margin-bottom:20px"><label style="display:block;font-size:13px;font-weight:700;color:var(--ink-sec);margin-bottom:10px;letter-spacing:.02em">付款條件</label>';
-        h += '<div style="display:grid;grid-template-columns:' + (isMobile ? '1fr' : '1fr auto') + ';gap:14px;margin-bottom:14px;align-items:end">';
-        h += '<div><div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:500">快速套用</div>';
-        h += bpSelect({id:'qt-pay-preset', placeholder:'選擇付款範本...', onChange:'_qtPayPresetChange', options: QT_CONSTANTS.PAYMENT_PRESETS.map(function(p){return {value:p.id, label:p.label, selected:false};})});
-        h += '</div>';
-        h += '<div><div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:500">期數</div>';
+        // ── Payment Schedule (keep existing logic) ──
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:600">付款條件</label>';
+        h += '<div style="display:flex;gap:10px;margin-bottom:12px;align-items:flex-end">';
+        h += '<div style="flex:1;min-width:0"><div style="font-size:11px;color:var(--ink-muted);margin-bottom:4px;font-weight:500">快速套用</div>';
+        h += '<select id="qt-pay-preset" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;background:var(--bg-card);color:var(--ink)">';
+        h += '<option value="">選擇付款範本...</option>';
+        QT_CONSTANTS.PAYMENT_PRESETS.forEach(function(p) { h += '<option value="' + p.id + '">' + p.label + '</option>'; });
+        h += '</select></div>';
+        h += '<div style="flex-shrink:0"><div style="font-size:11px;color:var(--ink-muted);margin-bottom:4px;font-weight:500">期數</div>';
         h += '<div style="display:flex;align-items:center;gap:4px">';
-        h += '<button id="pay-minus" style="width:36px;height:40px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg-card);color:var(--ink);font-size:16px;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'var(--bg-card)\'">−</button>';
-        h += '<div id="period-count" style="width:40px;height:40px;border-radius:var(--r-sm);background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.15);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--primary)">' + (q.paymentSchedule || []).length + '</div>';
-        h += '<button id="pay-plus" style="width:36px;height:40px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg-card);color:var(--ink);font-size:16px;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'var(--bg-card)\'">+</button>';
+        h += '<button id="pay-minus" style="width:32px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--ink);font-size:16px;cursor:pointer;font-family:inherit">−</button>';
+        h += '<div id="period-count" style="width:36px;height:36px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--primary)">' + (q.paymentSchedule || []).length + '</div>';
+        h += '<button id="pay-plus" style="width:32px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--ink);font-size:16px;cursor:pointer;font-family:inherit">+</button>';
         h += '</div></div></div>';
         h += '<div id="payment-sched"></div></div>';
 
-        // ── Section 4: 備註 ──
-        h += '<div style="padding-top:22px;margin-top:6px;border-top:1px solid var(--border)">';
-        h += '<div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:14px">備註</div>';
-        h += '</div>';
-        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:6px;font-weight:600">補充說明</label>';
-        h += '<textarea id="qt-notes" style="width:100%;height:80px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;resize:vertical;background:var(--bg-card);color:var(--ink)">' + (q.notes || '') + '</textarea>';
+        // ── Notes with template capsules ──
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">備註</label>';
+        h += '<textarea id="qt-notes" style="width:100%;height:80px;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;resize:vertical;background:var(--bg-card);color:var(--ink)">' + (q.notes || '') + '</textarea>';
         h += '<div id="note-tpls" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div></div>';
 
         // ── Error Summary ──
@@ -5862,9 +5819,9 @@ canvas{display:block;margin:0 auto 24px}
         h += '</div>'; // end body
 
         // Footer
-        h += '<div style="padding:20px 28px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px">';
-        h += '<button id="qt-cancel" style="padding:10px 24px;border:1px solid var(--border);background:transparent;border-radius:var(--r-md);cursor:pointer;font-weight:600;font-family:inherit;color:var(--ink-muted);font-size:14px;transition:all .15s" onmouseover="this.style.background=\'var(--bg-hover)\';this.style.color=\'var(--ink)\'" onmouseout="this.style.background=\'transparent\';this.style.color=\'var(--ink-muted)\'">取消</button>';
-        h += '<button id="qt-save" style="padding:10px 32px;border:none;background:var(--primary);color:#fff;border-radius:var(--r-md);cursor:pointer;font-weight:700;font-family:inherit;font-size:14px;transition:all .15s;box-shadow:0 2px 8px rgba(124,92,252,.25)" onmouseover="this.style.background=\'var(--primary-hover)\';this.style.boxShadow=\'0 4px 16px rgba(124,92,252,.35)\'" onmouseout="this.style.background=\'var(--primary)\';this.style.boxShadow=\'0 2px 8px rgba(124,92,252,.25)\'">' + (isEdit ? '儲存報價單' : '建立報價單') + '</button>';
+        h += '<div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:8px">';
+        h += '<button id="qt-cancel" style="flex:1;padding:10px;border:1px solid var(--border);background:var(--bg-card);border-radius:var(--r-md);cursor:pointer;font-weight:600;font-family:inherit;color:var(--ink)">取消</button>';
+        h += '<button id="qt-save" style="flex:1;padding:10px;border:none;background:var(--teal);color:#fff;border-radius:var(--r-md);cursor:pointer;font-weight:700;font-family:inherit;font-size:14px">儲存報價單</button>';
         h += '</div>';
         h += '</div>';
         return h;
@@ -6067,32 +6024,9 @@ canvas{display:block;margin:0 auto 24px}
         var totals = calcQuoteTotals(q.items, taxOpt, q.discount);
         var totalEl = document.getElementById('qt-total-display');
         if (totalEl) {
-          var subtotal = totals.subtotal || 0;
-          var th = '';
-          // Row: 小計
-          th += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">';
-          th += '<span style="font-size:13px;color:var(--ink-muted)">小計</span>';
-          th += '<span style="font-size:14px;font-weight:600;color:var(--ink);font-family:\'JetBrains Mono\',monospace">' + fmtMoney(subtotal) + '</span>';
-          th += '</div>';
-          // Row: 稅額 (if applicable)
-          if (totals.taxAmount > 0) {
-            th += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">';
-            th += '<span style="font-size:13px;color:var(--ink-muted)">' + (totals.taxType === 'included' ? '含稅額' : '外加稅') + '</span>';
-            th += '<span style="font-size:14px;font-weight:600;color:var(--ink);font-family:\'JetBrains Mono\',monospace">' + fmtMoney(totals.taxAmount) + '</span>';
-            th += '</div>';
-          }
-          // Row: 折扣 (if applicable)
-          if (q.discount > 0) {
-            th += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0">';
-            th += '<span style="font-size:13px;color:var(--ink-muted)">折扣</span>';
-            th += '<span style="font-size:14px;font-weight:600;color:var(--rose);font-family:\'JetBrains Mono\',monospace">-' + fmtMoney(q.discount) + '</span>';
-            th += '</div>';
-          }
-          // Divider + Total
-          th += '<div style="border-top:1px solid rgba(124,92,252,.15);margin-top:8px;padding-top:10px;display:flex;justify-content:space-between;align-items:center">';
-          th += '<span style="font-size:14px;font-weight:700;color:var(--ink)">總計</span>';
-          th += '<span style="font-size:18px;font-weight:800;color:var(--primary);font-family:\'JetBrains Mono\',monospace">' + fmtMoney(totals.total) + '</span>';
-          th += '</div>';
+          var th = '<div style="font-size:16px;font-weight:800;color:var(--gold)">' + fmtMoney(totals.total) + '</div>';
+          if (totals.taxType === 'included' && totals.taxAmount > 0) th += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">含稅額 ' + fmtMoney(totals.taxAmount) + '</div>';
+          if (totals.taxType === 'added' && totals.taxAmount > 0) th += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">含外加稅 ' + fmtMoney(totals.taxAmount) + '</div>';
           totalEl.innerHTML = th;
         }
         renderPaymentSchedule();
@@ -6263,12 +6197,12 @@ canvas{display:block;margin:0 auto 24px}
         var psDiv = document.getElementById('payment-sched');
         if (!psDiv) return;
 
-        var html = '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden">';
-        html += '<div style="display:grid;grid-template-columns:2fr 80px 1fr 80px;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)">';
-        html += '<div style="font-size:12px;color:var(--ink-muted);font-weight:600">付款節點</div>';
-        html += '<div style="font-size:12px;color:var(--ink-muted);font-weight:600">%</div>';
-        html += '<div style="font-size:12px;color:var(--ink-muted);font-weight:600">金額 (NT$)</div>';
-        html += '<div style="font-size:12px;color:var(--ink-muted);font-weight:600;text-align:right">實際 %</div></div>';
+        var html = '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden">';
+        html += '<div style="display:grid;grid-template-columns:140px 80px 1fr 80px;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border)">';
+        html += '<div style="font-size:11px;color:var(--ink-muted);font-weight:600">付款節點</div>';
+        html += '<div style="font-size:11px;color:var(--ink-muted);font-weight:600">%</div>';
+        html += '<div style="font-size:11px;color:var(--ink-muted);font-weight:600">金額 (NT$)</div>';
+        html += '<div style="font-size:11px;color:var(--ink-muted);font-weight:600;text-align:right">實際 %</div></div>';
 
         var sumPrev = 0;
         periods.forEach(function(p, idx) {
@@ -6278,13 +6212,12 @@ canvas{display:block;margin:0 auto 24px}
           else { amt = p.amt > 0 ? p.amt : Math.round(total * (p.pct || 0) / 100); sumPrev += amt; }
           var actualPct = total > 0 ? Math.round(amt / total * 100) : 0;
 
-          html += '<div style="padding:12px 16px;border-bottom:' + (idx < periods.length - 1 ? '1px solid var(--border)' : 'none') + ';background:' + (isLast ? 'rgba(124,92,252,.04)' : 'transparent') + '">';
-          html += '<div style="display:grid;grid-template-columns:2fr 80px 1fr 80px;gap:10px;align-items:center">';
-          var payLabelOpts = QT_CONSTANTS.PERIOD_LABELS.map(function(l) { return {value: l, label: l, selected: l === p.label}; });
-          if (p.label && QT_CONSTANTS.PERIOD_LABELS.indexOf(p.label) === -1) { payLabelOpts.push({value: p.label, label: p.label, selected: true}); }
-          var payLabelCb = '_qtPayLabel' + idx;
-          window[payLabelCb] = (function(i) { return function(val) { q.paymentSchedule[i].label = val; }; })(idx);
-          html += bpSelect({id: 'qt-pay-label-' + idx, onChange: payLabelCb, style: 'width:100%', options: payLabelOpts});
+          html += '<div style="padding:8px 14px;border-bottom:' + (idx < periods.length - 1 ? '1px solid var(--border)' : 'none') + ';background:' + (isLast ? 'rgba(124,92,252,.04)' : 'transparent') + '">';
+          html += '<div style="display:grid;grid-template-columns:140px 80px 1fr 80px;gap:8px;align-items:center">';
+          html += '<select data-pay-label="' + idx + '" style="padding:8px;border:1px solid var(--border);border-radius:var(--r-sm);font-family:inherit;font-size:13px;background:var(--bg-card);color:var(--ink)">';
+          QT_CONSTANTS.PERIOD_LABELS.forEach(function(l) { html += '<option value="' + l + '" ' + (l === p.label ? 'selected' : '') + '>' + l + '</option>'; });
+          if (p.label && QT_CONSTANTS.PERIOD_LABELS.indexOf(p.label) === -1) { html += '<option value="' + p.label + '" selected>' + p.label + '</option>'; }
+          html += '</select>';
           var pctVal = isLast ? actualPct : (p.pct || 0);
           html += '<input type="number" data-pay-pct="' + idx + '" value="' + pctVal + '" min="0" max="100" ' + (isLast ? 'disabled title="自動計算餘額"' : '') + ' style="padding:8px;border:1px solid var(--border);border-radius:var(--r-sm);font-family:inherit;font-size:13px;text-align:center;box-sizing:border-box;background:' + (isLast ? 'rgba(124,92,252,.06)' : 'var(--bg-card)') + ';color:' + (isLast ? 'var(--primary)' : 'var(--ink)') + ';opacity:' + (isLast ? '.7' : '1') + '">';
           if (isLast) {
@@ -6303,13 +6236,20 @@ canvas{display:block;margin:0 auto 24px}
           else { sumAlloc += p.amt > 0 ? p.amt : Math.round(total * (p.pct || 0) / 100); }
         });
         var diff = total - sumAlloc;
-        html += '<div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:rgba(124,92,252,.04)">';
-        html += '<span style="font-size:12px;color:var(--ink-muted);font-weight:500">合計 ' + periods.length + ' 期</span>';
+        html += '<div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:rgba(224,138,58,.05)">';
+        html += '<span style="font-size:12px;color:var(--ink-muted)">合計 ' + periods.length + ' 期</span>';
         html += '<span style="font-size:14px;font-weight:800;color:' + (Math.abs(diff) < 1 ? 'var(--teal)' : 'var(--rose)') + '">NT$ ' + sumAlloc.toLocaleString() + ' ' + (Math.abs(diff) < 1 ? '✓' : diff > 0 ? '（差 NT$ ' + diff.toLocaleString() + '）' : '（超額 NT$ ' + Math.abs(diff).toLocaleString() + '）') + '</span>';
         html += '</div></div>';
         psDiv.innerHTML = html;
 
-        // Bind payment schedule inputs (labels handled by bpSelect callbacks)
+        // Bind payment schedule inputs
+        var payLabels = psDiv.querySelectorAll('[data-pay-label]');
+        for (var pli = 0; pli < payLabels.length; pli++) {
+          payLabels[pli].addEventListener('change', function() {
+            var pi = parseInt(this.getAttribute('data-pay-label'));
+            q.paymentSchedule[pi].label = this.value;
+          });
+        }
         var payPcts = psDiv.querySelectorAll('[data-pay-pct]');
         for (var ppi = 0; ppi < payPcts.length; ppi++) {
           payPcts[ppi].addEventListener('change', function() {
@@ -6489,11 +6429,11 @@ canvas{display:block;margin:0 auto 24px}
         // Basic fields
         var numEl = document.getElementById('qt-number');
         var vuEl = document.getElementById('qt-validUntil');
+        var taxEl = document.getElementById('qt-tax');
         var discEl = document.getElementById('qt-discount');
         if (numEl) numEl.addEventListener('change', function() { q.number = this.value; });
         if (vuEl) vuEl.addEventListener('change', function() { q.validUntil = this.value; });
-        // Tax — bpSelect onChange callback
-        window._qtTaxChange = function(val) { q.taxType = val; updateTotal(); };
+        if (taxEl) taxEl.addEventListener('change', function() { q.taxType = this.value; updateTotal(); });
         if (discEl) discEl.addEventListener('change', function() { q.discount = parseInt(this.value) || 0; updateTotal(); });
         var cf3 = document.getElementById('qt-client-contact');
         var ef3 = document.getElementById('qt-client-email');
@@ -6528,12 +6468,13 @@ canvas{display:block;margin:0 auto 24px}
         // Add empty item
         var aeb = document.getElementById('add-empty-item');
         if (aeb) aeb.addEventListener('click', function() { q.items.push({desc:'', qty:1, unit:'式', unitPrice:0}); renderItemsList(); });
-        // Payment preset — bpSelect callback (replaces old addEventListener)
-        window._qtPayPresetChange = function(val) {
+        // Payment
+        var pp = document.getElementById('qt-pay-preset');
+        if (pp) pp.addEventListener('change', function() {
           var pr = null;
-          for (var pi2 = 0; pi2 < QT_CONSTANTS.PAYMENT_PRESETS.length; pi2++) { if (QT_CONSTANTS.PAYMENT_PRESETS[pi2].id === val) { pr = QT_CONSTANTS.PAYMENT_PRESETS[pi2]; break; } }
+          for (var pi2 = 0; pi2 < QT_CONSTANTS.PAYMENT_PRESETS.length; pi2++) { if (QT_CONSTANTS.PAYMENT_PRESETS[pi2].id === this.value) { pr = QT_CONSTANTS.PAYMENT_PRESETS[pi2]; break; } }
           if (pr) { q.paymentSchedule = pr.periods.map(function(x) { return {label:x.label, pct:x.pct, amt:0}; }); renderPaymentSchedule(); }
-        };
+        });
         var pm = document.getElementById('pay-minus');
         var ppl = document.getElementById('pay-plus');
         if (pm) pm.addEventListener('click', function() { if (q.paymentSchedule.length > 1) { q.paymentSchedule.pop(); renderPaymentSchedule(); } });
@@ -16412,4 +16353,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.3.5 -->
+</html><!-- v1.3.6 -->
