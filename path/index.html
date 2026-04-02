@@ -2671,18 +2671,23 @@ canvas{display:block;margin:0 auto 24px}
 .qt-tpl-row:hover{background:var(--bg-hover);border-color:var(--primary)}
 .qt-tpl-add-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:10px;padding:11px;border-radius:10px;border:1.5px dashed rgba(124,92,252,.3);background:transparent;color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
 .qt-tpl-add-btn:hover{background:rgba(124,92,252,.04);border-color:var(--primary)}
-/* Item cards — each item is its own card */
-.qt-item-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;transition:border-color .2s;position:relative}
-.qt-item-card:hover{border-color:rgba(124,92,252,.25)}
-.qt-item-card:last-child{margin-bottom:0}
-.qt-item-card-grid{display:flex;gap:10px;align-items:flex-end;margin-top:10px;justify-content:flex-end}
-.qt-item-card-desc{position:relative}
-.qt-item-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
-.qt-item-card-total{font-size:15px;font-weight:700;color:var(--ink);font-family:'JetBrains Mono',monospace;letter-spacing:-.3px}
-.qt-item-card-remove{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--ink-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s;position:absolute;top:12px;right:12px}
-.qt-item-card-remove:hover{border-color:var(--rose);color:var(--rose);background:rgba(217,68,98,.06)}
-.qt-item-mini-label{font-size:10px;font-weight:600;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
-@media(max-width:768px){.qt-item-card-grid{flex-wrap:wrap;justify-content:flex-start}}
+/* Item table — single-row layout matching original */
+.qt-items-table{width:100%;border-collapse:separate;border-spacing:0}
+.qt-items-table th{font-size:11px;font-weight:600;color:var(--ink-muted);text-align:left;padding:0 4px 8px;white-space:nowrap}
+.qt-items-table th:nth-child(2){width:60px;text-align:center}
+.qt-items-table th:nth-child(3){width:72px;text-align:center}
+.qt-items-table th:nth-child(4){width:100px;text-align:right}
+.qt-items-table th:nth-child(5){width:80px;text-align:right}
+.qt-items-table th:last-child{width:32px}
+.qt-items-table td{padding:4px;vertical-align:middle}
+.qt-items-table .qt-row-input{width:100%;height:40px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-sm);font-family:inherit;font-size:13px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)}
+.qt-items-table .qt-row-input:focus{border-color:var(--primary);outline:none}
+.qt-items-table td:nth-child(2) .qt-row-input{text-align:center}
+.qt-items-table td:nth-child(4) .qt-row-input{text-align:right}
+.qt-row-subtotal{font-size:13px;font-weight:700;color:var(--gold);text-align:right;white-space:nowrap;font-family:'JetBrains Mono',monospace;letter-spacing:-.3px;padding-right:2px}
+.qt-row-remove{width:28px;height:28px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--ink-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0}
+.qt-row-remove:hover{border-color:var(--rose);color:var(--rose);background:rgba(217,68,98,.06)}
+@media(max-width:640px){.qt-items-table th:nth-child(5),.qt-items-table td:nth-child(5){display:none}}
 /* Totals box */
 .qt-totals-box{border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:16px;background:var(--bg-card)}
 .qt-totals-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:13px;color:var(--ink-sec)}
@@ -2809,7 +2814,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.9</div>
+        <div class="sidebar-version">v1.4.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -5677,7 +5682,7 @@ canvas{display:block;margin:0 auto 24px}
         var isMobile = window.innerWidth < 640;
         var isEdit = !!quoteId;
         var h = '';
-        h += '<div style="background:var(--bg-app);border-radius:var(--r-xl);width:100%;max-width:720px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)">';
+        h += '<div style="background:var(--bg-app);border-radius:var(--r-xl);width:100%;max-width:860px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)">';
 
         // Header
         h += '<div style="padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">';
@@ -6051,7 +6056,7 @@ canvas{display:block;margin:0 auto 24px}
         var totals = calcQuoteTotals(q.items, taxOpt, q.discount);
         var totalEl = document.getElementById('qt-total-display');
         if (totalEl) {
-          var th = '<div style="font-size:16px;font-weight:800;color:var(--primary)">' + fmtMoney(totals.total) + '</div>';
+          var th = '<div style="font-size:16px;font-weight:800;color:var(--gold)">' + fmtMoney(totals.total) + '</div>';
           if (totals.taxType === 'included' && totals.taxAmount > 0) th += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">含稅額 ' + fmtMoney(totals.taxAmount) + '</div>';
           if (totals.taxType === 'added' && totals.taxAmount > 0) th += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">含外加稅 ' + fmtMoney(totals.taxAmount) + '</div>';
           totalEl.innerHTML = th;
@@ -6060,27 +6065,32 @@ canvas{display:block;margin:0 auto 24px}
       }
 
       function renderItemsList() {
-        var isMobile = window.innerWidth < 640;
         var listEl = document.getElementById('items-list');
         if (!listEl) return;
         listEl.innerHTML = '';
         var serviceSuggestions = serviceTemplates.map(function(t) { return {label: t.desc, desc: t.desc, unit: t.unit, unitPrice: t.unitPrice}; });
 
-        (q.items || []).forEach(function(item, idx) {
-          var card = document.createElement('div');
-          card.className = 'qt-item-card';
-          if (idx === flashIdx) { card.style.borderColor = 'var(--primary)'; card.style.boxShadow = '0 0 8px rgba(124,92,252,.15)'; }
+        // Build table with column headers (matching original layout)
+        var tbl = document.createElement('table');
+        tbl.className = 'qt-items-table';
+        var thead = document.createElement('thead');
+        thead.innerHTML = '<tr><th>項目說明</th><th>數量</th><th>單位</th><th>單價</th><th>小計</th><th></th></tr>';
+        tbl.appendChild(thead);
 
-          // Description with AutoSuggest
-          var descWrap = document.createElement('div');
-          descWrap.className = 'qt-item-card-desc';
+        var tbody = document.createElement('tbody');
+        (q.items || []).forEach(function(item, idx) {
+          var tr = document.createElement('tr');
+          if (idx === flashIdx) { tr.style.background = 'rgba(124,92,252,.06)'; }
+
+          // Description cell with AutoSuggest
+          var tdDesc = document.createElement('td');
           var descAS = qtAutoSuggest({
             value: item.desc || '',
             suggestions: serviceSuggestions,
             placeholder: '輸入或選擇服務項目...',
-            style: {fontSize: '13px'},
+            style: {fontSize: '13px', height: '40px', padding: '8px 10px'},
             renderItem: function(s) {
-              return '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><span>' + (s.label || '') + '</span><span style="color:var(--primary);font-size:11px;white-space:nowrap">' + fmtMoney(s.unitPrice) + '/' + s.unit + '</span></div>';
+              return '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><span>' + (s.label || '') + '</span><span style="color:var(--gold);font-size:11px;white-space:nowrap">' + fmtMoney(s.unitPrice) + '/' + s.unit + '</span></div>';
             },
             onSelect: function(tpl, inp) {
               if (tpl.desc) {
@@ -6093,63 +6103,65 @@ canvas{display:block;margin:0 auto 24px}
             },
             onChange: function(v) { q.items[idx].desc = v; }
           });
-          descWrap.appendChild(descAS);
-          card.appendChild(descWrap);
+          tdDesc.appendChild(descAS);
+          tr.appendChild(tdDesc);
 
-          // Grid: unit, qty, unitPrice
-          var grid = document.createElement('div');
-          grid.className = 'qt-item-card-grid';
-          // Unit (bpSelect)
-          var unitDiv = document.createElement('div');
-          unitDiv.style.cssText = 'width:80px;flex-shrink:0';
-          var unitCbName = '_qtUnit' + idx;
-          window[unitCbName] = function(val) { q.items[idx].unit = val; };
-          unitDiv.innerHTML = '<div class="qt-item-mini-label">單位</div>' + bpSelect({
-            id: 'qt-unit-' + idx,
-            onChange: unitCbName,
-            style: 'width:100%',
-            options: QT_CONSTANTS.UNIT_OPTIONS.map(function(u) { return {value: u, label: u, selected: u === item.unit}; })
-          });
-          grid.appendChild(unitDiv);
-          // Qty
-          var qtyDiv = document.createElement('div');
-          qtyDiv.style.cssText = 'width:72px;flex-shrink:0';
-          qtyDiv.innerHTML = '<div class="qt-item-mini-label">數量</div>';
+          // Qty cell
+          var tdQty = document.createElement('td');
           var qtyInp = document.createElement('input');
           qtyInp.type = 'number'; qtyInp.min = '1'; qtyInp.value = item.qty || 1;
-          qtyInp.style.cssText = 'width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r-sm);font-family:inherit;font-size:13px;text-align:center;box-sizing:border-box;background:var(--bg-card);color:var(--ink)';
+          qtyInp.className = 'qt-row-input';
           qtyInp.addEventListener('change', function() { q.items[idx].qty = parseInt(this.value) || 1; updateTotal(); renderItemsList(); });
-          qtyDiv.appendChild(qtyInp);
-          grid.appendChild(qtyDiv);
-          // Unit Price
-          var priceDiv = document.createElement('div');
-          priceDiv.style.cssText = 'width:130px;flex-shrink:0';
-          priceDiv.innerHTML = '<div class="qt-item-mini-label">單價</div>';
+          tdQty.appendChild(qtyInp);
+          tr.appendChild(tdQty);
+
+          // Unit cell (native select for consistent height)
+          var tdUnit = document.createElement('td');
+          var unitSel = document.createElement('select');
+          unitSel.className = 'qt-row-input';
+          QT_CONSTANTS.UNIT_OPTIONS.forEach(function(u) {
+            var opt = document.createElement('option');
+            opt.value = u; opt.textContent = u;
+            if (u === item.unit) opt.selected = true;
+            unitSel.appendChild(opt);
+          });
+          unitSel.addEventListener('change', function() { q.items[idx].unit = this.value; });
+          tdUnit.appendChild(unitSel);
+          tr.appendChild(tdUnit);
+
+          // Price cell
+          var tdPrice = document.createElement('td');
           var priceInp = document.createElement('input');
           priceInp.type = 'number'; priceInp.step = '1000'; priceInp.value = item.unitPrice || 0;
-          priceInp.style.cssText = 'width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r-sm);font-family:inherit;font-size:13px;text-align:right;box-sizing:border-box;background:var(--bg-card);color:var(--ink)';
+          priceInp.className = 'qt-row-input';
+          priceInp.style.textAlign = 'right';
           priceInp.addEventListener('change', function() { q.items[idx].unitPrice = parseInt(this.value) || 0; updateTotal(); renderItemsList(); });
-          priceDiv.appendChild(priceInp);
-          grid.appendChild(priceDiv);
+          tdPrice.appendChild(priceInp);
+          tr.appendChild(tdPrice);
 
-          card.appendChild(grid);
+          // Subtotal cell (read-only)
+          var tdSub = document.createElement('td');
+          tdSub.className = 'qt-row-subtotal';
+          tdSub.textContent = fmtMoney((item.qty || 1) * (item.unitPrice || 0));
+          tr.appendChild(tdSub);
 
-          // Footer: total + remove
-          var foot = document.createElement('div');
-          foot.className = 'qt-item-card-foot';
-          foot.innerHTML = '<span class="qt-item-card-total">' + fmtMoney((item.qty || 1) * (item.unitPrice || 0)) + '</span>';
+          // Delete cell
+          var tdDel = document.createElement('td');
           if (q.items.length > 1) {
             var rmBtn = document.createElement('button');
-            rmBtn.className = 'qt-item-card-remove';
+            rmBtn.className = 'qt-row-remove';
             rmBtn.innerHTML = IC.trash;
             rmBtn.setAttribute('data-rm-idx', idx);
             rmBtn.addEventListener('click', function() { var i = parseInt(this.getAttribute('data-rm-idx')); q.items.splice(i, 1); updateTotal(); renderItemsList(); });
-            card.appendChild(rmBtn);
+            tdDel.appendChild(rmBtn);
           }
-          card.appendChild(foot);
-          listEl.appendChild(card);
+          tr.appendChild(tdDel);
+
+          tbody.appendChild(tr);
         });
 
+        tbl.appendChild(tbody);
+        listEl.appendChild(tbl);
         updateTotal();
       }
 
@@ -16383,4 +16395,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.3.9 -->
+</html><!-- v1.4.1 -->
