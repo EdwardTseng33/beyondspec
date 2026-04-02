@@ -692,7 +692,7 @@ select:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.1
 select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light),0 2px 8px rgba(124,92,252,.16)}
 select option{background:var(--bg-card);color:var(--ink);padding:10px 16px;font-size:14px}
 .bp-select{position:relative;width:100%;user-select:none;-webkit-user-select:none}
-.bp-select-trigger{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;font-size:var(--text-base);font-family:inherit;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);font-weight:500;letter-spacing:.01em;gap:8px}
+.bp-select-trigger{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;height:44px;box-sizing:border-box;font-size:var(--text-base);font-family:inherit;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--bg-input);color:var(--ink);cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);font-weight:500;letter-spacing:.01em;gap:8px}
 .bp-select-trigger:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.16)}
 .bp-select-trigger.open{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light),0 2px 8px rgba(124,92,252,.16);border-radius:var(--r-sm) var(--r-sm) 0 0}
 .bp-select-trigger .bp-chev{width:14px;height:14px;flex-shrink:0;color:var(--primary);opacity:.6;transition:transform .2s}
@@ -2485,7 +2485,7 @@ canvas{display:block;margin:0 auto 24px}
 .kb-modal-2col{display:grid;grid-template-columns:3fr 2fr;gap:28px;padding:28px 32px}
 .kb-modal-footer{display:flex;gap:10px;justify-content:space-between;padding:20px 32px;border-top:1px solid var(--border);flex-wrap:wrap}
 .kb-section{margin-bottom:4px}
-.kb-input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:14px;background:var(--bg-input,var(--bg-card));color:var(--ink);outline:none;font-family:inherit;box-sizing:border-box;transition:border-color .15s}
+.kb-input{width:100%;padding:10px 14px;height:44px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:14px;background:var(--bg-input,var(--bg-card));color:var(--ink);outline:none;font-family:inherit;box-sizing:border-box;transition:border-color .15s}
 .kb-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.12)}
 .kb-label{font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:6px;display:block}
 .kb-priority-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);background:none;color:var(--ink-muted);cursor:pointer;transition:all .15s;font-family:inherit}
@@ -2843,7 +2843,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.8</div>
+        <div class="sidebar-version">v1.4.9</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4937,7 +4937,7 @@ canvas{display:block;margin:0 auto 24px}
       collecting:{label:'催收中',color:'var(--rose)',bg:'rgba(217,68,98,.2)'},
       new:{label:'新客戶',color:'var(--primary)',bg:'var(--primary-light)'}
     };
-    var TYPE_MAP = {customer:'客戶',vendor:'廠商',partner:'合作夥伴',lead:'潛在客戶'};
+    var TYPE_MAP = {customer:'客戶',outsource:'外包夥伴',vendor:'廠商',partner:'合作夥伴',lead:'潛在客戶'};
     var TXN_TYPES = {deal:'案件',proposal:'報價',invoice:'發票',ar:'應收'};
     var TXN_COLORS = {deal:'var(--primary)',proposal:'var(--teal)',invoice:'var(--gold)',ar:'var(--rose)'};
 
@@ -4951,21 +4951,25 @@ canvas{display:block;margin:0 auto 24px}
       alert:'<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 3l8 14H2z"/><line x1="10" y1="9" x2="10" y2="12"/><circle cx="10" cy="14.5" r=".5" fill="currentColor"/></svg>'
     };
 
-    // ── Filters ──
-    var filters = [
+    // ── Filters (primary = type pills, secondary = status dropdown) ──
+    var typePills = [
       {id:'all',label:'全部'},
+      {id:'customer',label:'客戶'},
+      {id:'outsource',label:'外包夥伴'},
+      {id:'vendor',label:'廠商'},
+      {id:'partner',label:'合作夥伴'},
+      {id:'lead',label:'潛在客戶'}
+    ];
+    var statusFilters = [
       {id:'vip',label:'優質客戶'},
       {id:'overdue',label:'逾期警示'},
       {id:'at_risk',label:'高風險'},
       {id:'collecting',label:'催收中'},
-      {id:'customer',label:'客戶',isType:true},
-      {id:'vendor',label:'廠商',isType:true},
-      {id:'partner',label:'合作夥伴',isType:true},
-      {id:'lead',label:'潛在客戶',isType:true},
       {id:'has_txn',label:'有交易'},
       {id:'no_txn',label:'無交易'}
     ];
     var activeFilter = window._ctFilter || 'all';
+    var activeStatusFilters = window._ctStatusFilters || [];
 
     function renderBoard(){
       var sq = (window._ctSearch||'').toLowerCase();
@@ -4978,12 +4982,29 @@ canvas{display:block;margin:0 auto 24px}
       html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">管理客戶資訊、追蹤交易紀錄</span>';
       html += '</div></div>';
 
-      // Action row: Filter pills + Search + Buttons
+      // Action row: Type pills + Status dropdown + Search + Buttons
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">';
-      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;flex:1">';
-      filters.forEach(function(f){
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex:1">';
+      typePills.forEach(function(f){
         html += '<button class="ct-filter-btn' + (activeFilter===f.id?' active':'') + '" onclick="window._ctSetFilter(\'' + f.id + '\')">' + f.label + '</button>';
       });
+      // Status dropdown multi-select
+      var hasStatusActive = activeStatusFilters.length > 0;
+      html += '<div style="position:relative;display:inline-block" id="ctStatusDrop">';
+      html += '<button class="ct-filter-btn' + (hasStatusActive ? ' active' : '') + '" id="ctStatusToggle" style="display:flex;align-items:center;gap:4px">';
+      html += '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4h14M5 8h10M7 12h6M9 16h2"/></svg>';
+      html += hasStatusActive ? '狀態 (' + activeStatusFilters.length + ')' : '狀態篩選';
+      html += '</button>';
+      html += '<div id="ctStatusList" style="display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:160px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;padding:6px 0">';
+      statusFilters.forEach(function(sf){
+        var checked = activeStatusFilters.indexOf(sf.id) !== -1;
+        html += '<label style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;color:var(--ink);cursor:pointer;transition:background .1s" onmouseenter="this.style.background=\'var(--primary-light)\'" onmouseleave="this.style.background=\'transparent\'">';
+        html += '<input type="checkbox" ' + (checked ? 'checked' : '') + ' data-status-filter="' + sf.id + '" style="width:15px;height:15px;accent-color:var(--primary);cursor:pointer"/>';
+        html += sf.label + '</label>';
+      });
+      html += '<div style="border-top:1px solid var(--border);margin-top:4px;padding:6px 14px 2px">';
+      html += '<button style="background:none;border:none;color:var(--ink-muted);font-size:12px;cursor:pointer;font-family:inherit;padding:0" id="ctStatusClear">清除篩選</button>';
+      html += '</div></div></div>';
       html += '</div>';
       html += bpSearchBar('ctSearchInput', window._ctSearch||'', '搜尋客戶…');
       html += '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">';
@@ -4999,15 +5020,19 @@ canvas{display:block;margin:0 auto 24px}
           var match = (c.name||'').toLowerCase().includes(sq) || (c.contactPerson||'').toLowerCase().includes(sq) || (c.email||'').toLowerCase().includes(sq) || (c.phone||'').includes(sq);
           if(!match) return false;
         }
-        // Filter
-        if(activeFilter === 'all') return true;
-        if(activeFilter === 'has_txn') return (c.transactions||[]).length > 0;
-        if(activeFilter === 'no_txn') return (c.transactions||[]).length === 0;
-        // Type filters
-        var fDef = filters.find(function(f){return f.id===activeFilter;});
-        if(fDef && fDef.isType) return c.type === activeFilter;
-        // Status filters
-        return c.status === activeFilter;
+        // Type pill filter
+        if(activeFilter !== 'all' && c.type !== activeFilter) return false;
+        // Status multi-select filter (AND logic — must match all selected)
+        if(activeStatusFilters.length > 0){
+          var pass = true;
+          activeStatusFilters.forEach(function(sf){
+            if(sf === 'has_txn'){ if((c.transactions||[]).length === 0) pass = false; }
+            else if(sf === 'no_txn'){ if((c.transactions||[]).length > 0) pass = false; }
+            else { if(c.status !== sf) pass = false; }
+          });
+          if(!pass) return false;
+        }
+        return true;
       });
 
       // Cards grid
@@ -5068,6 +5093,7 @@ canvas{display:block;margin:0 auto 24px}
 
       content.innerHTML = html;
       _ctBindSearch();
+      _ctBindStatusDropdown();
     }
 
     // ── Search (IME-safe) ──
@@ -5079,6 +5105,47 @@ canvas{display:block;margin:0 auto 24px}
       inp.addEventListener('compositionend',function(){composing=false;window._ctSearch=inp.value;renderBoard();});
       inp.addEventListener('input',function(){if(!composing){window._ctSearch=inp.value;renderBoard();}});
       if(window._ctSearch){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+    }
+
+    // ── Status dropdown multi-select ──
+    function _ctBindStatusDropdown(){
+      var toggle = document.getElementById('ctStatusToggle');
+      var list = document.getElementById('ctStatusList');
+      var drop = document.getElementById('ctStatusDrop');
+      if(!toggle || !list) return;
+      toggle.addEventListener('click', function(e){
+        e.stopPropagation();
+        var open = list.style.display !== 'none';
+        list.style.display = open ? 'none' : 'block';
+      });
+      // Checkboxes
+      var cbs = list.querySelectorAll('[data-status-filter]');
+      for(var ci=0; ci<cbs.length; ci++){
+        cbs[ci].addEventListener('change', function(){
+          var sfId = this.getAttribute('data-status-filter');
+          if(this.checked){
+            if(activeStatusFilters.indexOf(sfId)===-1) activeStatusFilters.push(sfId);
+          } else {
+            activeStatusFilters = activeStatusFilters.filter(function(x){return x!==sfId;});
+          }
+          window._ctStatusFilters = activeStatusFilters;
+          renderBoard();
+        });
+      }
+      // Clear button
+      var clearBtn = document.getElementById('ctStatusClear');
+      if(clearBtn) clearBtn.addEventListener('click', function(){
+        activeStatusFilters = [];
+        window._ctStatusFilters = [];
+        renderBoard();
+      });
+      // Close on outside click
+      document.addEventListener('click', function _ctCloseStatusDrop(e){
+        if(drop && !drop.contains(e.target)){
+          if(list) list.style.display = 'none';
+          document.removeEventListener('click', _ctCloseStatusDrop);
+        }
+      });
     }
 
     // ── Contact Modal (Add/Edit) ──
@@ -5108,39 +5175,54 @@ canvas{display:block;margin:0 auto 24px}
         txnListHtml += '</div>';
       }
 
-      ov.innerHTML = '<div class="kb-modal" style="width:700px" onclick="event.stopPropagation()">' +
-        '<div class="kb-modal-header">' +
-          '<h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink)">' + (isEdit?'編輯客戶':'新增客戶') + '</h3>' +
-          '<button style="background:none;border:none;color:var(--ink-muted);font-size:24px;cursor:pointer;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-family:inherit" id="ctCloseBtn">×</button>' +
-        '</div>' +
-        '<div class="kb-modal-2col">' +
-          '<div style="flex:3;min-width:0">' +
-            '<div style="display:flex;flex-direction:column;gap:14px">' +
-              '<div><label class="kb-label">公司 / 客戶名稱 *</label><input type="text" id="ctF_name" class="kb-input" value="'+(ct?(ct.name||'').replace(/"/g,'&quot;'):'')+'" placeholder="輸入名稱…"></div>' +
-              '<div><label class="kb-label">聯絡人</label><input type="text" id="ctF_person" class="kb-input" value="'+(ct?(ct.contactPerson||'').replace(/"/g,'&quot;'):'')+'" placeholder="姓名"></div>' +
-              '<div><label class="kb-label">Email</label><input type="email" id="ctF_email" class="kb-input" value="'+(ct?(ct.email||'').replace(/"/g,'&quot;'):'')+'" placeholder="email@example.com"></div>' +
-              '<div><label class="kb-label">電話</label><input type="tel" id="ctF_phone" class="kb-input" value="'+(ct?(ct.phone||'').replace(/"/g,'&quot;'):'')+'" placeholder="09xx-xxx-xxx"></div>' +
-              '<div><label class="kb-label">備註</label><textarea id="ctF_notes" class="kb-input" rows="2" style="height:auto;resize:vertical" placeholder="補充說明（選填）">'+(ct?ct.notes||'':'')+'</textarea></div>' +
-            '</div>' +
-          '</div>' +
-          '<div style="flex:2;min-width:0;border-left:1px solid var(--border);padding-left:20px">' +
-            '<div style="display:flex;flex-direction:column;gap:14px">' +
-              '<div><label class="kb-label">類型</label>' + bpSelect({id:'ctF_type', options: Object.keys(TYPE_MAP).map(function(k){return {value:k, label:TYPE_MAP[k], selected:(ct?ct.type:'customer')===k};})}) + '</div>' +
-              '<div><label class="kb-label">狀態</label>' + bpSelect({id:'ctF_status', options: Object.keys(STATUS_MAP).map(function(k){return {value:k, label:STATUS_MAP[k].label, selected:(ct?ct.status:'new')===k};})}) + '</div>' +
-              (isEdit ? '<div style="border-top:1px solid var(--border);padding-top:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><label class="kb-label" style="margin:0">交易紀錄</label><button style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit" onclick="window._ctAddTxn(\''+ct.id+'\')">+ 新增</button></div>' + txnListHtml + '</div>' : '') +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="kb-modal-footer">' +
-          '<div>' +
-            (isEdit?'<button style="background:none;border:none;color:var(--rose);font-size:13px;cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit" onmouseover="this.style.background=\'rgba(217,68,98,.08)\'" onmouseout="this.style.background=\'none\'" id="ctArchiveBtn">封存</button>':'') +
-          '</div>' +
-          '<div style="display:flex;gap:10px;align-items:center">' +
-            '<button class="btn btn-ghost" style="padding:8px 20px" id="ctCancelBtn">取消</button>' +
-            '<button class="btn btn-accent" style="padding:8px 24px" id="ctSaveBtn">'+(isEdit?'儲存':'新增')+'</button>' +
-          '</div>' +
-        '</div>' +
-      '</div>';
+      var modalHtml = '<div class="kb-modal" style="width:580px" onclick="event.stopPropagation()">';
+      modalHtml += '<div class="kb-modal-header">';
+      modalHtml += '<h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink)">' + (isEdit?'編輯客戶':'新增客戶') + '</h3>';
+      modalHtml += '<button style="background:none;border:none;color:var(--ink-muted);font-size:24px;cursor:pointer;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-family:inherit" id="ctCloseBtn">&times;</button>';
+      modalHtml += '</div>';
+      // Body — single column flow
+      modalHtml += '<div style="padding:24px 32px;display:flex;flex-direction:column;gap:16px;max-height:calc(90vh - 140px);overflow-y:auto">';
+      // Row 1: Name + Type
+      modalHtml += '<div style="display:grid;grid-template-columns:1fr 160px;gap:12px;align-items:end">';
+      modalHtml += '<div><label class="kb-label">公司 / 客戶名稱 <span style="color:var(--rose)">*</span></label><input type="text" id="ctF_name" class="kb-input" value="'+(ct?(ct.name||'').replace(/"/g,'&quot;'):'')+'" placeholder="輸入名稱…"></div>';
+      modalHtml += '<div><label class="kb-label">類型</label>' + bpSelect({id:'ctF_type', options: Object.keys(TYPE_MAP).map(function(k){return {value:k, label:TYPE_MAP[k], selected:(ct?ct.type:'customer')===k};})}) + '</div>';
+      modalHtml += '</div>';
+      // Row 2: Contact Person + Status
+      modalHtml += '<div style="display:grid;grid-template-columns:1fr 160px;gap:12px;align-items:end">';
+      modalHtml += '<div><label class="kb-label">聯絡人</label><input type="text" id="ctF_person" class="kb-input" value="'+(ct?(ct.contactPerson||'').replace(/"/g,'&quot;'):'')+'" placeholder="姓名"></div>';
+      modalHtml += '<div><label class="kb-label">狀態</label>' + bpSelect({id:'ctF_status', options: Object.keys(STATUS_MAP).map(function(k){return {value:k, label:STATUS_MAP[k].label, selected:(ct?ct.status:'new')===k};})}) + '</div>';
+      modalHtml += '</div>';
+      // Row 3: Email + Phone
+      modalHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+      modalHtml += '<div><label class="kb-label">Email</label><input type="email" id="ctF_email" class="kb-input" value="'+(ct?(ct.email||'').replace(/"/g,'&quot;'):'')+'" placeholder="email@example.com"></div>';
+      modalHtml += '<div><label class="kb-label">電話</label><input type="tel" id="ctF_phone" class="kb-input" value="'+(ct?(ct.phone||'').replace(/"/g,'&quot;'):'')+'" placeholder="09xx-xxx-xxx"></div>';
+      modalHtml += '</div>';
+      // Row 4: Notes
+      modalHtml += '<div><label class="kb-label">備註</label><textarea id="ctF_notes" class="kb-input" rows="2" style="height:auto;resize:vertical;min-height:64px" placeholder="補充說明（選填）">'+(ct?ct.notes||'':'')+'</textarea></div>';
+      // Transactions section (edit mode only)
+      if(isEdit && (ct.transactions||[]).length > 0){
+        modalHtml += '<div style="border-top:1px solid var(--border);padding-top:16px">';
+        modalHtml += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><label class="kb-label" style="margin:0">交易紀錄</label><button style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit" onclick="window._ctAddTxn(\''+ct.id+'\')">+ 新增</button></div>';
+        modalHtml += txnListHtml;
+        modalHtml += '</div>';
+      } else if(isEdit){
+        modalHtml += '<div style="border-top:1px solid var(--border);padding-top:16px">';
+        modalHtml += '<div style="display:flex;align-items:center;justify-content:space-between"><label class="kb-label" style="margin:0">交易紀錄</label><button style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit" onclick="window._ctAddTxn(\''+ct.id+'\')">+ 新增</button></div>';
+        modalHtml += '<div style="font-size:12px;color:var(--ink-muted);margin-top:8px">尚無交易紀錄</div>';
+        modalHtml += '</div>';
+      }
+      modalHtml += '</div>';
+      // Footer
+      modalHtml += '<div class="kb-modal-footer">';
+      modalHtml += '<div>';
+      if(isEdit) modalHtml += '<button style="background:none;border:none;color:var(--rose);font-size:13px;cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit;transition:background .15s" onmouseover="this.style.background=\'rgba(217,68,98,.08)\'" onmouseout="this.style.background=\'none\'" id="ctArchiveBtn">封存</button>';
+      modalHtml += '</div>';
+      modalHtml += '<div style="display:flex;gap:10px;align-items:center">';
+      modalHtml += '<button class="btn btn-ghost" style="padding:8px 20px" id="ctCancelBtn">取消</button>';
+      modalHtml += '<button class="btn btn-accent" style="padding:8px 24px" id="ctSaveBtn">'+(isEdit?'儲存':'新增')+'</button>';
+      modalHtml += '</div></div>';
+      modalHtml += '</div>';
+      ov.innerHTML = modalHtml;
 
       document.body.appendChild(ov);
 
@@ -5939,7 +6021,7 @@ canvas{display:block;margin:0 auto 24px}
         h += '</div>';
 
         // ── Client type filter tabs ──
-        var clientTypes = [{id:'all',label:'全部'},{id:'customer',label:'客戶'},{id:'vendor',label:'廠商'},{id:'partner',label:'合作夥伴'},{id:'lead',label:'潛在客戶'}];
+        var clientTypes = [{id:'all',label:'全部'},{id:'customer',label:'客戶'},{id:'outsource',label:'外包夥伴'},{id:'vendor',label:'廠商'},{id:'partner',label:'合作夥伴'},{id:'lead',label:'潛在客戶'}];
         var activeClientType = q._clientFilter || 'all';
         h += '<div>';
         h += '<label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:600">客戶資料</label>';
@@ -14171,8 +14253,11 @@ function loadHistory(){
     function mtId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
     var meetings = getMeetings();
+    var contacts = [];
+    try { contacts = JSON.parse(localStorage.getItem('bp_contacts') || '[]'); } catch(e){}
 
     function renderList(){
+      var sq = (window._mtSearch || '').toLowerCase();
       var html = '';
       // Header
       html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
@@ -14180,136 +14265,210 @@ function loadHistory(){
       html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="5"/><line x1="13" y1="2" x2="13" y2="5"/></svg> 會議紀錄</h2>';
       html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">記錄每次溝通，不遺漏任何承諾</span>';
       html += '</div>';
-      html += '<button class="btn btn-accent" style="padding:8px 18px;font-size:13px" onclick="window._mtAdd()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增會議</button>';
-      html += '</div>';
+      html += '<div style="display:flex;gap:8px;align-items:center">';
+      html += bpSearchBar('mtSearchInput', window._mtSearch||'', '搜尋會議…');
+      html += '<button class="btn btn-accent" style="padding:8px 18px;font-size:13px;white-space:nowrap" onclick="window._mtShowModal()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增會議</button>';
+      html += '</div></div>';
 
-      if(meetings.length === 0){
+      // Filter by search
+      var filtered = meetings;
+      if(sq){
+        filtered = meetings.filter(function(m){
+          return (m.title||'').toLowerCase().indexOf(sq)!==-1 || (m.attendees||'').toLowerCase().indexOf(sq)!==-1 || (m.client||'').toLowerCase().indexOf(sq)!==-1 || (m.notes||'').toLowerCase().indexOf(sq)!==-1;
+        });
+      }
+      filtered.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+
+      if(filtered.length === 0){
         html += '<div style="text-align:center;padding:80px 20px">';
         html += '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(124,92,252,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid rgba(124,92,252,.15)">';
         html += '<svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/></svg>';
         html += '</div>';
-        html += '<div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px">尚無會議紀錄</div>';
-        html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6">點擊「新增會議」開始記錄<br>每一筆溝通的重要細節</div>';
+        html += '<div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px">' + (sq ? '找不到符合條件的會議' : '尚無會議紀錄') + '</div>';
+        html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6">' + (sq ? '試試其他關鍵字' : '點擊「新增會議」開始記錄<br>每一筆溝通的重要細節') + '</div>';
         html += '</div>';
       } else {
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px">';
-        meetings.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
-        meetings.forEach(function(m){
-          html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:all .18s" onclick="window._mtEdit(\'' + m.id + '\')" onmouseenter="this.style.borderColor=\'var(--primary)\';this.style.transform=\'translateY(-1px)\'" onmouseleave="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\'">';
+        filtered.forEach(function(m){
+          var actionCount = (m.actionItems||[]).length;
+          var doneCount = actionCount > 0 ? m.actionItems.filter(function(a){ return a.done; }).length : 0;
+          html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:all .18s" onclick="window._mtShowModal(\'' + m.id + '\')" onmouseenter="this.style.borderColor=\'var(--primary)\';this.style.boxShadow=\'0 4px 12px rgba(124,92,252,.08)\'" onmouseleave="this.style.borderColor=\'var(--border)\';this.style.boxShadow=\'none\'">';
           html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
           html += '<div style="font-size:15px;font-weight:600;color:var(--ink)">' + (m.title || '未命名會議') + '</div>';
           if(m.date) html += '<div style="font-size:12px;color:var(--ink-muted)">' + m.date + '</div>';
           html += '</div>';
-          if(m.attendees) html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">參與者：' + m.attendees + '</div>';
-          if(m.notes) html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">' + m.notes.replace(/\n/g,'<br>') + '</div>';
-          if(m.actionItems && m.actionItems.length > 0){
-            var done = m.actionItems.filter(function(a){ return a.done; }).length;
-            html += '<div style="margin-top:8px;font-size:11px;color:var(--primary);font-weight:600">待辦 ' + done + '/' + m.actionItems.length + '</div>';
+          var meta = [];
+          if(m.client) meta.push(m.client);
+          if(m.attendees) meta.push(m.attendees);
+          if(meta.length) html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">' + meta.join(' · ') + '</div>';
+          if(m.notes) html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + m.notes.replace(/\n/g,' ') + '</div>';
+          if(actionCount > 0){
+            var pct = Math.round(doneCount/actionCount*100);
+            html += '<div style="margin-top:10px;display:flex;align-items:center;gap:8px">';
+            html += '<div style="flex:1;height:4px;border-radius:2px;background:var(--border);overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--primary);border-radius:2px;transition:width .3s"></div></div>';
+            html += '<span style="font-size:11px;color:var(--primary);font-weight:600;white-space:nowrap">' + doneCount + '/' + actionCount + '</span>';
+            html += '</div>';
           }
           html += '</div>';
         });
         html += '</div>';
       }
       content.innerHTML = html;
+      // Bind search
+      var inp = document.getElementById('mtSearchInput');
+      if(inp){
+        var composing = false;
+        inp.addEventListener('compositionstart',function(){composing=true;});
+        inp.addEventListener('compositionend',function(){composing=false;window._mtSearch=inp.value;renderList();});
+        inp.addEventListener('input',function(){if(!composing){window._mtSearch=inp.value;renderList();}});
+        if(window._mtSearch){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+      }
     }
 
-    window._mtAdd = function(){
-      var m = { id: mtId(), title: '', date: new Date().toISOString().slice(0,10), attendees: '', notes: '', actionItems: [], createdAt: new Date().toISOString() };
-      meetings.unshift(m);
-      saveMeetings(meetings);
-      window._mtEdit(m.id);
+    // ── Meeting Modal (Add / Edit) ──
+    window._mtShowModal = function(id){
+      var m = id ? meetings.find(function(x){ return x.id === id; }) : null;
+      var isEdit = !!m;
+      if(!m){
+        m = { id: mtId(), title: '', date: new Date().toISOString().slice(0,10), client: '', attendees: '', notes: '', actionItems: [], createdAt: new Date().toISOString() };
+      }
+
+      var ov = document.createElement('div');
+      ov.className = 'kb-modal-overlay';
+      ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
+
+      function buildModal(){
+        var h = '<div class="kb-modal" style="width:640px" onclick="event.stopPropagation()">';
+        h += '<div class="kb-modal-header">';
+        h += '<h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink)">' + (isEdit ? '編輯會議紀錄' : '新增會議紀錄') + '</h3>';
+        h += '<button style="background:none;border:none;color:var(--ink-muted);font-size:24px;cursor:pointer;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center" id="mtCloseBtn">&times;</button>';
+        h += '</div>';
+        h += '<div style="padding:24px 32px;display:flex;flex-direction:column;gap:16px;max-height:calc(90vh - 140px);overflow-y:auto">';
+        // Title
+        h += '<div><label class="kb-label">會議標題 <span style="color:var(--rose)">*</span></label><input class="kb-input" id="mtTitle" value="' + (m.title||'').replace(/"/g,'&quot;') + '" placeholder="e.g. 產品需求討論會議"/></div>';
+        // Row: Date + Client + Attendees
+        h += '<div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:12px">';
+        h += '<div><label class="kb-label">日期</label><input class="kb-input" type="date" id="mtDate" value="' + (m.date||'') + '" style="height:44px"/></div>';
+        h += '<div><label class="kb-label">關聯客戶</label><input class="kb-input" id="mtClient" value="' + (m.client||'').replace(/"/g,'&quot;') + '" placeholder="客戶名稱" list="mtClientList"/>';
+        h += '<datalist id="mtClientList">';
+        contacts.forEach(function(c){ h += '<option value="' + (c.name||c.company||'').replace(/"/g,'&quot;') + '">'; });
+        h += '</datalist></div>';
+        h += '<div><label class="kb-label">參與者</label><input class="kb-input" id="mtAttendees" value="' + (m.attendees||'').replace(/"/g,'&quot;') + '" placeholder="Edward, PM, 設計師"/></div>';
+        h += '</div>';
+        // Notes
+        h += '<div><label class="kb-label">會議筆記</label><textarea class="kb-input" id="mtNotes" rows="6" style="height:auto;resize:vertical;min-height:100px" placeholder="討論內容、決策、重要細節…">' + (m.notes||'') + '</textarea></div>';
+        // Action items
+        h += '<div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><label class="kb-label" style="margin:0">待辦事項</label>';
+        h += '<button style="background:none;border:none;color:var(--primary);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px" id="mtAddActionBtn"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增</button></div>';
+        h += '<div id="mtActionsWrap">';
+        if((m.actionItems||[]).length === 0){
+          h += '<div style="font-size:12px;color:var(--ink-muted);padding:8px 0">點擊「新增」新增待辦事項</div>';
+        } else {
+          m.actionItems.forEach(function(a,i){
+            h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px" data-action-idx="'+i+'">';
+            h += '<input type="checkbox" data-action-check="'+i+'" ' + (a.done?'checked':'') + ' style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;flex-shrink:0"/>';
+            h += '<input class="kb-input" data-action-text="'+i+'" value="' + (a.text||'').replace(/"/g,'&quot;') + '" style="flex:1;height:36px;font-size:13px" placeholder="待辦事項…"/>';
+            h += '<button style="background:none;border:none;color:var(--ink-dim);cursor:pointer;padding:2px;font-size:16px;line-height:1" data-action-del="'+i+'" title="移除">&times;</button>';
+            h += '</div>';
+          });
+        }
+        h += '</div></div>';
+        h += '</div>';
+        // Footer
+        h += '<div class="kb-modal-footer">';
+        h += '<div>';
+        if(isEdit) h += '<button style="background:none;border:none;color:var(--rose);font-size:13px;cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit;transition:background .15s" onmouseover="this.style.background=\'rgba(217,68,98,.08)\'" onmouseout="this.style.background=\'none\'" id="mtDeleteBtn">刪除</button>';
+        h += '</div>';
+        h += '<div style="display:flex;gap:10px;align-items:center">';
+        h += '<button class="btn btn-ghost" style="padding:8px 20px" id="mtCancelBtn">取消</button>';
+        h += '<button class="btn btn-accent" style="padding:8px 24px" id="mtSaveBtn">' + (isEdit?'儲存':'新增') + '</button>';
+        h += '</div></div>';
+        h += '</div>';
+        return h;
+      }
+
+      function wireModal(){
+        ov.querySelector('#mtCloseBtn').addEventListener('click', function(){ ov.remove(); });
+        ov.querySelector('#mtCancelBtn').addEventListener('click', function(){ ov.remove(); });
+        // Save
+        ov.querySelector('#mtSaveBtn').addEventListener('click', function(){
+          var title = ov.querySelector('#mtTitle').value.trim();
+          if(!title){ ov.querySelector('#mtTitle').style.borderColor='var(--rose)'; return; }
+          m.title = title;
+          m.date = ov.querySelector('#mtDate').value;
+          m.client = ov.querySelector('#mtClient').value.trim();
+          m.attendees = ov.querySelector('#mtAttendees').value.trim();
+          m.notes = ov.querySelector('#mtNotes').value;
+          // Sync action items from DOM
+          var actionTexts = ov.querySelectorAll('[data-action-text]');
+          var actionChecks = ov.querySelectorAll('[data-action-check]');
+          for(var ai=0; ai<actionTexts.length; ai++){
+            var idx = parseInt(actionTexts[ai].getAttribute('data-action-text'));
+            if(m.actionItems[idx]){
+              m.actionItems[idx].text = actionTexts[ai].value;
+            }
+          }
+          for(var ci2=0; ci2<actionChecks.length; ci2++){
+            var idx2 = parseInt(actionChecks[ci2].getAttribute('data-action-check'));
+            if(m.actionItems[idx2]){
+              m.actionItems[idx2].done = actionChecks[ci2].checked;
+            }
+          }
+          if(!isEdit){
+            meetings.unshift(m);
+          }
+          saveMeetings(meetings);
+          showToast('會議紀錄已儲存');
+          ov.remove();
+          renderList();
+        });
+        // Delete
+        var delBtn = ov.querySelector('#mtDeleteBtn');
+        if(delBtn) delBtn.addEventListener('click', function(){
+          if(!confirm('確定刪除這筆會議紀錄？')) return;
+          meetings = meetings.filter(function(x){ return x.id !== m.id; });
+          saveMeetings(meetings);
+          showToast('已刪除');
+          ov.remove();
+          renderList();
+        });
+        // Add action item
+        ov.querySelector('#mtAddActionBtn').addEventListener('click', function(){
+          if(!m.actionItems) m.actionItems = [];
+          m.actionItems.push({ text: '', done: false });
+          ov.innerHTML = buildModal();
+          wireModal();
+          // Focus last action input
+          var lastInputs = ov.querySelectorAll('[data-action-text]');
+          if(lastInputs.length) lastInputs[lastInputs.length-1].focus();
+        });
+        // Delete action items
+        var delBtns = ov.querySelectorAll('[data-action-del]');
+        for(var di=0; di<delBtns.length; di++){
+          delBtns[di].addEventListener('click', function(){
+            var idx3 = parseInt(this.getAttribute('data-action-del'));
+            m.actionItems.splice(idx3, 1);
+            ov.innerHTML = buildModal();
+            wireModal();
+          });
+        }
+        // Focus title
+        setTimeout(function(){ var t=ov.querySelector('#mtTitle'); if(t && !t.value) t.focus(); },50);
+      }
+
+      ov.innerHTML = buildModal();
+      document.body.appendChild(ov);
+      wireModal();
     };
 
-    window._mtEdit = function(id){
-      var m = meetings.find(function(x){ return x.id === id; });
-      if(!m) return;
-      var html = '';
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">';
-      html += '<button class="btn btn-ghost" style="font-size:13px" onclick="window._mtBack()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="12,4 6,10 12,16"/></svg> 返回列表</button>';
-      html += '<button class="btn btn-ghost" style="font-size:12px;color:var(--rose)" onclick="window._mtDelete(\'' + m.id + '\')">刪除</button>';
-      html += '</div>';
-      html += '<div style="display:grid;gap:16px;max-width:720px">';
-      html += '<div><label class="qt-v2-label">會議標題</label><input class="qt-v2-input" id="mtTitle" value="' + (m.title||'').replace(/"/g,'&quot;') + '" placeholder="e.g. 客戶需求會議"/></div>';
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
-      html += '<div><label class="qt-v2-label">日期</label><input class="qt-v2-input" type="date" id="mtDate" value="' + (m.date||'') + '"/></div>';
-      html += '<div><label class="qt-v2-label">參與者</label><input class="qt-v2-input" id="mtAttendees" value="' + (m.attendees||'').replace(/"/g,'&quot;') + '" placeholder="Edward, 客戶方 PM"/></div>';
-      html += '</div>';
-      html += '<div><label class="qt-v2-label">會議筆記</label><textarea class="qt-v2-input" id="mtNotes" rows="8" style="resize:vertical;min-height:120px" placeholder="討論內容、決策、重要細節…">' + (m.notes||'') + '</textarea></div>';
-      // Action items
-      html += '<div><label class="qt-v2-label">待辦事項</label>';
-      html += '<div id="mtActions">';
-      (m.actionItems||[]).forEach(function(a, i){
-        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
-        html += '<input type="checkbox" ' + (a.done?'checked':'') + ' onchange="window._mtToggleAction(\'' + m.id + '\',' + i + ')" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer"/>';
-        html += '<input class="qt-v2-input" value="' + (a.text||'').replace(/"/g,'&quot;') + '" onchange="window._mtUpdateAction(\'' + m.id + '\',' + i + ',this.value)" style="flex:1"/>';
-        html += '<button class="kb-btn-x" onclick="window._mtRemoveAction(\'' + m.id + '\',' + i + ')"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button>';
-        html += '</div>';
-      });
-      html += '</div>';
-      html += '<button class="btn btn-ghost" style="font-size:12px;margin-top:4px" onclick="window._mtAddAction(\'' + m.id + '\')"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增待辦</button>';
-      html += '</div>';
-      html += '<button class="btn btn-accent" style="padding:10px 24px;font-size:14px;margin-top:8px" onclick="window._mtSave(\'' + m.id + '\')">儲存</button>';
-      html += '</div>';
-      content.innerHTML = html;
-    };
-
-    window._mtSave = function(id){
-      var m = meetings.find(function(x){ return x.id === id; });
-      if(!m) return;
-      m.title = document.getElementById('mtTitle').value;
-      m.date = document.getElementById('mtDate').value;
-      m.attendees = document.getElementById('mtAttendees').value;
-      m.notes = document.getElementById('mtNotes').value;
-      saveMeetings(meetings);
-      showToast('會議紀錄已儲存');
-      renderList();
-    };
-
-    window._mtDelete = function(id){
-      if(!confirm('確定刪除這筆會議紀錄？')) return;
-      meetings = meetings.filter(function(x){ return x.id !== id; });
-      saveMeetings(meetings);
-      showToast('已刪除');
-      renderList();
-    };
-
-    window._mtBack = function(){ renderList(); };
-
-    window._mtAddAction = function(id){
-      var m = meetings.find(function(x){ return x.id === id; });
-      if(!m) return;
-      if(!m.actionItems) m.actionItems = [];
-      m.actionItems.push({ text: '', done: false });
-      saveMeetings(meetings);
-      window._mtEdit(id);
-    };
-
-    window._mtToggleAction = function(id, idx){
-      var m = meetings.find(function(x){ return x.id === id; });
-      if(!m || !m.actionItems[idx]) return;
-      m.actionItems[idx].done = !m.actionItems[idx].done;
-      saveMeetings(meetings);
-    };
-
-    window._mtUpdateAction = function(id, idx, val){
-      var m = meetings.find(function(x){ return x.id === id; });
-      if(!m || !m.actionItems[idx]) return;
-      m.actionItems[idx].text = val;
-      saveMeetings(meetings);
-    };
-
-    window._mtRemoveAction = function(id, idx){
-      var m = meetings.find(function(x){ return x.id === id; });
-      if(!m) return;
-      m.actionItems.splice(idx, 1);
-      saveMeetings(meetings);
-      window._mtEdit(id);
-    };
+    // Legacy compat
+    window._mtAdd = function(){ window._mtShowModal(); };
+    window._mtEdit = function(id){ window._mtShowModal(id); };
 
     renderList();
   }
 
-  // ==================== MODULE: DOCS (vanilla JS v1.0) ====================
+  // ==================== MODULE: DOCS (vanilla JS v2.0 — modal based) ====================
   function renderDocs() {
     var content = document.getElementById('content');
     var mainEl = document.getElementById('main');
@@ -14323,6 +14482,8 @@ function loadHistory(){
     function dcId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
     var docs = getDocs();
+    var contacts = [];
+    try { contacts = JSON.parse(localStorage.getItem('bp_contacts') || '[]'); } catch(e){}
     var DOC_TYPES = [
       { id: 'contract', label: '合約', color: '#7C5CFC' },
       { id: 'proposal', label: '提案', color: '#1BA891' },
@@ -14334,14 +14495,18 @@ function loadHistory(){
     var filterType = window._dcFilter || 'all';
 
     function renderList(){
+      var sq = (window._dcSearch || '').toLowerCase();
       var html = '';
+      // Header
       html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
       html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
       html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><polyline points="10,2 10,8 16,8"/></svg> 文件庫</h2>';
       html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">集中管理所有商業文件</span>';
       html += '</div>';
-      html += '<button class="btn btn-accent" style="padding:8px 18px;font-size:13px" onclick="window._dcAdd()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 上傳文件</button>';
-      html += '</div>';
+      html += '<div style="display:flex;gap:8px;align-items:center">';
+      html += bpSearchBar('dcSearchInput', window._dcSearch||'', '搜尋文件…');
+      html += '<button class="btn btn-accent" style="padding:8px 18px;font-size:13px;white-space:nowrap" onclick="window._dcShowModal()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增文件</button>';
+      html += '</div></div>';
 
       // Filter bar
       html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">';
@@ -14352,7 +14517,13 @@ function loadHistory(){
       });
       html += '</div>';
 
+      // Filter
       var filtered = filterType === 'all' ? docs : docs.filter(function(d){ return d.type === filterType; });
+      if(sq){
+        filtered = filtered.filter(function(d){
+          return (d.name||'').toLowerCase().indexOf(sq)!==-1 || (d.client||'').toLowerCase().indexOf(sq)!==-1 || (d.notes||'').toLowerCase().indexOf(sq)!==-1 || (d.fileName||'').toLowerCase().indexOf(sq)!==-1;
+        });
+      }
       filtered.sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
 
       if(filtered.length === 0){
@@ -14360,14 +14531,16 @@ function loadHistory(){
         html += '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(124,92,252,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid rgba(124,92,252,.15)">';
         html += '<svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.3" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>';
         html += '</div>';
-        html += '<div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px">尚無文件</div>';
-        html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6">點擊「上傳文件」開始建立<br>你的商業文件庫</div>';
+        html += '<div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px">' + (sq ? '找不到符合條件的文件' : '尚無文件') + '</div>';
+        html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6">' + (sq ? '試試其他關鍵字' : '點擊「新增文件」開始建立<br>你的商業文件庫') + '</div>';
         html += '</div>';
       } else {
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">';
         filtered.forEach(function(d){
           var typeObj = DOC_TYPES.find(function(t){ return t.id === d.type; }) || DOC_TYPES[4];
-          html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:all .18s" onclick="window._dcEdit(\'' + d.id + '\')" onmouseenter="this.style.borderColor=\'var(--primary)\';this.style.transform=\'translateY(-1px)\'" onmouseleave="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\'">';
+          var hasFile = !!(d.fileName);
+          var hasLink = !!(d.linkUrl);
+          html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:all .18s" onclick="window._dcShowModal(\'' + d.id + '\')" onmouseenter="this.style.borderColor=\'var(--primary)\';this.style.boxShadow=\'0 4px 12px rgba(124,92,252,.08)\'" onmouseleave="this.style.borderColor=\'var(--border)\';this.style.boxShadow=\'none\'">';
           html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
           html += '<div style="width:36px;height:36px;border-radius:10px;background:' + typeObj.color + '15;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="' + typeObj.color + '" stroke-width="1.5" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg></div>';
           html += '<div style="flex:1;min-width:0">';
@@ -14375,86 +14548,211 @@ function loadHistory(){
           html += '<div style="font-size:11px;color:var(--ink-muted)">' + typeObj.label + (d.client ? ' · ' + d.client : '') + '</div>';
           html += '</div></div>';
           if(d.notes) html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + d.notes + '</div>';
-          html += '<div style="font-size:11px;color:var(--ink-dim);margin-top:8px">' + (d.createdAt ? new Date(d.createdAt).toLocaleDateString('zh-TW') : '') + '</div>';
+          // Attachment / link indicators
+          var indicators = [];
+          if(hasFile) indicators.push('<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14.5 11.5l-5 5a3.54 3.54 0 01-5-5l7-7a2.36 2.36 0 013.33 3.33l-7 7a1.18 1.18 0 01-1.67-1.67l5-5"/></svg> ' + d.fileName);
+          if(hasLink) indicators.push('<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 12l4-4"/><path d="M11 5l2-2a2.83 2.83 0 014 4l-2 2"/><path d="M9 15l-2 2a2.83 2.83 0 01-4-4l2-2"/></svg> 連結');
+          if(indicators.length){
+            html += '<div style="display:flex;gap:10px;margin-top:8px;font-size:11px;color:var(--ink-muted);align-items:center">' + indicators.join('<span style="color:var(--border)">·</span>') + '</div>';
+          } else {
+            html += '<div style="font-size:11px;color:var(--ink-dim);margin-top:8px">' + (d.createdAt ? new Date(d.createdAt).toLocaleDateString('zh-TW') : '') + '</div>';
+          }
           html += '</div>';
         });
         html += '</div>';
       }
       content.innerHTML = html;
+      // Bind search
+      var inp = document.getElementById('dcSearchInput');
+      if(inp){
+        var composing = false;
+        inp.addEventListener('compositionstart',function(){composing=true;});
+        inp.addEventListener('compositionend',function(){composing=false;window._dcSearch=inp.value;renderList();});
+        inp.addEventListener('input',function(){if(!composing){window._dcSearch=inp.value;renderList();}});
+        if(window._dcSearch){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+      }
     }
 
     window._dcSetFilter = function(t){ window._dcFilter = t; filterType = t; renderList(); };
 
-    window._dcAdd = function(){
-      var d = { id: dcId(), name: '', type: 'other', client: '', notes: '', fileData: null, fileName: '', createdAt: new Date().toISOString() };
-      docs.unshift(d);
-      saveDocs(docs);
-      window._dcEdit(d.id);
-    };
-
-    window._dcEdit = function(id){
-      var d = docs.find(function(x){ return x.id === id; });
-      if(!d) return;
-      var html = '';
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">';
-      html += '<button class="btn btn-ghost" style="font-size:13px" onclick="window._dcBack()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="12,4 6,10 12,16"/></svg> 返回列表</button>';
-      html += '<button class="btn btn-ghost" style="font-size:12px;color:var(--rose)" onclick="window._dcDelete(\'' + d.id + '\')">刪除</button>';
-      html += '</div>';
-      html += '<div style="display:grid;gap:16px;max-width:640px">';
-      html += '<div><label class="qt-v2-label">文件名稱</label><input class="qt-v2-input" id="dcName" value="' + (d.name||'').replace(/"/g,'&quot;') + '" placeholder="e.g. 服務合約 v2"/></div>';
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
-      html += '<div><label class="qt-v2-label">類型</label><select class="qt-v2-input" id="dcType">';
-      DOC_TYPES.forEach(function(t){ html += '<option value="' + t.id + '"' + (d.type===t.id?' selected':'') + '>' + t.label + '</option>'; });
-      html += '</select></div>';
-      html += '<div><label class="qt-v2-label">關聯客戶</label><input class="qt-v2-input" id="dcClient" value="' + (d.client||'').replace(/"/g,'&quot;') + '" placeholder="客戶名稱"/></div>';
-      html += '</div>';
-      html += '<div><label class="qt-v2-label">備註</label><textarea class="qt-v2-input" id="dcNotes" rows="4" style="resize:vertical" placeholder="關於此文件的備註…">' + (d.notes||'') + '</textarea></div>';
-      html += '<div><label class="qt-v2-label">附件</label>';
-      if(d.fileName) html += '<div style="font-size:13px;color:var(--primary);margin-bottom:6px">' + d.fileName + '</div>';
-      html += '<input type="file" id="dcFile" style="font-size:13px"/></div>';
-      html += '<button class="btn btn-accent" style="padding:10px 24px;font-size:14px;margin-top:8px" onclick="window._dcSave(\'' + d.id + '\')">儲存</button>';
-      html += '</div>';
-      content.innerHTML = html;
-      // File upload handler
-      var fileInput = document.getElementById('dcFile');
-      if(fileInput){
-        fileInput.addEventListener('change', function(e){
-          if(!e.target.files || !e.target.files[0]) return;
-          var file = e.target.files[0];
-          if(file.size > 5000000){ showToast('檔案大小超過 5MB'); return; }
-          var reader = new FileReader();
-          reader.onload = function(evt){
-            d.fileData = evt.target.result;
-            d.fileName = file.name;
-            saveDocs(docs);
-            showToast('檔案已附加');
-          };
-          reader.readAsDataURL(file);
-        });
+    // ── Doc Modal (Add / Edit) ──
+    window._dcShowModal = function(id){
+      var d = id ? docs.find(function(x){ return x.id === id; }) : null;
+      var isEdit = !!d;
+      if(!d){
+        d = { id: dcId(), name: '', type: 'other', client: '', notes: '', fileData: null, fileName: '', linkUrl: '', linkLabel: '', createdAt: new Date().toISOString() };
       }
+      // Ensure linkUrl/linkLabel fields exist on legacy data
+      if(d.linkUrl === undefined) d.linkUrl = '';
+      if(d.linkLabel === undefined) d.linkLabel = '';
+
+      var ov = document.createElement('div');
+      ov.className = 'kb-modal-overlay';
+      ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
+
+      function buildModal(){
+        var typeOpts = '';
+        DOC_TYPES.forEach(function(t){ typeOpts += '<option value="' + t.id + '"' + (d.type===t.id?' selected':'') + '>' + t.label + '</option>'; });
+
+        var h = '<div class="kb-modal" style="width:620px" onclick="event.stopPropagation()">';
+        h += '<div class="kb-modal-header">';
+        h += '<h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink)">' + (isEdit ? '編輯文件' : '新增文件') + '</h3>';
+        h += '<button style="background:none;border:none;color:var(--ink-muted);font-size:24px;cursor:pointer;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center" id="dcCloseBtn">&times;</button>';
+        h += '</div>';
+        h += '<div style="padding:24px 32px;display:flex;flex-direction:column;gap:16px;max-height:calc(90vh - 140px);overflow-y:auto">';
+        // Row 1: Name + Type
+        h += '<div style="display:grid;grid-template-columns:1fr 140px;gap:12px">';
+        h += '<div><label class="kb-label">文件名稱 <span style="color:var(--rose)">*</span></label><input class="kb-input" id="dcName" value="' + (d.name||'').replace(/"/g,'&quot;') + '" placeholder="e.g. 服務合約 v2"/></div>';
+        h += '<div><label class="kb-label">類型</label><select class="kb-input" id="dcType" style="height:44px">' + typeOpts + '</select></div>';
+        h += '</div>';
+        // Row 2: Client
+        h += '<div><label class="kb-label">關聯客戶</label><input class="kb-input" id="dcClient" value="' + (d.client||'').replace(/"/g,'&quot;') + '" placeholder="客戶名稱" list="dcClientList"/>';
+        h += '<datalist id="dcClientList">';
+        contacts.forEach(function(c){ h += '<option value="' + (c.name||c.company||'').replace(/"/g,'&quot;') + '">'; });
+        h += '</datalist></div>';
+        // Notes
+        h += '<div><label class="kb-label">備註</label><textarea class="kb-input" id="dcNotes" rows="4" style="height:auto;resize:vertical;min-height:80px" placeholder="關於此文件的備註…">' + (d.notes||'') + '</textarea></div>';
+        // ── Attachment section ──
+        h += '<div style="border-top:1px solid var(--border);padding-top:16px">';
+        h += '<label class="kb-label" style="margin-bottom:10px;display:block">附件 / 連結</label>';
+        // Tab toggle: file vs link
+        h += '<div style="display:flex;gap:0;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;width:fit-content">';
+        h += '<button id="dcTabFile" style="padding:6px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:5px" class="dc-attach-tab">';
+        h += '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14.5 11.5l-5 5a3.54 3.54 0 01-5-5l7-7a2.36 2.36 0 013.33 3.33l-7 7a1.18 1.18 0 01-1.67-1.67l5-5"/></svg> 上傳檔案</button>';
+        h += '<button id="dcTabLink" style="padding:6px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:5px" class="dc-attach-tab">';
+        h += '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 12l4-4"/><path d="M11 5l2-2a2.83 2.83 0 014 4l-2 2"/><path d="M9 15l-2 2a2.83 2.83 0 01-4-4l2-2"/></svg> 外部連結</button>';
+        h += '</div>';
+        // File panel
+        h += '<div id="dcPanelFile">';
+        if(d.fileName){
+          h += '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-hover);border-radius:var(--r-md);margin-bottom:8px">';
+          h += '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M14.5 11.5l-5 5a3.54 3.54 0 01-5-5l7-7a2.36 2.36 0 013.33 3.33l-7 7a1.18 1.18 0 01-1.67-1.67l5-5"/></svg>';
+          h += '<span style="flex:1;font-size:13px;color:var(--primary);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.fileName + '</span>';
+          h += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:2px;font-size:14px;line-height:1" id="dcRemoveFile" title="移除檔案">&times;</button>';
+          h += '</div>';
+        }
+        h += '<input type="file" id="dcFile" style="font-size:13px"/>';
+        h += '</div>';
+        // Link panel
+        h += '<div id="dcPanelLink" style="display:none">';
+        h += '<div style="display:grid;grid-template-columns:1fr 140px;gap:10px">';
+        h += '<div><input class="kb-input" id="dcLinkUrl" value="' + (d.linkUrl||'').replace(/"/g,'&quot;') + '" placeholder="https://drive.google.com/…" style="font-size:13px"/></div>';
+        h += '<div><input class="kb-input" id="dcLinkLabel" value="' + (d.linkLabel||'').replace(/"/g,'&quot;') + '" placeholder="顯示名稱" style="font-size:13px"/></div>';
+        h += '</div>';
+        if(d.linkUrl){
+          h += '<div style="margin-top:6px;font-size:12px"><a href="' + (d.linkUrl||'').replace(/"/g,'&quot;') + '" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 15L15 5M15 5H8M15 5v7"/></svg> ' + (d.linkLabel || d.linkUrl).substring(0,40) + '</a></div>';
+        }
+        h += '</div>';
+        h += '</div>';
+        h += '</div>';
+        // Footer
+        h += '<div class="kb-modal-footer">';
+        h += '<div>';
+        if(isEdit) h += '<button style="background:none;border:none;color:var(--rose);font-size:13px;cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit;transition:background .15s" onmouseover="this.style.background=\'rgba(217,68,98,.08)\'" onmouseout="this.style.background=\'none\'" id="dcDeleteBtn">刪除</button>';
+        h += '</div>';
+        h += '<div style="display:flex;gap:10px;align-items:center">';
+        h += '<button class="btn btn-ghost" style="padding:8px 20px" id="dcCancelBtn">取消</button>';
+        h += '<button class="btn btn-accent" style="padding:8px 24px" id="dcSaveBtn">' + (isEdit?'儲存':'新增') + '</button>';
+        h += '</div></div>';
+        h += '</div>';
+        return h;
+      }
+
+      function wireModal(){
+        ov.querySelector('#dcCloseBtn').addEventListener('click', function(){ ov.remove(); });
+        ov.querySelector('#dcCancelBtn').addEventListener('click', function(){ ov.remove(); });
+
+        // Tab toggle logic
+        var tabFile = ov.querySelector('#dcTabFile');
+        var tabLink = ov.querySelector('#dcTabLink');
+        var panelFile = ov.querySelector('#dcPanelFile');
+        var panelLink = ov.querySelector('#dcPanelLink');
+        function setTab(which){
+          var isFile = which === 'file';
+          tabFile.style.background = isFile ? 'var(--primary)' : 'var(--bg-card)';
+          tabFile.style.color = isFile ? '#fff' : 'var(--ink-muted)';
+          tabLink.style.background = isFile ? 'var(--bg-card)' : 'var(--primary)';
+          tabLink.style.color = isFile ? 'var(--ink-muted)' : '#fff';
+          panelFile.style.display = isFile ? '' : 'none';
+          panelLink.style.display = isFile ? 'none' : '';
+        }
+        // Default tab: if linkUrl exists show link tab, else file
+        setTab((d.linkUrl && !d.fileName) ? 'link' : 'file');
+        tabFile.addEventListener('click', function(){ setTab('file'); });
+        tabLink.addEventListener('click', function(){ setTab('link'); });
+
+        // Remove file button
+        var removeFileBtn = ov.querySelector('#dcRemoveFile');
+        if(removeFileBtn){
+          removeFileBtn.addEventListener('click', function(){
+            d.fileData = null;
+            d.fileName = '';
+            ov.innerHTML = buildModal();
+            wireModal();
+          });
+        }
+
+        // File upload
+        var fileInput = ov.querySelector('#dcFile');
+        if(fileInput){
+          fileInput.addEventListener('change', function(e){
+            if(!e.target.files || !e.target.files[0]) return;
+            var file = e.target.files[0];
+            if(file.size > 5000000){ showToast('檔案大小超過 5MB'); return; }
+            var reader = new FileReader();
+            reader.onload = function(evt){
+              d.fileData = evt.target.result;
+              d.fileName = file.name;
+              showToast('檔案已選取');
+              ov.innerHTML = buildModal();
+              wireModal();
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
+        // Save
+        ov.querySelector('#dcSaveBtn').addEventListener('click', function(){
+          var name = ov.querySelector('#dcName').value.trim();
+          if(!name){ ov.querySelector('#dcName').style.borderColor='var(--rose)'; return; }
+          d.name = name;
+          d.type = ov.querySelector('#dcType').value;
+          d.client = ov.querySelector('#dcClient').value.trim();
+          d.notes = ov.querySelector('#dcNotes').value;
+          d.linkUrl = (ov.querySelector('#dcLinkUrl').value||'').trim();
+          d.linkLabel = (ov.querySelector('#dcLinkLabel').value||'').trim();
+          if(!isEdit){
+            docs.unshift(d);
+          }
+          saveDocs(docs);
+          showToast('文件已儲存');
+          ov.remove();
+          renderList();
+        });
+
+        // Delete
+        var delBtn = ov.querySelector('#dcDeleteBtn');
+        if(delBtn) delBtn.addEventListener('click', function(){
+          if(!confirm('確定刪除這筆文件？')) return;
+          docs = docs.filter(function(x){ return x.id !== d.id; });
+          saveDocs(docs);
+          showToast('已刪除');
+          ov.remove();
+          renderList();
+        });
+
+        // Focus name
+        setTimeout(function(){ var n=ov.querySelector('#dcName'); if(n && !n.value) n.focus(); },50);
+      }
+
+      ov.innerHTML = buildModal();
+      document.body.appendChild(ov);
+      wireModal();
     };
 
-    window._dcSave = function(id){
-      var d = docs.find(function(x){ return x.id === id; });
-      if(!d) return;
-      d.name = document.getElementById('dcName').value;
-      d.type = document.getElementById('dcType').value;
-      d.client = document.getElementById('dcClient').value;
-      d.notes = document.getElementById('dcNotes').value;
-      saveDocs(docs);
-      showToast('文件已儲存');
-      renderList();
-    };
-
-    window._dcDelete = function(id){
-      if(!confirm('確定刪除這筆文件？')) return;
-      docs = docs.filter(function(x){ return x.id !== id; });
-      saveDocs(docs);
-      showToast('已刪除');
-      renderList();
-    };
-
-    window._dcBack = function(){ renderList(); };
+    // Legacy compat
+    window._dcAdd = function(){ window._dcShowModal(); };
+    window._dcEdit = function(id){ window._dcShowModal(id); };
 
     renderList();
   }
@@ -17034,4 +17332,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.4.8 -->
+</html><!-- v1.4.9 -->
