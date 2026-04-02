@@ -2815,7 +2815,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.3</div>
+        <div class="sidebar-version">v1.4.4</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -5602,27 +5602,27 @@ canvas{display:block;margin:0 auto 24px}
           var statusTextColor = {draft:'var(--primary)', sent:'var(--gold)', accepted:'var(--teal)', declined:'var(--rose)', expired:'var(--ink-dim)'}[st];
           var totals = calcQtTotal(q);
           html += '<div class="qt-card" onclick="_qtPreview(\'' + q.id + '\')" style="border:1px solid var(--border)">';
-          html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">';
-          html += '<div><div style="font-weight:700;font-size:15px;margin-bottom:4px">' + q.title + '</div>';
+          // Row 1: Title + Client | Status badge
+          html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">';
+          html += '<div><div style="font-weight:700;font-size:15px;margin-bottom:3px">' + q.title + '</div>';
           html += '<div style="font-size:13px;color:var(--ink-muted)">' + (q.client ? q.client.name || '' : '') + '</div></div>';
           html += '<div style="background:' + statusColor + ';color:' + statusTextColor + ';padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap">' + status + '</div></div>';
-          html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
-          html += '<div><div style="font-size:18px;font-weight:800;color:var(--ink)">' + fmtMoney(totals.total) + '</div>';
-          html += '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">' + (q.number || '') + '</div></div>';
-          html += '</div>';
-          html += '<div style="display:flex;align-items:center;gap:4px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">';
+          // Row 2: Amount + Quote# | Status actions + Utility icons
+          html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+          html += '<div style="display:flex;align-items:baseline;gap:10px"><span style="font-size:18px;font-weight:800;color:var(--ink)">' + fmtMoney(totals.total) + '</span>';
+          html += '<span style="font-size:12px;color:var(--ink-muted)">' + (q.number || '') + '</span></div>';
+          html += '<div style="display:flex;align-items:center;gap:4px">';
           // Primary action (contextual)
-          if (st === 'draft') html += '<button onclick="event.stopPropagation();_qtChangeStatus(\'' + q.id + '\',\'sent\')" style="padding:5px 12px;border:none;color:#fff;background:var(--gold);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:4px">' + IC.send + ' 寄出</button>';
+          if (st === 'draft') html += '<button onclick="event.stopPropagation();_qtChangeStatus(\'' + q.id + '\',\'sent\')" style="padding:4px 10px;border:none;color:#fff;background:var(--gold);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:4px">' + IC.send + ' 寄出</button>';
           if (st === 'sent') {
-            html += '<button onclick="event.stopPropagation();_qtChangeStatus(\'' + q.id + '\',\'accepted\')" style="padding:5px 12px;border:none;color:#fff;background:var(--teal);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:4px">' + IC.check + ' 簽回</button>';
-            html += '<button onclick="event.stopPropagation();_qtChangeStatus(\'' + q.id + '\',\'declined\')" style="padding:5px 12px;border:none;color:var(--rose);background:rgba(217,68,98,.08);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s">未成案</button>';
+            html += '<button onclick="event.stopPropagation();_qtChangeStatus(\'' + q.id + '\',\'accepted\')" style="padding:4px 10px;border:none;color:#fff;background:var(--teal);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:4px">' + IC.check + ' 簽回</button>';
+            html += '<button onclick="event.stopPropagation();_qtChangeStatus(\'' + q.id + '\',\'declined\')" style="padding:4px 10px;border:none;color:var(--rose);background:rgba(217,68,98,.08);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s">未成案</button>';
           }
-          html += '<div style="flex:1"></div>';
-          // Utility icons (right-aligned, subtle)
+          // Utility icons
           html += '<button onclick="event.stopPropagation();_qtEdit(\'' + q.id + '\')" style="padding:6px;border:none;color:var(--ink-dim);background:none;border-radius:6px;cursor:pointer;font-family:inherit;transition:all .15s" title="編輯">' + IC.pencil + '</button>';
           html += '<button onclick="event.stopPropagation();_qtDuplicate(\'' + q.id + '\')" style="padding:6px;border:none;color:var(--ink-dim);background:none;border-radius:6px;cursor:pointer;font-family:inherit;transition:all .15s" title="複製">' + IC.copy + '</button>';
           html += '<button onclick="event.stopPropagation();window.confirm(\'確定要刪除？\')&&_qtDeleteQuote(\'' + q.id + '\')" style="padding:6px;border:none;color:var(--ink-dim);background:none;border-radius:6px;cursor:pointer;font-family:inherit;transition:all .15s" title="刪除">' + IC.trash + '</button>';
-          html += '</div></div>';
+          html += '</div></div></div>';
         });
         html += '</div>';
       }
@@ -16396,4 +16396,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.4.3 -->
+</html><!-- v1.4.4 -->
