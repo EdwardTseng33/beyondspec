@@ -2815,7 +2815,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.4</div>
+        <div class="sidebar-version">v1.4.5</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6591,8 +6591,9 @@ canvas{display:block;margin:0 auto 24px}
       html += '<div style="display:flex;justify-content:space-between;gap:16px">';
       // FROM
       html += '<div style="flex:1">';
-      html += '<div style="font-size:11px;color:var(--ink-muted);font-weight:600;letter-spacing:.06em;margin-bottom:6px">寄件方</div>';
+      html += '<div style="font-size:11px;color:var(--ink-muted);font-weight:600;letter-spacing:.06em;margin-bottom:6px">FROM 寄件方</div>';
       html += '<div style="font-weight:700;font-size:14px;margin-bottom:2px">' + (cp.name || '我的公司') + '</div>';
+      if (cp.taxId) html += '<div style="font-size:11px;color:var(--ink-muted);margin-bottom:3px">統編：' + cp.taxId + '</div>';
       var fromDetails = [cp.contact, cp.email, cp.phone].filter(function(v) { return v && v.trim(); });
       if (fromDetails.length) html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.5">' + fromDetails.join('<br>') + '</div>';
       html += '</div>';
@@ -6600,8 +6601,9 @@ canvas{display:block;margin:0 auto 24px}
       var clientName = q.client ? q.client.name || '' : '';
       if (clientName) {
         html += '<div style="flex:1">';
-        html += '<div style="font-size:11px;color:var(--ink-muted);font-weight:600;letter-spacing:.06em;margin-bottom:6px">客戶</div>';
+        html += '<div style="font-size:11px;color:var(--ink-muted);font-weight:600;letter-spacing:.06em;margin-bottom:6px">TO 客戶</div>';
         html += '<div style="font-weight:700;font-size:14px;margin-bottom:2px">' + clientName + '</div>';
+        if (q.client && q.client.taxId) html += '<div style="font-size:11px;color:var(--ink-muted);margin-bottom:3px">統編：' + q.client.taxId + '</div>';
         var toDetails = [];
         if (q.client.contact) toDetails.push(q.client.contact);
         if (q.client.email) toDetails.push(q.client.email);
@@ -6664,101 +6666,208 @@ canvas{display:block;margin:0 auto 24px}
     }
 
     function genPrintHTML(q, cp, totals) {
-      var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + q.number + '</title>';
-      html += '<style>*{margin:0;padding:0;box-sizing:border-box;font-family:"Noto Sans TC","Inter",sans-serif}';
-      html += 'body{padding:48px 56px;color:#222;font-size:14px;line-height:1.6}';
-      html += '.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:24px;margin-bottom:28px;border-bottom:2px solid #7c5cfc}';
-      html += '.title{font-size:22px;font-weight:800;color:#7c5cfc;letter-spacing:-.3px}.subtitle{font-size:12px;color:#999;margin-top:3px;letter-spacing:.08em}';
-      html += '.meta{text-align:right;font-size:13px;color:#666;line-height:1.8}.meta strong{color:#222}';
-      html += '.parties{display:flex;gap:24px;margin-bottom:28px}';
-      html += '.party{flex:1;padding:16px 20px;background:#fafafa;border-radius:10px;border:1px solid #eee}';
-      html += '.party-label{font-size:10px;color:#999;font-weight:700;letter-spacing:.1em;margin-bottom:8px;text-transform:uppercase}';
-      html += '.party-name{font-size:15px;font-weight:700;margin-bottom:4px}';
-      html += '.party-detail{font-size:12px;color:#666;line-height:1.7}';
-      html += 'table{width:100%;border-collapse:collapse;margin-bottom:20px}';
-      html += 'thead th{padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:#666;border-bottom:2px solid #7c5cfc;letter-spacing:.02em}';
-      html += 'thead th:last-child{text-align:right}';
-      html += 'tbody td{padding:10px 12px;border-bottom:1px solid #eee;font-size:13px}';
-      html += 'tbody td:last-child{text-align:right;font-weight:600}';
-      html += '.totals{text-align:right;margin-bottom:24px;position:relative}';
-      html += '.total-line{font-size:14px;margin-bottom:4px;color:#666}';
-      html += '.total-grand{font-size:22px;font-weight:800;color:#7c5cfc;margin-top:12px;padding-top:12px;border-top:2px solid #7c5cfc}';
-      html += '.pay-section{margin-bottom:24px}.pay-title{font-size:13px;font-weight:700;margin-bottom:10px}';
-      html += '.pay-grid{display:flex;gap:12px;flex-wrap:wrap}';
-      html += '.pay-card{flex:1;min-width:120px;padding:12px 16px;background:#fafafa;border-radius:8px;border:1px solid #eee;text-align:center}';
-      html += '.pay-card-label{font-size:11px;color:#888;font-weight:600;margin-bottom:4px}';
-      html += '.pay-card-amt{font-size:15px;font-weight:800;color:#222}';
-      html += '.pay-card-pct{font-size:11px;color:#999;margin-top:2px}';
-      html += '.notes-box{background:#f8f9fc;border-radius:8px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#555;line-height:1.7;border:1px solid #eee}';
-      html += '.notes-title{font-size:12px;font-weight:700;color:#333;margin-bottom:6px}';
-      html += '.sign-area{margin-top:48px;display:flex;justify-content:space-between;gap:40px}';
-      html += '.sign-box{flex:1;padding-top:12px;border-top:1px solid #ccc;font-size:12px;color:#888;text-align:center}';
-      html += '.footer{margin-top:40px;padding-top:16px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:11px;color:#bbb}';
-      html += '.stamp-zone{position:relative}.stamp-watermark{position:absolute;top:50%;right:5%;transform:translate(0,-50%) rotate(-15deg);width:30%;max-width:200px;opacity:.3;pointer-events:none}';
-      html += '@media print{body{padding:24px 32px}.stamp-watermark{opacity:.3;-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>';
+      var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + (q.number || '報價單') + '</title>';
+      html += '<style>';
+      // Reset & base
+      html += '*{margin:0;padding:0;box-sizing:border-box}';
+      html += 'body{padding:48px 52px;color:#1a1a1a;font-size:13px;line-height:1.6;font-family:"Noto Sans TC","Noto Sans","Inter","Helvetica Neue",Arial,sans-serif}';
+      // ZONE A: Document identity
+      html += '.doc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}';
+      html += '.doc-brand{display:flex;align-items:center;gap:14px}';
+      html += '.doc-logo{width:48px;height:48px;border-radius:8px;object-fit:contain}';
+      html += '.doc-title{font-size:24px;font-weight:800;color:#7C5CFC;letter-spacing:-.4px;line-height:1.2}';
+      html += '.doc-subtitle{font-size:11px;color:#aaa;letter-spacing:.12em;margin-top:2px;font-weight:500}';
+      html += '.doc-meta{text-align:right;font-size:12px;color:#666;line-height:2}';
+      html += '.doc-meta strong{color:#1a1a1a;font-weight:700}';
+      html += '.doc-valid{display:inline-block;background:#FFF3E0;color:#E08A3A;font-size:11px;font-weight:700;padding:2px 10px;border-radius:4px;margin-top:4px}';
+      html += '.brand-bar{height:4px;background:linear-gradient(90deg,#7C5CFC 0%,#9B7FFF 60%,#C4B5FD 100%);border-radius:2px;margin-bottom:28px}';
+      // ZONE B: Parties
+      html += '.parties{display:flex;gap:20px;margin-bottom:28px}';
+      html += '.party{flex:1;padding:16px 20px;border:1px solid #e8e8e8;border-radius:10px}';
+      html += '.party-label{font-size:10px;color:#aaa;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}';
+      html += '.party-name{font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:2px}';
+      html += '.party-taxid{font-size:11px;color:#888;margin-bottom:6px}';
+      html += '.party-detail{font-size:12px;color:#555;line-height:1.8}';
+      // Items table
+      html += '.items-table{width:100%;border-collapse:collapse;margin-bottom:6px}';
+      html += '.items-table thead th{padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#fff;background:#7C5CFC;letter-spacing:.03em}';
+      html += '.items-table thead th:first-child{border-radius:8px 0 0 0}';
+      html += '.items-table thead th:last-child{border-radius:0 8px 0 0;text-align:right}';
+      html += '.items-table thead th.num-col{text-align:center}';
+      html += '.items-table tbody td{padding:10px 12px;border-bottom:1px solid #f0f0f0;font-size:12.5px;color:#333}';
+      html += '.items-table tbody td:last-child{text-align:right;font-weight:700;color:#1a1a1a}';
+      html += '.items-table tbody td.num-col{text-align:center}';
+      html += '.items-table tbody tr:last-child td{border-bottom:none}';
+      html += '.items-table tbody tr:nth-child(even){background:#fafafa}';
+      html += '.item-note{font-size:11px;color:#888;margin-top:2px;font-style:italic}';
+      // Totals zone
+      html += '.totals-zone{display:flex;justify-content:flex-end;margin-bottom:28px}';
+      html += '.totals-box{width:320px}';
+      html += '.totals-line{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#666}';
+      html += '.totals-line span:last-child{font-weight:600;color:#333}';
+      html += '.totals-sep{height:1px;background:#e0e0e0;margin:6px 0}';
+      html += '.totals-grand{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#7C5CFC;border-radius:10px;margin-top:8px}';
+      html += '.totals-grand-label{font-size:14px;font-weight:700;color:rgba(255,255,255,.85)}';
+      html += '.totals-grand-amount{font-size:24px;font-weight:800;color:#fff;letter-spacing:-.3px}';
+      // Payment section
+      html += '.pay-section{margin-bottom:24px}';
+      html += '.section-title{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:10px;display:flex;align-items:center;gap:6px}';
+      html += '.section-title:before{content:"";display:block;width:3px;height:14px;background:#7C5CFC;border-radius:2px}';
+      html += '.pay-grid{display:flex;gap:10px;flex-wrap:wrap}';
+      html += '.pay-card{flex:1;min-width:110px;padding:14px 16px;border:1px solid #e8e8e8;border-radius:10px;text-align:center}';
+      html += '.pay-card-label{font-size:11px;color:#888;font-weight:600;margin-bottom:6px}';
+      html += '.pay-card-amt{font-size:16px;font-weight:800;color:#1a1a1a}';
+      html += '.pay-card-pct{font-size:11px;color:#aaa;margin-top:3px}';
+      // Bank info
+      html += '.bank-box{padding:14px 18px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:24px;font-size:12px;color:#555;line-height:1.8}';
+      // Notes
+      html += '.notes-box{padding:14px 18px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:28px;font-size:12.5px;color:#444;line-height:1.7}';
+      // Sign area
+      html += '.sign-area{display:flex;justify-content:space-between;gap:48px;margin-top:40px;margin-bottom:32px}';
+      html += '.sign-box{flex:1;text-align:center}';
+      html += '.sign-stamp{width:100%;min-height:80px;border:1.5px dashed #ccc;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;position:relative}';
+      html += '.sign-stamp-label{font-size:11px;color:#ccc;letter-spacing:.05em}';
+      html += '.sign-stamp img{max-height:64px;opacity:.7}';
+      html += '.sign-line{height:1px;background:#999;margin-bottom:8px}';
+      html += '.sign-name{font-size:12px;font-weight:700;color:#333;margin-bottom:4px}';
+      html += '.sign-date{font-size:11px;color:#999}';
+      // Footer
+      html += '.doc-footer{padding-top:16px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#bbb}';
+      html += '.doc-footer-legal{font-size:10px;color:#ccc;text-align:center;margin-top:8px}';
+      // Print
+      html += '@media print{body{padding:15mm 12mm}';
+      html += '.totals-grand{-webkit-print-color-adjust:exact;print-color-adjust:exact}';
+      html += '.items-table thead th{-webkit-print-color-adjust:exact;print-color-adjust:exact}';
+      html += '.brand-bar{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+      html += '</style></head><body>';
 
-      // Header
-      html += '<div class="header"><div><div class="title">' + (q.title || '報價單') + '</div><div class="subtitle">QUOTATION</div></div>';
-      html += '<div class="meta"><div><strong>' + q.number + '</strong></div><div>日期：' + q.created + '</div>';
-      if (q.validUntil) html += '<div>有效期限：' + q.validUntil + '</div>';
+      // ═══ ZONE A: Document Identity ═══
+      html += '<div class="doc-header">';
+      html += '<div class="doc-brand">';
+      if (cp.logoImage) html += '<img src="' + cp.logoImage + '" class="doc-logo"/>';
+      html += '<div><div class="doc-title">' + (q.title || '報價單') + '</div>';
+      html += '<div class="doc-subtitle">QUOTATION</div></div></div>';
+      html += '<div class="doc-meta">';
+      html += '<div><strong>' + (q.number || '') + '</strong></div>';
+      html += '<div>日期：' + (q.created || '') + '</div>';
+      if (q.validUntil) html += '<div class="doc-valid">有效期限：' + q.validUntil + '</div>';
       html += '</div></div>';
+      html += '<div class="brand-bar"></div>';
 
-      // Parties (FROM / TO) — hide empty fields
+      // ═══ ZONE B: Business Content ═══
+      // B1: Parties
       html += '<div class="parties">';
-      html += '<div class="party"><div class="party-label">寄件方</div>';
+      html += '<div class="party"><div class="party-label">FROM 寄件方</div>';
       html += '<div class="party-name">' + (cp.name || '我的公司') + '</div>';
+      if (cp.taxId) html += '<div class="party-taxid">統編：' + cp.taxId + '</div>';
       var fromLines = [cp.contact, cp.email, cp.phone, cp.address].filter(function(v) { return v && v.trim(); });
       if (fromLines.length) html += '<div class="party-detail">' + fromLines.join('<br>') + '</div>';
       html += '</div>';
       var _cn = q.client || {};
+      html += '<div class="party"><div class="party-label">TO 客戶</div>';
       if (_cn.name) {
-        html += '<div class="party"><div class="party-label">客戶</div>';
         html += '<div class="party-name">' + _cn.name + '</div>';
+        if (_cn.taxId) html += '<div class="party-taxid">統編：' + _cn.taxId + '</div>';
         var toLines = [_cn.contact, _cn.email, _cn.address].filter(function(v) { return v && v.trim(); });
         if (toLines.length) html += '<div class="party-detail">' + toLines.join('<br>') + '</div>';
-        html += '</div>';
+      } else {
+        html += '<div class="party-name" style="color:#ccc">—</div>';
       }
-      html += '</div>';
+      html += '</div></div>';
 
-      // Items table
-      html += '<table><thead><tr><th>#</th><th>項目說明</th><th>數量</th><th>單位</th><th>單價</th><th>小計</th></tr></thead><tbody>';
+      // B2: Items table
+      html += '<table class="items-table"><thead><tr>';
+      html += '<th style="width:36px" class="num-col">#</th>';
+      html += '<th>項目說明</th>';
+      html += '<th style="width:60px" class="num-col">數量</th>';
+      html += '<th style="width:52px" class="num-col">單位</th>';
+      html += '<th style="width:100px;text-align:right">單價</th>';
+      html += '<th style="width:110px">小計</th>';
+      html += '</tr></thead><tbody>';
       (q.items || []).forEach(function(item, idx) {
-        html += '<tr><td>' + (idx + 1) + '</td><td>' + item.desc + '</td><td style="text-align:center">' + item.qty + '</td><td style="text-align:center">' + (item.unit || '式') + '</td><td style="text-align:right">NT$ ' + item.unitPrice.toLocaleString() + '</td><td>NT$ ' + (item.qty * item.unitPrice).toLocaleString() + '</td></tr>';
+        html += '<tr>';
+        html += '<td class="num-col">' + (idx + 1) + '</td>';
+        html += '<td>' + (item.desc || '');
+        if (item.note) html += '<div class="item-note">' + item.note + '</div>';
+        html += '</td>';
+        html += '<td class="num-col">' + (item.qty || 0) + '</td>';
+        html += '<td class="num-col">' + (item.unit || '式') + '</td>';
+        html += '<td style="text-align:right">NT$ ' + (item.unitPrice || 0).toLocaleString() + '</td>';
+        html += '<td style="text-align:right;font-weight:700">NT$ ' + ((item.qty || 0) * (item.unitPrice || 0)).toLocaleString() + '</td>';
+        html += '</tr>';
       });
       html += '</tbody></table>';
 
-      // Totals
-      html += '<div class="totals stamp-zone">';
-      if (cp.stampImage) html += '<img src="' + cp.stampImage + '" class="stamp-watermark">';
-      html += '<div class="total-line">小計：NT$ ' + totals.subtotal.toLocaleString() + '</div>';
-      if (q.discount > 0) html += '<div class="total-line">折扣：-NT$ ' + q.discount.toLocaleString() + '</div>';
-      if (totals.taxType === 'added') html += '<div class="total-line">外加稅 5%：NT$ ' + totals.taxAmount.toLocaleString() + '</div>';
-      if (totals.taxType === 'included') html += '<div class="total-line">含稅 5%（稅額 NT$ ' + totals.taxAmount.toLocaleString() + '）</div>';
-      html += '<div class="total-grand">總計：NT$ ' + totals.total.toLocaleString() + '</div></div>';
+      // B3: Totals highlight
+      html += '<div class="totals-zone"><div class="totals-box">';
+      html += '<div class="totals-line"><span>小計</span><span>NT$ ' + totals.subtotal.toLocaleString() + '</span></div>';
+      if (q.discount > 0) {
+        html += '<div class="totals-line"><span>折扣</span><span style="color:#D94462">-NT$ ' + q.discount.toLocaleString() + '</span></div>';
+      }
+      if (totals.taxType === 'added' && totals.taxAmount > 0) {
+        html += '<div class="totals-line"><span>外加稅 5%</span><span>NT$ ' + totals.taxAmount.toLocaleString() + '</span></div>';
+      }
+      if (totals.taxType === 'included' && totals.taxAmount > 0) {
+        html += '<div class="totals-line"><span>含稅 5%（稅額）</span><span>NT$ ' + totals.taxAmount.toLocaleString() + '</span></div>';
+      }
+      html += '<div class="totals-sep"></div>';
+      html += '<div class="totals-grand"><span class="totals-grand-label">總計 TOTAL</span>';
+      html += '<span class="totals-grand-amount">NT$ ' + totals.total.toLocaleString() + '</span></div>';
+      html += '</div></div>';
 
-      // Payment schedule
+      // B4: Payment schedule
       if (q.paymentSchedule && q.paymentSchedule.length > 0) {
-        html += '<div class="pay-section"><div class="pay-title">付款條件</div><div class="pay-grid">';
+        html += '<div class="pay-section"><div class="section-title">付款條件</div><div class="pay-grid">';
         (q.paymentSchedule || []).forEach(function(p, i) {
           var amt = p.amt || Math.round(totals.total * (p.pct || 0) / 100);
-          html += '<div class="pay-card"><div class="pay-card-label">第 ' + (i + 1) + ' 期 · ' + p.label + '</div>';
+          html += '<div class="pay-card"><div class="pay-card-label">第 ' + (i + 1) + ' 期 · ' + (p.label || '') + '</div>';
           html += '<div class="pay-card-amt">NT$ ' + amt.toLocaleString() + '</div>';
           html += '<div class="pay-card-pct">' + (p.pct || 0) + '%</div></div>';
         });
         html += '</div></div>';
       }
 
-      // Notes
-      if (q.notes && q.notes.trim()) {
-        html += '<div class="notes-box"><div class="notes-title">備註</div>' + q.notes.replace(/\n/g, '<br>') + '</div>';
+      // Bank info
+      if (cp.bankInfo && cp.bankInfo.trim()) {
+        html += '<div class="bank-box"><div class="section-title">匯款資訊</div>';
+        html += cp.bankInfo.replace(/\n/g, '<br>') + '</div>';
       }
 
-      // Sign area
-      html += '<div class="sign-area"><div class="sign-box">客戶簽章<br><br><br>日期：_______________</div>';
-      html += '<div class="sign-box">' + (cp.signatory || cp.name || '我的公司') + '<br><br><br>日期：_______________</div></div>';
+      // Notes
+      if (q.notes && q.notes.trim()) {
+        html += '<div class="notes-box"><div class="section-title">備註</div>';
+        html += q.notes.replace(/\n/g, '<br>') + '</div>';
+      }
+
+      // ═══ ZONE C: Legal & Trust ═══
+      // Sign area — formal stamp boxes
+      html += '<div class="sign-area">';
+      // Client sign box
+      html += '<div class="sign-box">';
+      html += '<div class="sign-stamp"><span class="sign-stamp-label">蓋章處</span></div>';
+      html += '<div class="sign-line"></div>';
+      html += '<div class="sign-name">客戶簽章</div>';
+      html += '<div class="sign-date">日期：_______________</div>';
+      html += '</div>';
+      // Company sign box
+      html += '<div class="sign-box">';
+      html += '<div class="sign-stamp">';
+      if (cp.stampImage) html += '<img src="' + cp.stampImage + '"/>';
+      else html += '<span class="sign-stamp-label">蓋章處</span>';
+      html += '</div>';
+      html += '<div class="sign-line"></div>';
+      html += '<div class="sign-name">' + (cp.signingName || cp.name || '我的公司') + '</div>';
+      html += '<div class="sign-date">日期：_______________</div>';
+      html += '</div>';
+      html += '</div>';
 
       // Footer
-      html += '<div class="footer"><span>' + (cp.name || '我的公司') + (cp.slogan ? ' — ' + cp.slogan : '') + '</span><span>' + (cp.website || '') + '</span></div>';
+      html += '<div class="doc-footer">';
+      html += '<span>' + (cp.name || '') + (cp.slogan ? ' — ' + cp.slogan : '') + '</span>';
+      html += '<span>' + (cp.website || '') + (cp.phone ? ' · ' + cp.phone : '') + '</span>';
+      html += '</div>';
+      html += '<div class="doc-footer-legal">本報價以雙方簽章後生效，如有疑問請於有效期限內聯繫</div>';
+
       html += '</body></html>';
       return html;
     }
@@ -14098,6 +14207,7 @@ function loadHistory(){
       debounceTimer = setTimeout(function() {
         var updated = {
           name: container.querySelector('input[name="cpName"]')?.value || '',
+          taxId: container.querySelector('input[name="cpTaxId"]')?.value || '',
           contact: container.querySelector('input[name="cpContact"]')?.value || '',
           email: container.querySelector('input[name="cpEmail"]')?.value || '',
           phone: container.querySelector('input[name="cpPhone"]')?.value || '',
@@ -14105,12 +14215,15 @@ function loadHistory(){
           signingName: container.querySelector('input[name="cpSigningName"]')?.value || '',
           website: container.querySelector('input[name="cpWebsite"]')?.value || '',
           slogan: container.querySelector('input[name="cpSlogan"]')?.value || '',
-          stampImage: cp.stampImage || ''
+          bankInfo: container.querySelector('textarea[name="cpBankInfo"]')?.value || '',
+          stampImage: cp.stampImage || '',
+          logoImage: cp.logoImage || ''
         };
         saveCompanyProfile(updated);
         showToast('公司資料已保存');
       }, 800);
     }
+    var logoPreview = cp.logoImage ? '<div style="margin-top:8px;display:flex;align-items:center;gap:10px"><img src="' + cp.logoImage + '" style="max-width:80px;max-height:60px;border-radius:var(--r-sm);border:1px solid var(--border)"/><button type="button" class="btn btn-outline" style="padding:4px 12px;font-size:12px" onclick="(function(){var c=getCompanyProfile();delete c.logoImage;saveCompanyProfile(c);renderCompanyProfileForm();showToast(\'Logo 已移除\')})()">移除</button></div>' : '';
     var stampPreview = cp.stampImage ? '<div style="margin-top:8px;display:flex;align-items:center;gap:10px"><img src="' + cp.stampImage + '" style="max-width:80px;max-height:60px;border-radius:var(--r-sm);border:1px solid var(--border)"/><button type="button" class="btn btn-outline" style="padding:4px 12px;font-size:12px" onclick="(function(){var c=getCompanyProfile();delete c.stampImage;saveCompanyProfile(c);renderCompanyProfileForm();showToast(\'印章已移除\')})()">移除</button></div>' : '';
     container.innerHTML = '\
       <div class="qt-v2-grid qt-v2-grid-2">\
@@ -14119,28 +14232,24 @@ function loadHistory(){
           <input type="text" name="cpName" class="qt-v2-input" value="' + (cp.name || '') + '" placeholder="e.g. BeyondSpec 工作室"/>\
         </div>\
         <div class="qt-v2-field">\
-          <label>聯絡人（簽約代表）</label>\
-          <input type="text" name="cpContact" class="qt-v2-input" value="' + (cp.contact || '') + '" placeholder="e.g. 愛德華"/>\
+          <label>統一編號</label>\
+          <input type="text" name="cpTaxId" class="qt-v2-input" value="' + (cp.taxId || '') + '" placeholder="e.g. 12345678"/>\
         </div>\
       </div>\
       <div class="qt-v2-grid qt-v2-grid-2">\
+        <div class="qt-v2-field">\
+          <label>聯絡人（簽約代表）</label>\
+          <input type="text" name="cpContact" class="qt-v2-input" value="' + (cp.contact || '') + '" placeholder="e.g. 愛德華"/>\
+        </div>\
         <div class="qt-v2-field">\
           <label>Email</label>\
           <input type="email" name="cpEmail" class="qt-v2-input" value="' + (cp.email || '') + '" placeholder="contact@example.com"/>\
         </div>\
-        <div class="qt-v2-field">\
-          <label>電話</label>\
-          <input type="tel" name="cpPhone" class="qt-v2-input" value="' + (cp.phone || '') + '" placeholder="+886-2-xxxx-xxxx"/>\
-        </div>\
-      </div>\
-      <div class="qt-v2-field">\
-        <label>地址</label>\
-        <input type="text" name="cpAddress" class="qt-v2-input" value="' + (cp.address || '') + '" placeholder="台北市..."/>\
       </div>\
       <div class="qt-v2-grid qt-v2-grid-2">\
         <div class="qt-v2-field">\
-          <label>簽約方名稱</label>\
-          <input type="text" name="cpSigningName" class="qt-v2-input" value="' + (cp.signingName || '') + '" placeholder="公司統編或簽約方式"/>\
+          <label>電話</label>\
+          <input type="tel" name="cpPhone" class="qt-v2-input" value="' + (cp.phone || '') + '" placeholder="+886-2-xxxx-xxxx"/>\
         </div>\
         <div class="qt-v2-field">\
           <label>網站</label>\
@@ -14148,41 +14257,59 @@ function loadHistory(){
         </div>\
       </div>\
       <div class="qt-v2-field">\
+        <label>地址</label>\
+        <input type="text" name="cpAddress" class="qt-v2-input" value="' + (cp.address || '') + '" placeholder="台北市..."/>\
+      </div>\
+      <div class="qt-v2-field">\
+        <label>簽約方名稱</label>\
+        <input type="text" name="cpSigningName" class="qt-v2-input" value="' + (cp.signingName || '') + '" placeholder="報價簽約方名稱"/>\
+      </div>\
+      <div class="qt-v2-field">\
+        <label>匯款帳戶資訊</label>\
+        <textarea name="cpBankInfo" class="qt-v2-input" rows="3" placeholder="銀行名稱：xxx 銀行&#10;帳號：xxxx-xxxx-xxxx&#10;戶名：xxx" style="resize:vertical;min-height:60px">' + (cp.bankInfo || '') + '</textarea>\
+      </div>\
+      <div class="qt-v2-field">\
         <label>底部 Slogan</label>\
         <input type="text" name="cpSlogan" class="qt-v2-input" value="' + (cp.slogan || '') + '" placeholder="e.g. 小團隊的 AI 商業引擎"/>\
       </div>\
-      <div class="qt-v2-field">\
-        <label>數位印章上傳 (PNG / JPG / WebP, max 500KB)</label>\
-        <input type="file" id="cpStampUpload" accept="image/png,image/jpeg,image/webp" style="display:block;margin-bottom:8px"/>\
-        ' + stampPreview + '\
+      <div class="qt-v2-grid qt-v2-grid-2">\
+        <div class="qt-v2-field">\
+          <label>公司 Logo (PNG / JPG / WebP, max 500KB)</label>\
+          <input type="file" id="cpLogoUpload" accept="image/png,image/jpeg,image/webp" style="display:block;margin-bottom:8px"/>\
+          ' + logoPreview + '\
+        </div>\
+        <div class="qt-v2-field">\
+          <label>數位印章 (PNG / JPG / WebP, max 500KB)</label>\
+          <input type="file" id="cpStampUpload" accept="image/png,image/jpeg,image/webp" style="display:block;margin-bottom:8px"/>\
+          ' + stampPreview + '\
+        </div>\
       </div>\
     ';
-    var inputs = container.querySelectorAll('input[name^="cp"]');
+    var inputs = container.querySelectorAll('input[name^="cp"], textarea[name^="cp"]');
     inputs.forEach(function(inp) {
       inp.addEventListener('change', saveOnChange);
       inp.addEventListener('blur', saveOnChange);
     });
-    var stampInput = container.querySelector('#cpStampUpload');
-    if (stampInput) {
-      stampInput.addEventListener('change', function(e) {
+    function handleImageUpload(inputId, fieldName, label) {
+      var input = container.querySelector('#' + inputId);
+      if (!input) return;
+      input.addEventListener('change', function(e) {
         if (!e.target.files || !e.target.files[0]) return;
         var file = e.target.files[0];
-        if (file.size > 500000) {
-          showToast('檔案大小超過 500KB');
-          return;
-        }
+        if (file.size > 500000) { showToast('檔案大小超過 500KB'); return; }
         var reader = new FileReader();
         reader.onload = function(evt) {
-          var data = evt.target.result;
           var c = getCompanyProfile();
-          c.stampImage = data;
+          c[fieldName] = evt.target.result;
           saveCompanyProfile(c);
-          showToast('印章已上傳');
+          showToast(label + '已上傳');
           renderCompanyProfileForm();
         };
         reader.readAsDataURL(file);
       });
     }
+    handleImageUpload('cpLogoUpload', 'logoImage', 'Logo');
+    handleImageUpload('cpStampUpload', 'stampImage', '印章');
   }
 
   function saveAISettings() {
@@ -16396,4 +16523,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.4.4 -->
+</html><!-- v1.4.5 -->
