@@ -2427,12 +2427,7 @@ canvas{display:block;margin:0 auto 24px}
 .kanban-board-wrap::after{right:0;background:linear-gradient(to left,var(--bg-main),transparent);opacity:0}
 .kanban-board-wrap.has-scroll-left::before{opacity:1}
 .kanban-board-wrap.has-scroll-right::after{opacity:1}
-/* Dot indicator bar */
-.kb-dot-nav{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 0 4px;transition:opacity .3s}
-.kb-dot-nav.hidden{opacity:0;height:0;padding:0;overflow:hidden}
-.kb-dot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .2s}
-.kb-dot.active{background:var(--primary);transform:scale(1.25)}
-.kb-dot:hover:not(.active){background:var(--ink-dim)}
+/* Dot indicator bar — removed by design decision, keep scrollbar + fade only */
 .kanban-board{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px;min-height:calc(100vh - 220px);align-items:flex-start;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
 /* Custom scrollbar track */
 .kanban-board::-webkit-scrollbar{height:5px}
@@ -2518,7 +2513,6 @@ canvas{display:block;margin:0 auto 24px}
 @media(max-width:768px){
   /* Mobile: single column focus mode */
   .kanban-board-wrap::before,.kanban-board-wrap::after{display:none}
-  .kb-dot-nav{display:none}
   .kb-mobile-tabs{display:flex !important;gap:0;background:var(--bg-card);border-radius:var(--r-lg);padding:3px;margin-bottom:12px;border:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
   .kb-mobile-tab{flex:1;min-width:0;padding:8px 4px;border:none;background:none;border-radius:var(--r-md);font-size:13px;font-weight:600;color:var(--ink-muted);cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
   .kb-mobile-tab.active{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(124,92,252,.3)}
@@ -2849,7 +2843,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.7</div>
+        <div class="sidebar-version">v1.4.8</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3528,6 +3522,25 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
+    // biz-meetings → vanilla JS meetings module (not React)
+    if (moduleId === 'biz-meetings') {
+      if (window._bizReactRoot) {
+        try { window._bizReactRoot.unmount(); } catch(e) {}
+        window._bizReactRoot = null;
+      }
+      renderMeetings();
+      return;
+    }
+
+    // biz-docs → vanilla JS docs module (not React)
+    if (moduleId === 'biz-docs') {
+      if (window._bizReactRoot) {
+        try { window._bizReactRoot.unmount(); } catch(e) {}
+        window._bizReactRoot = null;
+      }
+      renderDocs();
+      return;
+    }
 
     // Unmount React Business module if navigating away from biz
     const isBizModule = BIZ_MODULES.includes(moduleId);
@@ -4215,13 +4228,6 @@ canvas{display:block;margin:0 auto 24px}
       });
       html += '</div>';
 
-      // Dot indicator (desktop, shown when scrollable)
-      html += '<div class="kb-dot-nav hidden" id="kbDotNav">';
-      cols.forEach(function(col, ci){
-        html += '<span class="kb-dot' + (ci === 0 ? ' active' : '') + '" data-colidx="' + ci + '" onclick="window._kbScrollToCol(' + ci + ')" title="' + col.label + '"></span>';
-      });
-      html += '</div>';
-
       // Kanban columns (wrapped for scroll affordance)
       html += '<div class="kanban-board-wrap" id="kbBoardWrap">';
       html += '<div class="kanban-board" id="kbBoard">';
@@ -4348,7 +4354,6 @@ canvas{display:block;margin:0 auto 24px}
     function _kbBindScrollAffordance(){
       var board = document.getElementById('kbBoard');
       var wrap = document.getElementById('kbBoardWrap');
-      var dotNav = document.getElementById('kbDotNav');
       if(!board || !wrap) return;
 
       function updateFades(){
@@ -4356,45 +4361,16 @@ canvas{display:block;margin:0 auto 24px}
         var maxScroll = board.scrollWidth - board.clientWidth;
         if(maxScroll <= 2){
           wrap.classList.remove('has-scroll-left','has-scroll-right');
-          if(dotNav) dotNav.classList.add('hidden');
           return;
         }
-        if(dotNav) dotNav.classList.remove('hidden');
         if(sl > 8) wrap.classList.add('has-scroll-left'); else wrap.classList.remove('has-scroll-left');
         if(sl < maxScroll - 8) wrap.classList.add('has-scroll-right'); else wrap.classList.remove('has-scroll-right');
-        // Update dot nav active state
-        if(dotNav){
-          var colEls = board.querySelectorAll('.kanban-col');
-          var dots = dotNav.querySelectorAll('.kb-dot');
-          var boardRect = board.getBoundingClientRect();
-          var centerX = boardRect.left + boardRect.width / 2;
-          var closestIdx = 0;
-          var closestDist = Infinity;
-          colEls.forEach(function(el, i){
-            var rect = el.getBoundingClientRect();
-            var dist = Math.abs(rect.left + rect.width/2 - centerX);
-            if(dist < closestDist){ closestDist = dist; closestIdx = i; }
-          });
-          dots.forEach(function(d, i){ if(i === closestIdx) d.classList.add('active'); else d.classList.remove('active'); });
-        }
       }
       board.addEventListener('scroll', updateFades);
-      // Initial check after layout
       setTimeout(updateFades, 50);
-      // Also check on window resize
       window._kbResizeHandler = function(){ updateFades(); };
       window.addEventListener('resize', window._kbResizeHandler);
     }
-
-    window._kbScrollToCol = function(idx){
-      var board = document.getElementById('kbBoard');
-      if(!board) return;
-      var colEls = board.querySelectorAll('.kanban-col');
-      if(colEls[idx]){
-        var offset = colEls[idx].offsetLeft - 16;
-        board.scrollTo({ left: offset, behavior: 'smooth' });
-      }
-    };
 
     // ── First Visit Nudge (only once) ──
     function _kbFirstVisitNudge(){
@@ -5894,13 +5870,13 @@ canvas{display:block;margin:0 auto 24px}
         h += '<div style="background:var(--bg-app);border-radius:var(--r-xl);width:100%;max-width:860px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)">';
 
         // Header
-        h += '<div style="padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">';
+        h += '<div style="padding:20px 32px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">';
         h += '<h3 style="margin:0;font-size:18px;font-weight:800">' + (isEdit ? '編輯報價' : '新增報價') + '</h3>';
         h += '<button id="qt-close-btn" style="background:none;border:none;cursor:pointer;color:var(--ink-muted);padding:4px">' + IC.close + '</button>';
         h += '</div>';
 
         // Body
-        h += '<div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px" id="qt-form-body">';
+        h += '<div style="flex:1;overflow-y:auto;padding:20px 32px;display:flex;flex-direction:column;gap:16px" id="qt-form-body">';
 
         // ── Company Profile (expand/collapse button, not <details>) ──
         h += '<div id="cp-section">';
@@ -5948,17 +5924,6 @@ canvas{display:block;margin:0 auto 24px}
         h += '<div style="font-size:11px;color:var(--ink-muted);margin-top:4px;padding:0 2px">這些設定會自動儲存，套用到所有報價單。</div>';
         h += '</div></div>';
 
-        // ── Quote Type Card Selector ──
-        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:600">報價類型</label>';
-        h += '<div style="display:flex;gap:8px">';
-        QT_CONSTANTS.QUOTE_TYPES.forEach(function(qt) {
-          var sel = q.quoteType === qt.id;
-          h += '<button data-qtype="' + qt.id + '" style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid ' + (sel ? 'var(--primary)' : 'var(--border)') + ';background:' + (sel ? 'rgba(124,92,252,.1)' : 'transparent') + ';color:' + (sel ? 'var(--primary)' : 'var(--ink-muted)') + ';font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;text-align:center">';
-          h += qt.label + '<div style="font-size:11px;font-weight:400;margin-top:2px;opacity:.7">' + qt.desc + '</div>';
-          h += '</button>';
-        });
-        h += '</div></div>';
-
         // ── Basic fields: number + validUntil row ──
         h += '<div style="display:grid;grid-template-columns:' + (isMobile ? '1fr' : '1fr 1fr') + ';gap:12px">';
         h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">報價單編號</label>';
@@ -5973,9 +5938,21 @@ canvas{display:block;margin:0 auto 24px}
         h += '<div id="err-title" style="display:none;font-size:11px;color:var(--rose);margin-top:4px"></div>';
         h += '</div>';
 
+        // ── Client type filter tabs ──
+        var clientTypes = [{id:'all',label:'全部'},{id:'customer',label:'客戶'},{id:'vendor',label:'廠商'},{id:'partner',label:'合作夥伴'},{id:'lead',label:'潛在客戶'}];
+        var activeClientType = q._clientFilter || 'all';
+        h += '<div>';
+        h += '<label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:600">客戶資料</label>';
+        h += '<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">';
+        clientTypes.forEach(function(ct) {
+          var isActive = activeClientType === ct.id;
+          h += '<button data-client-type="' + ct.id + '" style="padding:5px 14px;border-radius:20px;border:1px solid ' + (isActive ? 'var(--primary)' : 'var(--border)') + ';background:' + (isActive ? 'rgba(124,92,252,.12)' : 'transparent') + ';color:' + (isActive ? 'var(--primary)' : 'var(--ink-muted)') + ';font-size:12px;font-weight:' + (isActive ? '600' : '500') + ';cursor:pointer;font-family:inherit;transition:all .15s;line-height:1.2">' + ct.label + '</button>';
+        });
+        h += '</div>';
+
         // ── Client fields (2 col) ──
         h += '<div style="display:grid;grid-template-columns:' + (isMobile ? '1fr' : '1fr 1fr') + ';gap:12px">';
-        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">' + (q.quoteType === 'outsource' ? '外包公司 / 個人名稱' : '客戶公司') + ' <span style="color:var(--rose)">*</span></label>';
+        h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">客戶公司 <span style="color:var(--rose)">*</span></label>';
         h += '<div id="qt-client-name-wrap"></div>';
         h += '<div id="err-client-name" style="display:none;font-size:11px;color:var(--rose);margin-top:4px"></div></div>';
         h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">聯繫人 <span style="color:var(--rose)">*</span></label>';
@@ -5984,6 +5961,7 @@ canvas{display:block;margin:0 auto 24px}
         h += '</div>';
         h += '<div><label style="display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;font-weight:600">Email</label>';
         h += '<input type="email" id="qt-client-email" value="' + (q.client.email || '').replace(/"/g,'&quot;') + '" placeholder="email@example.com" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--r-md);font-family:inherit;font-size:14px;box-sizing:border-box;background:var(--bg-card);color:var(--ink)"></div>';
+        h += '</div>'; // close client type filter wrapper
 
         // ── Line Items ──
         h += '<div>';
@@ -6060,7 +6038,7 @@ canvas{display:block;margin:0 auto 24px}
         h += '</div>'; // end body
 
         // Footer
-        h += '<div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:8px">';
+        h += '<div style="padding:16px 32px;border-top:1px solid var(--border);display:flex;gap:8px">';
         h += '<button id="qt-cancel" style="flex:1;padding:10px;border:1px solid var(--border);background:var(--bg-card);border-radius:var(--r-md);cursor:pointer;font-weight:600;font-family:inherit;color:var(--ink)">取消</button>';
         h += '<button id="qt-save" style="flex:1;padding:10px;border:none;background:var(--primary);color:#fff;border-radius:var(--r-md);cursor:pointer;font-weight:700;font-family:inherit;font-size:14px">儲存報價單</button>';
         h += '</div>';
@@ -6077,25 +6055,31 @@ canvas{display:block;margin:0 auto 24px}
         var titleAS = qtAutoSuggest({
           value: q.title || '',
           suggestions: QT_CONSTANTS.TITLE_SUGGESTIONS,
-          placeholder: q.quoteType === 'outsource' ? '輸入或選擇：UI 設計外包委託...' : '輸入或選擇：產品規格定義服務...',
+          placeholder: '輸入或選擇：產品規格定義服務...',
           onSelect: function(item) { q.title = typeof item === 'string' ? item : item; },
           onChange: function(v) { q.title = v; }
         });
         titleWrap.appendChild(titleAS);
       }
 
-      // ── Wire up AutoSuggest for Client Name ──
+      // ── Wire up AutoSuggest for Client Name (with type filter) ──
       var clientNameWrap = document.getElementById('qt-client-name-wrap');
       if (clientNameWrap) {
-        var contactSuggestions = contacts.map(function(c) {
-          return { label: c.company || c.contact || c.name || '', contact: c.contact || c.name || '', email: c.email || '' };
+        var activeClientFilter = q._clientFilter || 'all';
+        var contactSuggestions = contacts.filter(function(c) {
+          if (activeClientFilter === 'all') return true;
+          return (c.type || 'customer') === activeClientFilter;
+        }).map(function(c) {
+          return { label: c.company || c.contact || c.name || '', contact: c.contact || c.name || '', email: c.email || '', type: c.type || 'customer' };
         });
         var clientAS = qtAutoSuggest({
           value: q.client.name || '',
           suggestions: contactSuggestions,
-          placeholder: q.quoteType === 'outsource' ? '輸入外包公司或個人名稱' : '輸入客戶公司名稱',
+          placeholder: '輸入客戶公司名稱',
           renderItem: function(item) {
-            return '<div style="display:flex;justify-content:space-between;gap:12px"><span>' + (item.label || '') + '</span><span style="color:var(--ink-muted);font-size:11px">' + (item.contact || '') + '</span></div>';
+            var typeLabels = {customer:'客戶',vendor:'廠商',partner:'合作夥伴',lead:'潛在客戶'};
+            var tl = typeLabels[item.type] || '';
+            return '<div style="display:flex;justify-content:space-between;gap:12px"><span>' + (item.label || '') + '</span><span style="color:var(--ink-muted);font-size:11px">' + (item.contact || '') + (tl ? ' · ' + tl : '') + '</span></div>';
           },
           onSelect: function(item) {
             q.client.name = item.label || '';
@@ -6105,6 +6089,15 @@ canvas{display:block;margin:0 auto 24px}
           onChange: function(v) { q.client.name = v; }
         });
         clientNameWrap.appendChild(clientAS);
+      }
+
+      // ── Client type filter tab buttons ──
+      var ctfBtns = modal.querySelectorAll('[data-client-type]');
+      for (var ci = 0; ci < ctfBtns.length; ci++) {
+        ctfBtns[ci].addEventListener('click', function() {
+          q._clientFilter = this.getAttribute('data-client-type');
+          rebuildForm();
+        });
       }
 
       // ── Company Profile toggle ──
@@ -6152,15 +6145,6 @@ canvas{display:block;margin:0 auto 24px}
         saveCompanyProfile(cp);
         rebuildForm();
       });
-
-      // ── Quote Type buttons ──
-      var qtypeBtns = modal.querySelectorAll('[data-qtype]');
-      for (var qi = 0; qi < qtypeBtns.length; qi++) {
-        qtypeBtns[qi].addEventListener('click', function() {
-          q.quoteType = this.getAttribute('data-qtype');
-          rebuildForm();
-        });
-      }
 
       // ── Basic field bindings ──
       function bindField(id, key, parser) {
@@ -6575,7 +6559,7 @@ canvas{display:block;margin:0 auto 24px}
 
       function saveQuote() {
         errors = {};
-        if (!q.client || !q.client.name || !q.client.name.trim()) errors['client.name'] = q.quoteType === 'outsource' ? '請輸入外包公司名稱' : '請輸入客戶公司名稱';
+        if (!q.client || !q.client.name || !q.client.name.trim()) errors['client.name'] = '請輸入客戶公司名稱';
         if (!q.client || !q.client.contact || !q.client.contact.trim()) errors['client.contact'] = '請輸入聯繫人';
         if (!q.title || !q.title.trim()) errors.title = '請輸入提案標題';
         if (!q.items || q.items.length === 0 || q.items.every(function(it) { return !it.desc || !it.desc.trim(); })) errors.items = '至少需要一個報價項目';
@@ -6603,6 +6587,7 @@ canvas{display:block;margin:0 auto 24px}
         }
         if (errSummary) errSummary.style.display = 'none';
 
+        delete q._clientFilter; // strip internal UI state before persist
         var existing = quotes.findIndex(function(x) { return x.id === q.id; });
         if (existing >= 0) { quotes[existing] = q; } else { quotes.push(q); }
         saveQuotes(quotes);
@@ -6622,20 +6607,25 @@ canvas{display:block;margin:0 auto 24px}
         if (tw) {
           var tas = qtAutoSuggest({
             value: q.title || '', suggestions: QT_CONSTANTS.TITLE_SUGGESTIONS,
-            placeholder: q.quoteType === 'outsource' ? '輸入或選擇：UI 設計外包委託...' : '輸入或選擇：產品規格定義服務...',
+            placeholder: '輸入或選擇：產品規格定義服務...',
             onSelect: function(item) { q.title = typeof item === 'string' ? item : item; },
             onChange: function(v) { q.title = v; }
           });
           tw.appendChild(tas);
         }
-        // Client AutoSuggest
+        // Client AutoSuggest (with type filter)
         var cnw = document.getElementById('qt-client-name-wrap');
         if (cnw) {
-          var cSugs = contacts.map(function(c) { return {label: c.company || c.contact || c.name || '', contact: c.contact || c.name || '', email: c.email || ''}; });
+          var acf = q._clientFilter || 'all';
+          var cSugs = contacts.filter(function(c) { if (acf === 'all') return true; return (c.type || 'customer') === acf; }).map(function(c) { return {label: c.company || c.contact || c.name || '', contact: c.contact || c.name || '', email: c.email || '', type: c.type || 'customer'}; });
           var cas = qtAutoSuggest({
             value: q.client.name || '', suggestions: cSugs,
-            placeholder: q.quoteType === 'outsource' ? '輸入外包公司或個人名稱' : '輸入客戶公司名稱',
-            renderItem: function(item) { return '<div style="display:flex;justify-content:space-between;gap:12px"><span>' + (item.label || '') + '</span><span style="color:var(--ink-muted);font-size:11px">' + (item.contact || '') + '</span></div>'; },
+            placeholder: '輸入客戶公司名稱',
+            renderItem: function(item) {
+              var tls = {customer:'客戶',vendor:'廠商',partner:'合作夥伴',lead:'潛在客戶'};
+              var tl2 = tls[item.type] || '';
+              return '<div style="display:flex;justify-content:space-between;gap:12px"><span>' + (item.label || '') + '</span><span style="color:var(--ink-muted);font-size:11px">' + (item.contact || '') + (tl2 ? ' · ' + tl2 : '') + '</span></div>';
+            },
             onSelect: function(item) {
               q.client.name = item.label || '';
               if (item.contact) { q.client.contact = item.contact; var cf2 = document.getElementById('qt-client-contact'); if (cf2) cf2.value = item.contact; }
@@ -6644,6 +6634,11 @@ canvas{display:block;margin:0 auto 24px}
             onChange: function(v) { q.client.name = v; }
           });
           cnw.appendChild(cas);
+        }
+        // Client type filter tab buttons
+        var ctfBtns2 = modal.querySelectorAll('[data-client-type]');
+        for (var ci2 = 0; ci2 < ctfBtns2.length; ci2++) {
+          ctfBtns2[ci2].addEventListener('click', function() { q._clientFilter = this.getAttribute('data-client-type'); rebuildForm(); });
         }
         // CP toggle
         var cpt = document.getElementById('cp-toggle');
@@ -6674,9 +6669,6 @@ canvas{display:block;margin:0 auto 24px}
           r.readAsDataURL(f);
         });
         if (sr) sr.addEventListener('click', function() { cp.stampImage = ''; saveCompanyProfile(cp); rebuildForm(); });
-        // Quote type buttons
-        var qbs = modal.querySelectorAll('[data-qtype]');
-        for (var q2 = 0; q2 < qbs.length; q2++) { qbs[q2].addEventListener('click', function() { q.quoteType = this.getAttribute('data-qtype'); rebuildForm(); }); }
         // Basic fields
         var numEl = document.getElementById('qt-number');
         var vuEl = document.getElementById('qt-validUntil');
@@ -14165,6 +14157,308 @@ function loadHistory(){
     showToast('定價測試啟動中⋯⋯（引擎開發中）');
   }
 
+  // ==================== MODULE: MEETINGS (vanilla JS v1.0) ====================
+  function renderMeetings() {
+    var content = document.getElementById('content');
+    var mainEl = document.getElementById('main');
+    if (mainEl) { mainEl.style.overflow = ''; mainEl.style.height = ''; }
+    var appEl = document.getElementById('app');
+    if (appEl) appEl.style.overflow = '';
+
+    var MT_KEY = 'bp_meetings';
+    function getMeetings(){ try{ var s = localStorage.getItem(MT_KEY); return s ? JSON.parse(s) : []; }catch(e){ return []; } }
+    function saveMeetings(m){ localStorage.setItem(MT_KEY, JSON.stringify(m)); }
+    function mtId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+    var meetings = getMeetings();
+
+    function renderList(){
+      var html = '';
+      // Header
+      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
+      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="5"/><line x1="13" y1="2" x2="13" y2="5"/></svg> 會議紀錄</h2>';
+      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">記錄每次溝通，不遺漏任何承諾</span>';
+      html += '</div>';
+      html += '<button class="btn btn-accent" style="padding:8px 18px;font-size:13px" onclick="window._mtAdd()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增會議</button>';
+      html += '</div>';
+
+      if(meetings.length === 0){
+        html += '<div style="text-align:center;padding:80px 20px">';
+        html += '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(124,92,252,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid rgba(124,92,252,.15)">';
+        html += '<svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/></svg>';
+        html += '</div>';
+        html += '<div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px">尚無會議紀錄</div>';
+        html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6">點擊「新增會議」開始記錄<br>每一筆溝通的重要細節</div>';
+        html += '</div>';
+      } else {
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px">';
+        meetings.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+        meetings.forEach(function(m){
+          html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:all .18s" onclick="window._mtEdit(\'' + m.id + '\')" onmouseenter="this.style.borderColor=\'var(--primary)\';this.style.transform=\'translateY(-1px)\'" onmouseleave="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\'">';
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+          html += '<div style="font-size:15px;font-weight:600;color:var(--ink)">' + (m.title || '未命名會議') + '</div>';
+          if(m.date) html += '<div style="font-size:12px;color:var(--ink-muted)">' + m.date + '</div>';
+          html += '</div>';
+          if(m.attendees) html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">參與者：' + m.attendees + '</div>';
+          if(m.notes) html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">' + m.notes.replace(/\n/g,'<br>') + '</div>';
+          if(m.actionItems && m.actionItems.length > 0){
+            var done = m.actionItems.filter(function(a){ return a.done; }).length;
+            html += '<div style="margin-top:8px;font-size:11px;color:var(--primary);font-weight:600">待辦 ' + done + '/' + m.actionItems.length + '</div>';
+          }
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      content.innerHTML = html;
+    }
+
+    window._mtAdd = function(){
+      var m = { id: mtId(), title: '', date: new Date().toISOString().slice(0,10), attendees: '', notes: '', actionItems: [], createdAt: new Date().toISOString() };
+      meetings.unshift(m);
+      saveMeetings(meetings);
+      window._mtEdit(m.id);
+    };
+
+    window._mtEdit = function(id){
+      var m = meetings.find(function(x){ return x.id === id; });
+      if(!m) return;
+      var html = '';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">';
+      html += '<button class="btn btn-ghost" style="font-size:13px" onclick="window._mtBack()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="12,4 6,10 12,16"/></svg> 返回列表</button>';
+      html += '<button class="btn btn-ghost" style="font-size:12px;color:var(--rose)" onclick="window._mtDelete(\'' + m.id + '\')">刪除</button>';
+      html += '</div>';
+      html += '<div style="display:grid;gap:16px;max-width:720px">';
+      html += '<div><label class="qt-v2-label">會議標題</label><input class="qt-v2-input" id="mtTitle" value="' + (m.title||'').replace(/"/g,'&quot;') + '" placeholder="e.g. 客戶需求會議"/></div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+      html += '<div><label class="qt-v2-label">日期</label><input class="qt-v2-input" type="date" id="mtDate" value="' + (m.date||'') + '"/></div>';
+      html += '<div><label class="qt-v2-label">參與者</label><input class="qt-v2-input" id="mtAttendees" value="' + (m.attendees||'').replace(/"/g,'&quot;') + '" placeholder="Edward, 客戶方 PM"/></div>';
+      html += '</div>';
+      html += '<div><label class="qt-v2-label">會議筆記</label><textarea class="qt-v2-input" id="mtNotes" rows="8" style="resize:vertical;min-height:120px" placeholder="討論內容、決策、重要細節…">' + (m.notes||'') + '</textarea></div>';
+      // Action items
+      html += '<div><label class="qt-v2-label">待辦事項</label>';
+      html += '<div id="mtActions">';
+      (m.actionItems||[]).forEach(function(a, i){
+        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+        html += '<input type="checkbox" ' + (a.done?'checked':'') + ' onchange="window._mtToggleAction(\'' + m.id + '\',' + i + ')" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer"/>';
+        html += '<input class="qt-v2-input" value="' + (a.text||'').replace(/"/g,'&quot;') + '" onchange="window._mtUpdateAction(\'' + m.id + '\',' + i + ',this.value)" style="flex:1"/>';
+        html += '<button class="kb-btn-x" onclick="window._mtRemoveAction(\'' + m.id + '\',' + i + ')"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button>';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '<button class="btn btn-ghost" style="font-size:12px;margin-top:4px" onclick="window._mtAddAction(\'' + m.id + '\')"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增待辦</button>';
+      html += '</div>';
+      html += '<button class="btn btn-accent" style="padding:10px 24px;font-size:14px;margin-top:8px" onclick="window._mtSave(\'' + m.id + '\')">儲存</button>';
+      html += '</div>';
+      content.innerHTML = html;
+    };
+
+    window._mtSave = function(id){
+      var m = meetings.find(function(x){ return x.id === id; });
+      if(!m) return;
+      m.title = document.getElementById('mtTitle').value;
+      m.date = document.getElementById('mtDate').value;
+      m.attendees = document.getElementById('mtAttendees').value;
+      m.notes = document.getElementById('mtNotes').value;
+      saveMeetings(meetings);
+      showToast('會議紀錄已儲存');
+      renderList();
+    };
+
+    window._mtDelete = function(id){
+      if(!confirm('確定刪除這筆會議紀錄？')) return;
+      meetings = meetings.filter(function(x){ return x.id !== id; });
+      saveMeetings(meetings);
+      showToast('已刪除');
+      renderList();
+    };
+
+    window._mtBack = function(){ renderList(); };
+
+    window._mtAddAction = function(id){
+      var m = meetings.find(function(x){ return x.id === id; });
+      if(!m) return;
+      if(!m.actionItems) m.actionItems = [];
+      m.actionItems.push({ text: '', done: false });
+      saveMeetings(meetings);
+      window._mtEdit(id);
+    };
+
+    window._mtToggleAction = function(id, idx){
+      var m = meetings.find(function(x){ return x.id === id; });
+      if(!m || !m.actionItems[idx]) return;
+      m.actionItems[idx].done = !m.actionItems[idx].done;
+      saveMeetings(meetings);
+    };
+
+    window._mtUpdateAction = function(id, idx, val){
+      var m = meetings.find(function(x){ return x.id === id; });
+      if(!m || !m.actionItems[idx]) return;
+      m.actionItems[idx].text = val;
+      saveMeetings(meetings);
+    };
+
+    window._mtRemoveAction = function(id, idx){
+      var m = meetings.find(function(x){ return x.id === id; });
+      if(!m) return;
+      m.actionItems.splice(idx, 1);
+      saveMeetings(meetings);
+      window._mtEdit(id);
+    };
+
+    renderList();
+  }
+
+  // ==================== MODULE: DOCS (vanilla JS v1.0) ====================
+  function renderDocs() {
+    var content = document.getElementById('content');
+    var mainEl = document.getElementById('main');
+    if (mainEl) { mainEl.style.overflow = ''; mainEl.style.height = ''; }
+    var appEl = document.getElementById('app');
+    if (appEl) appEl.style.overflow = '';
+
+    var DC_KEY = 'bp_docs';
+    function getDocs(){ try{ var s = localStorage.getItem(DC_KEY); return s ? JSON.parse(s) : []; }catch(e){ return []; } }
+    function saveDocs(d){ localStorage.setItem(DC_KEY, JSON.stringify(d)); }
+    function dcId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+    var docs = getDocs();
+    var DOC_TYPES = [
+      { id: 'contract', label: '合約', color: '#7C5CFC' },
+      { id: 'proposal', label: '提案', color: '#1BA891' },
+      { id: 'invoice', label: '發票', color: '#E08A3A' },
+      { id: 'report', label: '報告', color: '#3B82F6' },
+      { id: 'other', label: '其他', color: '#94a3b8' }
+    ];
+
+    var filterType = window._dcFilter || 'all';
+
+    function renderList(){
+      var html = '';
+      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
+      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><polyline points="10,2 10,8 16,8"/></svg> 文件庫</h2>';
+      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">集中管理所有商業文件</span>';
+      html += '</div>';
+      html += '<button class="btn btn-accent" style="padding:8px 18px;font-size:13px" onclick="window._dcAdd()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 上傳文件</button>';
+      html += '</div>';
+
+      // Filter bar
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">';
+      html += '<button class="ct-filter-btn' + (filterType==='all'?' active':'') + '" onclick="window._dcSetFilter(\'all\')">全部 ' + docs.length + '</button>';
+      DOC_TYPES.forEach(function(t){
+        var count = docs.filter(function(d){ return d.type === t.id; }).length;
+        html += '<button class="ct-filter-btn' + (filterType===t.id?' active':'') + '" onclick="window._dcSetFilter(\'' + t.id + '\')">' + t.label + ' ' + count + '</button>';
+      });
+      html += '</div>';
+
+      var filtered = filterType === 'all' ? docs : docs.filter(function(d){ return d.type === filterType; });
+      filtered.sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
+
+      if(filtered.length === 0){
+        html += '<div style="text-align:center;padding:80px 20px">';
+        html += '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(124,92,252,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid rgba(124,92,252,.15)">';
+        html += '<svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.3" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>';
+        html += '</div>';
+        html += '<div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px">尚無文件</div>';
+        html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6">點擊「上傳文件」開始建立<br>你的商業文件庫</div>';
+        html += '</div>';
+      } else {
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">';
+        filtered.forEach(function(d){
+          var typeObj = DOC_TYPES.find(function(t){ return t.id === d.type; }) || DOC_TYPES[4];
+          html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:all .18s" onclick="window._dcEdit(\'' + d.id + '\')" onmouseenter="this.style.borderColor=\'var(--primary)\';this.style.transform=\'translateY(-1px)\'" onmouseleave="this.style.borderColor=\'var(--border)\';this.style.transform=\'none\'">';
+          html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
+          html += '<div style="width:36px;height:36px;border-radius:10px;background:' + typeObj.color + '15;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="' + typeObj.color + '" stroke-width="1.5" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg></div>';
+          html += '<div style="flex:1;min-width:0">';
+          html += '<div style="font-size:14px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (d.name || '未命名文件') + '</div>';
+          html += '<div style="font-size:11px;color:var(--ink-muted)">' + typeObj.label + (d.client ? ' · ' + d.client : '') + '</div>';
+          html += '</div></div>';
+          if(d.notes) html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + d.notes + '</div>';
+          html += '<div style="font-size:11px;color:var(--ink-dim);margin-top:8px">' + (d.createdAt ? new Date(d.createdAt).toLocaleDateString('zh-TW') : '') + '</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      content.innerHTML = html;
+    }
+
+    window._dcSetFilter = function(t){ window._dcFilter = t; filterType = t; renderList(); };
+
+    window._dcAdd = function(){
+      var d = { id: dcId(), name: '', type: 'other', client: '', notes: '', fileData: null, fileName: '', createdAt: new Date().toISOString() };
+      docs.unshift(d);
+      saveDocs(docs);
+      window._dcEdit(d.id);
+    };
+
+    window._dcEdit = function(id){
+      var d = docs.find(function(x){ return x.id === id; });
+      if(!d) return;
+      var html = '';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">';
+      html += '<button class="btn btn-ghost" style="font-size:13px" onclick="window._dcBack()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="12,4 6,10 12,16"/></svg> 返回列表</button>';
+      html += '<button class="btn btn-ghost" style="font-size:12px;color:var(--rose)" onclick="window._dcDelete(\'' + d.id + '\')">刪除</button>';
+      html += '</div>';
+      html += '<div style="display:grid;gap:16px;max-width:640px">';
+      html += '<div><label class="qt-v2-label">文件名稱</label><input class="qt-v2-input" id="dcName" value="' + (d.name||'').replace(/"/g,'&quot;') + '" placeholder="e.g. 服務合約 v2"/></div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
+      html += '<div><label class="qt-v2-label">類型</label><select class="qt-v2-input" id="dcType">';
+      DOC_TYPES.forEach(function(t){ html += '<option value="' + t.id + '"' + (d.type===t.id?' selected':'') + '>' + t.label + '</option>'; });
+      html += '</select></div>';
+      html += '<div><label class="qt-v2-label">關聯客戶</label><input class="qt-v2-input" id="dcClient" value="' + (d.client||'').replace(/"/g,'&quot;') + '" placeholder="客戶名稱"/></div>';
+      html += '</div>';
+      html += '<div><label class="qt-v2-label">備註</label><textarea class="qt-v2-input" id="dcNotes" rows="4" style="resize:vertical" placeholder="關於此文件的備註…">' + (d.notes||'') + '</textarea></div>';
+      html += '<div><label class="qt-v2-label">附件</label>';
+      if(d.fileName) html += '<div style="font-size:13px;color:var(--primary);margin-bottom:6px">' + d.fileName + '</div>';
+      html += '<input type="file" id="dcFile" style="font-size:13px"/></div>';
+      html += '<button class="btn btn-accent" style="padding:10px 24px;font-size:14px;margin-top:8px" onclick="window._dcSave(\'' + d.id + '\')">儲存</button>';
+      html += '</div>';
+      content.innerHTML = html;
+      // File upload handler
+      var fileInput = document.getElementById('dcFile');
+      if(fileInput){
+        fileInput.addEventListener('change', function(e){
+          if(!e.target.files || !e.target.files[0]) return;
+          var file = e.target.files[0];
+          if(file.size > 5000000){ showToast('檔案大小超過 5MB'); return; }
+          var reader = new FileReader();
+          reader.onload = function(evt){
+            d.fileData = evt.target.result;
+            d.fileName = file.name;
+            saveDocs(docs);
+            showToast('檔案已附加');
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    };
+
+    window._dcSave = function(id){
+      var d = docs.find(function(x){ return x.id === id; });
+      if(!d) return;
+      d.name = document.getElementById('dcName').value;
+      d.type = document.getElementById('dcType').value;
+      d.client = document.getElementById('dcClient').value;
+      d.notes = document.getElementById('dcNotes').value;
+      saveDocs(docs);
+      showToast('文件已儲存');
+      renderList();
+    };
+
+    window._dcDelete = function(id){
+      if(!confirm('確定刪除這筆文件？')) return;
+      docs = docs.filter(function(x){ return x.id !== id; });
+      saveDocs(docs);
+      showToast('已刪除');
+      renderList();
+    };
+
+    window._dcBack = function(){ renderList(); };
+
+    renderList();
+  }
+
   // ==================== MODULE 5: SETTINGS ====================
   function renderSettings() {
     const content = document.getElementById('content');
@@ -16740,4 +17034,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.4.7 -->
+</html><!-- v1.4.8 -->
