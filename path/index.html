@@ -2843,7 +2843,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.9</div>
+        <div class="sidebar-version">v1.5.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3532,6 +3532,16 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
+    // biz-insights → vanilla JS AI dashboard (not React)
+    if (moduleId === 'biz-insights') {
+      if (window._bizReactRoot) {
+        try { window._bizReactRoot.unmount(); } catch(e) {}
+        window._bizReactRoot = null;
+      }
+      renderInsights();
+      return;
+    }
+
     // biz-docs → vanilla JS docs module (not React)
     if (moduleId === 'biz-docs') {
       if (window._bizReactRoot) {
@@ -3900,12 +3910,67 @@ canvas{display:block;margin:0 auto 24px}
 
       <div class="home-grid">
         <div class="home-main">
-          <div class="welcome-banner">
-            <div class="welcome-banner-inner">
-              <h1 class="welcome-title">Hi, ${state.user.name}</h1>
-              <p class="welcome-sub" id="soulText">${welcomeMsg}</p>
+          <div class="welcome-banner" style="position:relative;overflow:hidden">
+            <div class="welcome-banner-inner" style="position:relative;z-index:1">
+              <h1 class="welcome-title" style="margin-bottom:4px">Hi, ${state.user.name}</h1>
+              <p class="welcome-sub" id="soulText" style="max-width:520px">${welcomeMsg}</p>
             </div>
           </div>
+
+          <!-- ═══ Today's Action Panel (v1.5) ═══ -->
+          ${(() => {
+            const _get = (k, fb) => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : fb; } catch { return fb; } };
+            const _tasks = _get('bp_kanban_cards', []);
+            const _quotes = _get('bp_quotes', []).filter(q => !q.archived);
+            const _meetings = _get('bp_meetings', []);
+            const _billing = _get('bp_billing', []);
+            const _today = new Date().toISOString().split('T')[0];
+            const _todayLabel = new Date().toLocaleDateString('zh-TW', {month:'long',day:'numeric',weekday:'long'});
+
+            const overdueTasks = _tasks.filter(t => t.column !== 'done' && t.due && t.due < _today).length;
+            const doingTasks = _tasks.filter(t => t.column === 'doing').length;
+            const pendingQuotes = _quotes.filter(q => q.status === 'sent').length;
+            const expiringQuotes = _quotes.filter(q => q.status === 'sent' && q.validUntil && (() => { const d = Math.ceil((new Date(q.validUntil) - new Date()) / 86400000); return d >= 0 && d <= 3; })()).length;
+            const overduePayments = _billing.filter(b => b.status !== 'paid' && b.dueDate && b.dueDate < _today).length;
+            const todayMeetings = _meetings.filter(m => m.date === _today).length;
+            const pendingActions = _meetings.reduce((sum, m) => sum + ((m.actionItems||[]).filter(a => !a.done).length), 0);
+
+            const urgentItems = [];
+            if (overdueTasks > 0) urgentItems.push({icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--rose)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="10" y1="7" x2="10" y2="11"/><circle cx="10" cy="13.5" r=".5" fill="var(--rose)"/></svg>',text:overdueTasks+' 個任務逾期',color:'var(--rose)',action:"app.navigate('biz-tasks')"});
+            if (expiringQuotes > 0) urgentItems.push({icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><polyline points="10,6 10,10 13,12"/></svg>',text:expiringQuotes+' 筆報價即將到期',color:'var(--gold)',action:"app.navigate('biz-quotes')"});
+            if (overduePayments > 0) urgentItems.push({icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--rose)" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="2" x2="10" y2="18"/><path d="M14 6c0-1.7-1.8-3-4-3S6 4.3 6 6s1.8 3 4 3"/></svg>',text:overduePayments+' 筆款項逾期',color:'var(--rose)',action:"app.navigate('biz-billing')"});
+            if (pendingActions > 0) urgentItems.push({icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round"><polyline points="4 10 8 14 16 6"/></svg>',text:pendingActions+' 項會議待辦未完成',color:'var(--gold)',action:"app.navigate('biz-meetings')"});
+
+            let actionPanel = '<div style="margin-bottom:20px">';
+            // Date + Quick stats row
+            actionPanel += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">';
+            actionPanel += '<div style="font-size:13px;color:var(--ink-muted);font-weight:500">' + _todayLabel + '</div>';
+            actionPanel += '<div style="display:flex;gap:16px;font-size:12px">';
+            if (doingTasks > 0) actionPanel += '<span style="color:var(--primary);font-weight:600;cursor:pointer" onclick="app.navigate(\'biz-tasks\')">' + doingTasks + ' 進行中</span>';
+            if (pendingQuotes > 0) actionPanel += '<span style="color:var(--gold);font-weight:600;cursor:pointer" onclick="app.navigate(\'biz-quotes\')">' + pendingQuotes + ' 待簽回</span>';
+            if (todayMeetings > 0) actionPanel += '<span style="color:var(--teal);font-weight:600;cursor:pointer" onclick="app.navigate(\'biz-meetings\')">' + todayMeetings + ' 今日會議</span>';
+            actionPanel += '</div></div>';
+
+            // Urgent items
+            if (urgentItems.length > 0) {
+              actionPanel += '<div style="display:flex;flex-direction:column;gap:6px">';
+              urgentItems.forEach(item => {
+                actionPanel += '<div onclick="' + item.action + '" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:all .15s" onmouseenter="this.style.borderColor=\'' + item.color + '\'" onmouseleave="this.style.borderColor=\'var(--border)\'">';
+                actionPanel += '<span style="flex-shrink:0">' + item.icon + '</span>';
+                actionPanel += '<span style="font-size:13px;color:' + item.color + ';font-weight:600">' + item.text + '</span>';
+                actionPanel += '<svg style="margin-left:auto;opacity:.4" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="7 4 13 10 7 16"/></svg>';
+                actionPanel += '</div>';
+              });
+              actionPanel += '</div>';
+            } else {
+              actionPanel += '<div style="padding:12px 14px;background:rgba(27,168,145,.06);border:1px solid rgba(27,168,145,.12);border-radius:var(--r-md);font-size:13px;color:var(--teal);font-weight:500;display:flex;align-items:center;gap:8px">';
+              actionPanel += '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 10 8 14 16 6"/></svg>';
+              actionPanel += '目前沒有緊急待處理事項</div>';
+            }
+            actionPanel += '</div>';
+            return actionPanel;
+          })()}
+
           ${reportsHTML}
 
           <!-- ═══ Recent Activity (v0.8.2) ═══ -->
@@ -5825,6 +5890,7 @@ canvas{display:block;margin:0 auto 24px}
       html += '</div>';
       html += bpSearchBar('qtSearchInput', searchVal || '', '搜尋報價…');
       html += '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">';
+      html += '<button class="btn btn-outline" style="padding:8px 16px;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap" onclick="_qtImport()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 14v2a2 2 0 002 2h10a2 2 0 002-2v-2"/><polyline points="7 10 10 13 13 10"/><line x1="10" y1="3" x2="10" y2="13"/></svg> 匙入</button>';
       html += '<button class="btn btn-accent" style="padding:8px 20px;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap" onclick="_qtAdd()">' + IC.plus + ' 新增報價</button>';
       html += '</div>';
       html += '</div>';
@@ -6846,7 +6912,8 @@ canvas{display:block;margin:0 auto 24px}
       // Store print HTML in window variable to avoid onclick attribute escaping issues
       window._qtPrintCache = genPrintHTML(q, cp, totals);
       html += '<button onclick="document.getElementById(\'preview-modal\').remove();_qtEdit(\'' + q.id + '\')" style="padding:8px 16px;background:none;border:1px solid var(--border);color:var(--ink);border-radius:var(--r-md);font-weight:600;cursor:pointer;font-family:inherit;font-size:13px;display:flex;align-items:center;gap:5px">' + IC.pencil + ' 編輯</button>';
-      html += '<button onclick="window._qtDoPrint()" style="padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:var(--r-md);font-weight:600;cursor:pointer;font-family:inherit;font-size:13px">列印 / PDF</button>';
+      html += '<button onclick="window._qtImport = function() { showImportModal(); };
+    window._qtDoPrint()" style="padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:var(--r-md);font-weight:600;cursor:pointer;font-family:inherit;font-size:13px">列印 / PDF</button>';
       html += '<button onclick="document.getElementById(\'preview-modal\').remove()" style="background:none;border:none;cursor:pointer;color:var(--ink-muted);padding:4px;display:flex">' + IC.close + '</button>';
       html += '</div></div>';
 
@@ -7163,7 +7230,324 @@ canvas{display:block;margin:0 auto 24px}
       return html;
     }
 
-    // ── Window API for external calls ──
+        // ── Import Quote Modal (v1.0) ──
+    function showImportModal() {
+      var ov = document.getElementById('kb-modal-overlay');
+      if (!ov) {
+        ov = document.createElement('div');
+        ov.id = 'kb-modal-overlay';
+        ov.className = 'kb-modal-overlay';
+        document.body.appendChild(ov);
+      }
+      ov.style.display = 'flex';
+      ov.onclick = function(e) { if (e.target === ov) closeImportModal(); };
+
+      // State
+      var importState = {
+        mode: 'file',  // 'file' or 'text'
+        parsed: null,   // {vendor, items:[{desc,qty,unit,unitPrice}]}
+        markup: 20,
+        error: '',
+        fileName: ''
+      };
+
+      function closeImportModal() {
+        ov.style.display = 'none';
+        ov.innerHTML = '';
+      }
+
+      function renderImportModal() {
+        var st = importState;
+        var html = '';
+        html += '<div class="kb-modal" style="width:640px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:0;border-radius:var(--r-xl)">';
+
+        // ── Header ──
+        html += '<div style="padding:24px 28px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">';
+        html += '<div>';
+        html += '<div style="font-size:18px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px">';
+        html += '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M3 14v2a2 2 0 002 2h10a2 2 0 002-2v-2"/><polyline points="7 10 10 13 13 10"/><line x1="10" y1="3" x2="10" y2="13"/></svg>';
+        html += ' 匯入外包報價</div>';
+        html += '<div style="font-size:13px;color:var(--ink-muted);margin-top:4px">匯入合作夥伴報價，加成後轉為自己的報價單</div>';
+        html += '</div>';
+        html += '<button onclick="window._qtCloseImport()" style="background:none;border:none;cursor:pointer;padding:6px;color:var(--ink-muted);border-radius:var(--r-sm)" onmouseenter="this.style.background=\'var(--bg-hover)\'" onmouseleave="this.style.background=\'none\'">' + IC.close + '</button>';
+        html += '</div>';
+
+        // ── Body ──
+        html += '<div style="padding:20px 28px 24px">';
+
+        // Mode tabs
+        html += '<div style="display:flex;gap:4px;margin-bottom:20px;background:var(--bg-hover);border-radius:var(--r-md);padding:3px">';
+        var modes = [{id:'file',label:'檔案上傳'},{id:'text',label:'文字貼上'}];
+        modes.forEach(function(m) {
+          var isActive = st.mode === m.id;
+          html += '<button onclick="window._qtImportMode(\'' + m.id + '\')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:' + (isActive ? '600' : '450') + ';border:none;border-radius:' + (isActive ? 'var(--r-sm)' : '0') + ';background:' + (isActive ? 'var(--bg-card)' : 'transparent') + ';color:' + (isActive ? 'var(--ink)' : 'var(--ink-muted)') + ';cursor:pointer;font-family:inherit;transition:all .15s;box-shadow:' + (isActive ? 'var(--shadow-sm)' : 'none') + '">' + m.label + '</button>';
+        });
+        html += '</div>';
+
+        if (!st.parsed) {
+          // ── Upload / Paste area ──
+          if (st.mode === 'file') {
+            html += '<div id="qtImportDropZone" style="border:2px dashed var(--border);border-radius:var(--r-lg);padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s" onmouseenter="this.style.borderColor=\'var(--primary)\';this.style.background=\'rgba(124,92,252,.03)\'" onmouseleave="this.style.borderColor=\'var(--border)\';this.style.background=\'transparent\'" onclick="document.getElementById(\'qtImportFileInput\').click()">';
+            html += '<div style="width:48px;height:48px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin:0 auto 12px">';
+            html += '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M3 14v2a2 2 0 002 2h10a2 2 0 002-2v-2"/><polyline points="13 6 10 3 7 6"/><line x1="10" y1="3" x2="10" y2="13"/></svg>';
+            html += '</div>';
+            html += '<div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px">拖曳檔案到此，或點擊選擇</div>';
+            html += '<div style="font-size:12px;color:var(--ink-muted)">支援 JSON 格式（BeyondPath 匯出檔 或 自訂格式）</div>';
+            html += '<input type="file" id="qtImportFileInput" accept=".json" style="display:none" onchange="window._qtImportFileChange(this)">';
+            html += '</div>';
+            // Format hint
+            html += '<div style="margin-top:12px;padding:12px 14px;background:var(--bg-hover);border-radius:var(--r-md);font-size:12px;color:var(--ink-muted);line-height:1.6">';
+            html += '<div style="font-weight:600;color:var(--ink-sec);margin-bottom:4px">JSON 格式範例：</div>';
+            html += '<code style="font-family:monospace;font-size:11px">{"vendor":"合作廠商名","items":[{"desc":"項目","qty":1,"unit":"式","unitPrice":10000}]}</code>';
+            html += '</div>';
+          } else {
+            html += '<div style="margin-bottom:12px">';
+            html += '<div style="font-size:13px;font-weight:500;color:var(--ink-sec);margin-bottom:6px">貼上報價項目（每行一項，用 Tab 分隔）</div>';
+            html += '<textarea id="qtImportTextArea" placeholder="項目描述&#9;數量&#9;單位&#9;單價\n前端開發&#9;1&#9;式&#9;50000\nAPI 串接&#9;1&#9;式&#9;30000" style="width:100%;height:140px;border:1px solid var(--border);border-radius:var(--r-md);padding:12px;font-size:13px;font-family:\'Inter\',monospace;resize:vertical;background:var(--bg-input);color:var(--ink);line-height:1.6;box-sizing:border-box" oninput="this.style.borderColor=\'var(--primary)\'"></textarea>';
+            html += '</div>';
+            html += '<div style="margin-bottom:12px">';
+            html += '<div style="font-size:13px;font-weight:500;color:var(--ink-sec);margin-bottom:6px">來源廠商名稱</div>';
+            html += '<input id="qtImportVendor" type="text" placeholder="例：外包合作夥伴 A" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:13px;font-family:inherit;background:var(--bg-input);color:var(--ink);box-sizing:border-box">';
+            html += '</div>';
+            html += '<button onclick="window._qtImportParseText()" class="btn btn-accent" style="padding:8px 20px;font-size:13px">解析項目</button>';
+          }
+
+          if (st.error) {
+            html += '<div style="margin-top:12px;padding:10px 14px;background:var(--rose-bg);border-radius:var(--r-md);font-size:13px;color:var(--rose);display:flex;align-items:center;gap:8px">';
+            html += '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r=".5" fill="currentColor"/></svg>';
+            html += st.error + '</div>';
+          }
+        } else {
+          // ── Parsed preview ──
+          var items = st.parsed.items;
+          var vendor = st.parsed.vendor || '未知來源';
+
+          // Source badge
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
+          html += '<div style="display:flex;align-items:center;gap:8px">';
+          html += '<div style="padding:4px 10px;background:var(--primary-light);color:var(--primary);border-radius:var(--r-sm);font-size:12px;font-weight:600">' + vendor + '</div>';
+          html += '<span style="font-size:12px;color:var(--ink-muted)">' + items.length + ' 個項目</span>';
+          if (st.fileName) html += '<span style="font-size:11px;color:var(--ink-dim)">' + st.fileName + '</span>';
+          html += '</div>';
+          html += '<button onclick="window._qtImportReset()" style="font-size:12px;color:var(--primary);background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline">重新匯入</button>';
+          html += '</div>';
+
+          // Markup control
+          html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px 16px;background:linear-gradient(135deg,rgba(124,92,252,.06),rgba(124,92,252,.02));border-radius:var(--r-md);border:1px solid rgba(124,92,252,.1)">';
+          html += '<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap">加成比例</div>';
+          html += '<input id="qtMarkupRange" type="range" min="0" max="100" value="' + st.markup + '" oninput="window._qtImportSetMarkup(this.value)" style="flex:1;accent-color:var(--primary)">';
+          html += '<div style="display:flex;align-items:center;gap:4px">';
+          html += '<input id="qtMarkupInput" type="number" min="0" max="200" value="' + st.markup + '" onchange="window._qtImportSetMarkup(this.value)" style="width:56px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:14px;font-weight:700;text-align:center;font-family:inherit;background:var(--bg-card);color:var(--primary)">';
+          html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:600">%</span>';
+          html += '</div></div>';
+
+          // Items table
+          html += '<div style="border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;margin-bottom:16px">';
+          html += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+          html += '<thead><tr style="background:var(--bg-hover)">';
+          html += '<th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--ink-sec);font-size:12px">項目</th>';
+          html += '<th style="padding:10px 8px;text-align:center;font-weight:600;color:var(--ink-sec);font-size:12px;width:50px">數量</th>';
+          html += '<th style="padding:10px 8px;text-align:center;font-weight:600;color:var(--ink-sec);font-size:12px;width:40px">單位</th>';
+          html += '<th style="padding:10px 12px;text-align:right;font-weight:600;color:var(--ink-sec);font-size:12px;width:100px">原始單價</th>';
+          html += '<th style="padding:10px 12px;text-align:right;font-weight:600;color:var(--primary);font-size:12px;width:100px">加成後</th>';
+          html += '</tr></thead><tbody>';
+
+          var origTotal = 0;
+          var newTotal = 0;
+          items.forEach(function(item, idx) {
+            var origSub = (item.qty || 1) * (item.unitPrice || 0);
+            var newPrice = Math.round(item.unitPrice * (1 + st.markup / 100));
+            var newSub = (item.qty || 1) * newPrice;
+            origTotal += origSub;
+            newTotal += newSub;
+            html += '<tr style="border-top:1px solid var(--border)">';
+            html += '<td style="padding:10px 12px;color:var(--ink)">' + (item.desc || '未命名項目') + '</td>';
+            html += '<td style="padding:10px 8px;text-align:center;color:var(--ink-sec)">' + (item.qty || 1) + '</td>';
+            html += '<td style="padding:10px 8px;text-align:center;color:var(--ink-muted)">' + (item.unit || '式') + '</td>';
+            html += '<td style="padding:10px 12px;text-align:right;color:var(--ink-muted)">' + fmtMoney(item.unitPrice) + '</td>';
+            html += '<td style="padding:10px 12px;text-align:right;font-weight:600;color:var(--primary)">' + fmtMoney(newPrice) + '</td>';
+            html += '</tr>';
+          });
+          html += '</tbody></table></div>';
+
+          // Totals summary
+          html += '<div style="display:flex;justify-content:flex-end;gap:24px;padding:12px 16px;background:var(--bg-hover);border-radius:var(--r-md);margin-bottom:20px">';
+          html += '<div style="text-align:right"><div style="font-size:11px;color:var(--ink-muted);margin-bottom:2px">原始合計</div><div style="font-size:15px;color:var(--ink-muted);text-decoration:line-through">' + fmtMoney(origTotal) + '</div></div>';
+          html += '<div style="text-align:right"><div style="font-size:11px;color:var(--primary);font-weight:600;margin-bottom:2px">加成後合計</div><div style="font-size:18px;font-weight:800;color:var(--primary)">' + fmtMoney(newTotal) + '</div></div>';
+          html += '<div style="text-align:right"><div style="font-size:11px;color:var(--teal);font-weight:600;margin-bottom:2px">利潤</div><div style="font-size:15px;font-weight:700;color:var(--teal)">+' + fmtMoney(newTotal - origTotal) + '</div></div>';
+          html += '</div>';
+
+          // Action buttons
+          html += '<div style="display:flex;justify-content:flex-end;gap:10px">';
+          html += '<button onclick="window._qtCloseImport()" class="btn btn-outline" style="padding:8px 20px;font-size:13px">取消</button>';
+          html += '<button onclick="window._qtImportCreate()" class="btn btn-accent" style="padding:8px 24px;font-size:13px;display:flex;align-items:center;gap:6px">' + IC.plus + ' 建立草稿報價</button>';
+          html += '</div>';
+        }
+
+        html += '</div>'; // body
+        html += '</div>'; // modal
+        ov.innerHTML = html;
+
+        // Drag-and-drop bindings
+        var dropZone = document.getElementById('qtImportDropZone');
+        if (dropZone) {
+          dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = 'var(--primary)'; dropZone.style.background = 'rgba(124,92,252,.06)'; });
+          dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = 'var(--border)'; dropZone.style.background = 'transparent'; });
+          dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border)';
+            dropZone.style.background = 'transparent';
+            if (e.dataTransfer.files.length > 0) parseFile(e.dataTransfer.files[0]);
+          });
+        }
+      }
+
+      // ── Parse JSON file ──
+      function parseFile(file) {
+        if (!file) return;
+        importState.fileName = file.name;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            var data = JSON.parse(e.target.result);
+            // Accept BeyondPath full export format
+            if (data.items && Array.isArray(data.items)) {
+              importState.parsed = {
+                vendor: data.vendor || data.client && data.client.name || data.title || '未命名來源',
+                items: data.items.map(function(item) {
+                  return {
+                    desc: item.desc || item.description || item.name || '未命名項目',
+                    qty: parseFloat(item.qty || item.quantity) || 1,
+                    unit: item.unit || '式',
+                    unitPrice: parseFloat(item.unitPrice || item.price || item.amount) || 0
+                  };
+                })
+              };
+              importState.error = '';
+            } else {
+              importState.error = '無法辨識的 JSON 格式。需要包含 items 陣列。';
+            }
+          } catch(err) {
+            importState.error = '檔案解析失敗：' + err.message;
+          }
+          renderImportModal();
+        };
+        reader.readAsText(file);
+      }
+
+      // ── Parse text input ──
+      function parseText() {
+        var ta = document.getElementById('qtImportTextArea');
+        var vendorInput = document.getElementById('qtImportVendor');
+        if (!ta || !ta.value.trim()) { importState.error = '請輸入報價項目'; renderImportModal(); return; }
+
+        var lines = ta.value.trim().split('\n');
+        var items = [];
+        var headerSkipped = false;
+
+        lines.forEach(function(line) {
+          line = line.trim();
+          if (!line) return;
+          // Try tab-separated first, then comma
+          var parts = line.split('\t');
+          if (parts.length < 2) parts = line.split(',');
+          if (parts.length < 2) parts = line.split(/\s{2,}/); // multiple spaces
+
+          // Skip if it looks like a header row
+          if (!headerSkipped && (parts[0].indexOf('項目') >= 0 || parts[0].indexOf('描述') >= 0 || parts[0].indexOf('desc') >= 0)) {
+            headerSkipped = true;
+            return;
+          }
+          headerSkipped = true;
+
+          var desc = (parts[0] || '').trim();
+          if (!desc) return;
+
+          var qty = 1, unit = '式', price = 0;
+          if (parts.length >= 4) {
+            qty = parseFloat(parts[1]) || 1;
+            unit = (parts[2] || '式').trim();
+            price = parseFloat(parts[3].replace(/[,NT$\s]/g, '')) || 0;
+          } else if (parts.length === 3) {
+            qty = parseFloat(parts[1]) || 1;
+            price = parseFloat(parts[2].replace(/[,NT$\s]/g, '')) || 0;
+          } else if (parts.length === 2) {
+            price = parseFloat(parts[1].replace(/[,NT$\s]/g, '')) || 0;
+          }
+
+          items.push({ desc: desc, qty: qty, unit: unit, unitPrice: price });
+        });
+
+        if (items.length === 0) {
+          importState.error = '無法解析任何項目。請確認格式正確。';
+        } else {
+          importState.parsed = {
+            vendor: (vendorInput && vendorInput.value.trim()) || '手動匯入',
+            items: items
+          };
+          importState.error = '';
+        }
+        renderImportModal();
+      }
+
+      // ── Create draft from import ──
+      function createFromImport() {
+        var st = importState;
+        if (!st.parsed || !st.parsed.items.length) return;
+
+        var newItems = st.parsed.items.map(function(item) {
+          return {
+            desc: item.desc,
+            qty: item.qty,
+            unit: item.unit,
+            unitPrice: Math.round(item.unitPrice * (1 + st.markup / 100))
+          };
+        });
+
+        var newQuote = {
+          id: 'qt_' + Date.now(),
+          number: genQuoteNumber(),
+          title: '匯入：' + (st.parsed.vendor || '外包報價'),
+          client: {name:'', contact:'', email:'', address:''},
+          status: 'draft',
+          created: new Date().toISOString().split('T')[0],
+          validUntil: (function() { var d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().split('T')[0]; })(),
+          notes: '原始報價來源：' + (st.parsed.vendor || '未知') + '\n整體加成：' + st.markup + '%',
+          type: 'client',
+          taxType: 'added',
+          discount: 0,
+          paymentSchedule: [{label:'簽約', pct:50, amt:0}, {label:'交付', pct:50, amt:0}],
+          items: newItems
+        };
+
+        quotes.push(newQuote);
+        saveQuotes(quotes);
+        closeImportModal();
+        renderBoard();
+        // Open the new quote for editing
+        setTimeout(function() { showEditModal(newQuote.id); }, 200);
+      }
+
+      // ── Window bindings for import modal ──
+      window._qtCloseImport = closeImportModal;
+      window._qtImportMode = function(mode) { importState.mode = mode; importState.error = ''; renderImportModal(); };
+      window._qtImportFileChange = function(input) { if (input.files && input.files[0]) parseFile(input.files[0]); };
+      window._qtImportParseText = parseText;
+      window._qtImportSetMarkup = function(val) {
+        importState.markup = Math.max(0, Math.min(200, parseInt(val) || 0));
+        var rangeEl = document.getElementById('qtMarkupRange');
+        var inputEl = document.getElementById('qtMarkupInput');
+        if (rangeEl) rangeEl.value = importState.markup;
+        if (inputEl) inputEl.value = importState.markup;
+        renderImportModal();
+      };
+      window._qtImportReset = function() { importState.parsed = null; importState.error = ''; importState.fileName = ''; renderImportModal(); };
+      window._qtImportCreate = createFromImport;
+
+      renderImportModal();
+    }
+
+// ── Window API for external calls ──
     window._qtAdd = function() { showEditModal(null); };
     window._qtEdit = function(id) { showEditModal(id); };
     window._qtPreview = function(id) { showPreviewModal(id); };
@@ -7214,6 +7598,279 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   // ══════════════════════════════════════════════════════════
+    // ── AI INSIGHTS DASHBOARD (v1.0) — vanilla JS ──
+  // ══════════════════════════════════════════════════════════
+  function renderInsights() {
+    var content = document.getElementById('content');
+    var mainEl = document.getElementById('main');
+    if (mainEl) { mainEl.style.overflow = ''; mainEl.style.height = ''; }
+    var appEl = document.getElementById('app');
+    if (appEl) appEl.style.overflow = '';
+
+    // ── Data collection from all modules ──
+    function getData(key, fallback) { try { var s = localStorage.getItem(key); return s ? JSON.parse(s) : fallback; } catch(e) { return fallback; } }
+
+    var quotes = getData('bp_quotes', []).filter(function(q) { return !q.archived; });
+    var contacts = getData('bp_contacts', []);
+    var billing = getData('bp_billing', []);
+    var tasks = getData('bp_kanban_cards', []);
+    var meetings = getData('bp_meetings', []);
+
+    var now = new Date();
+    var thisMonth = now.getMonth();
+    var thisYear = now.getFullYear();
+    var today = now.toISOString().split('T')[0];
+
+    // ── Computed metrics ──
+    // Revenue
+    var monthlyQuoteTotal = 0;
+    var acceptedTotal = 0;
+    var sentCount = 0;
+    var acceptedCount = 0;
+    var pendingReceivable = 0;
+    var recentQuotes = [];
+
+    quotes.forEach(function(q) {
+      var total = 0;
+      (q.items || []).forEach(function(item) { total += (item.qty || 1) * (item.unitPrice || 0); });
+      var cDate = new Date(q.created);
+      if (cDate.getMonth() === thisMonth && cDate.getFullYear() === thisYear) {
+        monthlyQuoteTotal += total;
+        recentQuotes.push({title: q.title, total: total, status: q.status, client: q.client ? q.client.name : ''});
+      }
+      if (q.status === 'accepted') { acceptedTotal += total; acceptedCount++; }
+      if (q.status === 'sent') { sentCount++; pendingReceivable += total; }
+      if (q.status === 'sent' || q.status === 'accepted') { /* sent or accepted */ }
+    });
+    var closeRate = (sentCount + acceptedCount) > 0 ? Math.round(acceptedCount * 100 / (sentCount + acceptedCount)) : 0;
+
+    // Billing
+    var receivedThisMonth = 0;
+    var overdueCount = 0;
+    billing.forEach(function(b) {
+      if (b.status === 'paid') {
+        var pDate = new Date(b.paidDate || b.date);
+        if (pDate.getMonth() === thisMonth && pDate.getFullYear() === thisYear) {
+          receivedThisMonth += (b.amount || 0);
+        }
+      }
+      if (b.status === 'overdue' || (b.status === 'pending' && b.dueDate && b.dueDate < today)) {
+        overdueCount++;
+      }
+    });
+
+    // Tasks
+    var totalTasks = tasks.length;
+    var doneTasks = tasks.filter(function(t) { return t.column === 'done'; }).length;
+    var inProgressTasks = tasks.filter(function(t) { return t.column === 'doing'; }).length;
+    var overdueTasks = tasks.filter(function(t) { return t.column !== 'done' && t.due && t.due < today; }).length;
+    var taskCompletionRate = totalTasks > 0 ? Math.round(doneTasks * 100 / totalTasks) : 0;
+
+    // Contacts
+    var newContactsThisMonth = contacts.filter(function(c) {
+      var cDate = new Date(c.created || c.createdAt);
+      return cDate.getMonth() === thisMonth && cDate.getFullYear() === thisYear;
+    }).length;
+    var activeContacts = contacts.filter(function(c) { return c.type === 'client' || c.type === 'partner'; }).length;
+
+    // Meetings
+    var meetingsThisMonth = meetings.filter(function(m) {
+      var mDate = new Date(m.date);
+      return mDate.getMonth() === thisMonth && mDate.getFullYear() === thisYear;
+    }).length;
+
+    // ── Helper functions ──
+    function fmtMoney(n) { return 'NT$ ' + (n || 0).toLocaleString(); }
+    function pctBar(pct, color) {
+      return '<div style="flex:1;height:6px;border-radius:3px;background:var(--bg-hover);overflow:hidden"><div style="height:100%;width:' + Math.min(pct, 100) + '%;background:' + color + ';border-radius:3px;transition:width .6s ease"></div></div>';
+    }
+    function sparkDot(val, max, color) {
+      var pct = max > 0 ? Math.round(val * 100 / max) : 0;
+      return '<div style="display:flex;align-items:center;gap:8px">' + pctBar(pct, color) + '<span style="font-size:11px;color:var(--ink-muted);white-space:nowrap;min-width:32px;text-align:right">' + pct + '%</span></div>';
+    }
+
+    // ── Render ──
+    var html = '';
+
+    // Header
+    html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
+    html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
+    html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="2 16 6 10 10 13 14 6 18 2"/><circle cx="18" cy="2" r="1.5" fill="var(--primary)"/></svg> AI 儀表板</h2>';
+    html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">' + thisYear + '年' + (thisMonth + 1) + '月營運快照</span>';
+    html += '</div></div>';
+
+    // ═══ Layer 1: Revenue Health (營收健康度) ═══
+    html += '<div style="margin-bottom:28px">';
+    html += '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:8px">';
+    html += '<div style="width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,var(--primary),#9B7DFF);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><line x1="10" y1="2" x2="10" y2="18"/><path d="M14 6c0-1.7-1.8-3-4-3S6 4.3 6 6s1.8 3 4 3 4 1.3 4 3-1.8 3-4 3-4-1.3-4-3"/></svg></div>';
+    html += '營收健康度</div>';
+
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">';
+    // Card: 本月報價額
+    html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border);position:relative;overflow:hidden">';
+    html += '<div style="position:absolute;top:0;right:0;width:60px;height:60px;background:linear-gradient(135deg,rgba(124,92,252,.08),transparent);border-radius:0 0 0 60px"></div>';
+    html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:500">本月報價額</div>';
+    html += '<div style="font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-.5px">' + fmtMoney(monthlyQuoteTotal) + '</div>';
+    html += '<div style="font-size:12px;color:var(--ink-dim);margin-top:6px">' + recentQuotes.length + ' 筆報價</div>';
+    html += '</div>';
+    // Card: 簽回率
+    html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border);position:relative;overflow:hidden">';
+    html += '<div style="position:absolute;top:0;right:0;width:60px;height:60px;background:linear-gradient(135deg,rgba(27,168,145,.08),transparent);border-radius:0 0 0 60px"></div>';
+    html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:500">簽回率</div>';
+    html += '<div style="font-size:24px;font-weight:800;color:' + (closeRate >= 50 ? 'var(--teal)' : closeRate >= 25 ? 'var(--gold)' : 'var(--rose)') + ';letter-spacing:-.5px">' + closeRate + '%</div>';
+    html += '<div style="margin-top:8px">' + sparkDot(closeRate, 100, closeRate >= 50 ? 'var(--teal)' : 'var(--gold)') + '</div>';
+    html += '</div>';
+    // Card: 已收款
+    html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border);position:relative;overflow:hidden">';
+    html += '<div style="position:absolute;top:0;right:0;width:60px;height:60px;background:linear-gradient(135deg,rgba(27,168,145,.08),transparent);border-radius:0 0 0 60px"></div>';
+    html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:500">本月已收款</div>';
+    html += '<div style="font-size:24px;font-weight:800;color:var(--teal);letter-spacing:-.5px">' + fmtMoney(receivedThisMonth) + '</div>';
+    if (overdueCount > 0) {
+      html += '<div style="margin-top:6px;font-size:12px;color:var(--rose);font-weight:600;display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r=".5" fill="currentColor"/></svg> ' + overdueCount + ' 筆逾期待收</div>';
+    }
+    html += '</div>';
+    // Card: 待收金額
+    html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border);position:relative;overflow:hidden">';
+    html += '<div style="position:absolute;top:0;right:0;width:60px;height:60px;background:linear-gradient(135deg,rgba(224,138,58,.08),transparent);border-radius:0 0 0 60px"></div>';
+    html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:500">待回覆報價</div>';
+    html += '<div style="font-size:24px;font-weight:800;color:var(--gold);letter-spacing:-.5px">' + fmtMoney(pendingReceivable) + '</div>';
+    html += '<div style="font-size:12px;color:var(--ink-dim);margin-top:6px">' + sentCount + ' 筆等待簽回</div>';
+    html += '</div>';
+    html += '</div></div>';
+
+    // ═══ Layer 2: Business Momentum (商業動能) ═══
+    html += '<div style="margin-bottom:28px">';
+    html += '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:8px">';
+    html += '<div style="width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,var(--teal),#3DD9A8);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><polyline points="2 16 6 10 10 13 14 6 18 2"/></svg></div>';
+    html += '商業動能</div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">';
+
+    // Pipeline funnel card
+    html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border)">';
+    html += '<div style="font-size:13px;font-weight:600;color:var(--ink-sec);margin-bottom:14px">報價轉換漏斗</div>';
+    var funnelData = [
+      {label: '總報價', count: quotes.length, color: 'var(--primary)'},
+      {label: '已送出', count: sentCount + acceptedCount, color: 'var(--gold)'},
+      {label: '已簽回', count: acceptedCount, color: 'var(--teal)'}
+    ];
+    var maxFunnel = Math.max(quotes.length, 1);
+    funnelData.forEach(function(f) {
+      var pct = Math.round(f.count * 100 / maxFunnel);
+      html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">';
+      html += '<div style="width:56px;font-size:12px;color:var(--ink-muted);text-align:right">' + f.label + '</div>';
+      html += '<div style="flex:1;height:20px;background:var(--bg-hover);border-radius:10px;overflow:hidden;position:relative">';
+      html += '<div style="height:100%;width:' + Math.max(pct, 4) + '%;background:' + f.color + ';border-radius:10px;transition:width .6s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px">';
+      if (pct > 15) html += '<span style="font-size:10px;color:#fff;font-weight:700">' + f.count + '</span>';
+      html += '</div>';
+      if (pct <= 15) html += '<span style="position:absolute;left:' + Math.max(pct, 4) + '%;margin-left:6px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--ink-muted);font-weight:600">' + f.count + '</span>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+
+    // Contacts & meetings
+    html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border)">';
+    html += '<div style="font-size:13px;font-weight:600;color:var(--ink-sec);margin-bottom:14px">客戶與溝通</div>';
+    var bizMetrics = [
+      {label: '本月新增客戶', val: newContactsThisMonth, icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>'},
+      {label: '活躍客戶/夥伴', val: activeContacts, icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="3"/><circle cx="14" cy="7" r="3"/><path d="M2 17c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>'},
+      {label: '本月會議', val: meetingsThisMonth, icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/></svg>'}
+    ];
+    bizMetrics.forEach(function(m) {
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;' + (m !== bizMetrics[bizMetrics.length-1] ? 'border-bottom:1px solid var(--border)' : '') + '">';
+      html += '<div style="display:flex;align-items:center;gap:10px">';
+      html += '<div style="width:32px;height:32px;border-radius:8px;background:var(--bg-hover);display:flex;align-items:center;justify-content:center">' + m.icon + '</div>';
+      html += '<span style="font-size:13px;color:var(--ink-sec)">' + m.label + '</span></div>';
+      html += '<span style="font-size:18px;font-weight:800;color:var(--ink)">' + m.val + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '</div></div>';
+
+    // ═══ Layer 3: Execution (執行力) ═══
+    html += '<div style="margin-bottom:28px">';
+    html += '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:8px">';
+    html += '<div style="width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,var(--gold),#F0A050);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><polyline points="4 10 8 14 16 6"/></svg></div>';
+    html += '執行力</div>';
+
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">';
+
+    // Completion ring card
+    html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border);text-align:center">';
+    html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:12px;font-weight:500">任務完成率</div>';
+    var ringColor = taskCompletionRate >= 70 ? 'var(--teal)' : taskCompletionRate >= 40 ? 'var(--gold)' : 'var(--rose)';
+    var ringSize = 80;
+    var strokeW = 8;
+    var radius = (ringSize - strokeW) / 2;
+    var circumference = 2 * Math.PI * radius;
+    var dashOffset = circumference * (1 - taskCompletionRate / 100);
+    html += '<div style="position:relative;width:' + ringSize + 'px;height:' + ringSize + 'px;margin:0 auto 8px">';
+    html += '<svg width="' + ringSize + '" height="' + ringSize + '" viewBox="0 0 ' + ringSize + ' ' + ringSize + '">';
+    html += '<circle cx="' + ringSize/2 + '" cy="' + ringSize/2 + '" r="' + radius + '" fill="none" stroke="var(--bg-hover)" stroke-width="' + strokeW + '"/>';
+    html += '<circle cx="' + ringSize/2 + '" cy="' + ringSize/2 + '" r="' + radius + '" fill="none" stroke="' + ringColor + '" stroke-width="' + strokeW + '" stroke-linecap="round" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + dashOffset + '" transform="rotate(-90 ' + ringSize/2 + ' ' + ringSize/2 + ')" style="transition:stroke-dashoffset .8s ease"/>';
+    html += '</svg>';
+    html += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:' + ringColor + '">' + taskCompletionRate + '%</div>';
+    html += '</div>';
+    html += '<div style="font-size:12px;color:var(--ink-muted)">' + doneTasks + ' / ' + totalTasks + ' 完成</div>';
+    html += '</div>';
+
+    // In progress
+    html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border)">';
+    html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:500">進行中任務</div>';
+    html += '<div style="font-size:24px;font-weight:800;color:var(--primary);letter-spacing:-.5px">' + inProgressTasks + '</div>';
+    if (overdueTasks > 0) {
+      html += '<div style="margin-top:10px;padding:6px 10px;background:var(--rose-bg);border-radius:var(--r-sm);font-size:12px;color:var(--rose);font-weight:600;display:inline-flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r=".5" fill="currentColor"/></svg> ' + overdueTasks + ' 筆逾期</div>';
+    } else {
+      html += '<div style="margin-top:6px;font-size:12px;color:var(--teal)">無逾期任務</div>';
+    }
+    html += '</div>';
+
+    // Weekly meetings summary
+    html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border)">';
+    html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:500">總會議紀錄</div>';
+    html += '<div style="font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-.5px">' + meetings.length + '</div>';
+    var pendingActions = 0;
+    meetings.forEach(function(m) { (m.actionItems || []).forEach(function(a) { if (!a.done) pendingActions++; }); });
+    if (pendingActions > 0) {
+      html += '<div style="margin-top:6px;font-size:12px;color:var(--gold);font-weight:600">' + pendingActions + ' 項待辦事項未完成</div>';
+    }
+    html += '</div>';
+
+    // Contacts growth
+    html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border)">';
+    html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:500">客戶總數</div>';
+    html += '<div style="font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-.5px">' + contacts.length + '</div>';
+    if (newContactsThisMonth > 0) {
+      html += '<div style="margin-top:6px;font-size:12px;color:var(--teal);font-weight:600">+' + newContactsThisMonth + ' 本月新增</div>';
+    }
+    html += '</div>';
+    html += '</div></div>';
+
+    // ═══ Recent Activity ═══
+    if (recentQuotes.length > 0) {
+      html += '<div style="margin-bottom:28px">';
+      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:12px">近期報價</div>';
+      html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden">';
+      recentQuotes.slice(0, 5).forEach(function(q, idx) {
+        var statusMap = {draft:'草稿',sent:'已送出',accepted:'已簽回',declined:'未成案',expired:'已過期'};
+        var colorMap = {draft:'var(--primary)',sent:'var(--gold)',accepted:'var(--teal)',declined:'var(--rose)',expired:'var(--ink-dim)'};
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;' + (idx > 0 ? 'border-top:1px solid var(--border)' : '') + '">';
+        html += '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (q.title || '未命名') + '</div>';
+        html += '<div style="font-size:12px;color:var(--ink-muted)">' + (q.client || '') + '</div></div>';
+        html += '<div style="display:flex;align-items:center;gap:12px">';
+        html += '<span style="font-size:14px;font-weight:700;color:var(--ink)">' + fmtMoney(q.total) + '</span>';
+        html += '<span style="padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;color:' + (colorMap[q.status] || 'var(--ink-muted)') + ';background:' + (colorMap[q.status] || 'var(--ink-muted)').replace(')', ',.1)').replace('var(', 'rgba(').replace('--primary', '124,92,252').replace('--gold', '224,138,58').replace('--teal', '27,168,145').replace('--rose', '217,68,98').replace('--ink-dim', '0,0,0') + '">' + (statusMap[q.status] || q.status) + '</span>';
+        html += '</div></div>';
+      });
+      html += '</div></div>';
+    }
+
+    content.innerHTML = html;
+  }
+
+  // ══════════════════════════════════════════════════════════
+
+
   // ── BILLING MODULE (v0.9.5) — vanilla JS ──
   // ══════════════════════════════════════════════════════════
   function renderBilling() {
@@ -17336,4 +17993,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.4.9 -->
+</html><!-- v1.5.0 -->
