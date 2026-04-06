@@ -5890,7 +5890,7 @@ canvas{display:block;margin:0 auto 24px}
       html += '</div>';
       html += bpSearchBar('qtSearchInput', searchVal || '', '搜尋報價…');
       html += '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">';
-      html += '<button class="btn btn-outline" style="padding:8px 16px;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap" onclick="_qtImport()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 14v2a2 2 0 002 2h10a2 2 0 002-2v-2"/><polyline points="7 10 10 13 13 10"/><line x1="10" y1="3" x2="10" y2="13"/></svg> 匙入</button>';
+      html += '<button class="btn btn-outline" style="padding:8px 16px;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap" onclick="_qtImport()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 14v2a2 2 0 002 2h10a2 2 0 002-2v-2"/><polyline points="7 10 10 13 13 10"/><line x1="10" y1="3" x2="10" y2="13"/></svg> 匯入</button>';
       html += '<button class="btn btn-accent" style="padding:8px 20px;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap" onclick="_qtAdd()">' + IC.plus + ' 新增報價</button>';
       html += '</div>';
       html += '</div>';
@@ -6912,8 +6912,7 @@ canvas{display:block;margin:0 auto 24px}
       // Store print HTML in window variable to avoid onclick attribute escaping issues
       window._qtPrintCache = genPrintHTML(q, cp, totals);
       html += '<button onclick="document.getElementById(\'preview-modal\').remove();_qtEdit(\'' + q.id + '\')" style="padding:8px 16px;background:none;border:1px solid var(--border);color:var(--ink);border-radius:var(--r-md);font-weight:600;cursor:pointer;font-family:inherit;font-size:13px;display:flex;align-items:center;gap:5px">' + IC.pencil + ' 編輯</button>';
-      html += '<button onclick="window._qtImport = function() { showImportModal(); };
-    window._qtDoPrint()" style="padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:var(--r-md);font-weight:600;cursor:pointer;font-family:inherit;font-size:13px">列印 / PDF</button>';
+      html += '<button onclick="window._qtDoPrint()" style="padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:var(--r-md);font-weight:600;cursor:pointer;font-family:inherit;font-size:13px">列印 / PDF</button>';
       html += '<button onclick="document.getElementById(\'preview-modal\').remove()" style="background:none;border:none;cursor:pointer;color:var(--ink-muted);padding:4px;display:flex">' + IC.close + '</button>';
       html += '</div></div>';
 
@@ -7551,6 +7550,7 @@ canvas{display:block;margin:0 auto 24px}
     window._qtAdd = function() { showEditModal(null); };
     window._qtEdit = function(id) { showEditModal(id); };
     window._qtPreview = function(id) { showPreviewModal(id); };
+    window._qtImport = function() { showImportModal(); };
     window._qtDoPrint = function() {
       var h = window._qtPrintCache;
       if (!h) return;
