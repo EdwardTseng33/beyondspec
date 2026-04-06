@@ -14259,15 +14259,18 @@ function loadHistory(){
     function renderList(){
       var sq = (window._mtSearch || '').toLowerCase();
       var html = '';
-      // Header
+      // Header: page-title-area (h2 + subtitle ONLY)
       html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
       html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="5"/><line x1="13" y1="2" x2="13" y2="5"/></svg> 會議紀錄</h2>';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="5"/><line x1="13" y1="2" x2="13" y2="5"/></svg> 會議紀錄</h2>';
       html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">記錄每次溝通，不遺漏任何承諾</span>';
-      html += '</div>';
-      html += '<div style="display:flex;gap:8px;align-items:center">';
+      html += '</div></div>';
+
+      // Action row: Search + Button (matches contacts/quotes/billing pattern)
+      html += '<div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px">';
       html += bpSearchBar('mtSearchInput', window._mtSearch||'', '搜尋會議…');
-      html += '<button class="btn btn-accent" style="padding:8px 18px;font-size:13px;white-space:nowrap" onclick="window._mtShowModal()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增會議</button>';
+      html += '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">';
+      html += '<button class="btn btn-accent" style="padding:8px 20px;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap" onclick="window._mtShowModal()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增會議</button>';
       html += '</div></div>';
 
       // Filter by search
@@ -14497,25 +14500,26 @@ function loadHistory(){
     function renderList(){
       var sq = (window._dcSearch || '').toLowerCase();
       var html = '';
-      // Header
+      // Header: page-title-area (h2 + subtitle ONLY)
       html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
       html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><polyline points="10,2 10,8 16,8"/></svg> 文件庫</h2>';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><polyline points="10,2 10,8 16,8"/></svg> 文件庫</h2>';
       html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">集中管理所有商業文件</span>';
-      html += '</div>';
-      html += '<div style="display:flex;gap:8px;align-items:center">';
-      html += bpSearchBar('dcSearchInput', window._dcSearch||'', '搜尋文件…');
-      html += '<button class="btn btn-accent" style="padding:8px 18px;font-size:13px;white-space:nowrap" onclick="window._dcShowModal()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增文件</button>';
       html += '</div></div>';
 
-      // Filter bar
-      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">';
+      // Action row: Filter pills LEFT + Search + Button RIGHT (matches contacts/quotes pattern)
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">';
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;flex:1">';
       html += '<button class="ct-filter-btn' + (filterType==='all'?' active':'') + '" onclick="window._dcSetFilter(\'all\')">全部 ' + docs.length + '</button>';
       DOC_TYPES.forEach(function(t){
         var count = docs.filter(function(d){ return d.type === t.id; }).length;
         html += '<button class="ct-filter-btn' + (filterType===t.id?' active':'') + '" onclick="window._dcSetFilter(\'' + t.id + '\')">' + t.label + ' ' + count + '</button>';
       });
       html += '</div>';
+      html += bpSearchBar('dcSearchInput', window._dcSearch||'', '搜尋文件…');
+      html += '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">';
+      html += '<button class="btn btn-accent" style="padding:8px 20px;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap" onclick="window._dcShowModal()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增文件</button>';
+      html += '</div></div>';
 
       // Filter
       var filtered = filterType === 'all' ? docs : docs.filter(function(d){ return d.type === filterType; });
