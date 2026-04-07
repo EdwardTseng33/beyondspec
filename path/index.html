@@ -7389,8 +7389,6 @@ canvas{display:block;margin:0 auto 24px}
           html += '</div>';
         }
 
-                }
-
         html += '</div>'; // body
         html += '</div>'; // modal
         ov.innerHTML = html;
@@ -7756,7 +7754,7 @@ canvas{display:block;margin:0 auto 24px}
       renderImportModal();
     }
 
-// ── Window API for external calls ──
+    // ── Window API for external calls ──
     window._qtAdd = function() { showEditModal(null); };
     window._qtEdit = function(id) { showEditModal(id); };
     window._qtPreview = function(id) { showPreviewModal(id); };
