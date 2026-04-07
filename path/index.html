@@ -664,7 +664,7 @@ h3{font-size:16px;font-weight:600;color:var(--ink)}
 /* ===== STATS ===== */
 .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:28px}
 .stat-card{background:var(--bg-card);border:none;border-radius:var(--r-lg);padding:20px;text-align:center;transition:all .25s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;box-shadow:var(--shadow-card)}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--primary);border-radius:0 0 2px 2px}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,var(--primary));border-radius:0 0 2px 2px}
 .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
 .stat-card:hover::before{opacity:1}
 .stat-value{font-size:var(--text-2xl);font-weight:800;color:var(--ink);margin-bottom:4px}
@@ -2135,6 +2135,7 @@ canvas{display:block;margin:0 auto 24px}
   gap: 8px;
   flex-shrink: 0;
 }
+.page-title-area h1 svg{color:var(--primary)}
 .page-title-area .subtitle {
   font-size: 13px;
   color: var(--ink-muted);
@@ -2843,7 +2844,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.5.2</div>
+        <div class="sidebar-version">v1.5.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3176,6 +3177,8 @@ canvas{display:block;margin:0 auto 24px}
 
   // ── Module Enable/Disable System ──
   const MODULE_DEFAULTS = {
+    'mod-diagnose': true, 'mod-lab': true, 'mod-survey': true,
+    'mod-market': true, 'mod-report': true,
     'mod-tasks': true, 'mod-contacts': true,
     'mod-quotes': true, 'mod-billing': true, 'mod-meetings': false,
     'mod-insights': false, 'mod-docs': false
@@ -3197,9 +3200,15 @@ canvas{display:block;margin:0 auto 24px}
     saveEnabledModules(modules);
     renderSidebar();
     // If we just disabled the current module, navigate home
-    const currentBizItem = Object.entries(BIZ_TAB_MAP).find(([sid]) => sid === state.currentModule);
+    var currentId = state.currentModule;
+    // Check PATH modules (diagnose, lab, survey, market, report)
+    if (['diagnose','lab','survey','market','report'].indexOf(currentId) >= 0) {
+      if (!modules['mod-' + currentId]) { navigate('home'); return; }
+    }
+    // Check biz modules
+    const currentBizItem = Object.entries(BIZ_TAB_MAP).find(([sid]) => sid === currentId);
     if (currentBizItem) {
-      const modKeyForCurrent = 'mod-' + state.currentModule.replace('biz-','');
+      const modKeyForCurrent = 'mod-' + currentId.replace('biz-','');
       if (!modules[modKeyForCurrent]) { navigate('home'); return; }
     }
     renderSettings();
@@ -3242,8 +3251,12 @@ canvas{display:block;margin:0 auto 24px}
     // Build nav HTML with category labels
     let navHtml = '';
 
-    // PATH tools
-    navHtml += pathItems.map(item => {
+    // PATH tools (home always visible, rest filtered by module toggle)
+    navHtml += pathItems.filter(function(item) {
+      if (item.id === 'home') return true;
+      var modKey = 'mod-' + item.id;
+      return enabledModules[modKey] !== false;
+    }).map(item => {
       return `<div class="nav-item ${item.id === 'home' ? 'nav-home' : ''} ${state.currentModule === item.id ? 'active' : ''}" onclick="app.navClick(event,'${item.id}')" title="${item.label}">
         ${ICONS[item.icon]}
         <span>${item.label}</span>
@@ -4553,7 +4566,12 @@ canvas{display:block;margin:0 auto 24px}
         if(maxScroll <= 2) return; // Nothing to scroll horizontally
 
         e.preventDefault();
+        // Disable smooth scroll during wheel to prevent lag
+        board.style.scrollBehavior = 'auto';
         board.scrollLeft += e.deltaY;
+        // Restore smooth scroll after a short delay (for programmatic scrolls)
+        clearTimeout(board._wheelTimer);
+        board._wheelTimer = setTimeout(function(){ board.style.scrollBehavior = ''; }, 120);
       }, {passive:false});
     }
 
@@ -6017,18 +6035,18 @@ canvas{display:block;margin:0 auto 24px}
       html += '</div>';
       html += '</div>';
 
-      // Stat cards
-      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px">';
+      // Stat cards — synced with PATH design system (.stat-card)
+      html += '<div class="stats-row" style="margin-bottom:24px">';
       [
-        {label:'本月報價', val: fmtMoney(stats.monthly), icon: IC.dollar},
-        {label:'簽回率', val: stats.acceptRate, icon: IC.check},
-        {label:'待客回覆', val: stats.waiting, icon: IC.send},
-        {label:'待收金額', val: fmtMoney(stats.pending), icon: IC.calendar}
+        {label:'本月報價', val: fmtMoney(stats.monthly), icon: IC.dollar, accent:'var(--primary)'},
+        {label:'簽回率', val: stats.acceptRate, icon: IC.check, accent:'var(--teal)'},
+        {label:'待客回覆', val: stats.waiting, icon: IC.send, accent:'var(--gold)'},
+        {label:'待收金額', val: fmtMoney(stats.pending), icon: IC.calendar, accent:'var(--rose)'}
       ].forEach(function(st) {
-        html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;display:flex;justify-content:space-between;align-items:flex-start">';
-        html += '<div><div style="font-size:12px;color:var(--ink-muted);margin-bottom:8px">' + st.label + '</div>';
-        html += '<div style="font-size:18px;font-weight:800;color:var(--ink)">' + st.val + '</div></div>';
-        html += '<div style="color:var(--primary);opacity:.6">' + st.icon + '</div></div>';
+        html += '<div class="stat-card" style="--accent:' + st.accent + ';text-align:center;padding:20px 16px">';
+        html += '<div class="stat-value" style="font-size:20px;margin-bottom:6px;transition:transform .2s">' + st.val + '</div>';
+        html += '<div class="stat-label" style="justify-content:center"><span style="color:' + st.accent + '">' + st.icon + '</span> ' + st.label + '</div>';
+        html += '</div>';
       });
       html += '</div>';
 
@@ -8373,19 +8391,21 @@ canvas{display:block;margin:0 auto 24px}
       html += '<button class="btn btn-accent" style="padding:8px 20px;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0" onclick="window._blAdd()">' + IC.plus + ' 新增發票</button>';
       html += '</div>';
 
-      // Summary stats
-      html += '<div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap">';
-      html += '<div style="flex:1;min-width:160px;background:linear-gradient(135deg,rgba(27,168,145,.1),rgba(27,168,145,.03));border-radius:var(--r-lg);padding:18px 22px;border:1px solid rgba(27,168,145,.12)">';
-      html += '<div style="font-size:11px;color:var(--teal);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px">已收款</div>';
-      html += '<div style="font-size:22px;font-weight:800;color:var(--teal);letter-spacing:-.5px">' + fmtMoney(totalReceived) + '</div></div>';
-      html += '<div style="flex:1;min-width:160px;background:linear-gradient(135deg,rgba(224,138,58,.1),rgba(224,138,58,.03));border-radius:var(--r-lg);padding:18px 22px;border:1px solid rgba(224,138,58,.12)">';
-      html += '<div style="font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px">待收款</div>';
-      html += '<div style="font-size:22px;font-weight:800;color:var(--gold);letter-spacing:-.5px">' + fmtMoney(totalOutstanding) + '</div></div>';
+      // Summary stats — synced with PATH design system (.stat-card)
+      var blStats = [
+        {label:'已收款', val: fmtMoney(totalReceived), icon: IC.check, accent:'var(--teal)'},
+        {label:'待收款', val: fmtMoney(totalOutstanding), icon: IC.dollar, accent:'var(--gold)'}
+      ];
       if (totalOverdue > 0) {
-        html += '<div style="flex:1;min-width:160px;background:linear-gradient(135deg,rgba(217,68,98,.1),rgba(217,68,98,.03));border-radius:var(--r-lg);padding:18px 22px;border:1px solid rgba(217,68,98,.12)">';
-        html += '<div style="font-size:11px;color:var(--rose);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px">逾期未收</div>';
-        html += '<div style="font-size:22px;font-weight:800;color:var(--rose);letter-spacing:-.5px">' + fmtMoney(totalOverdue) + '</div></div>';
+        blStats.push({label:'逾期未收', val: fmtMoney(totalOverdue), icon: IC.alert, accent:'var(--rose)'});
       }
+      html += '<div class="stats-row" style="margin-bottom:24px">';
+      blStats.forEach(function(st) {
+        html += '<div class="stat-card" style="--accent:' + st.accent + ';text-align:center;padding:20px 16px">';
+        html += '<div class="stat-value" style="font-size:20px;margin-bottom:6px;transition:transform .2s">' + st.val + '</div>';
+        html += '<div class="stat-label" style="justify-content:center"><span style="color:' + st.accent + '">' + st.icon + '</span> ' + st.label + '</div>';
+        html += '</div>';
+      });
       html += '</div>';
 
       // Invoice cards
@@ -15834,6 +15854,11 @@ function loadHistory(){
         ${(function(){
           const em = getEnabledModules();
           const mods = [
+            { key:'mod-diagnose', label:'PATH 診斷', icon:'pulse', q:'這個方向值得做嗎？', layer:0 },
+            { key:'mod-lab', label:'Lab 研究', icon:'flask', q:'用戶怎麼看我的產品？', layer:0 },
+            { key:'mod-survey', label:'問卷引擎', icon:'clipboard', q:'怎麼收集真實回饋？', layer:0 },
+            { key:'mod-market', label:'市場探測', icon:'trendUp', q:'市場有多大？', layer:0 },
+            { key:'mod-report', label:'市場報告', icon:'fileText', q:'完整分析怎麼說？', layer:0 },
             { key:'mod-tasks', label:'任務看板', icon:'listChecks', q:'今天該做什麼？', layer:1 },
             { key:'mod-contacts', label:'客戶管理', icon:'users', q:'這個人跟我們什麼關係？', layer:1 },
             { key:'mod-quotes', label:'報價提案', icon:'fileText', q:'怎麼快速產一份專業報價？', layer:2 },
@@ -15842,11 +15867,12 @@ function loadHistory(){
             { key:'mod-insights', label:'AI 儀表板', icon:'activity', q:'公司現在狀況怎樣？', layer:3 },
             { key:'mod-docs', label:'文件庫', icon:'folder', q:'那份合約在哪裡？', layer:2 }
           ];
-          const layerLabels = {1:'核心',2:'按需',3:'智慧'};
-          const layerColors = {1:'var(--primary)',2:'var(--teal)',3:'var(--gold)'};
+          const layerLabels = {0:'驗證',1:'核心',2:'按需',3:'智慧'};
+          const layerColors = {0:'var(--violet,var(--primary))',1:'var(--primary)',2:'var(--teal)',3:'var(--gold)'};
           return mods.map(m => {
             const on = em[m.key];
-            const layerBadge = '<span style="font-size:10px;font-weight:700;color:'+layerColors[m.layer]+';background:'+(m.layer===1?'var(--primary-light)':m.layer===2?'rgba(27,168,145,.1)':'rgba(224,138,58,.1)')+';padding:2px 8px;border-radius:10px;letter-spacing:.03em">'+layerLabels[m.layer]+'</span>';
+            var layerBg = m.layer===0?'rgba(124,92,252,.08)':m.layer===1?'var(--primary-light)':m.layer===2?'rgba(27,168,145,.1)':'rgba(224,138,58,.1)';
+            const layerBadge = '<span style="font-size:10px;font-weight:700;color:'+layerColors[m.layer]+';background:'+layerBg+';padding:2px 8px;border-radius:10px;letter-spacing:.03em">'+layerLabels[m.layer]+'</span>';
             return '<div style="display:flex;align-items:center;gap:14px;padding:14px 0;'+(m.key!=='mod-docs'?'border-bottom:1px solid var(--border);':'')+'" >' +
               '<div style="width:36px;height:36px;border-radius:var(--r-sm);background:'+(on?'var(--primary-light)':'var(--bg-hover)')+';color:'+(on?'var(--primary)':'var(--ink-muted)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">' + ICONS[m.icon] + '</div>' +
               '<div style="flex:1;min-width:0">' +
@@ -15993,7 +16019,7 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.5.2</span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.5.3</span></div>
             <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 小團隊的 AI 商業引擎</div>
           </div>
           <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
@@ -18334,4 +18360,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.5.2 -->
+</html><!-- v1.5.3 -->
