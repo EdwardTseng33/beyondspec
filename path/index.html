@@ -673,6 +673,16 @@ h3{font-size:16px;font-weight:600;color:var(--ink)}
 .stat-label{font-size:var(--text-xs);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;gap:6px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
 .stat-label svg{width:14px;height:14px}
 
+/* ===== BIZ STAT CARDS (Business KPI Dashboard) ===== */
+.biz-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.biz-stat{background:var(--bg-card);border:none;border-radius:var(--r-lg);padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .25s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow-card)}
+.biz-stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.biz-stat-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.biz-stat-icon svg{width:18px;height:18px}
+.biz-stat-info{flex:1;min-width:0}
+.biz-stat-label{font-size:12px;color:var(--ink-muted);font-weight:500;margin-bottom:3px;letter-spacing:.3px}
+.biz-stat-val{font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-.3px;line-height:1.2}
+
 /* ===== BUTTONS ===== */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:12px 24px;font-size:var(--text-base);font-weight:600;border-radius:12px;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);border:none;font-family:inherit}
 .btn svg{width:16px;height:16px}
@@ -2846,7 +2856,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.5.3</div>
+        <div class="sidebar-version">v1.5.4</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6039,18 +6049,20 @@ canvas{display:block;margin:0 auto 24px}
       html += '</div>';
       html += '</div>';
 
-      // Stat cards — synced with PATH design system (.stat-card)
-      html += '<div class="stats-row" style="margin-bottom:24px">';
+      // Stat cards — business KPI dashboard style (.biz-stat)
+      html += '<div class="biz-stats-row">';
       [
-        {label:'本月報價', val: fmtMoney(stats.monthly), icon: IC.dollar, accent:'var(--primary)'},
-        {label:'簽回率', val: stats.acceptRate, icon: IC.check, accent:'var(--teal)'},
-        {label:'待客回覆', val: stats.waiting, icon: IC.send, accent:'var(--gold)'},
-        {label:'待收金額', val: fmtMoney(stats.pending), icon: IC.calendar, accent:'var(--rose)'}
+        {label:'本月報價', val: fmtMoney(stats.monthly), icon: IC.dollar, color:'var(--primary)', bg:'rgba(124,92,252,.1)'},
+        {label:'簽回率', val: stats.acceptRate, icon: IC.check, color:'var(--teal)', bg:'rgba(27,168,145,.1)'},
+        {label:'待客回覆', val: stats.waiting, icon: IC.send, color:'var(--gold)', bg:'rgba(224,138,58,.1)'},
+        {label:'待收金額', val: fmtMoney(stats.pending), icon: IC.calendar, color:'var(--rose)', bg:'rgba(217,68,98,.1)'}
       ].forEach(function(st) {
-        html += '<div class="stat-card" style="--accent:' + st.accent + ';text-align:center;padding:20px 16px">';
-        html += '<div class="stat-value" style="font-size:20px;margin-bottom:6px;transition:transform .2s">' + st.val + '</div>';
-        html += '<div class="stat-label" style="justify-content:center"><span style="color:' + st.accent + '">' + st.icon + '</span> ' + st.label + '</div>';
-        html += '</div>';
+        html += '<div class="biz-stat">';
+        html += '<div class="biz-stat-icon" style="background:' + st.bg + ';color:' + st.color + '">' + st.icon + '</div>';
+        html += '<div class="biz-stat-info">';
+        html += '<div class="biz-stat-label">' + st.label + '</div>';
+        html += '<div class="biz-stat-val">' + st.val + '</div>';
+        html += '</div></div>';
       });
       html += '</div>';
 
@@ -8395,20 +8407,22 @@ canvas{display:block;margin:0 auto 24px}
       html += '<button class="btn btn-accent" style="padding:8px 20px;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0" onclick="window._blAdd()">' + IC.plus + ' 新增發票</button>';
       html += '</div>';
 
-      // Summary stats — synced with PATH design system (.stat-card)
+      // Summary stats — business KPI dashboard style (.biz-stat)
       var blStats = [
-        {label:'已收款', val: fmtMoney(totalReceived), icon: IC.check, accent:'var(--teal)'},
-        {label:'待收款', val: fmtMoney(totalOutstanding), icon: IC.dollar, accent:'var(--gold)'}
+        {label:'已收款', val: fmtMoney(totalReceived), icon: IC.check, color:'var(--teal)', bg:'rgba(27,168,145,.1)'},
+        {label:'待收款', val: fmtMoney(totalOutstanding), icon: IC.dollar, color:'var(--gold)', bg:'rgba(224,138,58,.1)'}
       ];
       if (totalOverdue > 0) {
-        blStats.push({label:'逾期未收', val: fmtMoney(totalOverdue), icon: IC.alert, accent:'var(--rose)'});
+        blStats.push({label:'逾期未收', val: fmtMoney(totalOverdue), icon: IC.alert, color:'var(--rose)', bg:'rgba(217,68,98,.1)'});
       }
-      html += '<div class="stats-row" style="margin-bottom:24px">';
+      html += '<div class="biz-stats-row">';
       blStats.forEach(function(st) {
-        html += '<div class="stat-card" style="--accent:' + st.accent + ';text-align:center;padding:20px 16px">';
-        html += '<div class="stat-value" style="font-size:20px;margin-bottom:6px;transition:transform .2s">' + st.val + '</div>';
-        html += '<div class="stat-label" style="justify-content:center"><span style="color:' + st.accent + '">' + st.icon + '</span> ' + st.label + '</div>';
-        html += '</div>';
+        html += '<div class="biz-stat">';
+        html += '<div class="biz-stat-icon" style="background:' + st.bg + ';color:' + st.color + '">' + st.icon + '</div>';
+        html += '<div class="biz-stat-info">';
+        html += '<div class="biz-stat-label">' + st.label + '</div>';
+        html += '<div class="biz-stat-val">' + st.val + '</div>';
+        html += '</div></div>';
       });
       html += '</div>';
 
@@ -16023,7 +16037,7 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.5.3</span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.5.4</span></div>
             <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 小團隊的 AI 商業引擎</div>
           </div>
           <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
@@ -18364,4 +18378,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.5.3 -->
+</html><!-- v1.5.4 -->
