@@ -2441,7 +2441,7 @@ canvas{display:block;margin:0 auto 24px}
 .kanban-board-wrap.has-scroll-left::before{opacity:1}
 .kanban-board-wrap.has-scroll-right::after{opacity:1}
 /* Dot indicator bar — removed by design decision, keep scrollbar + fade only */
-.kanban-board{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px;min-height:calc(100vh - 220px);align-items:flex-start;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.kanban-board{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px;min-height:calc(100vh - 220px);align-items:flex-start;-webkit-overflow-scrolling:touch}
 /* Custom scrollbar track */
 .kanban-board::-webkit-scrollbar{height:5px}
 .kanban-board::-webkit-scrollbar-track{background:transparent;margin:0 8px}
@@ -2856,7 +2856,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.5.4</div>
+        <div class="sidebar-version">v1.5.5</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4580,12 +4580,7 @@ canvas{display:block;margin:0 auto 24px}
         if(maxScroll <= 2) return; // Nothing to scroll horizontally
 
         e.preventDefault();
-        // Disable smooth scroll during wheel to prevent lag
-        board.style.scrollBehavior = 'auto';
         board.scrollLeft += e.deltaY;
-        // Restore smooth scroll after a short delay (for programmatic scrolls)
-        clearTimeout(board._wheelTimer);
-        board._wheelTimer = setTimeout(function(){ board.style.scrollBehavior = ''; }, 120);
       }, {passive:false});
     }
 
@@ -16037,7 +16032,7 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.5.4</span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.5.5</span></div>
             <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 小團隊的 AI 商業引擎</div>
           </div>
           <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
@@ -18378,4 +18373,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.5.4 -->
+</html><!-- v1.5.5 -->
