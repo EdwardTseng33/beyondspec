@@ -7,8 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
 /* ===== RESET ===== */
-*{margin:0;padding:0;box-sizing:border-box;cursor:default}
-input,textarea,select,[contenteditable]{cursor:text}
+*{margin:0;padding:0;box-sizing:border-box;cursor:default;-webkit-user-select:none;user-select:none}
+input,textarea,select,[contenteditable]{cursor:text;-webkit-user-select:text;user-select:text}
+p,.card-body,.blog-article-body,.stat-value,.biz-stat-val,.qt-card,.bl-card{-webkit-user-select:text;user-select:text}
 button,a,[onclick],[role="button"],.btn,.nav-item,.qt-filter-btn,.bl-filter-btn,.bp-select-trigger,.kb-filter-btn,.qt-card,.bl-card,.diag-card,.quiz-select-card,.card-more-btn{cursor:pointer}
 
 /* ===== THEME VARIABLES ===== */
@@ -2856,7 +2857,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.5.5</div>
+        <div class="sidebar-version">v1.5.6</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -16032,7 +16033,7 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.5.5</span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.5.6</span></div>
             <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 小團隊的 AI 商業引擎</div>
           </div>
           <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
@@ -18373,4 +18374,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.5.5 -->
+</html><!-- v1.5.6 -->
