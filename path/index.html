@@ -2494,7 +2494,8 @@ canvas{display:block;margin:0 auto 24px}
 .kanban-col-menu button.danger{color:var(--rose)}
 .kanban-col-menu button.danger:hover{background:rgba(217,68,98,.08)}
 .kb-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:10000}
-.kb-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);width:900px;max-width:95vw;max-height:85vh;overflow-y:auto}
+.kb-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);width:900px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.kb-modal-body{flex:1;overflow-y:auto;min-height:0}
 .kb-modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 32px;border-bottom:1px solid var(--border)}
 .kb-modal-2col{display:grid;grid-template-columns:3fr 2fr;gap:28px;padding:28px 32px}
 .kb-modal-footer{display:flex;gap:10px;justify-content:space-between;padding:20px 32px;border-top:1px solid var(--border);flex-wrap:wrap}
@@ -2857,7 +2858,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.5.6</div>
+        <div class="sidebar-version">v1.6.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3152,14 +3153,114 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   function handleGoogleLogin() {
-    state.isLoggedIn = true;
-    state.user = { name: 'Edward', email: 'edwardt0303@gmail.com', avatar: 'E' };
-    state.plan = 'free';
-    saveState();
-    hideLoginModal();
-    showDashboard();
-    showToast('Google 登入成功！');
+    // Real Firebase Auth — Google Sign-In
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+      // Firebase not loaded yet — fallback to offline mode
+      state.isLoggedIn = true;
+      state.user = { name: '離線模式', email: '', avatar: 'O' };
+      state.plan = 'free';
+      saveState();
+      hideLoginModal();
+      showDashboard();
+      showToast('Firebase 尚未載入，以離線模式進入');
+      return;
+    }
+    var provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).then(function(result) {
+      var user = result.user;
+      state.isLoggedIn = true;
+      state.user = {
+        name: user.displayName || 'User',
+        email: user.email || '',
+        avatar: (user.displayName || 'U').charAt(0).toUpperCase(),
+        uid: user.uid,
+        photoURL: user.photoURL || ''
+      };
+      state.plan = 'free';
+      saveState();
+      hideLoginModal();
+      // Pull cloud data first, then show dashboard with merged data
+      _pullFromFirestore(function() {
+        showDashboard();
+        showToast('歡迎回來，' + state.user.name + '！');
+        // After pull, sync back any local-only data
+        _syncToFirestore();
+      });
+    }).catch(function(error) {
+      console.error('[Auth] Google login error:', error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        showToast('登入已取消');
+      } else if (error.code === 'auth/popup-blocked') {
+        showToast('瀏覽器封鎖了彈出視窗，請允許後再試');
+      } else {
+        showToast('登入失敗：' + (error.message || '請稍後再試'));
+      }
+    });
   }
+
+  // ── Firestore Sync Layer ──
+  function _getFirestore() {
+    if (typeof firebase !== 'undefined' && firebase.firestore && state.user && state.user.uid) {
+      return firebase.firestore();
+    }
+    return null;
+  }
+
+  function _syncToFirestore() {
+    var fs = _getFirestore();
+    if (!fs) return;
+    var uid = state.user.uid;
+    var collections = ['bp_kanban_cards','bp_kanban_columns','bp_contacts','bp_quotes','bp_billing','bp_meetings','bp_docs','bp_path_results'];
+    collections.forEach(function(key) {
+      try {
+        var data = localStorage.getItem(key);
+        if (data) {
+          fs.collection('users').doc(uid).collection('data').doc(key).set({
+            value: data,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+        }
+      } catch(e) { console.warn('[Firestore] sync error:', key, e); }
+    });
+    // Also sync settings
+    fs.collection('users').doc(uid).set({
+      name: state.user.name,
+      email: state.user.email,
+      plan: state.plan,
+      lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  }
+
+  function _pullFromFirestore(callback) {
+    var fs = _getFirestore();
+    if (!fs) { if (callback) callback(); return; }
+    var uid = state.user.uid;
+    fs.collection('users').doc(uid).collection('data').get().then(function(snapshot) {
+      snapshot.forEach(function(doc) {
+        var key = doc.id;
+        var val = doc.data().value;
+        if (val && !localStorage.getItem(key)) {
+          // Only pull if localStorage is empty (don't overwrite local edits)
+          localStorage.setItem(key, val);
+        }
+      });
+      if (callback) callback();
+    }).catch(function(e) {
+      console.warn('[Firestore] pull error:', e);
+      if (callback) callback();
+    });
+  }
+
+  // Auto-save to Firestore when localStorage changes (debounced)
+  var _fsDebounce = null;
+  function _scheduleFirestoreSync() {
+    clearTimeout(_fsDebounce);
+    _fsDebounce = setTimeout(function() { _syncToFirestore(); }, 3000);
+  }
+
+  // Patch saveState to also trigger Firestore sync
+  var _origSaveState = saveState;
+  // We'll hook into this after defining it — see below
 
   function dismissLoginGate() {
     hideLoginModal();
@@ -4280,7 +4381,7 @@ canvas{display:block;margin:0 auto 24px}
     function getCols(){try{var s=localStorage.getItem(KB_COLS_KEY);if(s){var p=JSON.parse(s);return p&&p.length?p:DEFAULT_COLS;}return DEFAULT_COLS;}catch(e){return DEFAULT_COLS;}}
     function saveCols(c){localStorage.setItem(KB_COLS_KEY,JSON.stringify(c));}
     function getCards(){try{var s=localStorage.getItem(KB_CARDS_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
-    function saveCards(c){localStorage.setItem(KB_CARDS_KEY,JSON.stringify(c));}
+    function saveCards(c){localStorage.setItem(KB_CARDS_KEY,JSON.stringify(c));_scheduleFirestoreSync();}
     function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 
     function migrateCard(c){
@@ -4767,6 +4868,8 @@ canvas{display:block;margin:0 auto 24px}
       // Header
       m += '<div class="kb-modal-header"><h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink)">' + (isEdit?'編輯任務':'新增任務') + '</h3>';
       m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:4px;display:flex" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button></div>';
+      // Scrollable body
+      m += '<div class="kb-modal-body">';
       // Two columns
       m += '<div class="kb-modal-2col">';
       // LEFT column
@@ -4797,6 +4900,7 @@ canvas{display:block;margin:0 auto 24px}
       m += '<div class="kb-section"><label class="kb-label">負責人</label><input type="text" id="kbF_assignee" class="kb-input" value="' + (card?(card.assignee||''):'') + '" placeholder="名稱"></div>';
       m += '<div class="kb-section"><label class="kb-label">到期日</label><input type="date" id="kbF_due" class="kb-input" value="' + (card?(card.dueDate||''):'') + '"></div>';
       m += '</div></div>';
+      m += '</div>'; // end kb-modal-body
       // Footer
       m += '<div class="kb-modal-footer">';
       m += '<div style="display:flex;gap:8px">';
@@ -5039,7 +5143,7 @@ canvas{display:block;margin:0 auto 24px}
     // ── Data Layer ──
     var CT_KEY = 'bp_contacts';
     function getContacts(){try{var s=localStorage.getItem(CT_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
-    function saveContacts(c){localStorage.setItem(CT_KEY,JSON.stringify(c));}
+    function saveContacts(c){localStorage.setItem(CT_KEY,JSON.stringify(c));_scheduleFirestoreSync();}
     function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 
     var contacts = getContacts();
@@ -5931,7 +6035,7 @@ canvas{display:block;margin:0 auto 24px}
         });
       } catch(e) { return []; }
     }
-    function saveQuotes(q) { localStorage.setItem(QT_KEY, JSON.stringify(q)); }
+    function saveQuotes(q) { localStorage.setItem(QT_KEY, JSON.stringify(q)); _scheduleFirestoreSync(); }
     var quotes = getQuotes();
 
     // Seed test data
@@ -8283,7 +8387,7 @@ canvas{display:block;margin:0 auto 24px}
     function getInvoices() {
       try { var s = localStorage.getItem(BL_KEY); return s ? JSON.parse(s) : []; } catch(e) { return []; }
     }
-    function saveInvoices(inv) { localStorage.setItem(BL_KEY, JSON.stringify(inv)); }
+    function saveInvoices(inv) { localStorage.setItem(BL_KEY, JSON.stringify(inv)); _scheduleFirestoreSync(); }
     var invoices = getInvoices();
 
     // ── Seed test data ──
@@ -8538,6 +8642,9 @@ canvas{display:block;margin:0 auto 24px}
       mHTML += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button>';
       mHTML += '</div></div>';
 
+      // ── SCROLLABLE BODY ──
+      mHTML += '<div class="kb-modal-body">';
+
       // ── TWO COLUMNS ──
       mHTML += '<div class="kb-modal-2col">';
 
@@ -8600,6 +8707,7 @@ canvas{display:block;margin:0 auto 24px}
 
       mHTML += '</div>'; // end right column
       mHTML += '</div>'; // end kb-modal-2col
+      mHTML += '</div>'; // end kb-modal-body
 
       // ── FOOTER ──
       mHTML += '<div class="kb-modal-footer" style="justify-content:flex-end">';
@@ -15293,7 +15401,7 @@ function loadHistory(){
 
     var MT_KEY = 'bp_meetings';
     function getMeetings(){ try{ var s = localStorage.getItem(MT_KEY); return s ? JSON.parse(s) : []; }catch(e){ return []; } }
-    function saveMeetings(m){ localStorage.setItem(MT_KEY, JSON.stringify(m)); }
+    function saveMeetings(m){ localStorage.setItem(MT_KEY, JSON.stringify(m)); _scheduleFirestoreSync(); }
     function mtId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
     var meetings = getMeetings();
@@ -15525,7 +15633,7 @@ function loadHistory(){
 
     var DC_KEY = 'bp_docs';
     function getDocs(){ try{ var s = localStorage.getItem(DC_KEY); return s ? JSON.parse(s) : []; }catch(e){ return []; } }
-    function saveDocs(d){ localStorage.setItem(DC_KEY, JSON.stringify(d)); }
+    function saveDocs(d){ localStorage.setItem(DC_KEY, JSON.stringify(d)); _scheduleFirestoreSync(); }
     function dcId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
     var docs = getDocs();
@@ -16033,7 +16141,7 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.5.6</span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.6.0</span></div>
             <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 小團隊的 AI 商業引擎</div>
           </div>
           <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
@@ -17840,9 +17948,15 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
   }
 
   function logout() {
+    // Sync to Firestore before logout
+    _syncToFirestore();
     state.isLoggedIn = false;
     state.user = { name: '', email: '', avatar: '' };
     saveState();
+    // Sign out of Firebase Auth
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+      firebase.auth().signOut().catch(function(e) { console.warn('[Auth] signOut error:', e); });
+    }
     showLanding();
     showToast('已成功登出');
   }
@@ -17870,10 +17984,48 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
   loadTheme();
   loadState();
 
-  if (state.isLoggedIn) {
-    showDashboard();
+  // Firebase Auth state listener — auto-login returning users
+  if (typeof firebase !== 'undefined' && firebase.auth && !firebase._mock) {
+    var _authHandled = false;
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (_authHandled) return;
+      _authHandled = true;
+      if (user) {
+        // Returning Firebase user — restore session
+        state.isLoggedIn = true;
+        state.user = {
+          name: user.displayName || 'User',
+          email: user.email || '',
+          avatar: (user.displayName || 'U').charAt(0).toUpperCase(),
+          uid: user.uid,
+          photoURL: user.photoURL || ''
+        };
+        state.plan = state.plan || 'free';
+        saveState();
+        _pullFromFirestore(function() {
+          showDashboard();
+        });
+      } else if (state.isLoggedIn) {
+        // localStorage says logged in but Firebase says no — show dashboard anyway (offline)
+        showDashboard();
+      } else {
+        renderLanding();
+      }
+    });
+    // Fallback if onAuthStateChanged doesn't fire within 3s (e.g. CDN slow)
+    setTimeout(function() {
+      if (!_authHandled) {
+        _authHandled = true;
+        if (state.isLoggedIn) { showDashboard(); } else { renderLanding(); }
+      }
+    }, 3000);
   } else {
-    renderLanding();
+    // Firebase not available — use localStorage state
+    if (state.isLoggedIn) {
+      showDashboard();
+    } else {
+      renderLanding();
+    }
   }
 })();
   </script>
@@ -18374,4 +18526,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.5.6 -->
+</html><!-- v1.6.0 -->
