@@ -2843,7 +2843,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.5.0</div>
+        <div class="sidebar-version">v1.5.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7229,7 +7229,7 @@ canvas{display:block;margin:0 auto 24px}
       return html;
     }
 
-        // ── Import Quote Modal (v1.0) ──
+        // ── Import Quote Modal (v2.0) ──
     function showImportModal() {
       var ov = document.getElementById('kb-modal-overlay');
       if (!ov) {
@@ -7247,7 +7247,9 @@ canvas{display:block;margin:0 auto 24px}
         parsed: null,   // {vendor, items:[{desc,qty,unit,unitPrice}]}
         markup: 20,
         error: '',
-        fileName: ''
+        fileName: '',
+        loading: false,
+        rawText: ''
       };
 
       function closeImportModal() {
@@ -7283,7 +7285,14 @@ canvas{display:block;margin:0 auto 24px}
         });
         html += '</div>';
 
-        if (!st.parsed) {
+        if (st.loading) {
+          html += '<div style="text-align:center;padding:48px 20px">';
+          html += '<div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;margin:0 auto 16px;animation:spin .8s linear infinite"></div>';
+          html += '<div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px">正在解析報價單...</div>';
+          html += '<div style="font-size:12px;color:var(--ink-muted)">' + (st.fileName || '') + '</div>';
+          html += '</div>';
+          html += '<style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
+        } else if (!st.parsed) {
           // ── Upload / Paste area ──
           if (st.mode === 'file') {
             html += '<div id="qtImportDropZone" style="border:2px dashed var(--border);border-radius:var(--r-lg);padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s" onmouseenter="this.style.borderColor=\'var(--primary)\';this.style.background=\'rgba(124,92,252,.03)\'" onmouseleave="this.style.borderColor=\'var(--border)\';this.style.background=\'transparent\'" onclick="document.getElementById(\'qtImportFileInput\').click()">';
@@ -7291,13 +7300,18 @@ canvas{display:block;margin:0 auto 24px}
             html += '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M3 14v2a2 2 0 002 2h10a2 2 0 002-2v-2"/><polyline points="13 6 10 3 7 6"/><line x1="10" y1="3" x2="10" y2="13"/></svg>';
             html += '</div>';
             html += '<div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px">拖曳檔案到此，或點擊選擇</div>';
-            html += '<div style="font-size:12px;color:var(--ink-muted)">支援 JSON 格式（BeyondPath 匯出檔 或 自訂格式）</div>';
-            html += '<input type="file" id="qtImportFileInput" accept=".json" style="display:none" onchange="window._qtImportFileChange(this)">';
+            html += '<div style="font-size:12px;color:var(--ink-muted)">支援 Excel (.xlsx)、Word (.docx)、PDF、JSON</div>';
+            html += '<input type="file" id="qtImportFileInput" accept=".xlsx,.xls,.docx,.pdf,.json,.csv" style="display:none" onchange="window._qtImportFileChange(this)">';
             html += '</div>';
             // Format hint
-            html += '<div style="margin-top:12px;padding:12px 14px;background:var(--bg-hover);border-radius:var(--r-md);font-size:12px;color:var(--ink-muted);line-height:1.6">';
-            html += '<div style="font-weight:600;color:var(--ink-sec);margin-bottom:4px">JSON 格式範例：</div>';
-            html += '<code style="font-family:monospace;font-size:11px">{"vendor":"合作廠商名","items":[{"desc":"項目","qty":1,"unit":"式","unitPrice":10000}]}</code>';
+            html += '<div style="margin-top:12px;padding:12px 14px;background:var(--bg-hover);border-radius:var(--r-md);font-size:12px;color:var(--ink-muted);line-height:1.8">';
+            html += '<div style="font-weight:600;color:var(--ink-sec);margin-bottom:4px">支援的報價單格式</div>';
+            html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+            var fmts = [{ext:'Excel',desc:'表格自動辨識欄位',c:'#1D6F42'},{ext:'Word',desc:'文字報價自動擷取',c:'#2B579A'},{ext:'PDF',desc:'PDF 報價自動擷取',c:'#D93025'},{ext:'JSON',desc:'BeyondPath 匯出檔',c:'var(--primary)'}];
+            fmts.forEach(function(f){
+              html += '<span style="padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;color:' + f.c + ';background:' + f.c + '12;border:1px solid ' + f.c + '20">' + f.ext + '</span>';
+            });
+            html += '</div>';
             html += '</div>';
           } else {
             html += '<div style="margin-bottom:12px">';
@@ -7317,71 +7331,65 @@ canvas{display:block;margin:0 auto 24px}
             html += st.error + '</div>';
           }
         } else {
-          // ── Parsed preview ──
+          // ── Parsed summary ──
           var items = st.parsed.items;
           var vendor = st.parsed.vendor || '未知來源';
 
-          // Source badge
-          html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
-          html += '<div style="display:flex;align-items:center;gap:8px">';
-          html += '<div style="padding:4px 10px;background:var(--primary-light);color:var(--primary);border-radius:var(--r-sm);font-size:12px;font-weight:600">' + vendor + '</div>';
-          html += '<span style="font-size:12px;color:var(--ink-muted)">' + items.length + ' 個項目</span>';
-          if (st.fileName) html += '<span style="font-size:11px;color:var(--ink-dim)">' + st.fileName + '</span>';
+          html += '<div style="padding:20px;background:linear-gradient(135deg,rgba(27,168,145,.08),rgba(27,168,145,.02));border-radius:var(--r-lg);border:1px solid rgba(27,168,145,.15);margin-bottom:20px;text-align:center">';
+          html += '<div style="width:44px;height:44px;border-radius:50%;background:rgba(27,168,145,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 10px">';
+          html += '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><polyline points="5 10 8 13 15 6"/></svg>';
           html += '</div>';
-          html += '<button onclick="window._qtImportReset()" style="font-size:12px;color:var(--primary);background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline">重新匯入</button>';
+          html += '<div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px">解析完成</div>';
+          html += '<div style="font-size:13px;color:var(--ink-muted)">';
+          html += '從 <span style="font-weight:600;color:var(--ink-sec)">' + vendor + '</span> 辨識到 <span style="font-weight:700;color:var(--teal)">' + items.length + '</span> 個項目';
+          if (st.fileName) html += ' <span style="color:var(--ink-dim);font-size:12px">(' + st.fileName + ')</span>';
+          html += '</div></div>';
+
+          var showCount = Math.min(items.length, 3);
+          html += '<div style="margin-bottom:16px;padding:12px 14px;background:var(--bg-hover);border-radius:var(--r-md)">';
+          html += '<div style="font-size:11px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">品項預覽</div>';
+          for (var pi = 0; pi < showCount; pi++) {
+            var pItem = items[pi];
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;' + (pi > 0 ? 'border-top:1px solid var(--border);margin-top:4px;padding-top:8px' : '') + '">';
+            html += '<span style="font-size:13px;color:var(--ink)">' + (pItem.desc || '未命名項目') + '</span>';
+            html += '<span style="font-size:13px;font-weight:600;color:var(--ink-sec);white-space:nowrap">' + (pItem.qty || 1) + ' ' + (pItem.unit || '式') + ' \u00d7 ' + fmtMoney(pItem.unitPrice) + '</span>';
+            html += '</div>';
+          }
+          if (items.length > 3) {
+            html += '<div style="font-size:12px;color:var(--ink-dim);margin-top:8px;text-align:center">\u22ef 還有 ' + (items.length - 3) + ' 個項目，匯入後可在編輯表單中查看全部</div>';
+          }
           html += '</div>';
 
-          // Markup control
-          html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px 16px;background:linear-gradient(135deg,rgba(124,92,252,.06),rgba(124,92,252,.02));border-radius:var(--r-md);border:1px solid rgba(124,92,252,.1)">';
-          html += '<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap">加成比例</div>';
+          html += '<div style="margin-bottom:20px;padding:14px 16px;background:linear-gradient(135deg,rgba(124,92,252,.06),rgba(124,92,252,.02));border-radius:var(--r-md);border:1px solid rgba(124,92,252,.1)">';
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
+          html += '<div style="font-size:13px;font-weight:600;color:var(--ink)">統一加成比例</div>';
+          var origTotal = 0;
+          items.forEach(function(it) { origTotal += (it.qty || 1) * (it.unitPrice || 0); });
+          var newTotal = Math.round(origTotal * (1 + st.markup / 100));
+          html += '<div style="font-size:12px;color:var(--ink-muted)">' + fmtMoney(origTotal) + ' \u2192 <span style="font-weight:700;color:var(--primary)">' + fmtMoney(newTotal) + '</span></div>';
+          html += '</div>';
+          html += '<div style="display:flex;align-items:center;gap:12px">';
           html += '<input id="qtMarkupRange" type="range" min="0" max="100" value="' + st.markup + '" oninput="window._qtImportSetMarkup(this.value)" style="flex:1;accent-color:var(--primary)">';
           html += '<div style="display:flex;align-items:center;gap:4px">';
           html += '<input id="qtMarkupInput" type="number" min="0" max="200" value="' + st.markup + '" onchange="window._qtImportSetMarkup(this.value)" style="width:56px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:14px;font-weight:700;text-align:center;font-family:inherit;background:var(--bg-card);color:var(--primary)">';
           html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:600">%</span>';
           html += '</div></div>';
-
-          // Items table
-          html += '<div style="border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;margin-bottom:16px">';
-          html += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
-          html += '<thead><tr style="background:var(--bg-hover)">';
-          html += '<th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--ink-sec);font-size:12px">項目</th>';
-          html += '<th style="padding:10px 8px;text-align:center;font-weight:600;color:var(--ink-sec);font-size:12px;width:50px">數量</th>';
-          html += '<th style="padding:10px 8px;text-align:center;font-weight:600;color:var(--ink-sec);font-size:12px;width:40px">單位</th>';
-          html += '<th style="padding:10px 12px;text-align:right;font-weight:600;color:var(--ink-sec);font-size:12px;width:100px">原始單價</th>';
-          html += '<th style="padding:10px 12px;text-align:right;font-weight:600;color:var(--primary);font-size:12px;width:100px">加成後</th>';
-          html += '</tr></thead><tbody>';
-
-          var origTotal = 0;
-          var newTotal = 0;
-          items.forEach(function(item, idx) {
-            var origSub = (item.qty || 1) * (item.unitPrice || 0);
-            var newPrice = Math.round(item.unitPrice * (1 + st.markup / 100));
-            var newSub = (item.qty || 1) * newPrice;
-            origTotal += origSub;
-            newTotal += newSub;
-            html += '<tr style="border-top:1px solid var(--border)">';
-            html += '<td style="padding:10px 12px;color:var(--ink)">' + (item.desc || '未命名項目') + '</td>';
-            html += '<td style="padding:10px 8px;text-align:center;color:var(--ink-sec)">' + (item.qty || 1) + '</td>';
-            html += '<td style="padding:10px 8px;text-align:center;color:var(--ink-muted)">' + (item.unit || '式') + '</td>';
-            html += '<td style="padding:10px 12px;text-align:right;color:var(--ink-muted)">' + fmtMoney(item.unitPrice) + '</td>';
-            html += '<td style="padding:10px 12px;text-align:right;font-weight:600;color:var(--primary)">' + fmtMoney(newPrice) + '</td>';
-            html += '</tr>';
-          });
-          html += '</tbody></table></div>';
-
-          // Totals summary
-          html += '<div style="display:flex;justify-content:flex-end;gap:24px;padding:12px 16px;background:var(--bg-hover);border-radius:var(--r-md);margin-bottom:20px">';
-          html += '<div style="text-align:right"><div style="font-size:11px;color:var(--ink-muted);margin-bottom:2px">原始合計</div><div style="font-size:15px;color:var(--ink-muted);text-decoration:line-through">' + fmtMoney(origTotal) + '</div></div>';
-          html += '<div style="text-align:right"><div style="font-size:11px;color:var(--primary);font-weight:600;margin-bottom:2px">加成後合計</div><div style="font-size:18px;font-weight:800;color:var(--primary)">' + fmtMoney(newTotal) + '</div></div>';
-          html += '<div style="text-align:right"><div style="font-size:11px;color:var(--teal);font-weight:600;margin-bottom:2px">利潤</div><div style="font-size:15px;font-weight:700;color:var(--teal)">+' + fmtMoney(newTotal - origTotal) + '</div></div>';
+          if (st.markup > 0) {
+            html += '<div style="display:flex;justify-content:flex-end;margin-top:8px;font-size:12px;color:var(--teal);font-weight:600">利潤 +' + fmtMoney(newTotal - origTotal) + '</div>';
+          }
           html += '</div>';
 
-          // Action buttons
-          html += '<div style="display:flex;justify-content:flex-end;gap:10px">';
+          html += '<div style="display:flex;align-items:center;gap:10px">';
+          html += '<button onclick="window._qtImportReset()" style="font-size:12px;color:var(--ink-muted);background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline">重新匯入</button>';
+          html += '<div style="flex:1"></div>';
           html += '<button onclick="window._qtCloseImport()" class="btn btn-outline" style="padding:8px 20px;font-size:13px">取消</button>';
-          html += '<button onclick="window._qtImportCreate()" class="btn btn-accent" style="padding:8px 24px;font-size:13px;display:flex;align-items:center;gap:6px">' + IC.plus + ' 建立草稿報價</button>';
+          html += '<button onclick="window._qtImportCreate()" class="btn btn-accent" style="padding:10px 28px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px">';
+          html += '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 13l4 4L18 5"/></svg>';
+          html += '確認匯入並編輯</button>';
           html += '</div>';
         }
+
+                }
 
         html += '</div>'; // body
         html += '</div>'; // modal
@@ -7401,37 +7409,239 @@ canvas{display:block;margin:0 auto 24px}
         }
       }
 
-      // ── Parse JSON file ──
+      // ── Smart field matching (shared by all formats) ──
+      var FIELD_ALIAS = {
+        desc: ['項目','品項','品名','描述','名稱','description','desc','name','item','service','項目名稱','工作項目','內容','品項名稱','服務項目'],
+        qty: ['數量','qty','quantity','amount','數','件數','組數'],
+        unit: ['單位','unit','計價單位'],
+        unitPrice: ['單價','price','unitprice','unit_price','報價','金額','定價','cost','rate','價格']
+      };
+
+      function matchColumn(header) {
+        var h = (header || '').toString().trim().toLowerCase().replace(/[\s_\-]/g, '');
+        var result = null;
+        Object.keys(FIELD_ALIAS).forEach(function(field) {
+          FIELD_ALIAS[field].forEach(function(alias) {
+            if (h === alias.toLowerCase().replace(/[\s_\-]/g, '')) result = field;
+          });
+        });
+        return result;
+      }
+
+      function smartParseRows(headers, rows) {
+        var colMap = {};
+        headers.forEach(function(h, i) {
+          var field = matchColumn(h);
+          if (field && !colMap[field]) colMap[field] = i;
+        });
+        if (colMap.desc === undefined) {
+          for (var i = 0; i < headers.length; i++) {
+            if (typeof rows[0] !== 'undefined' && typeof rows[0][i] === 'string' && rows[0][i].trim()) { colMap.desc = i; break; }
+          }
+        }
+        if (colMap.unitPrice === undefined) {
+          for (var j = headers.length - 1; j >= 0; j--) {
+            if (typeof rows[0] !== 'undefined' && !isNaN(parseFloat(String(rows[0][j]).replace(/[,NT$\s]/g, '')))) { colMap.unitPrice = j; break; }
+          }
+        }
+        var items = [];
+        rows.forEach(function(row) {
+          var desc = colMap.desc !== undefined ? (row[colMap.desc] || '').toString().trim() : '';
+          if (!desc) return;
+          var price = colMap.unitPrice !== undefined ? parseFloat(String(row[colMap.unitPrice] || '0').replace(/[,NT$\s元]/g, '')) || 0 : 0;
+          if (desc && (price > 0 || items.length < 50)) {
+            items.push({
+              desc: desc,
+              qty: colMap.qty !== undefined ? (parseFloat(row[colMap.qty]) || 1) : 1,
+              unit: colMap.unit !== undefined ? ((row[colMap.unit] || '').toString().trim() || '式') : '式',
+              unitPrice: price
+            });
+          }
+        });
+        return items;
+      }
+
+      function smartParseText(text) {
+        var lines = text.split('\n');
+        var items = [];
+        var headerSkipped = false;
+        lines.forEach(function(line) {
+          line = line.trim();
+          if (!line || line.length < 3) return;
+          var parts = line.split('\t');
+          if (parts.length < 2) parts = line.split(',');
+          if (parts.length < 2) parts = line.split(/\s{2,}/);
+          if (!headerSkipped) {
+            var first = (parts[0] || '').toLowerCase();
+            if (first.indexOf('項目') >= 0 || first.indexOf('描述') >= 0 || first.indexOf('desc') >= 0 || first.indexOf('品名') >= 0 || first.indexOf('品項') >= 0) {
+              headerSkipped = true;
+              return;
+            }
+          }
+          headerSkipped = true;
+          var desc = (parts[0] || '').trim();
+          if (!desc) return;
+          var nums = line.match(/[\d,]+(?:\.\d+)?/g);
+          var price = 0, qty = 1, unit = '式';
+          if (parts.length >= 4) {
+            qty = parseFloat(parts[1]) || 1;
+            unit = (parts[2] || '式').trim();
+            price = parseFloat(parts[3].replace(/[,NT$\s元]/g, '')) || 0;
+          } else if (parts.length === 3) {
+            qty = parseFloat(parts[1]) || 1;
+            price = parseFloat(parts[2].replace(/[,NT$\s元]/g, '')) || 0;
+          } else if (parts.length === 2) {
+            price = parseFloat(parts[1].replace(/[,NT$\s元]/g, '')) || 0;
+          } else if (nums && nums.length > 0) {
+            var lastNum = nums[nums.length - 1];
+            price = parseFloat(lastNum.replace(/,/g, '')) || 0;
+            desc = line.replace(lastNum, '').replace(/[NT$\s元:\uff1a]/g, '').trim();
+          }
+          if (desc && price > 0) {
+            items.push({ desc: desc, qty: qty, unit: unit, unitPrice: price });
+          }
+        });
+        return items;
+      }
+
+      // ── Parse file by extension ──
       function parseFile(file) {
         if (!file) return;
         importState.fileName = file.name;
+        importState.loading = true;
+        importState.error = '';
+        renderImportModal();
+
+        var ext = file.name.split('.').pop().toLowerCase();
         var reader = new FileReader();
-        reader.onload = function(e) {
-          try {
-            var data = JSON.parse(e.target.result);
-            // Accept BeyondPath full export format
-            if (data.items && Array.isArray(data.items)) {
-              importState.parsed = {
-                vendor: data.vendor || data.client && data.client.name || data.title || '未命名來源',
-                items: data.items.map(function(item) {
-                  return {
-                    desc: item.desc || item.description || item.name || '未命名項目',
-                    qty: parseFloat(item.qty || item.quantity) || 1,
-                    unit: item.unit || '式',
-                    unitPrice: parseFloat(item.unitPrice || item.price || item.amount) || 0
-                  };
-                })
-              };
-              importState.error = '';
-            } else {
-              importState.error = '無法辨識的 JSON 格式。需要包含 items 陣列。';
+
+        if (ext === 'xlsx' || ext === 'xls' || ext === 'csv') {
+          reader.onload = function(e) {
+            try {
+              if (typeof XLSX === 'undefined') { importState.error = 'Excel 解析庫未載入，請重新整理頁面。'; importState.loading = false; renderImportModal(); return; }
+              var wb = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
+              var ws = wb.Sheets[wb.SheetNames[0]];
+              var raw = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''});
+              if (raw.length < 2) { importState.error = '表格內容太少，至少需要標題行和一行資料。'; importState.loading = false; renderImportModal(); return; }
+              var headers = raw[0];
+              var dataRows = raw.slice(1).filter(function(r) { return r.some(function(c) { return c !== ''; }); });
+              var items = smartParseRows(headers, dataRows);
+              if (items.length === 0) {
+                importState.error = '無法從表格自動辨識品項。請檢查欄位名稱是否包含「項目」「單價」等關鍵字。';
+                importState.rawText = raw.map(function(r) { return r.join('\t'); }).join('\n');
+              } else {
+                importState.parsed = { vendor: file.name.replace(/\.[^.]+$/, ''), items: items };
+              }
+            } catch(err) {
+              importState.error = 'Excel 解析失敗：' + err.message;
             }
-          } catch(err) {
-            importState.error = '檔案解析失敗：' + err.message;
-          }
+            importState.loading = false;
+            renderImportModal();
+          };
+          reader.readAsArrayBuffer(file);
+
+        } else if (ext === 'docx') {
+          reader.onload = function(e) {
+            if (typeof mammoth === 'undefined') { importState.error = 'Word 解析庫未載入，請重新整理頁面。'; importState.loading = false; renderImportModal(); return; }
+            mammoth.extractRawText({arrayBuffer: e.target.result}).then(function(result) {
+              var text = result.value || '';
+              importState.rawText = text;
+              var items = smartParseText(text);
+              if (items.length === 0) {
+                importState.error = '無法從 Word 文件自動辨識品項。已擷取文字內容，你可以切換到「文字貼上」模式手動整理。';
+                importState.mode = 'text';
+              } else {
+                importState.parsed = { vendor: file.name.replace(/\.[^.]+$/, ''), items: items };
+              }
+              importState.loading = false;
+              renderImportModal();
+              if (items.length === 0) {
+                var ta = document.getElementById('qtImportTextArea');
+                if (ta) ta.value = text;
+              }
+            }).catch(function(err) {
+              importState.error = 'Word 解析失敗：' + err.message;
+              importState.loading = false;
+              renderImportModal();
+            });
+          };
+          reader.readAsArrayBuffer(file);
+
+        } else if (ext === 'pdf') {
+          reader.onload = function(e) {
+            if (typeof pdfjsLib === 'undefined') { importState.error = 'PDF 解析庫未載入，請重新整理頁面。'; importState.loading = false; renderImportModal(); return; }
+            var typedArray = new Uint8Array(e.target.result);
+            pdfjsLib.getDocument(typedArray).promise.then(function(pdf) {
+              var allText = '';
+              var pending = pdf.numPages;
+              var pageTexts = [];
+              for (var p = 1; p <= pdf.numPages; p++) {
+                (function(pageNum) {
+                  pdf.getPage(pageNum).then(function(page) {
+                    page.getTextContent().then(function(tc) {
+                      pageTexts[pageNum - 1] = tc.items.map(function(item) { return item.str; }).join(' ');
+                      pending--;
+                      if (pending === 0) {
+                        allText = pageTexts.join('\n');
+                        importState.rawText = allText;
+                        var items = smartParseText(allText);
+                        if (items.length === 0) {
+                          importState.error = '無法從 PDF 自動辨識品項。已擷取文字內容，你可以切換到「文字貼上」模式手動整理。';
+                          importState.mode = 'text';
+                        } else {
+                          importState.parsed = { vendor: file.name.replace(/\.[^.]+$/, ''), items: items };
+                        }
+                        importState.loading = false;
+                        renderImportModal();
+                        if (items.length === 0) {
+                          var ta = document.getElementById('qtImportTextArea');
+                          if (ta) ta.value = allText;
+                        }
+                      }
+                    });
+                  });
+                })(p);
+              }
+            }).catch(function(err) {
+              importState.error = 'PDF 解析失敗：' + err.message;
+              importState.loading = false;
+              renderImportModal();
+            });
+          };
+          reader.readAsArrayBuffer(file);
+
+        } else if (ext === 'json') {
+          reader.onload = function(e) {
+            try {
+              var data = JSON.parse(e.target.result);
+              if (data.items && Array.isArray(data.items)) {
+                importState.parsed = {
+                  vendor: data.vendor || (data.client && data.client.name) || data.title || '未命名來源',
+                  items: data.items.map(function(item) {
+                    return {
+                      desc: item.desc || item.description || item.name || '未命名項目',
+                      qty: parseFloat(item.qty || item.quantity) || 1,
+                      unit: item.unit || '式',
+                      unitPrice: parseFloat(item.unitPrice || item.price || item.amount) || 0
+                    };
+                  })
+                };
+              } else {
+                importState.error = '無法辨識的 JSON 格式。需要包含 items 陣列。';
+              }
+            } catch(err) {
+              importState.error = 'JSON 解析失敗：' + err.message;
+            }
+            importState.loading = false;
+            renderImportModal();
+          };
+          reader.readAsText(file);
+
+        } else {
+          importState.error = '不支援的檔案格式：.' + ext + '。請使用 Excel、Word、PDF 或 JSON。';
+          importState.loading = false;
           renderImportModal();
-        };
-        reader.readAsText(file);
+        }
       }
 
       // ── Parse text input ──
@@ -17504,6 +17714,11 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
   </script>
 
 <!-- React 18 UMD + Firebase + docx CDN for Business Module -->
+<!-- File parsing CDN for Quote Import -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] SheetJS failed')"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] mammoth failed')"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] pdf.js failed')"></script>
+<script>if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js" crossorigin="anonymous" onerror="console.warn('[CDN] React dev failed')"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js" crossorigin="anonymous" onerror="console.warn('[CDN] ReactDOM dev failed')"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" crossorigin="anonymous" onerror="console.warn('[CDN] Firebase App failed')"></script>
@@ -17993,4 +18208,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.5.0 -->
+</html><!-- v1.5.1 -->
