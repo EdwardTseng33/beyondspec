@@ -3186,8 +3186,10 @@ canvas{display:block;margin:0 auto 24px}
 
   function getEnabledModules() {
     const saved = localStorage.getItem('bp_enabled_modules_v2');
-    if (saved) { try { return JSON.parse(saved); } catch(e) {} }
-    return Object.assign({}, MODULE_DEFAULTS);
+    // Merge defaults with saved so new modules get their default state
+    var base = Object.assign({}, MODULE_DEFAULTS);
+    if (saved) { try { var s = JSON.parse(saved); Object.assign(base, s); } catch(e) {} }
+    return base;
   }
 
   function saveEnabledModules(modules) {
