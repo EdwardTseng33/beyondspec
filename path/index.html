@@ -707,8 +707,8 @@ select option{background:var(--bg-card);color:var(--ink);padding:10px 16px;font-
 .bp-select-item.selected::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);flex-shrink:0}
 .bp-select-item:hover.selected{background:var(--primary-light)}
 .bp-select-item:last-child{border-radius:0 0 6px 6px}
-.kb-modal .bp-select-list{z-index:10002}
-.kb-modal .bp-select{z-index:auto}
+.kb-modal .bp-select-list{z-index:10002;max-height:280px}
+.kb-modal .bp-select{z-index:auto;position:relative}
 input:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
 input::placeholder,textarea::placeholder{color:var(--ink-placeholder)}
 textarea{resize:vertical;min-height:80px}
@@ -2843,7 +2843,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.5.1</div>
+        <div class="sidebar-version">v1.5.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3054,19 +3054,42 @@ canvas{display:block;margin:0 auto 24px}
     if(!trigger) return;
     var wasOpen = trigger.classList.contains('open');
     document.querySelectorAll('.bp-select-trigger.open').forEach(function(t){t.classList.remove('open');});
-    if (!wasOpen) trigger.classList.add('open');
+    if (!wasOpen) {
+      trigger.classList.add('open');
+      // Auto-scroll parent scroll container so dropdown is visible
+      setTimeout(function(){
+        var list = document.getElementById(id + '_list');
+        if(!list) return;
+        var scrollParent = trigger.closest('[style*="overflow"]') || trigger.closest('.kb-modal');
+        if(scrollParent){
+          var listRect = list.getBoundingClientRect();
+          var parentRect = scrollParent.getBoundingClientRect();
+          if(listRect.bottom > parentRect.bottom){
+            scrollParent.scrollTop += (listRect.bottom - parentRect.bottom) + 16;
+          }
+        }
+      }, 20);
+    }
   };
   window._bpPick = function(id, val, label, onChange) {
     var trigger = document.getElementById(id + '_trigger');
     var labelEl = document.getElementById(id + '_label');
     var hidden = document.getElementById(id);
     if(!trigger||!labelEl||!hidden) return;
-    trigger.classList.remove('open');
+    // Visual feedback: brief highlight on selected item before closing
+    var list = document.getElementById(id + '_list');
+    if(list){
+      list.querySelectorAll('.bp-select-item').forEach(function(it){
+        it.classList.toggle('selected', it.dataset.val === val);
+      });
+    }
+    // Slight delay for visual feedback, then close
+    setTimeout(function(){
+      trigger.classList.remove('open');
+    }, 80);
     labelEl.textContent = label;
     labelEl.className = val ? '' : 'bp-placeholder';
     hidden.value = val;
-    var list = document.getElementById(id + '_list');
-    if(list) list.querySelectorAll('.bp-select-item').forEach(function(it){it.classList.toggle('selected', it.dataset.val === val);});
     // Fire callback — try window.app first, then window directly
     if (onChange) {
       if (window.app && window.app[onChange]) window.app[onChange](val);
@@ -3185,7 +3208,7 @@ canvas{display:block;margin:0 auto 24px}
   function renderSidebar() {
     const nav = document.getElementById('nav');
     const plan = state.plan || 'free';
-    const isPro = plan === 'pro' || plan === 'enterprise';
+    const isPro = plan === 'pro' || plan === 'ultra';
 
     // ── Module toggle: read enabled modules from localStorage ──
     const enabledModules = getEnabledModules();
@@ -3474,7 +3497,7 @@ canvas{display:block;margin:0 auto 24px}
 
   function renderModule(moduleId) {
     const plan = state.plan || 'free';
-    const isPro = plan === 'pro' || plan === 'enterprise';
+    const isPro = plan === 'pro' || plan === 'ultra';
     // Locked modules for free users → show upgrade prompt
     const proModules = ['survey','market','report'];
     if (!isPro && proModules.includes(moduleId)) {
@@ -3580,7 +3603,7 @@ canvas{display:block;margin:0 auto 24px}
   // ==================== MODULE 1: HOME ====================
   function renderHome(activeTab) {
     const content = document.getElementById('content');
-    const planLabel = state.plan === 'enterprise' ? 'Enterprise' : state.plan === 'pro' ? 'Pro' : 'Free';
+    const planLabel = state.plan === 'ultra' ? 'Ultra' : state.plan === 'pro' ? 'Pro' : 'Free';
 
     // Dynamic welcome context — soul messages rotate by stage
     const diagnosesComplete = state.diagnoses.length;
@@ -5100,7 +5123,8 @@ canvas{display:block;margin:0 auto 24px}
         return true;
       });
 
-      // Cards grid
+      // Cards grid — wrapped in ctCardGrid for partial re-render
+      html += '<div id="ctCardGrid">';
       if(filtered.length === 0){
         html += '<div style="text-align:center;padding:72px 24px">';
         html += '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(124,92,252,.04));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:1px solid rgba(124,92,252,.1);color:var(--primary)">';
@@ -5155,6 +5179,7 @@ canvas{display:block;margin:0 auto 24px}
         });
         html += '</div>';
       }
+      html += '</div>'; // close ctCardGrid
 
       content.innerHTML = html;
       _ctBindSearch();
@@ -5173,17 +5198,21 @@ canvas{display:block;margin:0 auto 24px}
     }
 
     // ── Status dropdown multi-select ──
+    var _ctDropdownOpen = false;
     function _ctBindStatusDropdown(){
       var toggle = document.getElementById('ctStatusToggle');
       var list = document.getElementById('ctStatusList');
       var drop = document.getElementById('ctStatusDrop');
       if(!toggle || !list) return;
+      // Restore open state after re-render
+      if(_ctDropdownOpen){ list.style.display = 'block'; }
       toggle.addEventListener('click', function(e){
         e.stopPropagation();
         var open = list.style.display !== 'none';
         list.style.display = open ? 'none' : 'block';
+        _ctDropdownOpen = !open;
       });
-      // Checkboxes
+      // Checkboxes — click updates filter + re-renders cards only (not the whole board)
       var cbs = list.querySelectorAll('[data-status-filter]');
       for(var ci=0; ci<cbs.length; ci++){
         cbs[ci].addEventListener('change', function(){
@@ -5194,23 +5223,116 @@ canvas{display:block;margin:0 auto 24px}
             activeStatusFilters = activeStatusFilters.filter(function(x){return x!==sfId;});
           }
           window._ctStatusFilters = activeStatusFilters;
-          renderBoard();
+          // Update toggle button text without re-rendering
+          var toggleEl = document.getElementById('ctStatusToggle');
+          if(toggleEl){
+            var hasActive = activeStatusFilters.length > 0;
+            var svgIcon = '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4h14M5 8h10M7 12h6M9 16h2"/></svg>';
+            toggleEl.innerHTML = svgIcon + (hasActive ? '狀態 (' + activeStatusFilters.length + ')' : '狀態篩選');
+            if(hasActive){ toggleEl.parentElement.querySelector('.ct-filter-btn') !== toggleEl || toggleEl.classList.add('active'); }
+            else { toggleEl.classList.remove('active'); }
+          }
+          // Only re-render the card grid, keep dropdown open
+          _ctRenderCards();
         });
       }
       // Clear button
       var clearBtn = document.getElementById('ctStatusClear');
-      if(clearBtn) clearBtn.addEventListener('click', function(){
+      if(clearBtn) clearBtn.addEventListener('click', function(e){
+        e.stopPropagation();
         activeStatusFilters = [];
         window._ctStatusFilters = [];
-        renderBoard();
-      });
-      // Close on outside click
-      document.addEventListener('click', function _ctCloseStatusDrop(e){
-        if(drop && !drop.contains(e.target)){
-          if(list) list.style.display = 'none';
-          document.removeEventListener('click', _ctCloseStatusDrop);
+        // Uncheck all checkboxes visually
+        var allCbs = list.querySelectorAll('[data-status-filter]');
+        for(var i=0;i<allCbs.length;i++) allCbs[i].checked = false;
+        var toggleEl = document.getElementById('ctStatusToggle');
+        if(toggleEl){
+          var svgIcon = '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4h14M5 8h10M7 12h6M9 16h2"/></svg>';
+          toggleEl.innerHTML = svgIcon + '狀態篩選';
+          toggleEl.classList.remove('active');
         }
+        _ctRenderCards();
       });
+      // Close on outside click — use a single persistent listener
+      if(!window._ctOutsideClickBound){
+        window._ctOutsideClickBound = true;
+        document.addEventListener('click', function(e){
+          var d = document.getElementById('ctStatusDrop');
+          var l = document.getElementById('ctStatusList');
+          if(d && l && !d.contains(e.target)){
+            l.style.display = 'none';
+            _ctDropdownOpen = false;
+          }
+        });
+      }
+    }
+
+    // ── Render only the card grid area (preserves toolbar/dropdown) ──
+    function _ctRenderCards(){
+      var gridWrap = document.getElementById('ctCardGrid');
+      if(!gridWrap){ renderBoard(); return; }
+      var sq = (window._ctSearch||'').toLowerCase();
+      var filtered = contacts.filter(function(c){
+        if(sq){
+          var match = (c.name||'').toLowerCase().includes(sq) || (c.contactPerson||'').toLowerCase().includes(sq) || (c.email||'').toLowerCase().includes(sq) || (c.phone||'').includes(sq);
+          if(!match) return false;
+        }
+        if(activeFilter !== 'all' && c.type !== activeFilter) return false;
+        if(activeStatusFilters.length > 0){
+          var pass = true;
+          activeStatusFilters.forEach(function(sf){
+            if(sf === 'has_txn'){ if((c.transactions||[]).length === 0) pass = false; }
+            else if(sf === 'no_txn'){ if((c.transactions||[]).length > 0) pass = false; }
+            else { if(c.status !== sf) pass = false; }
+          });
+          if(!pass) return false;
+        }
+        return true;
+      });
+      var html = '';
+      if(filtered.length === 0){
+        html += '<div style="text-align:center;padding:72px 24px">';
+        html += '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(124,92,252,.04));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:1px solid rgba(124,92,252,.1);color:var(--primary)">';
+        html += '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>';
+        html += '</div>';
+        html += '<div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px">找不到符合條件的客戶</div>';
+        html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6">試試其他關鍵字，或清除篩選條件</div>';
+        html += '</div>';
+      } else {
+        html += '<div class="ct-grid">';
+        filtered.forEach(function(c){
+          var st = STATUS_MAP[c.status] || STATUS_MAP.new;
+          var txns = c.transactions || [];
+          var txnCount = txns.length;
+          var lastTxnType = txnCount > 0 ? txns[txns.length-1].type : '';
+          html += '<div class="ct-card" onclick="window._ctEdit(\'' + c.id + '\')">';
+          html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px">';
+          html += '<div style="flex:1;min-width:0">';
+          html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+          html += '<span style="font-size:15px;font-weight:700;color:var(--ink)">' + (c.name||'未命名') + '</span>';
+          html += '<span class="ct-badge" style="background:' + st.bg + ';color:' + st.color + '">' + st.label + '</span>';
+          html += '</div></div>';
+          if(txnCount > 0){
+            html += '<div style="text-align:right;flex-shrink:0">';
+            html += '<div class="ct-txn-badge" style="background:' + (TXN_COLORS[lastTxnType]||'var(--primary)') + '18;color:' + (TXN_COLORS[lastTxnType]||'var(--primary)') + '">' + txnCount + ' 筆交易</div>';
+            if(lastTxnType) html += '<div style="font-size:10px;color:var(--ink-dim);margin-top:2px">' + (TXN_TYPES[lastTxnType]||lastTxnType) + '</div>';
+            html += '</div>';
+          }
+          html += '</div>';
+          if(c.contactPerson) html += '<div class="ct-info-row">' + IC.user + ' ' + c.contactPerson + '</div>';
+          if(c.email) html += '<div class="ct-info-row">' + IC.mail + ' ' + c.email + '</div>';
+          if(c.phone) html += '<div class="ct-info-row">' + IC.phone + ' ' + c.phone + '</div>';
+          var pendingTxns = txns.filter(function(t){return t.status==='pending'||t.status==='overdue';});
+          if(pendingTxns.length > 0){
+            var pendingTotal = pendingTxns.reduce(function(s,t){return s+(t.amount||0);},0);
+            var alertColor = pendingTxns.some(function(t){return t.status==='overdue';}) ? 'var(--rose)' : 'var(--gold)';
+            html += '<div class="ct-alert" style="background:' + alertColor + '12;color:' + alertColor + '">' + IC.alert + ' ' + pendingTxns.length + ' 筆催收中 · NT$ ' + pendingTotal.toLocaleString() + '</div>';
+          }
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      gridWrap.innerHTML = html;
     }
 
     // ── Contact Modal (Add/Edit) ──
@@ -5246,16 +5368,16 @@ canvas{display:block;margin:0 auto 24px}
       modalHtml += '<button style="background:none;border:none;color:var(--ink-muted);font-size:24px;cursor:pointer;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-family:inherit" id="ctCloseBtn">&times;</button>';
       modalHtml += '</div>';
       // Body — single column flow
-      modalHtml += '<div style="padding:24px 32px;display:flex;flex-direction:column;gap:16px;max-height:calc(90vh - 140px);overflow-y:auto">';
-      // Row 1: Name + Type
-      modalHtml += '<div style="display:grid;grid-template-columns:1fr 160px;gap:12px;align-items:end">';
+      modalHtml += '<div id="ctModalBody" style="padding:24px 32px;display:flex;flex-direction:column;gap:16px;max-height:calc(90vh - 140px);overflow-y:auto;padding-bottom:48px">';
+      // Row 1: Name + Type (overflow:visible on row so dropdown not clipped)
+      modalHtml += '<div style="display:grid;grid-template-columns:1fr 160px;gap:12px;align-items:end;position:relative;overflow:visible">';
       modalHtml += '<div><label class="kb-label">公司 / 客戶名稱 <span style="color:var(--rose)">*</span></label><input type="text" id="ctF_name" class="kb-input" value="'+(ct?(ct.name||'').replace(/"/g,'&quot;'):'')+'" placeholder="輸入名稱…"></div>';
-      modalHtml += '<div><label class="kb-label">類型</label>' + bpSelect({id:'ctF_type', options: Object.keys(TYPE_MAP).map(function(k){return {value:k, label:TYPE_MAP[k], selected:(ct?ct.type:'customer')===k};})}) + '</div>';
+      modalHtml += '<div style="position:relative;overflow:visible"><label class="kb-label">類型</label>' + bpSelect({id:'ctF_type', options: Object.keys(TYPE_MAP).map(function(k){return {value:k, label:TYPE_MAP[k], selected:(ct?ct.type:'customer')===k};})}) + '</div>';
       modalHtml += '</div>';
-      // Row 2: Contact Person + Status
-      modalHtml += '<div style="display:grid;grid-template-columns:1fr 160px;gap:12px;align-items:end">';
+      // Row 2: Contact Person + Status (overflow:visible on row so dropdown not clipped)
+      modalHtml += '<div style="display:grid;grid-template-columns:1fr 160px;gap:12px;align-items:end;position:relative;overflow:visible">';
       modalHtml += '<div><label class="kb-label">聯絡人</label><input type="text" id="ctF_person" class="kb-input" value="'+(ct?(ct.contactPerson||'').replace(/"/g,'&quot;'):'')+'" placeholder="姓名"></div>';
-      modalHtml += '<div><label class="kb-label">狀態</label>' + bpSelect({id:'ctF_status', options: Object.keys(STATUS_MAP).map(function(k){return {value:k, label:STATUS_MAP[k].label, selected:(ct?ct.status:'new')===k};})}) + '</div>';
+      modalHtml += '<div style="position:relative;overflow:visible"><label class="kb-label">狀態</label>' + bpSelect({id:'ctF_status', options: Object.keys(STATUS_MAP).map(function(k){return {value:k, label:STATUS_MAP[k].label, selected:(ct?ct.status:'new')===k};})}) + '</div>';
       modalHtml += '</div>';
       // Row 3: Email + Phone
       modalHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
@@ -7229,7 +7351,7 @@ canvas{display:block;margin:0 auto 24px}
       return html;
     }
 
-        // ── Import Quote Modal (v2.0) ──
+    // ── Import Quote Modal (v2.0 — Excel/Word/PDF/JSON) ──
     function showImportModal() {
       var ov = document.getElementById('kb-modal-overlay');
       if (!ov) {
@@ -7249,7 +7371,7 @@ canvas{display:block;margin:0 auto 24px}
         error: '',
         fileName: '',
         loading: false,
-        rawText: ''
+        rawText: ''     // fallback: extracted raw text for manual mode
       };
 
       function closeImportModal() {
@@ -7286,6 +7408,7 @@ canvas{display:block;margin:0 auto 24px}
         html += '</div>';
 
         if (st.loading) {
+          // ── Loading state ──
           html += '<div style="text-align:center;padding:48px 20px">';
           html += '<div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;margin:0 auto 16px;animation:spin .8s linear infinite"></div>';
           html += '<div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px">正在解析報價單...</div>';
@@ -7331,10 +7454,11 @@ canvas{display:block;margin:0 auto 24px}
             html += st.error + '</div>';
           }
         } else {
-          // ── Parsed summary ──
+          // ── Parsed summary → set markup → open edit form ──
           var items = st.parsed.items;
           var vendor = st.parsed.vendor || '未知來源';
 
+          // Success banner
           html += '<div style="padding:20px;background:linear-gradient(135deg,rgba(27,168,145,.08),rgba(27,168,145,.02));border-radius:var(--r-lg);border:1px solid rgba(27,168,145,.15);margin-bottom:20px;text-align:center">';
           html += '<div style="width:44px;height:44px;border-radius:50%;background:rgba(27,168,145,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 10px">';
           html += '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><polyline points="5 10 8 13 15 6"/></svg>';
@@ -7345,6 +7469,7 @@ canvas{display:block;margin:0 auto 24px}
           if (st.fileName) html += ' <span style="color:var(--ink-dim);font-size:12px">(' + st.fileName + ')</span>';
           html += '</div></div>';
 
+          // Quick item preview (collapsed list, max 3 items shown)
           var showCount = Math.min(items.length, 3);
           html += '<div style="margin-bottom:16px;padding:12px 14px;background:var(--bg-hover);border-radius:var(--r-md)">';
           html += '<div style="font-size:11px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">品項預覽</div>';
@@ -7352,21 +7477,22 @@ canvas{display:block;margin:0 auto 24px}
             var pItem = items[pi];
             html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;' + (pi > 0 ? 'border-top:1px solid var(--border);margin-top:4px;padding-top:8px' : '') + '">';
             html += '<span style="font-size:13px;color:var(--ink)">' + (pItem.desc || '未命名項目') + '</span>';
-            html += '<span style="font-size:13px;font-weight:600;color:var(--ink-sec);white-space:nowrap">' + (pItem.qty || 1) + ' ' + (pItem.unit || '式') + ' \u00d7 ' + fmtMoney(pItem.unitPrice) + '</span>';
+            html += '<span style="font-size:13px;font-weight:600;color:var(--ink-sec);white-space:nowrap">' + (pItem.qty || 1) + ' ' + (pItem.unit || '式') + ' × ' + fmtMoney(pItem.unitPrice) + '</span>';
             html += '</div>';
           }
           if (items.length > 3) {
-            html += '<div style="font-size:12px;color:var(--ink-dim);margin-top:8px;text-align:center">\u22ef 還有 ' + (items.length - 3) + ' 個項目，匯入後可在編輯表單中查看全部</div>';
+            html += '<div style="font-size:12px;color:var(--ink-dim);margin-top:8px;text-align:center">⋯ 還有 ' + (items.length - 3) + ' 個項目，匯入後可在編輯表單中查看全部</div>';
           }
           html += '</div>';
 
+          // Markup control
           html += '<div style="margin-bottom:20px;padding:14px 16px;background:linear-gradient(135deg,rgba(124,92,252,.06),rgba(124,92,252,.02));border-radius:var(--r-md);border:1px solid rgba(124,92,252,.1)">';
           html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
           html += '<div style="font-size:13px;font-weight:600;color:var(--ink)">統一加成比例</div>';
           var origTotal = 0;
           items.forEach(function(it) { origTotal += (it.qty || 1) * (it.unitPrice || 0); });
           var newTotal = Math.round(origTotal * (1 + st.markup / 100));
-          html += '<div style="font-size:12px;color:var(--ink-muted)">' + fmtMoney(origTotal) + ' \u2192 <span style="font-weight:700;color:var(--primary)">' + fmtMoney(newTotal) + '</span></div>';
+          html += '<div style="font-size:12px;color:var(--ink-muted)">' + fmtMoney(origTotal) + ' → <span style="font-weight:700;color:var(--primary)">' + fmtMoney(newTotal) + '</span></div>';
           html += '</div>';
           html += '<div style="display:flex;align-items:center;gap:12px">';
           html += '<input id="qtMarkupRange" type="range" min="0" max="100" value="' + st.markup + '" oninput="window._qtImportSetMarkup(this.value)" style="flex:1;accent-color:var(--primary)">';
@@ -7379,6 +7505,7 @@ canvas{display:block;margin:0 auto 24px}
           }
           html += '</div>';
 
+          // Action buttons
           html += '<div style="display:flex;align-items:center;gap:10px">';
           html += '<button onclick="window._qtImportReset()" style="font-size:12px;color:var(--ink-muted);background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline">重新匯入</button>';
           html += '<div style="flex:1"></div>';
@@ -7427,21 +7554,25 @@ canvas{display:block;margin:0 auto 24px}
       }
 
       function smartParseRows(headers, rows) {
+        // Map columns to fields
         var colMap = {};
         headers.forEach(function(h, i) {
           var field = matchColumn(h);
           if (field && !colMap[field]) colMap[field] = i;
         });
+        // If no desc column found, use first text column
         if (colMap.desc === undefined) {
           for (var i = 0; i < headers.length; i++) {
             if (typeof rows[0] !== 'undefined' && typeof rows[0][i] === 'string' && rows[0][i].trim()) { colMap.desc = i; break; }
           }
         }
+        // If no price column, try last numeric column
         if (colMap.unitPrice === undefined) {
           for (var j = headers.length - 1; j >= 0; j--) {
             if (typeof rows[0] !== 'undefined' && !isNaN(parseFloat(String(rows[0][j]).replace(/[,NT$\s]/g, '')))) { colMap.unitPrice = j; break; }
           }
         }
+
         var items = [];
         rows.forEach(function(row) {
           var desc = colMap.desc !== undefined ? (row[colMap.desc] || '').toString().trim() : '';
@@ -7459,16 +7590,22 @@ canvas{display:block;margin:0 auto 24px}
         return items;
       }
 
+      // ── Parse text lines into items (for Word/PDF fallback) ──
       function smartParseText(text) {
         var lines = text.split('\n');
         var items = [];
         var headerSkipped = false;
+
         lines.forEach(function(line) {
           line = line.trim();
           if (!line || line.length < 3) return;
+
+          // Try tab, comma, then multi-space splits
           var parts = line.split('\t');
           if (parts.length < 2) parts = line.split(',');
           if (parts.length < 2) parts = line.split(/\s{2,}/);
+
+          // Skip header-like rows
           if (!headerSkipped) {
             var first = (parts[0] || '').toLowerCase();
             if (first.indexOf('項目') >= 0 || first.indexOf('描述') >= 0 || first.indexOf('desc') >= 0 || first.indexOf('品名') >= 0 || first.indexOf('品項') >= 0) {
@@ -7477,10 +7614,14 @@ canvas{display:block;margin:0 auto 24px}
             }
           }
           headerSkipped = true;
+
           var desc = (parts[0] || '').trim();
           if (!desc) return;
+
+          // Try to find a price-like number in the line
           var nums = line.match(/[\d,]+(?:\.\d+)?/g);
           var price = 0, qty = 1, unit = '式';
+
           if (parts.length >= 4) {
             qty = parseFloat(parts[1]) || 1;
             unit = (parts[2] || '式').trim();
@@ -7491,10 +7632,12 @@ canvas{display:block;margin:0 auto 24px}
           } else if (parts.length === 2) {
             price = parseFloat(parts[1].replace(/[,NT$\s元]/g, '')) || 0;
           } else if (nums && nums.length > 0) {
+            // Single-column line: try last number as price
             var lastNum = nums[nums.length - 1];
             price = parseFloat(lastNum.replace(/,/g, '')) || 0;
-            desc = line.replace(lastNum, '').replace(/[NT$\s元:\uff1a]/g, '').trim();
+            desc = line.replace(lastNum, '').replace(/[NT$\s元:：]/g, '').trim();
           }
+
           if (desc && price > 0) {
             items.push({ desc: desc, qty: qty, unit: unit, unitPrice: price });
           }
@@ -7514,6 +7657,7 @@ canvas{display:block;margin:0 auto 24px}
         var reader = new FileReader();
 
         if (ext === 'xlsx' || ext === 'xls' || ext === 'csv') {
+          // ── Excel / CSV ──
           reader.onload = function(e) {
             try {
               if (typeof XLSX === 'undefined') { importState.error = 'Excel 解析庫未載入，請重新整理頁面。'; importState.loading = false; renderImportModal(); return; }
@@ -7539,6 +7683,7 @@ canvas{display:block;margin:0 auto 24px}
           reader.readAsArrayBuffer(file);
 
         } else if (ext === 'docx') {
+          // ── Word ──
           reader.onload = function(e) {
             if (typeof mammoth === 'undefined') { importState.error = 'Word 解析庫未載入，請重新整理頁面。'; importState.loading = false; renderImportModal(); return; }
             mammoth.extractRawText({arrayBuffer: e.target.result}).then(function(result) {
@@ -7566,6 +7711,7 @@ canvas{display:block;margin:0 auto 24px}
           reader.readAsArrayBuffer(file);
 
         } else if (ext === 'pdf') {
+          // ── PDF ──
           reader.onload = function(e) {
             if (typeof pdfjsLib === 'undefined') { importState.error = 'PDF 解析庫未載入，請重新整理頁面。'; importState.loading = false; renderImportModal(); return; }
             var typedArray = new Uint8Array(e.target.result);
@@ -7609,6 +7755,7 @@ canvas{display:block;margin:0 auto 24px}
           reader.readAsArrayBuffer(file);
 
         } else if (ext === 'json') {
+          // ── JSON (legacy) ──
           reader.onload = function(e) {
             try {
               var data = JSON.parse(e.target.result);
@@ -7806,7 +7953,7 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   // ══════════════════════════════════════════════════════════
-    // ── AI INSIGHTS DASHBOARD (v1.0) — vanilla JS ──
+  // ── AI INSIGHTS DASHBOARD (v1.0) — vanilla JS ──
   // ══════════════════════════════════════════════════════════
   function renderInsights() {
     var content = document.getElementById('content');
@@ -8077,8 +8224,6 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   // ══════════════════════════════════════════════════════════
-
-
   // ── BILLING MODULE (v0.9.5) — vanilla JS ──
   // ══════════════════════════════════════════════════════════
   function renderBilling() {
@@ -15630,8 +15775,8 @@ function loadHistory(){
   function renderSettings() {
     const content = document.getElementById('content');
     const plan = state.plan || 'free';
-    const planLabel = plan === 'enterprise' ? 'Enterprise' : plan === 'pro' ? 'Pro' : 'Free';
-    const planColor = plan === 'enterprise' ? 'var(--teal)' : plan === 'pro' ? 'var(--primary)' : 'var(--ink-muted)';
+    const planLabel = plan === 'ultra' ? 'Ultra' : plan === 'pro' ? 'Pro' : 'Free';
+    const planColor = plan === 'ultra' ? 'var(--teal)' : plan === 'pro' ? 'var(--primary)' : 'var(--ink-muted)';
     // Unified credit system
     const creditLimit = plan === 'free' ? 100 : plan === 'pro' ? 2000 : 10000;
     const creditUsed = state.creditUsed || 0;
@@ -15671,7 +15816,7 @@ function loadHistory(){
             <div style="font-size:17px;font-weight:700;color:var(--ink);margin-bottom:2px">${state.user.name || '使用者'}</div>
             <div style="font-size:14px;color:var(--ink-muted)">${state.user.email || ''}</div>
           </div>
-          <span style="font-size:13px;color:${planColor};font-weight:700;background:${plan==='free'?'var(--bg-hover)':'var(--primary-light)'};padding:5px 14px;border-radius:20px">${planLabel}</span>
+          <span style="font-size:13px;color:${planColor};font-weight:700;background:${plan==='free'?'var(--bg-hover)':plan==='ultra'?'rgba(27,168,145,.1)':'var(--primary-light)'};padding:5px 14px;border-radius:20px">${planLabel}</span>
         </div>
         <div style="display:flex;gap:10px">
           <button class="btn btn-outline" style="flex:1;padding:10px 0;font-size:14px" onclick="app.logout()">登出帳號</button>
@@ -15771,7 +15916,7 @@ function loadHistory(){
         </div>
         ` : `
         <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--ink-muted)">
-          Enterprise 方案 · 自訂 credit 額度與模型配置
+          Ultra 方案 · 自訂 credit 額度與模型配置
         </div>
         `}
       </div>
@@ -15786,7 +15931,7 @@ function loadHistory(){
                 <th style="text-align:left;padding:10px 8px;color:var(--ink-muted);font-weight:600">功能</th>
                 <th style="text-align:center;padding:10px 8px;color:var(--ink-muted);font-weight:600">Free</th>
                 <th style="text-align:center;padding:10px 8px;color:var(--primary);font-weight:700">Pro NT$890/月</th>
-                <th style="text-align:center;padding:10px 8px;color:var(--teal);font-weight:700">Enterprise</th>
+                <th style="text-align:center;padding:10px 8px;color:var(--teal);font-weight:700">Ultra</th>
               </tr>
             </thead>
             <tbody>
@@ -15808,11 +15953,11 @@ function loadHistory(){
             </tbody>
           </table>
         </div>
-        ${plan==='free' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.handleUpgrade()">升級到 Pro · NT$890/月</button>' : plan==='pro' ? '<button class="btn btn-outline" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.showUpgradeInfo()">了解 Enterprise 方案</button>' : ''}
+        ${plan==='free' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.handleUpgrade()">升級到 Pro · NT$890/月</button>' : plan==='pro' ? '<button class="btn btn-outline" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.showUpgradeInfo()">了解 Ultra 方案</button>' : ''}
       </div>
 
-      <!-- ═══ 團隊管理（Enterprise 預留）═══ -->
-      ${plan==='enterprise' ? `
+      <!-- ═══ 團隊協作（Ultra 預留）═══ -->
+      ${plan==='ultra' ? `
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">團隊管理</div>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
@@ -15823,31 +15968,14 @@ function loadHistory(){
         <button class="btn btn-outline" style="width:100%;padding:10px 0;font-size:14px" onclick="app.showToast('團隊管理功能即將推出')">
           <span style="margin-right:6px">+</span> 邀請團隊成員
         </button>
-        <div style="margin-top:12px;font-size:13px;color:var(--ink-muted);text-align:center">Enterprise 方案支援最多 10 位成員協作，含角色權限管理（Owner / Admin / Editor / Viewer）</div>
-      </div>
-      ` : plan==='free' ? `
-      <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;opacity:.65">
-        <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">團隊協作</div>
-        <div style="font-size:14px;color:var(--ink-muted);line-height:1.6">升級到 Enterprise 方案即可邀請團隊成員共同管理診斷與研究，支援角色權限（Owner / Admin / Editor / Viewer）。</div>
+        <div style="margin-top:12px;font-size:13px;color:var(--ink-muted);text-align:center">Ultra 方案支援最多 10 位成員協作，含角色權限管理</div>
       </div>
       ` : `
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;opacity:.65">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">團隊協作</div>
-        <div style="font-size:14px;color:var(--ink-muted);line-height:1.6;margin-bottom:12px">升級到 Enterprise 方案即可邀請團隊成員共同管理診斷與研究。</div>
-        <button class="btn btn-outline" style="width:100%;padding:10px 0;font-size:14px" onclick="app.showUpgradeInfo()">了解 Enterprise 方案</button>
+        <div style="font-size:14px;color:var(--ink-muted);line-height:1.6">Ultra 方案可邀請團隊成員共同管理診斷與研究，支援角色權限管理。</div>
       </div>
       `}
-
-      <!-- ═══ 公司 / 報價單設定 ═══ -->
-      <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px">公司 / 報價單設定</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">這些資料會自動顯示在所有報價單的 FROM 欄位與簽約區</div>
-          </div>
-        </div>
-        <div id="companyProfileForm"></div>
-      </div>
 
       <!-- ═══ 資料管理 ═══ -->
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
@@ -15865,14 +15993,13 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.3.0</span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.5.2</span></div>
             <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 小團隊的 AI 商業引擎</div>
           </div>
           <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
         </div>
       </div>
     `;
-    renderCompanyProfileForm();
   }
 
   function renderCompanyProfileForm() {
@@ -17514,7 +17641,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                 <button class="btn-price featured" onclick="app.showLoginModal()">升級 Pro</button>
               </div>
               <div class="price-card stagger-child d3">
-                <h3>Enterprise</h3>
+                <h3>Ultra</h3>
                 <div class="price-amount contact-text">依需求報價</div>
                 <ul>
                   <li>自訂用量與受訪者規模</li>
@@ -17684,7 +17811,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     const perms = {
       free: ['diagnose_basic', 'lab_limited', 'reports_basic'],
       pro: ['diagnose_basic', 'diagnose_full', 'lab_limited', 'lab_unlimited', 'ai_analysis', 'export', 'reports_basic', 'reports_full'],
-      enterprise: ['diagnose_basic', 'diagnose_full', 'lab_limited', 'lab_unlimited', 'ai_analysis', 'export', 'reports_basic', 'reports_full', 'team', 'api', 'custom_brand']
+      ultra: ['diagnose_basic', 'diagnose_full', 'lab_limited', 'lab_unlimited', 'ai_analysis', 'export', 'reports_basic', 'reports_full', 'team', 'api', 'custom_brand']
     };
     return (perms[state.plan] || perms.free).includes(feature);
   }
@@ -17711,12 +17838,13 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
 })();
   </script>
 
-<!-- React 18 UMD + Firebase + docx CDN for Business Module -->
 <!-- File parsing CDN for Quote Import -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] SheetJS failed')"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] mammoth failed')"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] pdf.js failed')"></script>
 <script>if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
+
+<!-- React 18 UMD + Firebase + docx CDN for Business Module -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js" crossorigin="anonymous" onerror="console.warn('[CDN] React dev failed')"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js" crossorigin="anonymous" onerror="console.warn('[CDN] ReactDOM dev failed')"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" crossorigin="anonymous" onerror="console.warn('[CDN] Firebase App failed')"></script>
@@ -18206,4 +18334,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.5.1 -->
+</html><!-- v1.5.2 -->
