@@ -2461,7 +2461,41 @@ canvas{display:block;margin:0 auto 24px}
 .kanban-card:hover{border-color:var(--primary);box-shadow:0 4px 16px rgba(124,92,252,.08);transform:translateY(-1px)}
 .kanban-card.dragging{opacity:.35;transform:rotate(2deg) scale(.97)}
 .kanban-card.archived-card{opacity:.45;background:var(--bg-hover)}
+.kanban-card.wf-card{border-left:3px solid var(--primary)}
 .kanban-card-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.kb-state-badge{font-size:10px;padding:2px 8px;border-radius:8px;white-space:nowrap;font-weight:600}
+.kb-state-draft{background:rgba(102,102,122,.12);color:var(--ink-muted)}
+.kb-state-review{background:rgba(224,138,58,.15);color:var(--gold)}
+.kb-state-returned{background:rgba(217,68,98,.12);color:var(--rose)}
+.kb-state-approved{background:rgba(124,92,252,.12);color:var(--primary)}
+.kb-state-in_dev{background:rgba(27,168,145,.12);color:var(--teal)}
+.kb-state-done{background:rgba(27,168,145,.2);color:var(--teal)}
+.kb-state-backlog{background:rgba(102,102,122,.08);color:var(--ink-dim)}
+.kb-action-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-top:1px solid var(--border);gap:10px}
+.kb-action-btn{padding:8px 20px;border-radius:var(--r-sm);font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.kb-action-btn.primary{background:var(--primary);color:#fff;box-shadow:0 2px 8px var(--primary-glow)}
+.kb-action-btn.primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--primary-glow)}
+.kb-action-btn.danger{background:none;border:1px solid rgba(217,68,98,.3);color:var(--rose)}
+.kb-action-btn.danger:hover{background:rgba(217,68,98,.08)}
+.kb-action-btn.ghost{background:none;border:1px solid var(--border);color:var(--ink-muted)}
+.kb-action-btn.ghost:hover{background:var(--bg-hover);color:var(--ink)}
+.kb-detail-desc{white-space:pre-wrap;line-height:1.7;color:var(--ink);font-size:14px;min-height:60px;padding:12px;border-radius:var(--r-sm);border:1px solid transparent;transition:all .15s;cursor:text;outline:none}
+.kb-detail-desc:hover{border-color:var(--border)}
+.kb-detail-desc:focus{border-color:var(--primary);background:var(--bg-input,var(--bg-card));box-shadow:0 0 0 3px rgba(124,92,252,.08)}
+.kb-detail-desc:empty::before{content:attr(data-placeholder);color:var(--ink-dim);pointer-events:none}
+.kb-spec-block{background:var(--bg-hover);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;margin-top:12px}
+.kb-spec-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none;transition:background .12s}
+.kb-spec-header:hover{background:rgba(124,92,252,.04)}
+.kb-spec-body{padding:14px;border-top:1px solid var(--border);font-size:13px;line-height:1.7;color:var(--ink-sec)}
+.kb-discussion{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.kb-discuss-item{padding:10px 12px;border-radius:var(--r-sm);font-size:13px;line-height:1.5}
+.kb-discuss-item.user{background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.12)}
+.kb-discuss-item.agent{background:var(--bg-hover);border:1px solid var(--border)}
+.kb-discuss-input{display:flex;gap:8px;margin-top:8px}
+.kb-discuss-input textarea{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;font-family:inherit;background:var(--bg-input,var(--bg-card));color:var(--ink);resize:none;min-height:36px;outline:none;transition:border-color .15s}
+.kb-discuss-input textarea:focus{border-color:var(--primary)}
+.kb-subtask-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--r-sm);transition:background .12s}
+.kb-subtask-item:hover{background:var(--bg-hover)}
 .kb-type-badge{font-size:10px;padding:2px 7px;border-radius:8px;white-space:nowrap;font-weight:600}
 .kb-type-sales{background:rgba(217,68,98,.12);color:var(--rose)}
 .kb-type-design{background:rgba(124,92,252,.12);color:var(--primary)}
@@ -2863,7 +2897,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.7.1</div>
+        <div class="sidebar-version">v1.8.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3189,12 +3223,14 @@ canvas{display:block;margin:0 auto 24px}
       state.plan = 'free';
       saveState();
       hideLoginModal();
-      // Pull cloud data first, then show dashboard with merged data
+      // Pull cloud data first, init workspace, then show dashboard
       _pullFromFirestore(function() {
-        showDashboard();
-        showToast('歡迎回來，' + state.user.name + '！');
-        // After pull, sync back any local-only data
-        _syncToFirestore();
+        _initWorkspace(function() {
+          showDashboard();
+          showToast('歡迎回來，' + state.user.name + '！');
+          // After pull, sync back any local-only data
+          _syncToFirestore();
+        });
       });
     }).catch(function(error) {
       console.error('[Auth] Google login error:', error);
@@ -3216,27 +3252,76 @@ canvas{display:block;margin:0 auto 24px}
     return null;
   }
 
+  // ── Workspace Architecture (multi-user ready) ──
+  // Data path: workspaces/{workspaceId}/data/{key}
+  // Members:   workspaces/{workspaceId}/members/{uid} = {role:'owner'|'editor'|'viewer', joinedAt}
+  // Fallback:  users/{uid}/data/{key} (backward compatible single-user)
+  function _getWorkspaceId() {
+    return localStorage.getItem('bp_workspace_id') || '';
+  }
+  function _setWorkspaceId(wsId) {
+    localStorage.setItem('bp_workspace_id', wsId);
+  }
+  function _initWorkspace(callback) {
+    var fs = _getFirestore();
+    if (!fs) { if (callback) callback(); return; }
+    var uid = state.user.uid;
+    var wsId = _getWorkspaceId();
+    if (wsId) { if (callback) callback(wsId); return; }
+    // Auto-create personal workspace on first use
+    var newWsId = 'ws_' + uid.substring(0, 8) + '_' + Date.now().toString(36);
+    var wsRef = fs.collection('workspaces').doc(newWsId);
+    wsRef.set({
+      name: (state.user.name || 'My') + ' 的工作區',
+      ownerId: uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      plan: state.plan || 'free'
+    }).then(function() {
+      wsRef.collection('members').doc(uid).set({
+        role: 'owner',
+        name: state.user.name || '',
+        email: state.user.email || '',
+        joinedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      _setWorkspaceId(newWsId);
+      if (callback) callback(newWsId);
+    }).catch(function(e) {
+      console.warn('[Workspace] init error:', e);
+      if (callback) callback();
+    });
+  }
+
   function _syncToFirestore() {
     var fs = _getFirestore();
     if (!fs) return;
     var uid = state.user.uid;
+    var wsId = _getWorkspaceId();
     var collections = ['bp_kanban_cards','bp_kanban_columns','bp_contacts','bp_quotes','bp_billing','bp_meetings','bp_docs','bp_path_results'];
     collections.forEach(function(key) {
       try {
         var data = localStorage.getItem(key);
         if (data) {
+          // Write to both user-level (backward compat) and workspace-level
           fs.collection('users').doc(uid).collection('data').doc(key).set({
             value: data,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
+          if (wsId) {
+            fs.collection('workspaces').doc(wsId).collection('data').doc(key).set({
+              value: data,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+              updatedBy: uid
+            }, { merge: true });
+          }
         }
       } catch(e) { console.warn('[Firestore] sync error:', key, e); }
     });
-    // Also sync settings
+    // Also sync user settings
     fs.collection('users').doc(uid).set({
       name: state.user.name,
       email: state.user.email,
       plan: state.plan,
+      workspaceId: wsId || '',
       lastLogin: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   }
@@ -4426,6 +4511,44 @@ canvas{display:block;margin:0 auto 24px}
     var PRIORITY_LABELS = {high:'高',medium:'中',low:'低'};
     var PRESET_COLORS = ['#7C5CFC','#1BA891','#E08A3A','#D94462','#3B82F6','#8B5CF6','#EC4899','#06B6D4','#10B981','#F59E0B'];
     var TYPE_LABELS = {task:'任務',spec:'需求文件',bug:'BUG',sales:'業務',design:'設計',marketing:'行銷',product:'產品',dev:'開發',finance:'財務',hr:'人資'};
+
+    // ── Workflow State Machine ──
+    var CARD_STATES = {
+      draft:    {label:'草稿',     color:'var(--ink-muted)', icon:'edit',    next:['review','backlog']},
+      review:   {label:'待審閱',   color:'var(--gold)',      icon:'eye',     next:['approved','returned','backlog']},
+      returned: {label:'已退回',   color:'var(--rose)',      icon:'return',  next:['review','draft','backlog']},
+      approved: {label:'已核准',   color:'var(--primary)',   icon:'check',   next:['in_dev','returned','backlog']},
+      in_dev:   {label:'開發中',   color:'var(--teal)',      icon:'code',    next:['done','returned','backlog']},
+      done:     {label:'完成',     color:'var(--teal)',      icon:'check',   next:[]},
+      backlog:  {label:'暫緩',     color:'var(--ink-dim)',   icon:'pause',   next:['draft','review']}
+    };
+    var STATE_ACTIONS = {
+      draft:    [{to:'review',   label:'提交審閱',  cls:'primary'}, {to:'backlog', label:'暫緩', cls:'ghost'}],
+      review:   [{to:'approved', label:'核准開發',  cls:'primary'}, {to:'returned',label:'退回重寫',cls:'danger'}],
+      returned: [{to:'review',   label:'重新提交',  cls:'primary'}, {to:'draft',   label:'回到草稿',cls:'ghost'}],
+      approved: [{to:'in_dev',   label:'開始開發',  cls:'primary'}, {to:'returned',label:'退回',cls:'danger'}],
+      in_dev:   [{to:'done',     label:'標記完成',  cls:'primary'}, {to:'returned',label:'退回',cls:'danger'}],
+      done:     [],
+      backlog:  [{to:'draft',    label:'重啟',      cls:'primary'}]
+    };
+    function getCardMode(card) {
+      return (card.specDoc || card.requiresReview) ? 'workflow' : 'simple';
+    }
+    function transitionState(card, newState) {
+      var old = card.wfState || 'draft';
+      card.wfState = newState;
+      if (!card.stateHistory) card.stateHistory = [];
+      card.stateHistory.push({from:old, to:newState, by:'user', at:new Date().toISOString()});
+      card.updatedAt = new Date().toISOString();
+      // auto-map column for workflow cards
+      var stateColMap = {draft:'todo',review:'todo',returned:'todo',approved:'doing',in_dev:'doing',done:'done',backlog:'todo'};
+      var targetCol = stateColMap[newState];
+      if (targetCol) {
+        var colExists = cols.some(function(c){return c.id===targetCol;});
+        if (colExists) card.columnId = targetCol;
+      }
+      saveCards(cards);
+    }
     var TYPE_SUGGESTIONS = {
       sales:{fields:['客戶','金額','報價編號','聯絡人'],checklist:['報價完成','客戶確認','簽約完成']},
       design:{fields:['Figma 連結','設計稿版本','參考素材'],checklist:['初稿完成','內部 Review','定稿交付']},
@@ -4453,6 +4576,15 @@ canvas{display:block;margin:0 auto 24px}
       if(!c.attachments) c.attachments=[];
       if(c.archived===undefined) c.archived=false;
       if(!c.priority) c.priority='none';
+      // v1.8 workflow fields
+      if(!c.specDoc) c.specDoc='';
+      if(!c.wfState) c.wfState='';  // empty = simple mode
+      if(!c.requiresReview) c.requiresReview=false;
+      if(!c.source) c.source='manual';
+      if(!c.subTasks) c.subTasks=[];
+      if(!c.discussion) c.discussion=[];
+      if(!c.stateHistory) c.stateHistory=[];
+      if(!c.collaborators) c.collaborators=[];
       return c;
     }
 
@@ -4554,7 +4686,9 @@ canvas{display:block;margin:0 auto 24px}
           var clDone=(card.checklist||[]).filter(function(x){return x.done;}).length;
           var clTotal=(card.checklist||[]).length;
 
-          html += '<div class="kanban-card' + (card.archived?' archived-card':'') + '" draggable="true" data-card="' + card.id + '" style="background:' + hexToRgba(col.color,0.05) + '">';
+          var cardIsWf = getCardMode(card) === 'workflow';
+          var cardWfState = card.wfState || 'draft';
+          html += '<div class="kanban-card' + (card.archived?' archived-card':'') + (cardIsWf?' wf-card':'') + '" draggable="true" data-card="' + card.id + '" style="background:' + hexToRgba(col.color,0.05) + '">';
           html += '<div style="display:flex;align-items:flex-start;gap:6px">';
           html += '<span style="color:var(--ink-dim);margin-top:2px;cursor:grab;flex-shrink:0">' + IC.grip + '</span>';
           html += '<div style="flex:1;min-width:0">';
@@ -4562,6 +4696,7 @@ canvas{display:block;margin:0 auto 24px}
           if(card.description) html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + card.description + '</div>';
           html += '</div></div>';
           html += '<div class="kanban-card-meta">';
+          if(cardIsWf) html += '<span class="kb-state-badge kb-state-' + cardWfState + '">' + CARD_STATES[cardWfState].label + '</span>';
           if(card.type && card.type!=='task'){
             var typeLabel = card.customTypeName || TYPE_LABELS[card.type] || card.type;
             var typeClass = card.customTypeName ? 'kb-type-custom' : 'kb-type-' + card.type;
@@ -4571,6 +4706,9 @@ canvas{display:block;margin:0 auto 24px}
           if(dueStr && (dueClass==='overdue' || dueClass==='urgent')) html += '<span class="kb-due-text ' + dueClass + '">' + IC.cal + dueStr + '</span>';
           if(card.assignee) html += '<span class="kb-assignee-text">' + card.assignee + '</span>';
           if(clTotal>0) html += '<span class="kb-cl-progress">' + IC.check + ' ' + clDone + '/' + clTotal + '</span>';
+          // Sub-task progress for workflow cards
+          var stTotal = (card.subTasks||[]).length;
+          if(stTotal>0) { var stDone2 = (card.subTasks||[]).filter(function(s){return s.done;}).length; html += '<span class="kb-cl-progress" style="color:var(--primary)">' + IC.check + ' ' + stDone2 + '/' + stTotal + ' 子任務</span>'; }
           html += '</div></div>';
         });
         html += '</div></div>';
@@ -4801,101 +4939,203 @@ canvas{display:block;margin:0 auto 24px}
       var col = cols.find(function(c){return c.id===card.columnId;});
       var colLabel = col ? col.label : card.columnId;
       var typeLabel = card.customTypeName || TYPE_LABELS[card.type] || card.type;
+      var isWf = getCardMode(card) === 'workflow';
+      var wfState = card.wfState || 'draft';
 
-      // Build checklist HTML
+      // Build checklist HTML (interactive)
       var clHtml = '';
       (card.checklist||[]).forEach(function(it, idx){
-        var idx2 = card.checklist.indexOf(it);
-        clHtml += '<div class="kb-cl-item" style="padding:8px;background:var(--bg-hover);border-radius:var(--r-sm);margin-bottom:6px"><input type="checkbox"' + (it.done?' checked':'') + ' onchange="window._kbToggleCheckItem(\'' + card.id + '\',' + idx2 + ')"  style="cursor:pointer"><span style="margin-left:6px;' + (it.done?'text-decoration:line-through;color:var(--ink-dim)':'color:var(--ink)') + '">' + (it.text||'') + '</span></div>';
+        clHtml += '<div class="kb-cl-item" style="padding:8px;background:var(--bg-hover);border-radius:var(--r-sm);margin-bottom:6px"><input type="checkbox"' + (it.done?' checked':'') + ' onchange="window._kbToggleCheckItem(\'' + card.id + '\',' + idx + ')"  style="cursor:pointer"><span style="margin-left:6px;' + (it.done?'text-decoration:line-through;color:var(--ink-dim)':'color:var(--ink)') + '">' + (it.text||'') + '</span></div>';
       });
 
       // Build attachment preview
       var attachHtml = '';
       if(card.attachments && card.attachments.length > 0){
-        card.attachments.forEach(function(a,i){
-          attachHtml += '<div style="margin-bottom:12px"><img src="' + a.data + '" style="max-width:200px;border-radius:var(--r-sm);border:1px solid var(--border)"></div>';
+        card.attachments.forEach(function(a){
+          attachHtml += '<div style="display:inline-block;margin:0 8px 8px 0"><img src="' + a.data + '" style="max-width:180px;border-radius:var(--r-sm);border:1px solid var(--border)"></div>';
         });
       }
 
-      // Build activity HTML
+      // Build activity + state history HTML
+      var historyItems = [];
+      (card.activities||[]).forEach(function(a){
+        historyItems.push({at:a.at, html:_kbActivityText(a)});
+      });
+      (card.stateHistory||[]).forEach(function(h){
+        var fromL = CARD_STATES[h.from] ? CARD_STATES[h.from].label : h.from;
+        var toL = CARD_STATES[h.to] ? CARD_STATES[h.to].label : h.to;
+        historyItems.push({at:h.at, html:'狀態 ' + fromL + ' → ' + toL});
+      });
+      historyItems.sort(function(a,b){return (b.at||'').localeCompare(a.at||'');});
       var actHtml = '';
-      (card.activities||[]).slice(-10).reverse().forEach(function(a){
-        var t = a.at ? new Date(a.at).toLocaleDateString('zh-TW',{month:'short',day:'numeric'}) : '';
-        if(a.action==='created') actHtml += '<div class="kb-activity-row">建立 · ' + t + '</div>';
-        else if(a.action==='moved') actHtml += '<div class="kb-activity-row">' + (a.from||'') + ' → ' + (a.to||'') + ' · ' + t + '</div>';
-        else if(a.action==='archived') actHtml += '<div class="kb-activity-row">已封存 · ' + t + '</div>';
-        else if(a.action==='unarchived') actHtml += '<div class="kb-activity-row">已復原 · ' + t + '</div>';
+      historyItems.slice(0,15).forEach(function(item){
+        var t = item.at ? new Date(item.at).toLocaleDateString('zh-TW',{month:'short',day:'numeric'}) : '';
+        actHtml += '<div class="kb-activity-row">' + item.html + ' · ' + t + '</div>';
+      });
+
+      // Build sub-tasks HTML
+      var stHtml = '';
+      (card.subTasks||[]).forEach(function(st, idx){
+        stHtml += '<div class="kb-subtask-item"><input type="checkbox"' + (st.done?' checked':'') + ' onchange="window._kbToggleSubTask(\'' + card.id + '\',' + idx + ')" style="width:15px;height:15px;cursor:pointer;accent-color:var(--primary);flex-shrink:0"><span style="font-size:13px;' + (st.done?'text-decoration:line-through;color:var(--ink-dim)':'color:var(--ink)') + '">' + (st.title||'') + '</span>';
+        if(st.assignee) stHtml += '<span style="font-size:11px;color:var(--ink-muted);margin-left:auto">' + st.assignee + '</span>';
+        stHtml += '</div>';
+      });
+
+      // Build discussion HTML
+      var discHtml = '';
+      (card.discussion||[]).forEach(function(d){
+        var cls = d.by === 'Claude' ? 'agent' : 'user';
+        var t = d.at ? new Date(d.at).toLocaleDateString('zh-TW',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+        discHtml += '<div class="kb-discuss-item ' + cls + '"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;font-weight:600;color:var(--ink-sec)">' + (d.by||'') + '</span><span style="font-size:10px;color:var(--ink-dim)">' + t + '</span></div><div style="font-size:13px;line-height:1.5;color:var(--ink)">' + (d.text||'') + '</div></div>';
       });
 
       var m = '';
-      m += '<div class="kb-modal" onclick="event.stopPropagation()">';
-      // Header with Edit button
-      m += '<div class="kb-modal-header" style="display:flex;align-items:center;justify-content:space-between">';
-      m += '<div style="display:flex;align-items:center;gap:8px">';
+      m += '<div class="kb-modal" style="width:960px" onclick="event.stopPropagation()">';
+
+      // ── Header ──
+      m += '<div class="kb-modal-header">';
+      m += '<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">';
+      if(isWf) m += '<span class="kb-state-badge kb-state-' + wfState + '">' + CARD_STATES[wfState].label + '</span>';
       if(card.type && card.type!=='task'){
         var typeClass = card.customTypeName ? 'kb-type-custom' : 'kb-type-' + card.type;
         m += '<span class="kb-type-badge ' + typeClass + '">' + typeLabel + '</span>';
       }
-      m += '<h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink)">' + (card.title||'未命名') + '</h3></div>';
-      m += '<div style="display:flex;gap:8px;align-items:center">';
-      m += '<button style="background:none;border:none;color:var(--primary);cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;transition:background .12s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="document.querySelector(\'.kb-modal-overlay\').remove();window._kbShowCardEdit(\'' + card.id + '\')" >' + IC.edit + ' 編輯</button>';
+      m += '<h3 style="margin:0;font-size:17px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (card.title||'未命名') + '</h3></div>';
+      m += '<div style="display:flex;gap:6px;align-items:center;flex-shrink:0">';
+      m += '<button style="background:none;border:none;color:var(--primary);cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;transition:background .12s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="document.querySelector(\'.kb-modal-overlay\').remove();window._kbShowCardEdit(\'' + card.id + '\')">' + IC.edit + ' 編輯</button>';
       m += '<button class="btn btn-ghost" style="font-size:12px;padding:6px 14px;color:var(--ink-muted);border-radius:8px" id="kbArchiveBtn">' + IC.archive + (card.archived?' 復原':' 封存') + '</button>';
       m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button></div></div>';
 
-      // Two columns
-      m += '<div class="kb-modal-2col">';
-      // LEFT column
+      // ── Body: Two columns ──
+      m += '<div class="kb-modal-body"><div class="kb-modal-2col" style="grid-template-columns:3fr 2fr">';
+
+      // LEFT: Content area
       m += '<div style="display:flex;flex-direction:column;gap:16px">';
-      m += '<div class="kb-section"><div style="white-space:pre-wrap;line-height:1.6;color:var(--ink-muted);font-size:14px;background:var(--bg-hover);padding:12px;border-radius:var(--r-sm)">' + (card.description||'無描述') + '</div></div>';
-      if(attachHtml) m += '<div class="kb-section"><label class="kb-label">附件</label>' + attachHtml + '</div>';
+
+      // Description — editable contenteditable div
+      m += '<div class="kb-section">';
+      m += '<label class="kb-label">描述</label>';
+      m += '<div class="kb-detail-desc" contenteditable="true" data-placeholder="點擊輸入描述…" id="kbDetailDesc">' + (card.description||'') + '</div>';
+      m += '</div>';
+
+      // Spec document (collapsible, only if exists or workflow mode)
+      if(isWf || card.specDoc) {
+        m += '<div class="kb-spec-block">';
+        m += '<div class="kb-spec-header" onclick="var b=this.nextElementSibling;b.style.display=b.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.spec-arrow\').textContent=b.style.display===\'none\'?\'▸\':\'▾\'">';
+        m += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;font-weight:700;color:var(--primary)">📋 規格文件</span>';
+        if(card.source && card.source !== 'manual') m += '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(124,92,252,.1);color:var(--primary)">via ' + card.source + '</span>';
+        m += '</div><span class="spec-arrow" style="font-size:12px;color:var(--ink-muted)">▾</span></div>';
+        m += '<div class="kb-spec-body">' + (card.specDoc || '<span style="color:var(--ink-dim)">尚無規格文件。透過 Claude Cowork 產出後會自動同步至此。</span>') + '</div></div>';
+      }
+
+      // Attachments
+      if(attachHtml) m += '<div class="kb-section"><label class="kb-label">附件</label><div>' + attachHtml + '</div></div>';
+
+      // Checklist
       if(clHtml) m += '<div class="kb-section"><label class="kb-label">檢查清單</label><div>' + clHtml + '</div></div>';
+
+      // Custom fields
       var cfHtml = '';
       (card.customFields||[]).forEach(function(f){
         cfHtml += '<div style="margin-bottom:8px"><div style="font-size:11px;color:var(--ink-muted);font-weight:600;margin-bottom:3px">' + (f.label||'') + '</div><div style="font-size:13px;color:var(--ink)">' + (f.value||'') + '</div></div>';
       });
       if(cfHtml) m += '<div class="kb-section"><label class="kb-label">自訂欄位</label>' + cfHtml + '</div>';
+
+      // Discussion thread
+      m += '<div class="kb-section"><label class="kb-label">討論串</label>';
+      if(discHtml) m += '<div class="kb-discussion">' + discHtml + '</div>';
+      m += '<div class="kb-discuss-input"><textarea id="kbDiscInput" rows="1" placeholder="留言或備註…"></textarea>';
+      m += '<button class="kb-action-btn ghost" style="padding:6px 14px;flex-shrink:0" id="kbDiscSend">送出</button></div></div>';
+
+      // Activity history
       if(actHtml) m += '<div class="kb-section"><label class="kb-label">活動紀錄</label><div class="kb-activity">' + actHtml + '</div></div>';
+
+      m += '</div>'; // end left column
+
+      // RIGHT: Metadata sidebar
+      m += '<div style="display:flex;flex-direction:column;gap:14px">';
+
+      // Status
+      m += '<div class="kb-section"><label class="kb-label">狀態</label>';
+      if(isWf) {
+        m += '<span class="kb-state-badge kb-state-' + wfState + '" style="font-size:12px;padding:4px 10px">' + CARD_STATES[wfState].label + '</span>';
+      } else {
+        m += '<div style="font-size:14px;color:var(--ink);font-weight:600">' + colLabel + '</div>';
+      }
       m += '</div>';
 
-      // RIGHT column
-      m += '<div style="display:flex;flex-direction:column;gap:14px">';
-      m += '<div class="kb-section"><label class="kb-label">狀態</label><div style="font-size:14px;color:var(--ink);font-weight:600">' + colLabel + '</div></div>';
-      // Priority — always show
+      // Priority
       if(card.priority && card.priority!=='none') {
         m += '<div class="kb-section"><label class="kb-label">優先度</label><span class="kb-pri-badge ' + card.priority + '">' + PRIORITY_LABELS[card.priority] + '</span></div>';
       } else {
         m += '<div class="kb-section"><label class="kb-label">優先度</label><div style="font-size:13px;color:var(--ink-dim)">未設定</div></div>';
       }
+
+      // Type
       m += '<div class="kb-section"><label class="kb-label">類型</label><div style="font-size:14px;color:var(--ink);font-weight:600">' + typeLabel + '</div></div>';
-      if(card.assignee) m += '<div class="kb-section"><label class="kb-label">負責人</label><div style="font-size:14px;color:var(--ink)">' + card.assignee + '</div></div>';
-      // Due date — always show
+
+      // Assignee
+      m += '<div class="kb-section"><label class="kb-label">負責人</label><div style="font-size:14px;color:var(--ink)">' + (card.assignee || '<span style="color:var(--ink-dim)">未指派</span>') + '</div></div>';
+
+      // Due date
       if(card.dueDate) {
         var dueDateStr = new Date(card.dueDate).toLocaleDateString('zh-TW');
-        var isOverdue = new Date(card.dueDate) < new Date() && colLabel !== '完成';
+        var isOverdue = new Date(card.dueDate) < new Date() && wfState !== 'done';
         m += '<div class="kb-section"><label class="kb-label">到期日</label><div style="font-size:14px;color:' + (isOverdue?'var(--rose)':'var(--ink)') + ';font-weight:' + (isOverdue?'600':'400') + '">' + dueDateStr + (isOverdue?' (逾期)':'') + '</div></div>';
       } else {
         m += '<div class="kb-section"><label class="kb-label">到期日</label><div style="font-size:13px;color:var(--ink-dim)">未設定</div></div>';
       }
-      // Checklist progress
+
+      // Source
+      if(card.source && card.source !== 'manual') {
+        m += '<div class="kb-section"><label class="kb-label">來源</label><div style="font-size:13px;color:var(--primary);font-weight:500">' + card.source + '</div></div>';
+      }
+
+      // Sub-tasks
+      if(card.subTasks && card.subTasks.length > 0) {
+        var stDone = card.subTasks.filter(function(s){return s.done;}).length;
+        var stPct = Math.round(stDone / card.subTasks.length * 100);
+        m += '<div class="kb-section" style="padding-top:10px;border-top:1px solid var(--border)"><label class="kb-label">子任務 (' + stDone + '/' + card.subTasks.length + ')</label>';
+        m += '<div style="margin-bottom:8px;display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:var(--bg-hover);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + stPct + '%;background:' + (stPct===100?'var(--teal)':'var(--primary)') + ';border-radius:3px;transition:width .3s"></div></div><span style="font-size:11px;color:var(--ink-muted)">' + stPct + '%</span></div>';
+        m += stHtml + '</div>';
+      }
+
+      // Checklist progress (compact in sidebar)
       var clItems = card.checklist || [];
       if(clItems.length > 0) {
         var clDone = clItems.filter(function(it){return it.done;}).length;
         var clPct = Math.round(clDone / clItems.length * 100);
-        m += '<div class="kb-section"><label class="kb-label">檢查清單</label>';
-        m += '<div style="display:flex;align-items:center;gap:8px">';
-        m += '<div style="flex:1;height:6px;background:var(--bg-hover);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + clPct + '%;background:' + (clPct===100?'var(--teal)':'var(--primary)') + ';border-radius:3px;transition:width .3s"></div></div>';
-        m += '<span style="font-size:12px;color:var(--ink-muted);white-space:nowrap">' + clDone + '/' + clItems.length + '</span>';
+        m += '<div class="kb-section"><label class="kb-label">檢查清單 ' + clDone + '/' + clItems.length + '</label>';
+        m += '<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;background:var(--bg-hover);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + clPct + '%;background:' + (clPct===100?'var(--teal)':'var(--primary)') + ';border-radius:3px;transition:width .3s"></div></div><span style="font-size:11px;color:var(--ink-muted)">' + clPct + '%</span></div></div>';
+      }
+
+      // Collaborators
+      if(card.collaborators && card.collaborators.length > 0) {
+        m += '<div class="kb-section"><label class="kb-label">協作者</label><div style="font-size:13px;color:var(--ink)">' + card.collaborators.join(', ') + '</div></div>';
+      }
+
+      m += '</div>'; // end right column
+      m += '</div></div>'; // end kb-modal-2col + kb-modal-body
+
+      // ── Action Bar (workflow mode only) ──
+      if(isWf && STATE_ACTIONS[wfState] && STATE_ACTIONS[wfState].length > 0) {
+        m += '<div class="kb-action-bar">';
+        m += '<div style="font-size:11px;color:var(--ink-dim)">工作流程</div>';
+        m += '<div style="display:flex;gap:8px">';
+        STATE_ACTIONS[wfState].forEach(function(act){
+          m += '<button class="kb-action-btn ' + act.cls + '" data-transition="' + act.to + '">' + act.label + '</button>';
+        });
         m += '</div></div>';
       }
-      m += '</div></div>';
 
-      // Footer — clean, no duplicate buttons (archive/edit already in header)
-      m += '</div>';
+      m += '</div>'; // end kb-modal
 
       ov.innerHTML = m;
       document.body.appendChild(ov);
 
-      // Archive handler
+      // ── Event handlers ──
+
+      // Archive
       ov.querySelector('#kbArchiveBtn').addEventListener('click',function(){
         card.archived = !card.archived;
         card.activities.push({action:card.archived?'archived':'unarchived',by:'user',at:new Date().toISOString()});
@@ -4903,6 +5143,58 @@ canvas{display:block;margin:0 auto 24px}
         saveCards(cards);ov.remove();renderBoard();
         if(typeof showToast==='function') showToast(card.archived?'已封存':'已復原');
       });
+
+      // Description auto-save on blur
+      var descEl = ov.querySelector('#kbDetailDesc');
+      if(descEl) {
+        descEl.addEventListener('blur', function(){
+          var newDesc = descEl.innerText.trim();
+          if(newDesc !== (card.description||'').trim()){
+            card.description = newDesc;
+            card.updatedAt = new Date().toISOString();
+            saveCards(cards);
+          }
+        });
+      }
+
+      // Discussion send
+      var discBtn = ov.querySelector('#kbDiscSend');
+      var discInput = ov.querySelector('#kbDiscInput');
+      if(discBtn && discInput) {
+        discBtn.addEventListener('click', function(){
+          var text = discInput.value.trim();
+          if(!text) return;
+          card.discussion.push({by:'Edward', at:new Date().toISOString(), text:text});
+          card.updatedAt = new Date().toISOString();
+          saveCards(cards);
+          ov.remove();
+          _kbShowCardView(cardId); // re-render
+        });
+      }
+
+      // Workflow state transitions
+      ov.querySelectorAll('[data-transition]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var newState = btn.dataset.transition;
+          transitionState(card, newState);
+          card.activities.push({action:'state_change', by:'user', at:new Date().toISOString(), detail: CARD_STATES[newState].label});
+          saveCards(cards);
+          ov.remove();
+          renderBoard();
+          _kbShowCardView(cardId); // re-open with new state
+          if(typeof showToast==='function') showToast('狀態更新：' + CARD_STATES[newState].label);
+        });
+      });
+    }
+
+    // Helper: activity text formatter
+    function _kbActivityText(a) {
+      if(a.action==='created') return '建立';
+      if(a.action==='moved') return (a.from||'') + ' → ' + (a.to||'');
+      if(a.action==='archived') return '已封存';
+      if(a.action==='unarchived') return '已復原';
+      if(a.action==='state_change') return '狀態變更：' + (a.detail||'');
+      return a.action || '';
     }
 
     // ── Card Edit Modal ──
@@ -4982,6 +5274,10 @@ canvas{display:block;margin:0 auto 24px}
       m += '<div class="kb-section"><label class="kb-label">類型</label>' + bpSelect({id:'kbF_type', options: Object.keys(TYPE_LABELS).map(function(t){return {value:t, label:TYPE_LABELS[t], selected:typeVal===t};}).concat([{value:'custom',label:'自訂',selected:typeVal==='custom'}])}) + '<input type="text" id="kbF_customType" class="kb-input" style="display:none;margin-top:6px" placeholder="自訂類型名稱" value="' + customTypeVal.replace(/"/g,'&quot;') + '"></div>';
       m += '<div class="kb-section"><label class="kb-label">負責人</label><input type="text" id="kbF_assignee" class="kb-input" value="' + (card?(card.assignee||''):'') + '" placeholder="名稱"></div>';
       m += '<div class="kb-section"><label class="kb-label">到期日</label><input type="date" id="kbF_due" class="kb-input" value="' + (card?(card.dueDate||''):'') + '"></div>';
+      // Workflow toggle
+      var wfChecked = card ? card.requiresReview : false;
+      m += '<div class="kb-section" style="padding-top:10px;border-top:1px solid var(--border)"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="kbF_wf" ' + (wfChecked?'checked':'') + ' style="width:16px;height:16px;accent-color:var(--primary)"><span style="font-size:12px;font-weight:600;color:var(--ink-sec)">啟用工作流程</span></label>';
+      m += '<div style="font-size:11px;color:var(--ink-dim);margin-top:4px;line-height:1.4">開啟後可追蹤審閱狀態（草稿→待審閱→核准→開發→完成）</div></div>';
       m += '</div></div>';
       m += '</div>'; // end kb-modal-body
       // Footer
@@ -5116,6 +5412,8 @@ canvas{display:block;margin:0 auto 24px}
         });
 
         var finalType = typeVal === 'custom' ? 'custom' : typeVal;
+        var wfToggle = ov.querySelector('#kbF_wf');
+        var wfEnabled = wfToggle ? wfToggle.checked : false;
         var data = {
           title:title,
           description:ov.querySelector('#kbF_desc').value.trim(),
@@ -5128,9 +5426,14 @@ canvas{display:block;margin:0 auto 24px}
           checklist:checklist,
           customFields:customFields,
           attachments:attachments,
+          requiresReview:wfEnabled,
           updatedAt:new Date().toISOString()
         };
         if(isEdit){
+          // If workflow just got enabled, init wfState
+          if(wfEnabled && !card.wfState) data.wfState = 'draft';
+          // If workflow just got disabled, clear wfState
+          if(!wfEnabled && !card.specDoc) data.wfState = '';
           Object.assign(card,data);
           if(!card.activities.some(function(a){return a.action==='edited'&&a.at===data.updatedAt;})){
             card.activities.push({action:'edited',by:'user',at:data.updatedAt});
@@ -5139,6 +5442,8 @@ canvas{display:block;margin:0 auto 24px}
           data.id=genId();data.createdAt=data.updatedAt;data.archived=false;
           data.activities=[{action:'created',by:'user',at:data.updatedAt}];
           data.order=cards.filter(function(c){return c.columnId===data.columnId&&!c.archived;}).length;
+          if(wfEnabled) data.wfState = 'draft';
+          data.specDoc='';data.source='manual';data.subTasks=[];data.discussion=[];data.stateHistory=[];data.collaborators=[];
           cards.push(data);
         }
         saveCards(cards);ov.remove();renderBoard();
@@ -5198,6 +5503,14 @@ canvas{display:block;margin:0 auto 24px}
       var card = cards.find(function(c){return c.id===cardId;});
       if(card && card.checklist && card.checklist[idx] !== undefined) {
         card.checklist[idx].done = !card.checklist[idx].done;
+        card.updatedAt = new Date().toISOString();
+        saveCards(cards);
+      }
+    };
+    window._kbToggleSubTask = function(cardId, idx) {
+      var card = cards.find(function(c){return c.id===cardId;});
+      if(card && card.subTasks && card.subTasks[idx] !== undefined) {
+        card.subTasks[idx].done = !card.subTasks[idx].done;
         card.updatedAt = new Date().toISOString();
         saveCards(cards);
       }
@@ -8151,8 +8464,55 @@ canvas{display:block;margin:0 auto 24px}
     };
     window._qtChangeStatus = function(id, status) {
       var q = quotes.find(function(x) { return x.id === id; });
-      if (q) { q.status = status; saveQuotes(quotes); renderBoard(); }
+      if (q) {
+        var prevStatus = q.status;
+        q.status = status;
+        saveQuotes(quotes);
+        renderBoard();
+        // Auto-create billing invoice when quote is accepted
+        if (status === 'accepted' && prevStatus !== 'accepted') {
+          _qtAutoCreateInvoice(q);
+        }
+      }
     };
+    function _qtAutoCreateInvoice(quote) {
+      try {
+        var blKey = 'bp_billing';
+        var existing = [];
+        try { var s = localStorage.getItem(blKey); existing = s ? JSON.parse(s) : []; } catch(e) { existing = []; }
+        // Check if invoice already exists for this quote
+        var alreadyExists = existing.some(function(inv) { return inv.quoteRef === quote.quoteNumber; });
+        if (alreadyExists) return;
+        // Generate invoice number
+        var year = new Date().getFullYear();
+        var nums = existing.map(function(i) { var m = (i.invoiceNumber||'').match(/INV-\d{4}-(\d+)/); return m ? parseInt(m[1]) : 0; });
+        var invNumber = 'INV-' + year + '-' + String(Math.max.apply(null, [0].concat(nums)) + 1).padStart(3, '0');
+        var total = 0;
+        (quote.items || []).forEach(function(it) { total += (it.qty || 0) * (it.price || 0); });
+        var newInv = {
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+          invoiceNumber: invNumber,
+          title: quote.title || '報價單轉收款',
+          status: 'unpaid',
+          amount: total,
+          paidAmount: 0,
+          clientName: quote.client || '',
+          clientContact: quote.contactPerson || '',
+          quoteRef: quote.quoteNumber || '',
+          issueDate: new Date().toISOString().split('T')[0],
+          dueDate: '',
+          notes: '由報價單 ' + (quote.quoteNumber || '') + ' 自動建立',
+          payments: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          archived: false
+        };
+        existing.push(newInv);
+        localStorage.setItem(blKey, JSON.stringify(existing));
+        _scheduleFirestoreSync();
+        if (typeof showToast === 'function') showToast('已自動建立收款單 ' + invNumber);
+      } catch(e) { console.error('Auto invoice error:', e); }
+    }
     window.getCompanyProfile = getCompanyProfile;
     window.saveCompanyProfile = saveCompanyProfile;
     window.getServiceTemplates = getServiceTemplates;
@@ -16267,7 +16627,7 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.7.1</span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v1.8.0</span></div>
             <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 小團隊的 AI 商業引擎</div>
           </div>
           <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
@@ -18705,4 +19065,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v1.7.1 -->
+</html><!-- v1.8.0 -->
