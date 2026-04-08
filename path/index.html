@@ -2905,7 +2905,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.7.0</div>
+        <div class="sidebar-version">v0.8.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4533,12 +4533,36 @@ canvas{display:block;margin:0 auto 24px}
     (function(){ for(var k in TASK_CATEGORIES) TYPE_LABELS[k] = TASK_CATEGORIES[k].label; })();
 
     var TYPE_SUGGESTIONS = {
-      product:{fields:['用戶故事','影響範圍','關聯功能'],checklist:['需求確認','設計完成','開發完成','驗收通過']},
-      dev:{fields:['Issue #','分支','PR 連結','環境'],checklist:['開發完成','Code Review','測試通過','部署完成']},
-      qa:{fields:['測試範圍','環境','驗收人'],checklist:['測試計畫','執行測試','Bug 回報','驗收簽核']},
-      marketing:{fields:['渠道','Campaign','發佈日期','素材連結'],checklist:['文案完成','視覺完成','審核通過','排程發佈']},
-      sales:{fields:['客戶','金額','報價編號','聯絡人'],checklist:['報價完成','客戶確認','簽約完成']},
-      admin:{fields:['負責人','審批人','截止日'],checklist:['資料整理','主管審核','完成結案']}
+      product:{
+        descTemplate:'## 背景\n\n## 目標\n\n## 用戶故事\n作為______，我希望______，以便______。\n\n## 驗收條件\n- \n',
+        fields:['用戶故事','影響範圍','關聯功能'],
+        checklist:['需求確認','設計完成','開發完成','驗收通過']
+      },
+      dev:{
+        descTemplate:'## 問題 / 需求\n\n## 解決方案\n\n## 技術要點\n- \n\n## 測試範圍\n- \n',
+        fields:['Issue #','分支','PR 連結','環境'],
+        checklist:['開發完成','Code Review','測試通過','部署完成']
+      },
+      qa:{
+        descTemplate:'## 測試目標\n\n## 測試範圍\n- \n\n## 前置條件\n\n## 預期結果\n',
+        fields:['測試範圍','環境','驗收人'],
+        checklist:['測試計畫','執行測試','Bug 回報','驗收簽核']
+      },
+      marketing:{
+        descTemplate:'## 活動目標\n\n## 目標受眾\n\n## 核心訊息\n\n## 渠道與排程\n- \n',
+        fields:['渠道','Campaign','發佈日期','素材連結'],
+        checklist:['文案完成','視覺完成','審核通過','排程發佈']
+      },
+      sales:{
+        descTemplate:'## 客戶概況\n\n## 需求描述\n\n## 預算範圍\n\n## 下一步行動\n- \n',
+        fields:['客戶','金額','報價編號','聯絡人'],
+        checklist:['報價完成','客戶確認','簽約完成']
+      },
+      admin:{
+        descTemplate:'## 事項說明\n\n## 處理步驟\n1. \n\n## 備註\n',
+        fields:['負責人','審批人','截止日'],
+        checklist:['資料整理','主管審核','完成結案']
+      }
     };
 
     function getCols(){try{var s=localStorage.getItem(KB_COLS_KEY);if(s){var p=JSON.parse(s);return p&&p.length?p:DEFAULT_COLS;}return DEFAULT_COLS;}catch(e){return DEFAULT_COLS;}}
@@ -4746,10 +4770,8 @@ canvas{display:block;margin:0 auto 24px}
 
         var mobileActiveClass = (ci === (window._kbMobileActiveIdx||0)) ? ' mobile-active' : '';
         var isInbox = col.id === 'inbox';
-        var colBg = isInbox ? 'repeating-linear-gradient(135deg,transparent,transparent 10px,' + hexToRgba(col.color,0.03) + ' 10px,' + hexToRgba(col.color,0.03) + ' 20px)' : hexToRgba(col.color,0.02);
-        var colBorder = isInbox ? ('1px dashed ' + hexToRgba(col.color,0.3)) : ('1px solid ' + hexToRgba(col.color,0.15));
-        html += '<div class="kanban-col' + mobileActiveClass + (isInbox ? ' inbox-col' : '') + '" data-col="' + col.id + '" data-colidx="' + ci + '" style="background:' + colBg + ';border:' + colBorder + '">';
-        html += '<div class="kanban-col-header" style="background:' + hexToRgba(col.color, isInbox ? 0.08 : 0.10) + ';">';
+        html += '<div class="kanban-col' + mobileActiveClass + (isInbox ? ' inbox-col' : '') + '" data-col="' + col.id + '" data-colidx="' + ci + '" style="background:' + hexToRgba(col.color,0.02) + ';border:1px solid ' + hexToRgba(col.color,0.15) + '">';
+        html += '<div class="kanban-col-header" style="background:' + hexToRgba(col.color,0.10) + ';">';
         html += '<div style="display:flex;align-items:center;gap:8px">';
         if(isInbox){
           html += '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="' + col.color + '" stroke-width="1.5" stroke-linecap="round"><path d="M2 7h3l1.5 2h1l1.5-2h3"/><rect x="1" y="2" width="12" height="10" rx="2"/></svg>';
@@ -4760,6 +4782,7 @@ canvas{display:block;margin:0 auto 24px}
         html += '<span style="font-size:12px;color:var(--ink-dim);background:rgba(255,255,255,.6);padding:1px 8px;border-radius:10px">' + colCards.length + '</span>';
         html += '</div>';
         html += '<div style="display:flex;gap:2px;position:relative">';
+        if(isInbox) html += '<button class="kanban-col-btn" onclick="event.stopPropagation();window._kbShowDecompose()" title="AI 拆解需求" style="color:var(--primary)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v4M8 10v4M2 8h4M10 8h4"/><circle cx="8" cy="8" r="2"/></svg></button>';
         html += '<button class="kanban-col-btn" onclick="event.stopPropagation();window._kbAddCard(\'' + col.id + '\')" title="新增任務">' + IC.plus + '</button>';
         html += '<button class="kanban-col-btn" onclick="event.stopPropagation();window._kbToggleColMenu(\'' + col.id + '\',event)" title="欄位設定">' + IC.dots + '</button>';
         html += '<div class="kanban-col-menu" id="kbColMenu_' + col.id + '">';
@@ -4772,7 +4795,7 @@ canvas{display:block;margin:0 auto 24px}
         if(colCards.length === 0 && !sq){
           html += '<div style="text-align:center;padding:32px 12px">';
           if(isInbox){
-            html += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,rgba(148,163,184,.12),rgba(148,163,184,.04));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:1px dashed rgba(148,163,184,.3)">';
+            html += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,rgba(148,163,184,.12),rgba(148,163,184,.04));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:1px solid rgba(148,163,184,.15)">';
             html += '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"><path d="M3 10h4l2 3h2l2-3h4"/><rect x="2" y="3" width="16" height="14" rx="3"/></svg>';
             html += '</div>';
             html += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">收件匣空空</div>';
@@ -4793,63 +4816,60 @@ canvas{display:block;margin:0 auto 24px}
           var clTotal=(card.checklist||[]).length;
 
           var cat = TASK_CATEGORIES[card.category] || TASK_CATEGORIES.product;
-          html += '<div class="kanban-card' + (card.archived?' archived-card':'') + '" draggable="true" data-card="' + card.id + '" style="background:' + hexToRgba(col.color,0.05) + '">';
-          // Source badge for inbox cards
-          if(isInbox && card.source && card.source !== 'manual'){
-            var srcLabels = {ai:'AI 拆解',meeting:'會議',email:'Email',import:'匯入'};
-            var srcColors = {ai:'var(--primary)',meeting:'var(--teal)',email:'var(--gold)',import:'var(--ink-muted)'};
-            html += '<div style="display:flex;justify-content:flex-end;margin-bottom:2px"><span style="font-size:9px;padding:1px 6px;border-radius:3px;background:' + (srcColors[card.source]||'var(--ink-muted)') + '15;color:' + (srcColors[card.source]||'var(--ink-muted)') + ';font-weight:600">' + (srcLabels[card.source]||card.source) + '</span></div>';
-          }
+          // L1: 3px top color bar (category color) — replaces dot indicator
+          html += '<div class="kanban-card' + (card.archived?' archived-card':'') + '" draggable="true" data-card="' + card.id + '" style="background:' + hexToRgba(col.color,0.05) + ';border-top:3px solid ' + cat.color + ';padding-top:10px">';
+
+          // Title + grip
           html += '<div style="display:flex;align-items:flex-start;gap:6px">';
           html += '<span style="color:var(--ink-dim);margin-top:2px;cursor:grab;flex-shrink:0">' + IC.grip + '</span>';
           html += '<div style="flex:1;min-width:0">';
-          html += '<div style="font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;margin-bottom:4px">' + (card.title||'未命名') + '</div>';
-          if(card.description) html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + card.description + '</div>';
+          html += '<div style="font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;margin-bottom:2px">' + (card.title||'未命名') + '</div>';
+          if(card.description) html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + card.description + '</div>';
           html += '</div></div>';
 
-          // Agent status row (only show if agentActions exist)
+          // L2: Assignee + Agent status (merged single row)
           var _aActs = card.agentActions || [];
-          if(_aActs.length > 0){
-            var _aDone = _aActs.filter(function(a){return a.status==='done';}).length;
-            var _aPend = _aActs.filter(function(a){return a.status==='pending';}).length;
-            var _aRun  = _aActs.filter(function(a){return a.status==='running';}).length;
-            var _aIcon = _aRun > 0 ? '⏳' : (_aPend > 0 ? '💡' : '✓');
-            var _aLabel = _aRun > 0 ? '處理中' : (_aPend > 0 ? (_aPend + ' 項建議') : '已就緒');
-            html += '<div class="kb-agent-row" style="display:flex;align-items:center;gap:6px;padding:4px 8px;margin:4px 0;background:linear-gradient(135deg,rgba(124,92,252,.04),rgba(27,168,145,.04));border-radius:var(--r-sm);border:1px solid rgba(124,92,252,.1)">';
-            html += '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--primary)" stroke-width="1.2" stroke-linecap="round"><circle cx="7" cy="5" r="3"/><path d="M2 12c0-2.2 2.2-4 5-4s5 1.8 5 4"/><circle cx="10.5" cy="3.5" r="2" fill="var(--teal)" stroke="var(--teal)"/></svg>';
-            html += '<span style="font-size:10px;font-weight:600;color:var(--primary)">Agent</span>';
-            html += '<span style="font-size:10px;color:var(--ink-muted)">' + _aIcon + ' ' + _aLabel + '</span>';
-            if(_aDone > 0) html += '<span style="font-size:10px;color:var(--teal)">✓' + _aDone + '</span>';
+          var _mem = (card.assigneeId) ? members.find(function(m){ return m.id === card.assigneeId; }) : null;
+          var _assigneeName = card.assignee || (_mem ? _mem.name : '');
+          var _agentName = _mem && _mem.agent && _mem.agent.type !== 'none' ? _mem.agent.name : '';
+          var _hasAssigneeInfo = _assigneeName || _agentName || _aActs.length > 0;
+          if(_hasAssigneeInfo){
+            html += '<div style="display:flex;align-items:center;gap:6px;margin:4px 0;flex-wrap:wrap">';
+            // Person
+            if(_assigneeName){
+              html += '<span style="font-size:11px;display:inline-flex;align-items:center;gap:3px;color:var(--ink-muted)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="6" cy="4" r="2.5"/><path d="M1.5 11c0-2 2-3.5 4.5-3.5s4.5 1.5 4.5 3.5"/></svg>' + _assigneeName + '</span>';
+            }
+            // Agent status inline (merged — no separate row)
+            if(_aActs.length > 0){
+              var _aDone = _aActs.filter(function(a){return a.status==='done';}).length;
+              var _aPend = _aActs.filter(function(a){return a.status==='pending';}).length;
+              var _aRun  = _aActs.filter(function(a){return a.status==='running';}).length;
+              var _aParts = [];
+              if(_aDone > 0) _aParts.push(_aDone + ' 項完成');
+              if(_aPend > 0) _aParts.push(_aPend + ' 項待確認');
+              if(_aRun > 0) _aParts.push('處理中');
+              var _aColor = _aRun > 0 ? 'var(--gold)' : 'var(--primary)';
+              html += '<span style="font-size:11px;display:inline-flex;align-items:center;gap:3px;color:' + _aColor + '"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="6" cy="4" r="2"/><path d="M2 10c0-1.8 1.8-3 4-3s4 1.2 4 3"/><circle cx="9" cy="3" r="1.5" fill="var(--teal)" stroke="var(--teal)"/></svg>' + (_aParts.join(' · ') || 'Agent') + '</span>';
+            } else if(_agentName){
+              html += '<span style="font-size:11px;display:inline-flex;align-items:center;gap:3px;color:var(--primary);opacity:.7"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="1" width="8" height="6" rx="1.5"/><circle cx="5" cy="4" r="1"/><circle cx="8" cy="4" r="1"/><path d="M4 9l2-2 2 2"/></svg>' + _agentName + '</span>';
+            }
             html += '</div>';
           }
 
-          // Assignee + Agent row (show person and their agent side by side)
-          if(card.assignee || card.assigneeId){
-            var _mem = members.find(function(m){ return m.id === card.assigneeId; });
-            var _assigneeName = card.assignee || (_mem ? _mem.name : '');
-            var _agentName = _mem && _mem.agent && _mem.agent.type !== 'none' ? _mem.agent.name : '';
-            if(_assigneeName || _agentName){
-              html += '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">';
-              if(_assigneeName) html += '<span style="font-size:10px;display:inline-flex;align-items:center;gap:3px;color:var(--ink-muted)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="6" cy="4" r="2.5"/><path d="M1.5 11c0-2 2-3.5 4.5-3.5s4.5 1.5 4.5 3.5"/></svg>' + _assigneeName + '</span>';
-              if(_agentName) html += '<span style="font-size:10px;display:inline-flex;align-items:center;gap:3px;color:var(--primary);opacity:.7"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="1" width="8" height="6" rx="1.5"/><circle cx="5" cy="4" r="1"/><circle cx="8" cy="4" r="1"/><path d="M4 9l2-2 2 2"/></svg>' + _agentName + '</span>';
-              html += '</div>';
-            }
+          // L3: Footer — category label (left) + source + due date (right)
+          var srcLabels = {ai:'AI 拆解','claude-mcp':'AI 助手',meeting:'會議',email:'Email',import:'匯入',manual:''};
+          var srcHtml = '';
+          if(card.source && card.source !== 'manual'){
+            var srcColors = {ai:'var(--primary)','claude-mcp':'var(--primary)',meeting:'var(--teal)',email:'var(--gold)',import:'var(--ink-muted)'};
+            var _srcC = srcColors[card.source]||'var(--ink-muted)';
+            srcHtml = '<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:' + _srcC + '12;color:' + _srcC + ';font-weight:600;letter-spacing:.2px">' + (srcLabels[card.source]||card.source) + '</span>';
           }
-
-          html += '<div class="kanban-card-meta">';
-          html += '<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:' + cat.color + '"><span style="width:6px;height:6px;border-radius:50%;background:' + cat.color + '"></span>' + cat.label + '</span>';
-          if(card.tags && card.tags.length > 0) {
-            card.tags.slice(0, 1).forEach(function(tag){
-              html += '<span style="font-size:10px;padding:1px 6px;border-radius:4px;background:' + cat.color + '15;color:' + cat.color + '">' + tag + '</span>';
-            });
-          }
-          if(card.priority && card.priority!=='none' && ['high','medium'].includes(card.priority)) html += '<span class="kb-pri-badge ' + card.priority + '">' + PRIORITY_LABELS[card.priority] + '</span>';
-          if(dueStr && (dueClass==='overdue' || dueClass==='urgent')) html += '<span class="kb-due-text ' + dueClass + '">' + IC.cal + dueStr + '</span>';
-          if(!card.assignee && !card.assigneeId) { /* no assignee badge needed, shown above */ }
-          if(clTotal>0) html += '<span class="kb-cl-progress">' + IC.check + ' ' + clDone + '/' + clTotal + '</span>';
-          var stTotal = (card.subTasks||[]).length;
-          if(stTotal>0) { var stDone2 = (card.subTasks||[]).filter(function(s){return s.done;}).length; html += '<span class="kb-cl-progress" style="color:var(--primary)">' + IC.check + ' ' + stDone2 + '/' + stTotal + ' 子任務</span>'; }
-          html += '</div></div>';
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">';
+          html += '<span style="font-size:11px;font-weight:600;color:' + cat.color + '">' + cat.label + '</span>';
+          html += '<div style="display:flex;align-items:center;gap:6px">';
+          html += srcHtml;
+          if(dueStr) html += '<span style="font-size:11px;color:' + (dueClass==='overdue'?'var(--rose)':dueClass==='urgent'?'var(--gold)':'var(--ink-dim)') + ';display:inline-flex;align-items:center;gap:3px">' + IC.cal + ' ' + dueStr + '</span>';
+          html += '</div></div></div>';
         });
         html += '</div></div>';
       });
@@ -5122,14 +5142,9 @@ canvas{display:block;margin:0 auto 24px}
 
       // ── Header ──
       m += '<div class="kb-modal-header">';
-      m += '<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">';
-      m += '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:' + cat.color + ';background:' + cat.color + '12;padding:4px 10px;border-radius:6px"><span style="width:7px;height:7px;border-radius:50%;background:' + cat.color + '"></span>' + cat.label + '</span>';
-      if(card.tags && card.tags.length > 0) {
-        card.tags.slice(0, 2).forEach(function(tag){
-          m += '<span style="font-size:11px;padding:2px 8px;border-radius:4px;background:' + cat.color + '15;color:' + cat.color + ';font-weight:500">' + tag + '</span>';
-        });
-      }
-      m += '<h3 style="margin:0;font-size:17px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (card.title||'未命名') + '</h3></div>';
+      m += '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">';
+      m += '<div style="width:4px;height:24px;border-radius:2px;background:' + cat.color + ';flex-shrink:0"></div>';
+      m += '<h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (card.title||'未命名') + '</h3></div>';
       m += '<div style="display:flex;gap:6px;align-items:center;flex-shrink:0">';
       m += '<button style="background:none;border:none;color:var(--primary);cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;transition:background .12s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="document.querySelector(\'.kb-modal-overlay\').remove();window._kbShowCardEdit(\'' + card.id + '\')">' + IC.edit + ' 編輯</button>';
       m += '<button class="btn btn-ghost" style="font-size:12px;padding:6px 14px;color:var(--ink-muted);border-radius:8px" id="kbArchiveBtn">' + IC.archive + (card.archived?' 復原':' 封存') + '</button>';
@@ -5399,7 +5414,14 @@ canvas{display:block;margin:0 auto 24px}
       });
       m += '</div></div>';
       m += '<div class="kb-section"><label class="kb-label">類型</label>';
-      m += '<div id="kbF_catGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">';
+      // Collapsed: show selected category; click to expand grid
+      var _selCat = TASK_CATEGORIES[catVal] || TASK_CATEGORIES.product;
+      m += '<div id="kbF_catSelected" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:all .15s" onclick="var g=document.getElementById(\'kbF_catGrid\');var s=this;if(g.style.display===\'none\'){g.style.display=\'grid\';s.style.display=\'none\';}else{g.style.display=\'none\';}">';
+      m += '<span style="width:8px;height:8px;border-radius:50%;background:' + _selCat.color + '"></span>';
+      m += '<span style="font-size:13px;font-weight:600;color:' + _selCat.color + '">' + _selCat.label + '</span>';
+      m += '<span style="margin-left:auto;font-size:11px;color:var(--ink-dim)">點擊更換</span>';
+      m += '</div>';
+      m += '<div id="kbF_catGrid" style="display:none;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;margin-bottom:10px">';
       var catKeys = ['product','dev','qa','marketing','sales','admin'];
       catKeys.forEach(function(k){
         var cat = TASK_CATEGORIES[k];
@@ -5473,6 +5495,17 @@ canvas{display:block;margin:0 auto 24px}
             b.querySelector('div:last-child').style.color = isSel ? cat.color : 'var(--ink)';
           });
 
+          // Collapse grid and update selected display
+          var _newCat = TASK_CATEGORIES[catVal];
+          var selDisp = ov.querySelector('#kbF_catSelected');
+          if(selDisp){
+            selDisp.querySelector('span:first-child').style.background = _newCat.color;
+            selDisp.querySelector('span:nth-child(2)').style.color = _newCat.color;
+            selDisp.querySelector('span:nth-child(2)').textContent = _newCat.label;
+            selDisp.style.display = 'flex';
+            ov.querySelector('#kbF_catGrid').style.display = 'none';
+          }
+
           // Refresh tag chips
           var tagArea = ov.querySelector('#kbF_tagArea');
           tagArea.innerHTML = _kbBuildTagChips(catVal, tagsVal);
@@ -5495,6 +5528,11 @@ canvas{display:block;margin:0 auto 24px}
             if(existCF === 0 && existCL === 0){
               sugDiv.innerHTML = '<div class="kb-suggest"><span class="kb-suggest-text">要帶入「' + TASK_CATEGORIES[catVal].label + '」建議的欄位與清單嗎？</span><div style="display:flex;gap:6px"><button class="s-no" id="kbSugNo">略過</button><button class="s-yes" id="kbSugYes">帶入</button></div></div>';
               ov.querySelector('#kbSugYes').addEventListener('click',function(){
+                // Pre-fill description template if empty
+                var descEl = ov.querySelector('#kbF_desc');
+                if(descEl && !descEl.value.trim() && sg.descTemplate){
+                  descEl.value = sg.descTemplate;
+                }
                 var cfDiv = ov.querySelector('#kbF_customFields');
                 sg.fields.forEach(function(f){
                   cfDiv.insertAdjacentHTML('beforeend','<div class="kb-cf-row"><input type="text" placeholder="欄位名" value="' + f + '"><input type="text" placeholder="值"><button class="kb-btn-x" onclick="this.parentElement.remove()">' + IC.trash + '</button></div>');
@@ -5700,6 +5738,123 @@ canvas{display:block;margin:0 auto 24px}
     window._kbDeleteCol = _kbDeleteCol;
     window._kbAddCol = _kbAddCol;
     window._kbToggleArchived = function(){window._kbShowArchived=!window._kbShowArchived;showArchived=window._kbShowArchived;renderBoard();};
+
+    // ── AI Decompose Flow ──
+    window._kbShowDecompose = function(){
+      var ov = document.createElement('div');
+      ov.className = 'kb-modal-overlay';
+      ov.onclick = function(e){if(e.target===ov)ov.remove();};
+
+      var m = '';
+      m += '<div class="kb-modal" style="width:640px" onclick="event.stopPropagation()">';
+      m += '<div class="kb-modal-header"><h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M10 3v5M10 12v5M3 10h5M12 10h5"/><circle cx="10" cy="10" r="2.5"/></svg>AI 需求拆解</h3>';
+      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button></div>';
+
+      m += '<div class="kb-modal-body" style="padding:20px 24px">';
+      m += '<p style="font-size:13px;color:var(--ink-muted);margin:0 0 16px;line-height:1.6">描述你的需求或目標，系統會自動拆解成多張任務卡放入收件匣。<br>你也可以手動新增拆解項目。</p>';
+
+      // Input area
+      m += '<div class="kb-section"><label class="kb-label">需求描述</label>';
+      m += '<textarea id="kbDecompDesc" class="kb-input" style="height:auto;min-height:120px;resize:vertical" placeholder="例：建立產品官網，需要首頁、關於頁、定價頁、部落格，支援 RWD 和 SEO…"></textarea></div>';
+
+      // Category selector (simple)
+      m += '<div class="kb-section"><label class="kb-label">預設分類</label><select id="kbDecompCat" class="kb-input" style="padding:8px 10px">';
+      var catKeys = ['product','dev','qa','marketing','sales','admin'];
+      catKeys.forEach(function(k){
+        var cat = TASK_CATEGORIES[k];
+        m += '<option value="' + k + '">' + cat.label + '</option>';
+      });
+      m += '</select></div>';
+
+      // Manual decompose list
+      m += '<div class="kb-section"><label class="kb-label">拆解項目</label>';
+      m += '<div id="kbDecompList" style="display:flex;flex-direction:column;gap:6px"></div>';
+      m += '<button style="background:none;border:none;color:var(--primary);cursor:pointer;padding:6px 0;font-size:13px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:4px;margin-top:8px" id="kbDecompAdd">' + IC.plus + ' 新增項目</button>';
+      m += '</div>';
+
+      // Quick decompose button
+      m += '<div style="display:flex;gap:10px;padding:16px 0 0;border-top:1px solid var(--border);margin-top:12px">';
+      m += '<button class="btn btn-ghost" style="padding:8px 16px" id="kbDecompTemplate">套用範本</button>';
+      m += '<div style="flex:1"></div>';
+      m += '<button class="btn btn-ghost" style="padding:8px 20px" onclick="this.closest(\'.kb-modal-overlay\').remove()">取消</button>';
+      m += '<button class="btn btn-accent" style="padding:8px 24px" id="kbDecompCreate">建立任務卡</button>';
+      m += '</div></div></div>';
+
+      ov.innerHTML = m;
+      document.body.appendChild(ov);
+
+      // Add item handler
+      var listEl = ov.querySelector('#kbDecompList');
+      function addItem(title){
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px';
+        row.innerHTML = '<span style="color:var(--ink-dim);flex-shrink:0">' + IC.grip + '</span><input type="text" class="kb-input" style="flex:1" value="' + (title||'').replace(/"/g,'&quot;') + '" placeholder="任務名稱"><button class="kb-btn-x" onclick="this.parentElement.remove()">' + IC.trash + '</button>';
+        listEl.appendChild(row);
+      }
+      ov.querySelector('#kbDecompAdd').addEventListener('click', function(){addItem('');});
+
+      // Template: auto-fill 3 generic items based on category
+      ov.querySelector('#kbDecompTemplate').addEventListener('click', function(){
+        var catKey = ov.querySelector('#kbDecompCat').value;
+        var templates = {
+          product: ['需求分析與用戶研究','UI/UX 設計稿','功能開發','測試驗收','部署上線'],
+          dev: ['架構設計','核心功能開發','API 串接','單元測試','整合測試與修復'],
+          qa: ['測試計畫撰寫','測試案例設計','執行測試','Bug 報告與追蹤','迴歸測試'],
+          marketing: ['市場調研','內容企劃','素材製作','渠道投放','成效追蹤'],
+          sales: ['客戶需求確認','方案規劃','報價準備','提案簡報','合約簽訂'],
+          admin: ['需求盤點','資料蒐集','執行處理','審核確認','歸檔結案']
+        };
+        var items = templates[catKey] || templates.product;
+        listEl.innerHTML = '';
+        items.forEach(function(t){addItem(t);});
+      });
+
+      // Create cards handler
+      ov.querySelector('#kbDecompCreate').addEventListener('click', function(){
+        var desc = ov.querySelector('#kbDecompDesc').value.trim();
+        var catKey = ov.querySelector('#kbDecompCat').value;
+        var items = [];
+        listEl.querySelectorAll('input[type="text"]').forEach(function(inp){
+          if(inp.value.trim()) items.push(inp.value.trim());
+        });
+
+        if(items.length === 0){
+          alert('請至少新增一個拆解項目');
+          return;
+        }
+
+        var currentCycle = ensureCurrentCycle();
+        items.forEach(function(title, idx){
+          var newCard = migrateCard({
+            id: genId(),
+            title: title,
+            description: desc ? ('來自需求拆解：' + desc.substring(0, 80) + (desc.length > 80 ? '…' : '')) : '',
+            columnId: 'inbox',
+            category: catKey,
+            tags: [],
+            priority: 'none',
+            source: 'ai',
+            cycleId: currentCycle.id,
+            order: idx,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            activities: [{action:'created',at:new Date().toISOString(),note:'AI 拆解產生'}]
+          });
+          cards.push(newCard);
+        });
+
+        saveCards(cards);
+        ov.remove();
+        renderBoard();
+
+        // Brief notification
+        var toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--primary);color:white;padding:10px 20px;border-radius:var(--r-lg);font-size:13px;font-weight:600;z-index:10001;animation:kbSlideIn .3s ease';
+        toast.textContent = '已建立 ' + items.length + ' 張任務卡到收件匣';
+        document.body.appendChild(toast);
+        setTimeout(function(){toast.remove();}, 2500);
+      });
+    };
 
     // ── Cycle Stats Update ──
     function updateCycleStats(){
@@ -19334,4 +19489,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.7.0 -->
+</html><!-- v0.8.0 -->
