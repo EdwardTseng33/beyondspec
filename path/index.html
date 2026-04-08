@@ -2362,7 +2362,7 @@ canvas{display:block;margin:0 auto 24px}
 </style>
 <style>
 
-/* ── Business Dashboard v0.6.0: Source CSS ── */
+/* ── Business Dashboard v0.7.0: Source CSS ── */
 /* Hide number input spinners globally */
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
@@ -2905,7 +2905,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.6.0</div>
+        <div class="sidebar-version">v0.7.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3304,7 +3304,7 @@ canvas{display:block;margin:0 auto 24px}
     if (!fs) return;
     var uid = state.user.uid;
     var wsId = _getWorkspaceId();
-    var collections = ['bp_kanban_cards','bp_kanban_columns','bp_contacts','bp_quotes','bp_billing','bp_meetings','bp_docs','bp_path_results'];
+    var collections = ['bp_kanban_cards','bp_kanban_columns','bp_kanban_cycles','bp_team_members','bp_contacts','bp_quotes','bp_billing','bp_meetings','bp_docs','bp_path_results'];
     collections.forEach(function(key) {
       try {
         var data = localStorage.getItem(key);
@@ -4511,6 +4511,7 @@ canvas{display:block;margin:0 auto 24px}
     var KB_COLS_KEY = 'bp_kanban_cols';
     var KB_CARDS_KEY = 'bp_kanban_cards';
     var DEFAULT_COLS = [
+      {id:'inbox',label:'收件匣',color:'#94A3B8'},
       {id:'todo',label:'待處理',color:'#7C5CFC'},
       {id:'doing',label:'進行中',color:'#E08A3A'},
       {id:'review',label:'驗收中',color:'#3B82F6'},
@@ -4546,6 +4547,84 @@ canvas{display:block;margin:0 auto 24px}
     function saveCards(c){localStorage.setItem(KB_CARDS_KEY,JSON.stringify(c));_scheduleFirestoreSync();}
     function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 
+    // ── Cycle (週期) Data Layer ──
+    var KB_CYCLES_KEY = 'bp_kanban_cycles';
+    var KB_MEMBERS_KEY = 'bp_team_members';
+    var KB_ACTIVE_CYCLE_KEY = 'bp_active_cycle';
+
+    function getCycles(){try{var s=localStorage.getItem(KB_CYCLES_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
+    function saveCycles(c){localStorage.setItem(KB_CYCLES_KEY,JSON.stringify(c));}
+    function getActiveCycleId(){return localStorage.getItem(KB_ACTIVE_CYCLE_KEY)||'';}
+    function setActiveCycleId(id){localStorage.setItem(KB_ACTIVE_CYCLE_KEY,id);}
+
+    function getMembers(){try{var s=localStorage.getItem(KB_MEMBERS_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
+    function saveMembers(m){localStorage.setItem(KB_MEMBERS_KEY,JSON.stringify(m));}
+
+    // Generate current week cycle if none exists
+    function ensureCurrentCycle(){
+      var cycles = getCycles();
+      var now = new Date();
+      var day = now.getDay();
+      var diffMon = day === 0 ? -6 : 1 - day;
+      var monday = new Date(now);
+      monday.setDate(now.getDate() + diffMon);
+      monday.setHours(0,0,0,0);
+      var sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23,59,59,999);
+
+      var monStr = monday.toISOString().slice(0,10);
+      var sunStr = sunday.toISOString().slice(0,10);
+      var weekNum = getISOWeek(monday);
+
+      var existing = cycles.find(function(c){ return c.startDate === monStr; });
+      if(existing) return existing;
+
+      var newCycle = {
+        id: 'cycle_' + genId(),
+        label: 'W' + weekNum + '（' + fmtMD(monday) + '-' + fmtMD(sunday) + '）',
+        startDate: monStr,
+        endDate: sunStr,
+        status: 'active',
+        goals: [],
+        stats: { total:0, completed:0, carryOver:0, agentContributions:0 }
+      };
+      cycles.push(newCycle);
+      saveCycles(cycles);
+      setActiveCycleId(newCycle.id);
+      return newCycle;
+    }
+
+    function getISOWeek(d){
+      var tmp = new Date(d.getTime());
+      tmp.setHours(0,0,0,0);
+      tmp.setDate(tmp.getDate() + 3 - (tmp.getDay() + 6) % 7);
+      var week1 = new Date(tmp.getFullYear(), 0, 4);
+      return 1 + Math.round(((tmp.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+    }
+    function fmtMD(d){ return (d.getMonth()+1) + '/' + d.getDate(); }
+
+    // Ensure default member (owner) exists
+    function ensureDefaultMember(){
+      var members = getMembers();
+      if(members.length === 0){
+        members.push({
+          id: 'owner',
+          name: '我',
+          role: 'founder',
+          agent: {
+            type: 'single',
+            name: 'AI 助手',
+            provider: 'claude-cowork',
+            autoLevel: 'suggest',
+            personas: []
+          }
+        });
+        saveMembers(members);
+      }
+      return members;
+    }
+
     function migrateCard(c){
       if(!c.type) c.type='product';
       if(!c.category) {
@@ -4564,12 +4643,24 @@ canvas{display:block;margin:0 auto 24px}
       if(!c.discussion) c.discussion=[];
       if(!c.stateHistory) c.stateHistory=[];
       if(!c.collaborators) c.collaborators=[];
+      // v0.7.0: Cycle + Agent fields
+      if(!c.cycleId) c.cycleId = '';
+      if(!c.agentActions) c.agentActions = [];
+      if(c.agentCanAct === undefined) c.agentCanAct = false;
+      if(!c.assigneeId) c.assigneeId = '';
       return c;
     }
 
     var cols = getCols();
+    // Auto-inject inbox col for existing users who don't have it
+    if(!cols.find(function(c){ return c.id === 'inbox'; })){
+      cols.unshift({id:'inbox',label:'收件匣',color:'#94A3B8'});
+      saveCols(cols);
+    }
     var cards = getCards().map(migrateCard);
     var showArchived = !!window._kbShowArchived;
+    var currentCycle = ensureCurrentCycle();
+    var members = ensureDefaultMember();
 
     var IC = {
       plus:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>',
@@ -4590,12 +4681,32 @@ canvas{display:block;margin:0 auto 24px}
       var sq = (window._kbSearch||'').toLowerCase();
       var html = '';
 
-      // Header: page-title-area style
-      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
-      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
+      // Header: Title + Cycle Switcher
+      var _cyc = ensureCurrentCycle();
+      var _allCyc = getCycles().sort(function(a,b){ return a.startDate < b.startDate ? -1 : 1; });
+      var _cycIdx = _allCyc.findIndex(function(c){ return c.id === _cyc.id; });
+      var _cycDoneCount = cards.filter(function(c){ return c.cycleId === _cyc.id && c.columnId === 'done' && !c.archived; }).length;
+      var _cycTotalCount = cards.filter(function(c){ return c.cycleId === _cyc.id && !c.archived && c.columnId !== 'inbox'; }).length;
+      var _agentCount = cards.filter(function(c){ return c.cycleId === _cyc.id && c.agentActions && c.agentActions.length > 0; }).length;
+
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
+      html += '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">';
       html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="12" y="2" width="6" height="6" rx="1"/><rect x="2" y="12" width="6" height="6" rx="1"/><rect x="12" y="12" width="6" height="6" rx="1"/></svg> 任務中心</h2>';
-      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">拖拉管理每日任務，掌握團隊進度</span>';
+      html += '</div>';
+      // Cycle Switcher
+      html += '<div class="cycle-switcher" style="display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:6px 12px">';
+      html += '<button class="btn-icon-sm" onclick="window._kbCyclePrev()" title="上一週期" style="width:28px;height:28px;border-radius:var(--r-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-muted)"' + (_cycIdx <= 0 ? ' disabled style="opacity:.3;pointer-events:none"' : '') + '><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="10,3 5,8 10,13"/></svg></button>';
+      html += '<div style="text-align:center;min-width:120px">';
+      html += '<div style="font-size:13px;font-weight:700;color:var(--ink)">' + _cyc.label + '</div>';
+      html += '<div style="font-size:11px;color:var(--ink-muted);display:flex;align-items:center;justify-content:center;gap:8px;margin-top:2px">';
+      if(_cycTotalCount > 0) html += '<span>' + _cycDoneCount + '/' + _cycTotalCount + ' 完成</span>';
+      if(_agentCount > 0) html += '<span style="color:var(--gold)">⚡ Agent ' + _agentCount + '</span>';
       html += '</div></div>';
+      html += '<button class="btn-icon-sm" onclick="window._kbCycleNext()" title="下一週期" style="width:28px;height:28px;border-radius:var(--r-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-muted)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
+      html += '<div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>';
+      html += '<button onclick="window._kbCycleCarryOver()" title="結轉未完成到下一週期" style="width:28px;height:28px;border-radius:var(--r-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-muted)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10M10 5l3 3-3 3"/><line x1="3" y1="12" x2="8" y2="12" stroke-dasharray="2 2"/></svg></button>';
+      html += '</div>';
+      html += '</div>';
 
       // Action row: Archive toggle (left) + Search (right)
       var archivedCount = cards.filter(function(c){return c.archived;}).length;
@@ -4634,10 +4745,17 @@ canvas{display:block;margin:0 auto 24px}
         }).sort(function(a,b){return (a.order||0)-(b.order||0);});
 
         var mobileActiveClass = (ci === (window._kbMobileActiveIdx||0)) ? ' mobile-active' : '';
-        html += '<div class="kanban-col' + mobileActiveClass + '" data-col="' + col.id + '" data-colidx="' + ci + '" style="background:' + hexToRgba(col.color,0.02) + ';border:1px solid ' + hexToRgba(col.color,0.15) + '">';
-        html += '<div class="kanban-col-header" style="background:' + hexToRgba(col.color,0.10) + ';">';
+        var isInbox = col.id === 'inbox';
+        var colBg = isInbox ? 'repeating-linear-gradient(135deg,transparent,transparent 10px,' + hexToRgba(col.color,0.03) + ' 10px,' + hexToRgba(col.color,0.03) + ' 20px)' : hexToRgba(col.color,0.02);
+        var colBorder = isInbox ? ('1px dashed ' + hexToRgba(col.color,0.3)) : ('1px solid ' + hexToRgba(col.color,0.15));
+        html += '<div class="kanban-col' + mobileActiveClass + (isInbox ? ' inbox-col' : '') + '" data-col="' + col.id + '" data-colidx="' + ci + '" style="background:' + colBg + ';border:' + colBorder + '">';
+        html += '<div class="kanban-col-header" style="background:' + hexToRgba(col.color, isInbox ? 0.08 : 0.10) + ';">';
         html += '<div style="display:flex;align-items:center;gap:8px">';
-        html += '<div style="width:12px;height:12px;border-radius:50%;background:' + col.color + ';flex-shrink:0"></div>';
+        if(isInbox){
+          html += '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="' + col.color + '" stroke-width="1.5" stroke-linecap="round"><path d="M2 7h3l1.5 2h1l1.5-2h3"/><rect x="1" y="2" width="12" height="10" rx="2"/></svg>';
+        } else {
+          html += '<div style="width:12px;height:12px;border-radius:50%;background:' + col.color + ';flex-shrink:0"></div>';
+        }
         html += '<span style="font-size:14px;font-weight:700;color:var(--ink)">' + col.label + '</span>';
         html += '<span style="font-size:12px;color:var(--ink-dim);background:rgba(255,255,255,.6);padding:1px 8px;border-radius:10px">' + colCards.length + '</span>';
         html += '</div>';
@@ -4653,11 +4771,19 @@ canvas{display:block;margin:0 auto 24px}
         html += '<div class="kanban-col-body" data-col="' + col.id + '">';
         if(colCards.length === 0 && !sq){
           html += '<div style="text-align:center;padding:32px 12px">';
-          html += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,' + hexToRgba(col.color,0.12) + ',' + hexToRgba(col.color,0.04) + ');display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:1px solid ' + hexToRgba(col.color,0.15) + '">';
-          html += '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="' + col.color + '" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg>';
-          html += '</div>';
-          html += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">尚無任務</div>';
-          html += '<div style="font-size:12px;color:var(--ink-dim);line-height:1.5">拖曳卡片至此<br>或點擊 + 新增</div>';
+          if(isInbox){
+            html += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,rgba(148,163,184,.12),rgba(148,163,184,.04));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:1px dashed rgba(148,163,184,.3)">';
+            html += '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"><path d="M3 10h4l2 3h2l2-3h4"/><rect x="2" y="3" width="16" height="14" rx="3"/></svg>';
+            html += '</div>';
+            html += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">收件匣空空</div>';
+            html += '<div style="font-size:12px;color:var(--ink-dim);line-height:1.5">AI 拆解、會議紀錄、Email<br>會自動匯入這裡</div>';
+          } else {
+            html += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,' + hexToRgba(col.color,0.12) + ',' + hexToRgba(col.color,0.04) + ');display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:1px solid ' + hexToRgba(col.color,0.15) + '">';
+            html += '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="' + col.color + '" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg>';
+            html += '</div>';
+            html += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">尚無任務</div>';
+            html += '<div style="font-size:12px;color:var(--ink-dim);line-height:1.5">拖曳卡片至此<br>或點擊 + 新增</div>';
+          }
           html += '</div>';
         }
         colCards.forEach(function(card){
@@ -4668,12 +4794,48 @@ canvas{display:block;margin:0 auto 24px}
 
           var cat = TASK_CATEGORIES[card.category] || TASK_CATEGORIES.product;
           html += '<div class="kanban-card' + (card.archived?' archived-card':'') + '" draggable="true" data-card="' + card.id + '" style="background:' + hexToRgba(col.color,0.05) + '">';
+          // Source badge for inbox cards
+          if(isInbox && card.source && card.source !== 'manual'){
+            var srcLabels = {ai:'AI 拆解',meeting:'會議',email:'Email',import:'匯入'};
+            var srcColors = {ai:'var(--primary)',meeting:'var(--teal)',email:'var(--gold)',import:'var(--ink-muted)'};
+            html += '<div style="display:flex;justify-content:flex-end;margin-bottom:2px"><span style="font-size:9px;padding:1px 6px;border-radius:3px;background:' + (srcColors[card.source]||'var(--ink-muted)') + '15;color:' + (srcColors[card.source]||'var(--ink-muted)') + ';font-weight:600">' + (srcLabels[card.source]||card.source) + '</span></div>';
+          }
           html += '<div style="display:flex;align-items:flex-start;gap:6px">';
           html += '<span style="color:var(--ink-dim);margin-top:2px;cursor:grab;flex-shrink:0">' + IC.grip + '</span>';
           html += '<div style="flex:1;min-width:0">';
           html += '<div style="font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;margin-bottom:4px">' + (card.title||'未命名') + '</div>';
           if(card.description) html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + card.description + '</div>';
           html += '</div></div>';
+
+          // Agent status row (only show if agentActions exist)
+          var _aActs = card.agentActions || [];
+          if(_aActs.length > 0){
+            var _aDone = _aActs.filter(function(a){return a.status==='done';}).length;
+            var _aPend = _aActs.filter(function(a){return a.status==='pending';}).length;
+            var _aRun  = _aActs.filter(function(a){return a.status==='running';}).length;
+            var _aIcon = _aRun > 0 ? '⏳' : (_aPend > 0 ? '💡' : '✓');
+            var _aLabel = _aRun > 0 ? '處理中' : (_aPend > 0 ? (_aPend + ' 項建議') : '已就緒');
+            html += '<div class="kb-agent-row" style="display:flex;align-items:center;gap:6px;padding:4px 8px;margin:4px 0;background:linear-gradient(135deg,rgba(124,92,252,.04),rgba(27,168,145,.04));border-radius:var(--r-sm);border:1px solid rgba(124,92,252,.1)">';
+            html += '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--primary)" stroke-width="1.2" stroke-linecap="round"><circle cx="7" cy="5" r="3"/><path d="M2 12c0-2.2 2.2-4 5-4s5 1.8 5 4"/><circle cx="10.5" cy="3.5" r="2" fill="var(--teal)" stroke="var(--teal)"/></svg>';
+            html += '<span style="font-size:10px;font-weight:600;color:var(--primary)">Agent</span>';
+            html += '<span style="font-size:10px;color:var(--ink-muted)">' + _aIcon + ' ' + _aLabel + '</span>';
+            if(_aDone > 0) html += '<span style="font-size:10px;color:var(--teal)">✓' + _aDone + '</span>';
+            html += '</div>';
+          }
+
+          // Assignee + Agent row (show person and their agent side by side)
+          if(card.assignee || card.assigneeId){
+            var _mem = members.find(function(m){ return m.id === card.assigneeId; });
+            var _assigneeName = card.assignee || (_mem ? _mem.name : '');
+            var _agentName = _mem && _mem.agent && _mem.agent.type !== 'none' ? _mem.agent.name : '';
+            if(_assigneeName || _agentName){
+              html += '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">';
+              if(_assigneeName) html += '<span style="font-size:10px;display:inline-flex;align-items:center;gap:3px;color:var(--ink-muted)"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="6" cy="4" r="2.5"/><path d="M1.5 11c0-2 2-3.5 4.5-3.5s4.5 1.5 4.5 3.5"/></svg>' + _assigneeName + '</span>';
+              if(_agentName) html += '<span style="font-size:10px;display:inline-flex;align-items:center;gap:3px;color:var(--primary);opacity:.7"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="1" width="8" height="6" rx="1.5"/><circle cx="5" cy="4" r="1"/><circle cx="8" cy="4" r="1"/><path d="M4 9l2-2 2 2"/></svg>' + _agentName + '</span>';
+              html += '</div>';
+            }
+          }
+
           html += '<div class="kanban-card-meta">';
           html += '<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:' + cat.color + '"><span style="width:6px;height:6px;border-radius:50%;background:' + cat.color + '"></span>' + cat.label + '</span>';
           if(card.tags && card.tags.length > 0) {
@@ -4683,7 +4845,7 @@ canvas{display:block;margin:0 auto 24px}
           }
           if(card.priority && card.priority!=='none' && ['high','medium'].includes(card.priority)) html += '<span class="kb-pri-badge ' + card.priority + '">' + PRIORITY_LABELS[card.priority] + '</span>';
           if(dueStr && (dueClass==='overdue' || dueClass==='urgent')) html += '<span class="kb-due-text ' + dueClass + '">' + IC.cal + dueStr + '</span>';
-          if(card.assignee) html += '<span class="kb-assignee-text">' + card.assignee + '</span>';
+          if(!card.assignee && !card.assigneeId) { /* no assignee badge needed, shown above */ }
           if(clTotal>0) html += '<span class="kb-cl-progress">' + IC.check + ' ' + clDone + '/' + clTotal + '</span>';
           var stTotal = (card.subTasks||[]).length;
           if(stTotal>0) { var stDone2 = (card.subTasks||[]).filter(function(s){return s.done;}).length; html += '<span class="kb-cl-progress" style="color:var(--primary)">' + IC.check + ' ' + stDone2 + '/' + stTotal + ' 子任務</span>'; }
@@ -5253,6 +5415,15 @@ canvas{display:block;margin:0 auto 24px}
       m += '</div></div>';
       m += '<div class="kb-section"><label class="kb-label">負責人</label><input type="text" id="kbF_assignee" class="kb-input" value="' + (card?(card.assignee||''):'') + '" placeholder="名稱"></div>';
       m += '<div class="kb-section"><label class="kb-label">到期日</label><input type="date" id="kbF_due" class="kb-input" value="' + (card?(card.dueDate||''):'') + '"></div>';
+      // Cycle selector
+      var _editCycles = getCycles().sort(function(a,b){ return a.startDate > b.startDate ? -1 : 1; });
+      var _cardCycleId = card ? (card.cycleId || '') : currentCycle.id;
+      m += '<div class="kb-section"><label class="kb-label">所屬週期</label><select id="kbF_cycle" class="kb-input" style="padding:8px 10px"><option value="">不指定</option>';
+      _editCycles.forEach(function(cy){ m += '<option value="' + cy.id + '"' + (cy.id === _cardCycleId ? ' selected' : '') + '>' + cy.label + (cy.status === 'active' ? ' ●' : '') + '</option>'; });
+      m += '</select></div>';
+      // Agent toggle
+      var _agentOn = card ? !!card.agentCanAct : false;
+      m += '<div class="kb-section"><label class="kb-label">AI Agent</label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--ink-sec)"><input type="checkbox" id="kbF_agentToggle"' + (_agentOn ? ' checked' : '') + ' style="accent-color:var(--primary)"> 允許 Agent 協助此任務</label></div>';
       // Activity log (right column bottom in edit modal)
       if(actHtml) m += '<div class="kb-section" style="margin-top:auto;padding-top:10px;border-top:1px solid var(--border)"><label class="kb-label" style="font-size:11px">' + IC.clock + ' 活動紀錄</label><div class="kb-activity" style="max-height:160px;overflow-y:auto">' + actHtml + '</div></div>';
       m += '</div></div></div>';
@@ -5438,6 +5609,8 @@ canvas{display:block;margin:0 auto 24px}
           checklist:checklist,
           customFields:customFields,
           attachments:attachments,
+          cycleId:(ov.querySelector('#kbF_cycle')?ov.querySelector('#kbF_cycle').value:''),
+          agentCanAct:!!(ov.querySelector('#kbF_agentToggle')&&ov.querySelector('#kbF_agentToggle').checked),
           updatedAt:new Date().toISOString()
         };
         if(isEdit){
@@ -5527,6 +5700,97 @@ canvas{display:block;margin:0 auto 24px}
     window._kbDeleteCol = _kbDeleteCol;
     window._kbAddCol = _kbAddCol;
     window._kbToggleArchived = function(){window._kbShowArchived=!window._kbShowArchived;showArchived=window._kbShowArchived;renderBoard();};
+
+    // ── Cycle Stats Update ──
+    function updateCycleStats(){
+      var cycles = getCycles();
+      var allCards = getCards().map(migrateCard);
+      cycles.forEach(function(cyc){
+        var cycCards = allCards.filter(function(c){ return c.cycleId === cyc.id && !c.archived; });
+        var nonInbox = cycCards.filter(function(c){ return c.columnId !== 'inbox'; });
+        cyc.stats = {
+          total: nonInbox.length,
+          completed: nonInbox.filter(function(c){ return c.columnId === 'done'; }).length,
+          carryOver: 0,
+          agentContributions: cycCards.filter(function(c){ return c.agentActions && c.agentActions.length > 0; }).length
+        };
+      });
+      saveCycles(cycles);
+    }
+
+    // ── Cycle Carry-Over (結轉未完成到下一週期) ──
+    window._kbCycleCarryOver = function(){
+      var cyc = ensureCurrentCycle();
+      var allCards = getCards().map(migrateCard);
+      var incomplete = allCards.filter(function(c){
+        return c.cycleId === cyc.id && c.columnId !== 'done' && c.columnId !== 'inbox' && !c.archived;
+      });
+      if(incomplete.length === 0){
+        alert('本週期沒有需要結轉的任務');
+        return;
+      }
+      if(!confirm('要將 ' + incomplete.length + ' 個未完成任務結轉到下一個週期嗎？')){
+        return;
+      }
+      // Create next week cycle
+      var nextMon = new Date(cyc.endDate);
+      nextMon.setDate(nextMon.getDate() + 1);
+      nextMon.setHours(0,0,0,0);
+      var nextSun = new Date(nextMon);
+      nextSun.setDate(nextMon.getDate() + 6);
+      var nextWeek = getISOWeek(nextMon);
+      var cycles = getCycles();
+      var nextCyc = cycles.find(function(c){ return c.startDate === nextMon.toISOString().slice(0,10); });
+      if(!nextCyc){
+        nextCyc = {
+          id: 'cycle_' + genId(),
+          label: 'W' + nextWeek + '（' + fmtMD(nextMon) + '-' + fmtMD(nextSun) + '）',
+          startDate: nextMon.toISOString().slice(0,10),
+          endDate: nextSun.toISOString().slice(0,10),
+          status: 'upcoming',
+          goals: [],
+          stats: { total:0, completed:0, carryOver:0, agentContributions:0 }
+        };
+        cycles.push(nextCyc);
+        saveCycles(cycles);
+      }
+      // Move cards
+      incomplete.forEach(function(c){ c.cycleId = nextCyc.id; });
+      // Update carry-over count
+      nextCyc.stats.carryOver = incomplete.length;
+      saveCycles(cycles);
+      saveCards(allCards);
+      // Update stats
+      updateCycleStats();
+      cards = getCards().map(migrateCard);
+      renderBoard();
+    };
+
+    // ── Cycle Navigation ──
+    window._kbCyclePrev = function(){
+      var allCyc = getCycles().sort(function(a,b){ return a.startDate < b.startDate ? -1 : 1; });
+      var curId = ensureCurrentCycle().id;
+      var idx = allCyc.findIndex(function(c){ return c.id === curId; });
+      if(idx > 0){
+        setActiveCycleId(allCyc[idx-1].id);
+        currentCycle = allCyc[idx-1];
+        renderBoard();
+      }
+    };
+    window._kbCycleNext = function(){
+      var allCyc = getCycles().sort(function(a,b){ return a.startDate < b.startDate ? -1 : 1; });
+      var curId = ensureCurrentCycle().id;
+      var idx = allCyc.findIndex(function(c){ return c.id === curId; });
+      if(idx < allCyc.length - 1){
+        setActiveCycleId(allCyc[idx+1].id);
+        currentCycle = allCyc[idx+1];
+        renderBoard();
+      }
+    };
+    window._kbCycleToday = function(){
+      currentCycle = ensureCurrentCycle();
+      renderBoard();
+    };
 
     renderBoard();
   }
@@ -16632,7 +16896,7 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v0.6.0</span></div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">BeyondPath <span style="font-size:12px;color:var(--ink-muted);font-weight:500">v0.7.0</span></div>
             <div style="font-size:13px;color:var(--ink-muted)">BeyondSpec 規格外工作室 · 小團隊的 AI 商業引擎</div>
           </div>
           <div style="font-size:12px;color:var(--ink-muted)">© 2026</div>
@@ -18597,7 +18861,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
 (function() {
 'use strict';
 try {
-console.log('[BizModule] Loading Business Dashboard v0.6.0...');
+console.log('[BizModule] Loading Business Dashboard v0.7.0...');
 
 // ── docx shim (prevent crash if CDN fails to load) ──
 if (!window.docx) {
@@ -19070,4 +19334,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.6.0 -->
+</html><!-- v0.7.0 -->
