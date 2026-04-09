@@ -2607,6 +2607,14 @@ canvas{display:block;margin:0 auto 24px}
   .kb-mobile-tabs{display:none !important}
 }
 
+/* ══════════ TASK LIST VIEW (v0.8.3) ══════════ */
+.kb-list-view{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+@media(max-width:768px){
+  .kb-list-header{display:none !important}
+  .kb-list-row{grid-template-columns:4px 1fr !important;gap:8px !important}
+  .kb-list-row>span:nth-child(n+3){display:none}
+}
+
 /* ══════════ TASK INBOX / TRIAGE (v0.8.2) ══════════ */
 .inbox-triage-list{display:flex;flex-direction:column;gap:4px}
 .inbox-triage-card{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;transition:all .18s cubic-bezier(.4,0,.2,1)}
@@ -2935,7 +2943,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.8.2</div>
+        <div class="sidebar-version">v0.8.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3513,6 +3521,24 @@ canvas{display:block;margin:0 auto 24px}
       const modKeyForCurrent = 'mod-' + currentId.replace('biz-','');
       if (!modules[modKeyForCurrent]) { navigate('home'); return; }
     }
+    renderSettings();
+  }
+
+  function setCycleDuration(days) {
+    if(days === 0) days = 7; // default for "custom" click
+    var cfg = JSON.parse(localStorage.getItem('bp_cycle_config')||'{}');
+    cfg.duration = days;
+    localStorage.setItem('bp_cycle_config', JSON.stringify(cfg));
+    showToast('週期長度已設為 ' + days + ' 天');
+    renderSettings();
+  }
+
+  function setCycleStartDay(day) {
+    var cfg = JSON.parse(localStorage.getItem('bp_cycle_config')||'{}');
+    cfg.startDay = day;
+    localStorage.setItem('bp_cycle_config', JSON.stringify(cfg));
+    var labels = ['週日','週一','週二','週三','週四','週五','週六'];
+    showToast('週期起始日已設為' + labels[day]);
     renderSettings();
   }
 
@@ -4639,27 +4665,63 @@ canvas{display:block;margin:0 auto 24px}
     }
     function fmtMD(d){ return (d.getMonth()+1) + '/' + d.getDate(); }
 
+    function getCycleConfig(){
+      try{ return JSON.parse(localStorage.getItem('bp_cycle_config')||'{}'); }catch(e){ return {}; }
+    }
+
     function ensureCurrentCycle(){
       var cycles = getCycles();
+      var cfg = getCycleConfig();
+      var duration = cfg.duration || 7;
+      var startDay = cfg.startDay !== undefined ? cfg.startDay : 1; // 0=Sun, 1=Mon
       var now = new Date();
       var day = now.getDay();
-      var diffMon = day === 0 ? -6 : 1 - day;
-      var monday = new Date(now);
-      monday.setDate(now.getDate() + diffMon);
-      monday.setHours(0,0,0,0);
-      var sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 6);
-      sunday.setHours(23,59,59,999);
-      var monStr = monday.toISOString().slice(0,10);
-      var sunStr = sunday.toISOString().slice(0,10);
-      var weekNum = getISOWeek(monday);
-      var existing = cycles.find(function(c){ return c.startDate === monStr; });
+
+      // Calculate the start of the current cycle period
+      var diff = day - startDay;
+      if(diff < 0) diff += 7;
+      var cycleStart = new Date(now);
+      cycleStart.setDate(now.getDate() - (diff % duration));
+      cycleStart.setHours(0,0,0,0);
+
+      // For multi-week cycles, align to the configured start day
+      if(duration > 7){
+        // Find the most recent start-day-aligned date that's a multiple of duration days ago
+        var refDate = new Date(2026, 0, startDay === 0 ? 4 : 5); // reference anchor point (a known Monday/Sunday in 2026)
+        var daysSinceRef = Math.floor((cycleStart.getTime() - refDate.getTime()) / 86400000);
+        var offset = daysSinceRef % duration;
+        if(offset < 0) offset += duration;
+        cycleStart.setDate(cycleStart.getDate() - offset);
+      }
+
+      var cycleEnd = new Date(cycleStart);
+      cycleEnd.setDate(cycleStart.getDate() + duration - 1);
+      cycleEnd.setHours(23,59,59,999);
+
+      var startStr = cycleStart.toISOString().slice(0,10);
+      var endStr = cycleEnd.toISOString().slice(0,10);
+      var weekNum = getISOWeek(cycleStart);
+
+      var existing = cycles.find(function(c){ return c.startDate === startStr; });
       if(existing) return existing;
+
+      // Build label based on duration
+      var label;
+      if(duration === 7){
+        label = 'W' + weekNum + '（' + fmtMD(cycleStart) + '-' + fmtMD(cycleEnd) + '）';
+      } else if(duration === 14){
+        var weekNum2 = getISOWeek(cycleEnd);
+        label = 'W' + weekNum + '-' + weekNum2 + '（' + fmtMD(cycleStart) + '-' + fmtMD(cycleEnd) + '）';
+      } else {
+        label = fmtMD(cycleStart) + '-' + fmtMD(cycleEnd) + '（' + duration + '天）';
+      }
+
       var newCycle = {
         id: 'cycle_' + genId(),
-        label: 'W' + weekNum + '（' + fmtMD(monday) + '-' + fmtMD(sunday) + '）',
-        startDate: monStr,
-        endDate: sunStr,
+        label: label,
+        startDate: startStr,
+        endDate: endStr,
+        duration: duration,
         status: 'active',
         goals: [],
         stats: { total:0, completed:0, carryOver:0, agentContributions:0 }
@@ -4685,6 +4747,7 @@ canvas{display:block;margin:0 auto 24px}
     }
 
     return {
+      getCycleConfig: getCycleConfig,
       getCols: getCols, saveCols: saveCols,
       getCards: getCards, saveCards: saveCards,
       getCycles: getCycles, saveCycles: saveCycles,
@@ -5091,18 +5154,29 @@ canvas{display:block;margin:0 auto 24px}
 
     // Carry-over
     window._cycleCarryOver = function(){
-      var nextMonday = new Date(currentCycle.endDate);
-      nextMonday.setDate(nextMonday.getDate() + 1);
-      var nextCycle = allCycles.find(function(c){ return c.startDate === nextMonday.toISOString().slice(0,10); });
+      var cfg = T.getCycleConfig();
+      var duration = cfg.duration || 7;
+      var nextStart = new Date(currentCycle.endDate);
+      nextStart.setDate(nextStart.getDate() + 1);
+      var nextCycle = allCycles.find(function(c){ return c.startDate === nextStart.toISOString().slice(0,10); });
       if(!nextCycle){
-        // Create next cycle
-        var nextSunday = new Date(nextMonday);
-        nextSunday.setDate(nextMonday.getDate() + 6);
+        var nextEnd = new Date(nextStart);
+        nextEnd.setDate(nextStart.getDate() + duration - 1);
+        var wk = T.getISOWeek(nextStart);
+        var label;
+        if(duration === 7){
+          label = 'W' + wk + '（' + T.fmtMD(nextStart) + '-' + T.fmtMD(nextEnd) + '）';
+        } else if(duration === 14){
+          label = 'W' + wk + '-' + T.getISOWeek(nextEnd) + '（' + T.fmtMD(nextStart) + '-' + T.fmtMD(nextEnd) + '）';
+        } else {
+          label = T.fmtMD(nextStart) + '-' + T.fmtMD(nextEnd) + '（' + duration + '天）';
+        }
         nextCycle = {
           id: 'cycle_' + T.genId(),
-          label: 'W' + T.getISOWeek(nextMonday) + '（' + T.fmtMD(nextMonday) + '-' + T.fmtMD(nextSunday) + '）',
-          startDate: nextMonday.toISOString().slice(0,10),
-          endDate: nextSunday.toISOString().slice(0,10),
+          label: label,
+          startDate: nextStart.toISOString().slice(0,10),
+          endDate: nextEnd.toISOString().slice(0,10),
+          duration: duration,
           status: 'active',
           goals: [],
           stats: { total:0, completed:0, carryOver:0, agentContributions:0 }
@@ -5221,39 +5295,8 @@ canvas{display:block;margin:0 auto 24px}
     function saveMembers(m){localStorage.setItem(KB_MEMBERS_KEY,JSON.stringify(m));}
 
     // Generate current week cycle if none exists
-    function ensureCurrentCycle(){
-      var cycles = getCycles();
-      var now = new Date();
-      var day = now.getDay();
-      var diffMon = day === 0 ? -6 : 1 - day;
-      var monday = new Date(now);
-      monday.setDate(now.getDate() + diffMon);
-      monday.setHours(0,0,0,0);
-      var sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 6);
-      sunday.setHours(23,59,59,999);
-
-      var monStr = monday.toISOString().slice(0,10);
-      var sunStr = sunday.toISOString().slice(0,10);
-      var weekNum = getISOWeek(monday);
-
-      var existing = cycles.find(function(c){ return c.startDate === monStr; });
-      if(existing) return existing;
-
-      var newCycle = {
-        id: 'cycle_' + genId(),
-        label: 'W' + weekNum + '（' + fmtMD(monday) + '-' + fmtMD(sunday) + '）',
-        startDate: monStr,
-        endDate: sunStr,
-        status: 'active',
-        goals: [],
-        stats: { total:0, completed:0, carryOver:0, agentContributions:0 }
-      };
-      cycles.push(newCycle);
-      saveCycles(cycles);
-      setActiveCycleId(newCycle.id);
-      return newCycle;
-    }
+    // Delegate to shared data layer (respects cycle config)
+    function ensureCurrentCycle(){ return _taskShared.ensureCurrentCycle(); }
 
     function getISOWeek(d){
       var tmp = new Date(d.getTime());
@@ -5349,9 +5392,17 @@ canvas{display:block;margin:0 auto 24px}
       var _cycTotalCount = cards.filter(function(c){ return c.cycleId === _cyc.id && !c.archived && c.columnId !== 'inbox'; }).length;
       var _agentCount = cards.filter(function(c){ return c.cycleId === _cyc.id && c.agentActions && c.agentActions.length > 0; }).length;
 
+      // View mode: board (default) or list
+      var viewMode = window._kbViewMode || 'board';
+
       html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
       html += '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="12" y="2" width="6" height="6" rx="1"/><rect x="2" y="12" width="6" height="6" rx="1"/><rect x="12" y="12" width="6" height="6" rx="1"/></svg> 任務總表</h2>';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0">' + ICONS.listChecks + ' 任務總表</h2>';
+      // Board/List toggle
+      html += '<div style="display:flex;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden">';
+      html += '<button onclick="window._kbSetView(\'list\')" style="padding:5px 10px;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;font-family:inherit;transition:all .15s;background:' + (viewMode==='list'?'var(--primary)':'transparent') + ';color:' + (viewMode==='list'?'#fff':'var(--ink-muted)') + '"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="3" x2="12" y2="3"/><line x1="2" y1="7" x2="12" y2="7"/><line x1="2" y1="11" x2="12" y2="11"/></svg>列表</button>';
+      html += '<button onclick="window._kbSetView(\'board\')" style="padding:5px 10px;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;font-family:inherit;transition:all .15s;background:' + (viewMode==='board'?'var(--primary)':'transparent') + ';color:' + (viewMode==='board'?'#fff':'var(--ink-muted)') + '"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="4" height="12" rx="1"/><rect x="7" y="1" width="4" height="8" rx="1"/></svg>看板</button>';
+      html += '</div>';
       html += '</div>';
       // Cycle Switcher
       html += '<div class="cycle-switcher" style="display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:6px 12px">';
@@ -5390,6 +5441,84 @@ canvas{display:block;margin:0 auto 24px}
         html += '</div>';
       }
 
+      // ── LIST VIEW ──
+      if(viewMode === 'list'){
+        // Group all non-inbox, non-archived cards by column status
+        var allActiveCards = cards.filter(function(c){ return c.columnId !== 'inbox' && !c.archived; });
+        if(sq){
+          allActiveCards = allActiveCards.filter(function(c){
+            return (c.title||'').toLowerCase().indexOf(sq) !== -1 || (c.description||'').toLowerCase().indexOf(sq) !== -1 || (c.assignee||'').toLowerCase().indexOf(sq) !== -1;
+          });
+        }
+
+        // List header row
+        html += '<div class="kb-list-view">';
+        html += '<div class="kb-list-header" style="display:grid;grid-template-columns:4px 1fr 100px 90px 90px 80px;gap:12px;padding:8px 14px;font-size:11px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)">';
+        html += '<span></span><span>任務</span><span>分類</span><span>狀態</span><span>指派</span><span>到期</span>';
+        html += '</div>';
+
+        boardCols.forEach(function(col){
+          var colCards = allActiveCards.filter(function(c){ return c.columnId === col.id; })
+            .sort(function(a,b){ return (a.order||0)-(b.order||0); });
+          if(colCards.length === 0) return;
+
+          // Column group header
+          html += '<div style="padding:10px 14px 6px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)">';
+          html += '<div style="width:10px;height:10px;border-radius:50%;background:' + col.color + '"></div>';
+          html += '<span style="font-size:13px;font-weight:700;color:var(--ink)">' + col.label + '</span>';
+          html += '<span style="font-size:11px;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + colCards.length + '</span>';
+          html += '</div>';
+
+          colCards.forEach(function(card){
+            var cat = TASK_CATEGORIES[card.category] || TASK_CATEGORIES.product;
+            var _mem = (card.assigneeId) ? members.find(function(m){ return m.id === card.assigneeId; }) : null;
+            var _assigneeName = card.assignee || (_mem ? _mem.name : '');
+            var dueStr='';
+            var dueClass='';
+            if(card.dueDate){var d=new Date(card.dueDate);var diff=Math.ceil((d.getTime()-Date.now())/86400000);dueStr=d.toLocaleDateString('zh-TW',{month:'short',day:'numeric'});if(diff<0)dueClass='overdue';else if(diff<=3)dueClass='urgent';}
+            var priHtml = '';
+            if(card.priority && card.priority !== 'none'){
+              priHtml = '<span style="font-size:9px;font-weight:700;color:' + PRIORITY_COLORS[card.priority] + ';padding:1px 5px;border-radius:3px;background:' + PRIORITY_COLORS[card.priority] + '12;margin-left:6px">' + PRIORITY_LABELS[card.priority] + '</span>';
+            }
+            var clDone=(card.checklist||[]).filter(function(x){return x.done;}).length;
+            var clTotal=(card.checklist||[]).length;
+            var clHtml = clTotal > 0 ? '<span style="font-size:10px;color:var(--ink-dim);margin-left:6px">' + IC.check + ' ' + clDone + '/' + clTotal + '</span>' : '';
+
+            html += '<div class="kb-list-row" style="display:grid;grid-template-columns:4px 1fr 100px 90px 90px 80px;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(0,0,0,.04);cursor:pointer;transition:background .1s;align-items:center" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'transparent\'" onclick="window._kbEditCard(\'' + card.id + '\')">';
+            // Color bar
+            html += '<div style="width:4px;height:24px;border-radius:2px;background:' + cat.color + '"></div>';
+            // Title + priority + checklist
+            html += '<div style="min-width:0;display:flex;align-items:center">';
+            html += '<span style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (card.title||'未命名') + '</span>';
+            html += priHtml + clHtml;
+            html += '</div>';
+            // Category
+            html += '<span style="font-size:11px;font-weight:600;color:' + cat.color + '">' + cat.label + '</span>';
+            // Status (column name)
+            html += '<span style="font-size:11px;color:' + col.color + ';font-weight:600">' + col.label + '</span>';
+            // Assignee
+            html += '<span style="font-size:11px;color:var(--ink-muted)">' + (_assigneeName || '—') + '</span>';
+            // Due date
+            html += '<span style="font-size:11px;color:' + (dueClass==='overdue'?'var(--rose)':dueClass==='urgent'?'var(--gold)':'var(--ink-dim)') + '">' + (dueStr || '—') + '</span>';
+            html += '</div>';
+          });
+        });
+
+        if(allActiveCards.length === 0){
+          html += '<div style="text-align:center;padding:60px 20px;color:var(--ink-muted)">';
+          html += '<div style="font-size:15px;font-weight:600;margin-bottom:6px">' + (sq ? '找不到符合的任務' : '目前沒有進行中的任務') + '</div>';
+          html += '<div style="font-size:13px;color:var(--ink-dim)">從收件匣接受新任務，或直接新增</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+
+        content.innerHTML = html;
+        _kbBindSearch();
+        _kbFirstVisitNudge();
+        return; // skip board rendering
+      }
+
+      // ── BOARD VIEW ──
       // Mobile tabs (hidden on desktop via CSS)
       html += '<div class="kb-mobile-tabs" id="kbMobileTabs" style="display:none">';
       boardCols.forEach(function(col, ci){
@@ -6396,6 +6525,7 @@ canvas{display:block;margin:0 auto 24px}
     window._kbColorCol = _kbColorCol;
     window._kbDeleteCol = _kbDeleteCol;
     window._kbAddCol = _kbAddCol;
+    window._kbSetView = function(mode){ window._kbViewMode = mode; renderBoard(); };
     window._kbToggleArchived = function(){window._kbShowArchived=!window._kbShowArchived;showArchived=window._kbShowArchived;renderBoard();};
 
     // ── AI Decompose Flow ──
@@ -17535,6 +17665,57 @@ function loadHistory(){
         })()}
       </div>
 
+      <!-- ═══ 任務設定 ═══ -->
+      <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px">任務設定</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">調整週期長度、起始日與預設行為</div>
+          </div>
+        </div>
+        ${(function(){
+          var cd = JSON.parse(localStorage.getItem('bp_cycle_config')||'{}');
+          var dur = cd.duration || 7;
+          var startDay = cd.startDay || 1;
+          var dayLabels = ['週日','週一','週二','週三','週四','週五','週六'];
+
+          var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">';
+          // Cycle Duration
+          html += '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">';
+          html += '<div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:10px">週期長度</div>';
+          html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+          var opts = [{v:7,l:'1 週'},{v:14,l:'2 週'},{v:0,l:'自訂'}];
+          opts.forEach(function(o){
+            var sel = (o.v === 0 && dur !== 7 && dur !== 14) ? true : (dur === o.v);
+            html += '<button onclick="app.setCycleDuration('+o.v+')" style="flex:1;min-width:60px;padding:8px 12px;border-radius:var(--r-md);border:1.5px solid '+(sel?'var(--primary)':'var(--border)')+';background:'+(sel?'var(--primary-light)':'transparent')+';color:'+(sel?'var(--primary)':'var(--ink-muted)')+';font-weight:'+(sel?'700':'500')+';font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s">'+o.l+'</button>';
+          });
+          html += '</div>';
+          // Custom days input (show when custom)
+          if(dur !== 7 && dur !== 14){
+            html += '<div style="margin-top:10px;display:flex;align-items:center;gap:8px">';
+            html += '<input type="number" id="cycleCustomDays" value="'+dur+'" min="1" max="30" style="width:60px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;text-align:center;background:var(--bg);color:var(--ink);font-family:inherit">';
+            html += '<span style="font-size:13px;color:var(--ink-muted)">天</span>';
+            html += '<button onclick="var v=parseInt(document.getElementById(\'cycleCustomDays\').value)||7;app.setCycleDuration(v)" class="btn btn-ghost" style="padding:4px 12px;font-size:12px">套用</button>';
+            html += '</div>';
+          }
+          html += '</div>';
+
+          // Start Day
+          html += '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">';
+          html += '<div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:10px">週期起始日</div>';
+          html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+          [1,0].forEach(function(d){
+            var sel = (startDay === d);
+            html += '<button onclick="app.setCycleStartDay('+d+')" style="padding:8px 14px;border-radius:var(--r-md);border:1.5px solid '+(sel?'var(--primary)':'var(--border)')+';background:'+(sel?'var(--primary-light)':'transparent')+';color:'+(sel?'var(--primary)':'var(--ink-muted)')+';font-weight:'+(sel?'700':'500')+';font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s">'+dayLabels[d]+'</button>';
+          });
+          html += '</div>';
+          html += '<div style="font-size:11px;color:var(--ink-dim);margin-top:8px;line-height:1.5">週期從選定的日子開始計算，變更後下一個新週期生效</div>';
+          html += '</div>';
+          html += '</div>';
+          return html;
+        })()}
+      </div>
+
       <!-- ═══ 方案與用量 ═══ -->
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">方案與用量</div>
@@ -18980,6 +19161,8 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     runPricingTest,
     setPricingMethod,
     toggleModule,
+    setCycleDuration,
+    setCycleStartDay,
   };
 
   // ==================== BLOG FUNCTIONS ====================
@@ -20148,4 +20331,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.8.2 -->
+</html><!-- v0.8.3 -->
