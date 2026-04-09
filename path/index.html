@@ -6165,7 +6165,7 @@ canvas{display:block;margin:0 auto 24px}
       html += '<button onclick="window._cpCycleNext()" style="width:24px;height:24px;border:none;background:transparent;cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
       html += '</div>';
       html += '<button onclick="window._cpShowSettings()" style="width:34px;height:34px;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-muted)" title="週期設定"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><circle cx="12" cy="4" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="14" cy="20" r="2"/></svg></button>';
-      html += '<button class="btn btn-accent" onclick="window._kbShowCardEdit(null, \'inbox\')" style="padding:8px 16px;font-size:13px"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增需求</button>';
+      html += '<button class="btn btn-accent" onclick="window._tpOpenCard(null, \'inbox\')" style="padding:8px 16px;font-size:13px"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增需求</button>';
       html += '</div></div>';
 
       return html;
@@ -6281,7 +6281,7 @@ canvas{display:block;margin:0 auto 24px}
           priCards.forEach(function(card){
             var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
             var estH = card.estimatedHours ? ' · ' + card.estimatedHours + 'h' : '';
-            html += '<div class="tc-card" style="padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="window._kbShowCardEdit(\'' + card.id + '\')" id="card-' + card.id + '">';
+            html += '<div class="tc-card" style="padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="window._tpOpenCard(\'' + card.id + '\')" id="card-' + card.id + '">';
             html += '<div style="width:4px;height:4px;border-radius:50%;background:' + getPriorityColor(card.priority||'none') + ';flex-shrink:0"></div>';
             html += '<div style="flex:1;min-width:0">';
             html += '<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (card.title||'未命名') + '</div>';
@@ -6322,7 +6322,7 @@ canvas{display:block;margin:0 auto 24px}
           html += '</div>';
           colCards.forEach(function(card){
             var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
-            html += '<div class="tc-card" style="padding:10px 14px;margin-bottom:4px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="window._kbShowCardEdit(\'' + card.id + '\')" id="card-' + card.id + '">';
+            html += '<div class="tc-card" style="padding:10px 14px;margin-bottom:4px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="window._tpOpenCard(\'' + card.id + '\')" id="card-' + card.id + '">';
             html += '<div style="width:6px;height:6px;border-radius:50%;background:' + col.color + ';flex-shrink:0"></div>';
             html += '<div style="flex:1;min-width:0">';
             html += '<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (card.title||'未命名') + '</div>';
@@ -6536,9 +6536,26 @@ canvas{display:block;margin:0 auto 24px}
       setTimeout(function(){ if(window._kbShowDetail) window._kbShowDetail(cardId); }, 200);
     };
 
+    // ── Open card edit modal (handles kanban init) ──
+    window._tpOpenCard = function(cardId, defaultCol){
+      if(window._kbShowCardEdit){
+        window._kbShowCardEdit(cardId || null, defaultCol || 'inbox');
+      } else {
+        // Kanban not initialized yet — init it silently, then open modal
+        var savedModule = state.currentModule;
+        renderKanban();
+        state.currentModule = savedModule;
+        // Now re-render planning page and open modal
+        renderTaskPlanning();
+        setTimeout(function(){
+          if(window._kbShowCardEdit) window._kbShowCardEdit(cardId || null, defaultCol || 'inbox');
+        }, 50);
+      }
+    };
+
     // ── Quick add modal ──
     window._blQuickAdd = function(){
-      window._kbShowCardEdit(null, 'inbox');
+      window._tpOpenCard(null, 'inbox');
     };
 
     // ── Legacy: _blQuickAdd used to be a standalone form, now wrapped ──
