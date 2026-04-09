@@ -3123,16 +3123,21 @@ canvas{display:block;margin:0 auto 24px}
   border-radius:var(--r-md);cursor:grab;user-select:none;
   transition:all .15s cubic-bezier(.4,0,.2,1);
   animation:tc-fadeUp .22s cubic-bezier(.22,1,.36,1) both;
-  border:1px solid var(--border);background:var(--bg-card);
+  border:1px solid transparent;background:var(--bg-hover);
   margin-bottom:6px;
 }
 .tp-row:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.08)}
 .tp-row:active{cursor:grabbing}
 .tp-row.dragging{opacity:.4;border:1px dashed var(--primary)}
-.tp-row.tp-pri-high{border-left:3px solid #D94462}
-.tp-row.tp-pri-medium{border-left:3px solid #E08A3A}
-.tp-row.tp-pri-low{border-left:3px solid #3B82F6}
-.tp-row.tp-overdue{background:rgba(217,68,98,.03)}
+.tp-row.tp-pri-high{background:rgba(217,68,98,.08);border-color:rgba(217,68,98,.15)}
+.tp-row.tp-pri-medium{background:rgba(224,138,58,.08);border-color:rgba(224,138,58,.15)}
+.tp-row.tp-pri-low{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.12)}
+.tp-row.tp-overdue{background:rgba(217,68,98,.1);border-color:rgba(217,68,98,.2)}
+[data-theme="dark"] .tp-row{background:rgba(255,255,255,.04)}
+[data-theme="dark"] .tp-row.tp-pri-high{background:rgba(217,68,98,.12);border-color:rgba(217,68,98,.2)}
+[data-theme="dark"] .tp-row.tp-pri-medium{background:rgba(224,138,58,.12);border-color:rgba(224,138,58,.2)}
+[data-theme="dark"] .tp-row.tp-pri-low{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.18)}
+[data-theme="dark"] .tp-row.tp-overdue{background:rgba(217,68,98,.15);border-color:rgba(217,68,98,.25)}
 .tp-row .tp-grip{
   width:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;
   opacity:.25;transition:opacity .15s;cursor:grab;
@@ -3140,7 +3145,8 @@ canvas{display:block;margin:0 auto 24px}
 .tp-row:hover .tp-grip{opacity:.6}
 .tp-row .tp-grip span{width:10px;height:2px;border-radius:1px;background:var(--ink-muted);display:block}
 .tp-row .tp-title{flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tp-row .tp-pri{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tp-row .tp-pri{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+[data-theme="dark"] .tp-row .tp-pri{box-shadow:0 0 0 2px rgba(0,0,0,.3)}
 .tp-row .tp-cat{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0}
 .tp-row .tp-tag{font-size:10px;font-weight:500;color:var(--ink-muted);background:var(--bg-hover);padding:2px 7px;border-radius:4px;white-space:nowrap}
 .tp-row .tp-avatar{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -3190,6 +3196,47 @@ canvas{display:block;margin:0 auto 24px}
   cursor:pointer;font-family:inherit;transition:all .15s;
 }
 .tc-btn-archive:hover{color:var(--rose);border-color:rgba(217,68,98,.3);background:rgba(217,68,98,.04)}
+
+/* ═══ Timeline / Swimlane (v0.13.0) ═══ */
+.tl-wrap{position:relative;display:flex;flex-direction:column;height:calc(100vh - 100px);overflow:hidden;background:var(--bg-card);border-radius:var(--r-xl);border:1px solid var(--border)}
+.tl-toolbar{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg-card);z-index:4}
+.tl-toolbar .tl-title{font-size:18px;font-weight:700;color:var(--ink);margin-right:auto}
+.tl-zoom-group{display:flex;gap:2px;background:var(--bg-hover);border-radius:var(--r-md);padding:2px}
+.tl-zoom-btn{padding:5px 14px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--ink-dim);border-radius:var(--r-sm);cursor:pointer;transition:all .15s;font-family:inherit}
+.tl-zoom-btn:hover{color:var(--ink)}
+.tl-zoom-btn.active{background:var(--bg-card);color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tl-today-btn{padding:5px 14px;border:1px solid var(--border);background:var(--bg-card);font-size:12px;font-weight:600;color:var(--primary);border-radius:var(--r-md);cursor:pointer;transition:all .15s;font-family:inherit}
+.tl-today-btn:hover{background:var(--primary);color:#fff}
+.tl-body{display:flex;flex:1;overflow:hidden;position:relative}
+.tl-lane-labels{width:160px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg-card);z-index:3}
+.tl-lane-label{height:56px;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--ink-sec);white-space:nowrap;overflow:hidden}
+.tl-lane-label .tl-lane-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tl-lane-label .tl-lane-count{font-size:10px;color:var(--ink-dim);margin-left:auto;font-weight:700;background:var(--bg-hover);padding:1px 6px;border-radius:8px}
+.tl-scroll-area{flex:1;overflow:auto;position:relative}
+.tl-header{position:sticky;top:0;z-index:2;display:flex;height:40px;border-bottom:1px solid var(--border);background:var(--bg-card)}
+.tl-header-cell{flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--ink-dim);border-right:1px solid var(--border);text-transform:uppercase;letter-spacing:.02em}
+.tl-header-cell.today{color:var(--primary);font-weight:800}
+.tl-header-cell.weekend{background:rgba(0,0,0,.015)}
+[data-theme="dark"] .tl-header-cell.weekend{background:rgba(255,255,255,.02)}
+.tl-grid{position:relative;min-height:100%}
+.tl-lane{height:56px;border-bottom:1px solid var(--border);position:relative}
+.tl-lane:nth-child(even){background:rgba(0,0,0,.008)}
+[data-theme="dark"] .tl-lane:nth-child(even){background:rgba(255,255,255,.012)}
+.tl-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--primary);z-index:1;pointer-events:none}
+.tl-today-line::before{content:'';position:absolute;top:-1px;left:-4px;width:10px;height:10px;border-radius:50%;background:var(--primary)}
+.tl-bar{position:absolute;height:28px;top:14px;border-radius:6px;cursor:grab;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:box-shadow .15s,opacity .15s;z-index:1;user-select:none;min-width:20px}
+.tl-bar:hover{box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:2}
+.tl-bar:active{cursor:grabbing;opacity:.85}
+.tl-bar .tl-bar-title{flex:1;overflow:hidden;text-overflow:ellipsis}
+.tl-bar .tl-bar-handle{position:absolute;top:0;width:8px;height:100%;cursor:col-resize;z-index:3}
+.tl-bar .tl-bar-handle.left{left:0;border-radius:6px 0 0 6px}
+.tl-bar .tl-bar-handle.right{right:0;border-radius:0 6px 6px 0}
+.tl-bar .tl-bar-handle:hover{background:rgba(255,255,255,.25)}
+.tl-bar.past{opacity:.55}
+.tl-bar.no-date{background:var(--bg-hover)!important;color:var(--ink-dim);border:1px dashed var(--border);cursor:default}
+.tl-empty-msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--ink-muted);font-size:14px}
+.tl-tooltip{position:fixed;z-index:99;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;box-shadow:var(--shadow-card);font-size:12px;color:var(--ink);pointer-events:none;max-width:240px}
+.tl-tooltip strong{display:block;font-size:13px;margin-bottom:4px}
 
 /* — Detail panel slide-in — */
 .tc-detail-panel{
@@ -3422,7 +3469,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.12.1</div>
+        <div class="sidebar-version">v0.13.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3483,7 +3530,8 @@ canvas{display:block;margin:0 auto 24px}
     folder: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>',
     toggleOn: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="16" cy="12" r="3"/></svg>',
     toggleOff: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="8" cy="12" r="3"/></svg>',
-    handshake: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5l-1 1-4-4-1.5 1.5 4 4-1 1-4-4-1.5 1.5 2.5 2.5"/><path d="M3.5 11.5l1 1 4-4 1.5 1.5-4 4 1 1 4-4 1.5 1.5-2.5 2.5"/><path d="M2 6.5l4-3 4 2.5 4-2.5 4 2.5 4-2.5v5"/><path d="M2 6.5v5"/></svg>'
+    handshake: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5l-1 1-4-4-1.5 1.5 4 4-1 1-4-4-1.5 1.5 2.5 2.5"/><path d="M3.5 11.5l1 1 4-4 1.5 1.5-4 4 1 1 4-4 1.5 1.5-2.5 2.5"/><path d="M2 6.5l4-3 4 2.5 4-2.5 4 2.5 4-2.5v5"/><path d="M2 6.5v5"/></svg>',
+    ganttChart: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="3" y2="20"/><line x1="3" y1="6" x2="21" y2="6"/><rect x="5" y="9" width="10" height="3" rx="1.5"/><rect x="8" y="14" width="8" height="3" rx="1.5"/><rect x="6" y="19" width="12" height="3" rx="1.5"/></svg>'
   };
 
   // ==================== STATE MANAGEMENT ====================
@@ -4096,6 +4144,7 @@ canvas{display:block;margin:0 auto 24px}
     const bizItems = [
       { id: 'biz-planning', label: '任務規劃', icon: 'inbox', modKey: 'mod-tasks', layer: 1, q: '需求管理與週期排程', parent: 'tasks' },
       { id: 'biz-tasks', label: '任務看板', icon: 'listChecks', modKey: 'mod-tasks', layer: 1, q: '本週該做什麼？', parent: 'tasks' },
+      { id: 'biz-timeline', label: '時間軸', icon: 'ganttChart', modKey: 'mod-tasks', layer: 1, q: '任務什麼時候完成？', parent: 'tasks' },
       { id: 'biz-contacts', label: '客戶管理', icon: 'users', modKey: 'mod-contacts', layer: 1, q: '這個人跟我們什麼關係？' },
       { id: 'biz-quotes', label: '報價提案', icon: 'fileText', modKey: 'mod-quotes', layer: 2, q: '怎麼快速產一份專業報價？' },
       { id: 'biz-billing', label: '收款管理', icon: 'dollarSign', modKey: 'mod-billing', layer: 2, q: '錢收到了嗎？' },
@@ -4408,6 +4457,16 @@ canvas{display:block;margin:0 auto 24px}
       // If coming from biz-cycle, default to cycle tab
       if (arguments[0] === 'biz-cycle') window._tpActiveTab = 'cycle';
       renderTaskPlanning();
+      return;
+    }
+
+    // biz-timeline → vanilla JS swimlane timeline (v0.13.0)
+    if (moduleId === 'biz-timeline') {
+      if (window._bizReactRoot) {
+        try { window._bizReactRoot.unmount(); } catch(e) {}
+        window._bizReactRoot = null;
+      }
+      renderTimeline();
       return;
     }
 
@@ -7986,6 +8045,356 @@ canvas{display:block;margin:0 auto 24px}
     renderCycleBoard();
   }
 
+  // ==================== MODULE: SWIMLANE TIMELINE (v0.13.0) ====================
+  function renderTimeline() {
+    var content = document.getElementById('content');
+    var mainEl = document.getElementById('main');
+    if (mainEl) { mainEl.style.overflow = 'hidden'; mainEl.style.height = '100vh'; }
+    var appEl = document.getElementById('app');
+    if (appEl) appEl.style.overflow = 'hidden';
+
+    var T = _taskShared;
+    var CATS = T.TASK_CATEGORIES;
+    var cards = T.getCards().map(T.migrateCard);
+    var allCycles = T.getCycles();
+    var currentCycle = T.ensureCurrentCycle();
+
+    // ── Zoom config ──
+    var ZOOM_CFG = {
+      day:   { unit: 'day',   cellW: 60,  fmt: function(d){ return (d.getMonth()+1)+'/'+d.getDate(); }, headerFmt: function(d){ var days=['日','一','二','三','四','五','六']; return days[d.getDay()]; } },
+      week:  { unit: 'week',  cellW: 20,  fmt: function(d){ return (d.getMonth()+1)+'/'+d.getDate(); }, headerFmt: function(){ return ''; } },
+      month: { unit: 'month', cellW: 6,   fmt: function(d){ return (d.getMonth()+1)+'月'; }, headerFmt: function(){ return ''; } }
+    };
+    if(!window._tlZoom) window._tlZoom = 'day';
+    var zoom = ZOOM_CFG[window._tlZoom];
+
+    // ── Swim lane definitions (by category) ──
+    var LANES = Object.keys(CATS).map(function(k){
+      return { id: k, label: CATS[k].label, color: CATS[k].color };
+    });
+
+    // ── Date range: find min/max from cards, pad +-14 days ──
+    var today = new Date(); today.setHours(0,0,0,0);
+    var minDate = new Date(today); minDate.setDate(minDate.getDate() - 30);
+    var maxDate = new Date(today); maxDate.setDate(maxDate.getDate() + 60);
+    var activeCards = cards.filter(function(c){ return !c.archived; });
+    activeCards.forEach(function(c){
+      if(c.startDate){
+        var sd = new Date(c.startDate); sd.setHours(0,0,0,0);
+        if(sd < minDate) minDate = new Date(sd.getTime() - 7*86400000);
+      }
+      if(c.dueDate){
+        var dd = new Date(c.dueDate); dd.setHours(0,0,0,0);
+        if(dd > maxDate) maxDate = new Date(dd.getTime() + 14*86400000);
+      }
+    });
+
+    // ── Generate day array ──
+    function daysBetween(a, b){
+      return Math.round((b.getTime() - a.getTime()) / 86400000);
+    }
+    var totalDays = daysBetween(minDate, maxDate) + 1;
+    var dayArr = [];
+    for(var di = 0; di < totalDays; di++){
+      var dd = new Date(minDate); dd.setDate(dd.getDate() + di); dd.setHours(0,0,0,0);
+      dayArr.push(dd);
+    }
+    var gridWidth = totalDays * zoom.cellW;
+
+    // ── Today offset ──
+    var todayIdx = daysBetween(minDate, today);
+
+    // ── Render ──
+    content.innerHTML = '<div class="tl-wrap" id="tlWrap">' +
+      '<div class="tl-toolbar">' +
+        '<span class="tl-title">' + ICONS.ganttChart + ' 時間軸</span>' +
+        '<button class="tl-today-btn" onclick="window._tlGoToday()">今天</button>' +
+        '<div class="tl-zoom-group">' +
+          '<button class="tl-zoom-btn' + (window._tlZoom==='day'?' active':'') + '" onclick="window._tlSetZoom(\'day\')">日</button>' +
+          '<button class="tl-zoom-btn' + (window._tlZoom==='week'?' active':'') + '" onclick="window._tlSetZoom(\'week\')">週</button>' +
+          '<button class="tl-zoom-btn' + (window._tlZoom==='month'?' active':'') + '" onclick="window._tlSetZoom(\'month\')">月</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="tl-body">' +
+        '<div class="tl-lane-labels" id="tlLaneLabels"></div>' +
+        '<div class="tl-scroll-area" id="tlScrollArea">' +
+          '<div class="tl-header" id="tlHeader" style="width:'+gridWidth+'px"></div>' +
+          '<div class="tl-grid" id="tlGrid" style="width:'+gridWidth+'px;height:'+(LANES.length*56)+'px"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+    var scrollArea = document.getElementById('tlScrollArea');
+    var laneLabels = document.getElementById('tlLaneLabels');
+    var headerEl = document.getElementById('tlHeader');
+    var gridEl = document.getElementById('tlGrid');
+
+    // ── Sync vertical scroll between labels and grid ──
+    scrollArea.addEventListener('scroll', function(){
+      laneLabels.scrollTop = scrollArea.scrollTop;
+    });
+
+    // ── Render lane labels ──
+    var labelsHtml = '';
+    LANES.forEach(function(lane){
+      var cnt = activeCards.filter(function(c){ return c.category === lane.id; }).length;
+      labelsHtml += '<div class="tl-lane-label"><span class="tl-lane-dot" style="background:'+lane.color+'"></span>'+lane.label+'<span class="tl-lane-count">'+cnt+'</span></div>';
+    });
+    laneLabels.innerHTML = labelsHtml;
+
+    // ── Render header cells ──
+    var headerHtml = '';
+    var prevMonth = -1;
+    dayArr.forEach(function(d, i){
+      var isToday = d.getTime() === today.getTime();
+      var isWeekend = d.getDay() === 0 || d.getDay() === 6;
+      var cls = 'tl-header-cell' + (isToday ? ' today' : '') + (isWeekend ? ' weekend' : '');
+
+      var label = '';
+      if(window._tlZoom === 'day'){
+        label = zoom.headerFmt(d) + '<br>' + d.getDate();
+      } else if(window._tlZoom === 'week'){
+        // Show month label when month changes
+        if(d.getMonth() !== prevMonth){ label = zoom.fmt(d); prevMonth = d.getMonth(); }
+      } else {
+        if(d.getDate() === 1 || i === 0){ label = zoom.fmt(d); }
+      }
+      headerHtml += '<div class="'+cls+'" style="width:'+zoom.cellW+'px;min-width:'+zoom.cellW+'px;flex-shrink:0;font-size:'+(window._tlZoom==='day'?'10':'9')+'px;line-height:1.2">'+label+'</div>';
+    });
+    headerEl.innerHTML = headerHtml;
+
+    // ── Render lane backgrounds + today line ──
+    var gridHtml = '';
+    // Lane bg rows
+    LANES.forEach(function(lane, li){
+      gridHtml += '<div class="tl-lane" data-lane="'+lane.id+'" style="top:'+(li*56)+'px;width:'+gridWidth+'px;position:absolute;left:0"></div>';
+    });
+    // Today line
+    if(todayIdx >= 0 && todayIdx < totalDays){
+      var todayX = todayIdx * zoom.cellW + Math.floor(zoom.cellW / 2);
+      gridHtml += '<div class="tl-today-line" style="left:'+todayX+'px"></div>';
+    }
+
+    // ── Render task bars ──
+    var PRIORITY_BAR_COLORS = {
+      high: '#D94462',
+      medium: '#E08A3A',
+      low: '#3B82F6',
+      none: ''
+    };
+
+    LANES.forEach(function(lane, laneIdx){
+      var laneCards = activeCards.filter(function(c){ return c.category === lane.id; });
+      laneCards.forEach(function(card){
+        var startD = card.startDate ? new Date(card.startDate) : null;
+        var endD = card.dueDate ? new Date(card.dueDate) : null;
+        if(startD) startD.setHours(0,0,0,0);
+        if(endD) endD.setHours(0,0,0,0);
+
+        // Skip cards with no dates at all — they'll show in a summary count
+        if(!startD && !endD) return;
+
+        // If only one date, make a 1-day bar
+        if(!startD && endD){ startD = new Date(endD); }
+        if(startD && !endD){ endD = new Date(startD); }
+
+        var barStart = daysBetween(minDate, startD);
+        var barEnd = daysBetween(minDate, endD);
+        if(barEnd < 0 || barStart >= totalDays) return; // out of range
+        if(barStart < 0) barStart = 0;
+        if(barEnd >= totalDays) barEnd = totalDays - 1;
+
+        var x = barStart * zoom.cellW;
+        var w = (barEnd - barStart + 1) * zoom.cellW - 4; // 4px gap
+        if(w < 20) w = 20;
+        var y = laneIdx * 56;
+
+        var barColor = PRIORITY_BAR_COLORS[card.priority] || lane.color;
+        var isPast = endD < today;
+        var cls = 'tl-bar' + (isPast ? ' past' : '');
+
+        gridHtml += '<div class="'+cls+'" data-card-id="'+card.id+'" data-lane="'+lane.id+'" ' +
+          'style="left:'+x+'px;width:'+w+'px;top:'+(y+14)+'px;background:'+barColor+'" ' +
+          'draggable="true" ' +
+          'onmouseenter="window._tlShowTip(event,\''+card.id+'\')" onmouseleave="window._tlHideTip()">' +
+          '<div class="tl-bar-handle left"></div>' +
+          '<span class="tl-bar-title">'+(card.title||'無標題')+'</span>' +
+          '<div class="tl-bar-handle right"></div>' +
+        '</div>';
+      });
+    });
+
+    gridEl.innerHTML = gridHtml;
+
+    // ── Scroll to Today at left 1/3 ──
+    function scrollToToday(){
+      if(todayIdx >= 0){
+        var targetX = todayIdx * zoom.cellW - Math.floor(scrollArea.clientWidth / 3);
+        if(targetX < 0) targetX = 0;
+        scrollArea.scrollTo({ left: targetX, behavior: 'smooth' });
+      }
+    }
+    setTimeout(scrollToToday, 100);
+
+    // ── Zoom switch ──
+    window._tlSetZoom = function(z){
+      window._tlZoom = z;
+      renderTimeline();
+    };
+    window._tlGoToday = scrollToToday;
+
+    // ── Tooltip ──
+    var tipEl = null;
+    window._tlShowTip = function(e, cardId){
+      var card = cards.find(function(c){ return c.id === cardId; });
+      if(!card) return;
+      if(tipEl) tipEl.remove();
+      tipEl = document.createElement('div');
+      tipEl.className = 'tl-tooltip';
+      var catLabel = CATS[card.category] ? CATS[card.category].label : '';
+      var priLabels = {high:'高',medium:'中',low:'低',none:'—'};
+      tipEl.innerHTML = '<strong>'+((card.title||'無標題'))+'</strong>' +
+        '<div style="color:var(--ink-dim);margin-bottom:2px">'+catLabel+'</div>' +
+        '<div style="display:flex;gap:12px;font-size:11px;color:var(--ink-muted)">' +
+          '<span>優先：'+(priLabels[card.priority]||'—')+'</span>' +
+          '<span>開始：'+(card.startDate||'—')+'</span>' +
+          '<span>到期：'+(card.dueDate||'—')+'</span>' +
+        '</div>';
+      document.body.appendChild(tipEl);
+      // Position near cursor
+      var tx = e.clientX + 12;
+      var ty = e.clientY - 10;
+      if(tx + 250 > window.innerWidth) tx = e.clientX - 260;
+      tipEl.style.left = tx + 'px';
+      tipEl.style.top = ty + 'px';
+    };
+    window._tlHideTip = function(){
+      if(tipEl){ tipEl.remove(); tipEl = null; }
+    };
+
+    // ── Drag to move (horizontal) ──
+    (function(){
+      var dragCard = null;
+      var dragStartX = 0;
+      var dragBarStartLeft = 0;
+      var isDragging = false;
+      var isResizing = false;
+      var resizeSide = '';
+      var dragBarEl = null;
+      var origStartDate = '';
+      var origDueDate = '';
+
+      gridEl.addEventListener('mousedown', function(e){
+        var barEl = e.target.closest('.tl-bar');
+        if(!barEl || barEl.classList.contains('no-date')) return;
+        var cardId = barEl.getAttribute('data-card-id');
+        dragCard = cards.find(function(c){ return c.id === cardId; });
+        if(!dragCard) return;
+
+        dragBarEl = barEl;
+        dragStartX = e.clientX;
+        dragBarStartLeft = parseInt(barEl.style.left) || 0;
+        origStartDate = dragCard.startDate || '';
+        origDueDate = dragCard.dueDate || '';
+
+        // Check if clicking on resize handle
+        var handle = e.target.closest('.tl-bar-handle');
+        if(handle){
+          isResizing = true;
+          resizeSide = handle.classList.contains('left') ? 'left' : 'right';
+        } else {
+          isDragging = true;
+        }
+
+        barEl.style.zIndex = '10';
+        barEl.style.opacity = '0.8';
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', function(e){
+        if(!isDragging && !isResizing) return;
+        var dx = e.clientX - dragStartX;
+        var dayShift = Math.round(dx / zoom.cellW);
+
+        if(isDragging){
+          // Move entire bar
+          dragBarEl.style.left = (dragBarStartLeft + dayShift * zoom.cellW) + 'px';
+        } else if(isResizing){
+          var origW = parseInt(dragBarEl.style.width) || 60;
+          if(resizeSide === 'right'){
+            var newW = origW + dx;
+            if(newW < 20) newW = 20;
+            dragBarEl.style.width = newW + 'px';
+          } else {
+            dragBarEl.style.left = (dragBarStartLeft + dx) + 'px';
+            var newW2 = origW - dx;
+            if(newW2 < 20) newW2 = 20;
+            dragBarEl.style.width = newW2 + 'px';
+          }
+        }
+      });
+
+      document.addEventListener('mouseup', function(e){
+        if(!isDragging && !isResizing) return;
+        var dx = e.clientX - dragStartX;
+        var dayShift = Math.round(dx / zoom.cellW);
+
+        if(isDragging && dayShift !== 0){
+          // Update both dates by dayShift
+          if(dragCard.startDate){
+            var sd = new Date(dragCard.startDate); sd.setDate(sd.getDate() + dayShift);
+            dragCard.startDate = sd.toISOString().slice(0,10);
+          }
+          if(dragCard.dueDate){
+            var ed = new Date(dragCard.dueDate); ed.setDate(ed.getDate() + dayShift);
+            dragCard.dueDate = ed.toISOString().slice(0,10);
+          }
+          T.saveCards(cards);
+          showToast('已移動「' + (dragCard.title||'').slice(0,10) + '」');
+          renderTimeline();
+        } else if(isResizing && dayShift !== 0){
+          if(resizeSide === 'right'){
+            // Extend/shrink end date
+            if(dragCard.dueDate){
+              var ed2 = new Date(dragCard.dueDate); ed2.setDate(ed2.getDate() + dayShift);
+              dragCard.dueDate = ed2.toISOString().slice(0,10);
+            }
+          } else {
+            // Move start date
+            if(dragCard.startDate){
+              var sd2 = new Date(dragCard.startDate); sd2.setDate(sd2.getDate() + dayShift);
+              dragCard.startDate = sd2.toISOString().slice(0,10);
+            }
+          }
+          T.saveCards(cards);
+          showToast('已調整日期');
+          renderTimeline();
+        }
+
+        if(dragBarEl){
+          dragBarEl.style.zIndex = '';
+          dragBarEl.style.opacity = '';
+        }
+        isDragging = false;
+        isResizing = false;
+        dragCard = null;
+        dragBarEl = null;
+      });
+    })();
+
+    // ── Click bar → navigate to kanban detail ──
+    gridEl.addEventListener('click', function(e){
+      var barEl = e.target.closest('.tl-bar');
+      if(!barEl) return;
+      // Don't trigger on drag
+      var cardId = barEl.getAttribute('data-card-id');
+      if(cardId){
+        navigate('biz-tasks');
+        setTimeout(function(){ if(window._kbShowDetail) window._kbShowDetail(cardId); }, 200);
+      }
+    });
+  }
+
   // ==================== MODULE: KANBAN TASK BOARD (v1.0.0) ====================
   function renderKanban() {
     var content = document.getElementById('content');
@@ -9884,6 +10293,7 @@ canvas{display:block;margin:0 auto 24px}
     var CMD_NAV = [
       {id:'nav-planning',label:'任務規劃',hint:'需求與排程',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="16 10 12 10 10 13 8 13 6 10 2 10"/><path d="M4.2 4.5L2 10v5a2 2 0 002 2h12a2 2 0 002-2v-5l-2.2-5.5A2 2 0 0013.9 3H6.1a2 2 0 00-1.9 1.5z"/></svg>',action:function(){navigate('biz-planning')}},
       {id:'nav-tasks',label:'任務看板',hint:'看板與列表',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="14" rx="2"/><rect x="12" y="3" width="6" height="10" rx="2"/></svg>',action:function(){navigate('biz-tasks')}},
+      {id:'nav-timeline',label:'時間軸',hint:'任務時間軸',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="5" x2="3" y2="17"/><line x1="3" y1="5" x2="18" y2="5"/><rect x="5" y="7" width="8" height="2.5" rx="1"/><rect x="7" y="11" width="6" height="2.5" rx="1"/><rect x="5" y="15" width="10" height="2.5" rx="1"/></svg>',action:function(){navigate('biz-timeline')}},
       {id:'nav-contacts',label:'客戶管理',hint:'聯絡人',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-3 3-5.5 7-5.5s7 2.5 7 5.5"/></svg>',action:function(){navigate('biz-contacts')}},
       {id:'nav-quotes',label:'報價提案',hint:'報價單',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg>',action:function(){navigate('biz-quotes')}}
     ];
@@ -23760,4 +24170,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.12.1 -->
+</html><!-- v0.13.0 -->
