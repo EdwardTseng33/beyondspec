@@ -2630,6 +2630,130 @@ canvas{display:block;margin:0 auto 24px}
   .inbox-triage-card{padding:10px 12px}
 }
 
+/* ══════════ AI PM BAR (v0.9.0) ══════════ */
+.ai-pm-bar{background:linear-gradient(135deg,rgba(124,92,252,.04) 0%,rgba(124,92,252,.01) 100%);border-bottom:1px solid var(--border);overflow:hidden;transition:max-height .3s ease}
+.ai-pm-bar.collapsed{max-height:52px}
+.ai-pm-bar.expanded{max-height:400px}
+.ai-pm-header{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer}
+.ai-pm-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7C5CFC,#A78BFA);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px rgba(124,92,252,.18);flex-shrink:0}
+.ai-pm-avatar svg{width:16px;height:16px;color:#fff}
+.ai-pm-summary{flex:1;font-size:13px;color:var(--ink-sec)}
+.ai-pm-summary strong{color:var(--ink);font-weight:600}
+.ai-pm-badge{background:var(--primary);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+.ai-pm-toggle{width:28px;height:28px;border-radius:6px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-dim);transition:all .15s}
+.ai-pm-toggle:hover{background:var(--bg-hover);color:var(--ink)}
+.ai-pm-cards{padding:4px 20px 14px;display:flex;flex-direction:column;gap:6px}
+.ai-card{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);transition:all .2s;cursor:pointer}
+.ai-card:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.06)}
+.ai-card-icon{width:30px;height:30px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.ai-card-icon.warn{background:var(--gold-bg);color:var(--gold)}
+.ai-card-icon.info{background:rgba(59,130,246,.08);color:#3B82F6}
+.ai-card-icon.risk{background:var(--rose-bg);color:var(--rose)}
+.ai-card-icon.success{background:var(--teal-bg);color:var(--teal)}
+.ai-card-body{flex:1;min-width:0}
+.ai-card-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.ai-card-desc{font-size:12px;color:var(--ink-muted);line-height:1.4}
+.ai-card-reason{font-size:11px;color:var(--primary);margin-top:4px;line-height:1.4;display:none;background:var(--primary-light);padding:4px 8px;border-radius:4px}
+.ai-card.show-reason .ai-card-reason{display:block}
+.ai-card-actions{display:flex;gap:4px;flex-shrink:0;align-self:center}
+.ai-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.ai-btn.accept{color:var(--teal);border-color:rgba(27,168,145,.3)}
+.ai-btn.accept:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+.ai-btn.later{color:var(--ink-dim)}
+.ai-btn.later:hover{background:var(--bg-hover);color:var(--ink-sec)}
+.ai-btn.why{color:var(--primary);border:none;padding:4px 6px;background:transparent}
+.ai-btn.why:hover{background:var(--primary-light)}
+@media(max-width:768px){
+  .ai-pm-cards{padding:4px 12px 12px}
+  .ai-card{padding:8px 10px;gap:8px}
+  .ai-card-actions{flex-direction:column;gap:2px}
+}
+
+/* ══════════ LIST VIEW V2 (v0.9.0) ══════════ */
+.lv2-header{display:grid;grid-template-columns:32px 1fr 80px 80px 90px 70px;gap:0;padding:6px 14px;font-size:11px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg-app);z-index:5}
+.lv2-row{display:grid;grid-template-columns:32px 1fr 80px 80px 90px 70px;gap:0;padding:7px 14px;align-items:center;border-radius:var(--r-sm);cursor:pointer;transition:all .12s;border:1px solid transparent}
+.lv2-row:hover{background:var(--bg-card);border-color:var(--border);box-shadow:var(--shadow-sm)}
+.lv2-check{width:16px;height:16px;border:2px solid var(--border);border-radius:4px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.lv2-row:hover .lv2-check{border-color:var(--ink-dim)}
+.lv2-check.done{background:var(--teal);border-color:var(--teal)}
+.lv2-title-area{display:flex;align-items:center;gap:6px;min-width:0}
+.lv2-pri{width:3px;height:18px;border-radius:2px;flex-shrink:0}
+.lv2-pri.p4{background:var(--rose)}.lv2-pri.p3{background:var(--gold)}.lv2-pri.p2{background:#3B82F6}.lv2-pri.p1{background:var(--border)}
+.lv2-title{font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv2-row.completed .lv2-title{text-decoration:line-through;color:var(--ink-dim)}
+.lv2-sub-count{font-size:10px;color:var(--ink-dim);background:var(--bg-hover);padding:1px 5px;border-radius:4px;flex-shrink:0}
+.lv2-cat{font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px}
+.lv2-status{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:500}
+.lv2-status .dot{width:6px;height:6px;border-radius:50%}
+.lv2-assignee{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-sec)}
+.lv2-avatar{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.lv2-avatar.human{background:var(--primary)}
+.lv2-avatar.agent{background:linear-gradient(135deg,#7C5CFC,#A78BFA);box-shadow:0 0 0 2px rgba(124,92,252,.2)}
+.lv2-due{font-size:11px;color:var(--ink-muted)}
+.lv2-due.overdue{color:var(--rose);font-weight:600}
+.lv2-due.today{color:var(--gold);font-weight:600}
+.lv2-group{display:flex;align-items:center;gap:8px;padding:10px 14px 4px;cursor:pointer}
+.lv2-group .g-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.lv2-group .g-label{font-size:12px;font-weight:700;color:var(--ink-sec)}
+.lv2-group .g-count{font-size:11px;color:var(--ink-dim)}
+@media(max-width:768px){
+  .lv2-header{display:none !important}
+  .lv2-row{grid-template-columns:32px 1fr !important;gap:6px !important}
+  .lv2-row>span:nth-child(n+3){display:none}
+}
+
+/* ══════════ DETAIL PANEL (v0.9.0) ══════════ */
+.detail-panel{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:100vw;background:var(--bg-card);border-left:1px solid var(--border);box-shadow:-4px 0 24px rgba(0,0,0,.08);z-index:9000;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.detail-panel.open{transform:translateX(0)}
+.detail-panel-header{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.detail-panel-close{width:28px;height:28px;border-radius:6px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-dim);transition:all .15s}
+.detail-panel-close:hover{background:var(--bg-hover);color:var(--ink)}
+.detail-panel-body{flex:1;overflow-y:auto;padding:18px}
+.detail-panel-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:14px;line-height:1.3;letter-spacing:-.3px;outline:none;border-radius:4px;padding:2px 4px;transition:all .15s;border:1px solid transparent}
+.detail-panel-title:focus{border-color:var(--primary);background:var(--bg-input,var(--bg-card));box-shadow:0 0 0 3px rgba(124,92,252,.08)}
+.dp-props{display:grid;grid-template-columns:90px 1fr;gap:6px 10px;margin-bottom:16px}
+.dp-prop-label{font-size:12px;color:var(--ink-dim);font-weight:500;padding:5px 0;display:flex;align-items:center;gap:4px}
+.dp-prop-label svg{width:13px;height:13px}
+.dp-prop-value{font-size:13px;color:var(--ink-sec);padding:4px 6px;border-radius:6px;cursor:pointer;transition:all .1s;border:1px solid transparent}
+.dp-prop-value:hover{background:var(--bg-hover);border-color:var(--border)}
+.dp-section{margin-bottom:16px}
+.dp-section-title{font-size:11px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.dp-desc{font-size:13px;color:var(--ink-sec);line-height:1.7;padding:8px 10px;background:var(--bg-hover);border-radius:var(--r-sm);min-height:40px}
+.dp-activity{display:flex;gap:8px;padding:6px 0;font-size:12px;position:relative}
+.dp-activity::before{content:'';position:absolute;left:13px;top:28px;bottom:-6px;width:1px;background:var(--border)}
+.dp-activity:last-child::before{display:none}
+.dp-act-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;z-index:1}
+.dp-act-avatar.human{background:var(--primary)}
+.dp-act-avatar.agent{background:linear-gradient(135deg,#7C5CFC,#A78BFA);box-shadow:0 0 0 2px rgba(124,92,252,.15)}
+.dp-act-content{flex:1;min-width:0}
+.dp-act-text{color:var(--ink-sec);line-height:1.4}
+.dp-act-text strong{color:var(--ink);font-weight:600}
+.dp-act-text .agent-tag{color:var(--primary);font-weight:600}
+.dp-act-time{font-size:11px;color:var(--ink-dim);margin-top:1px}
+.dp-act-undo{font-size:11px;color:var(--primary);cursor:pointer;margin-left:6px;font-weight:500}
+.dp-act-undo:hover{text-decoration:underline}
+.dp-act-reason{font-size:11px;color:var(--primary);background:var(--primary-light);padding:3px 7px;border-radius:4px;margin-top:3px;line-height:1.4;display:none}
+.dp-activity.show-reason .dp-act-reason{display:block}
+@media(max-width:768px){
+  .detail-panel{width:100vw}
+}
+
+/* ══════════ INBOX AI CLASSIFICATION (v0.9.0) ══════════ */
+.inbox-ai-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.inbox-ai-tag.high{background:var(--teal-bg);color:var(--teal);border:1px solid rgba(27,168,145,.2)}
+.inbox-ai-tag.medium{background:rgba(59,130,246,.08);color:#3B82F6;border:1px solid rgba(59,130,246,.2)}
+.inbox-ai-tag.low{background:var(--gold-bg);color:var(--gold);border:1px solid rgba(224,138,58,.2)}
+.inbox-ai-tag:hover{transform:scale(1.05)}
+.inbox-source-badge{font-size:10px;padding:1px 6px;border-radius:4px;font-weight:600}
+
+/* ══════════ AUTONOMY CONTROL (v0.9.0) ══════════ */
+.autonomy-steps{display:flex;justify-content:space-between}
+.autonomy-step{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 2px;transition:all .15s;flex:1}
+.autonomy-step .step-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--border);background:var(--bg-card);transition:all .15s;z-index:2}
+.autonomy-step.active .step-dot{border-color:var(--primary);background:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.autonomy-step .step-label{font-size:10px;font-weight:600;color:var(--ink-dim);text-align:center}
+.autonomy-step.active .step-label{color:var(--primary)}
+
 /* ══════════ CONTACTS / CUSTOMER MANAGEMENT (v0.9.5) ══════════ */
 .ct-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .ct-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:all .18s cubic-bezier(.4,0,.2,1);position:relative}
@@ -2943,7 +3067,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.8.3</div>
+        <div class="sidebar-version">v0.9.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3539,6 +3663,39 @@ canvas{display:block;margin:0 auto 24px}
     localStorage.setItem('bp_cycle_config', JSON.stringify(cfg));
     var labels = ['週日','週一','週二','週三','週四','週五','週六'];
     showToast('週期起始日已設為' + labels[day]);
+    renderSettings();
+  }
+
+  function setAgentAutonomy(level) {
+    localStorage.setItem('bp_agent_autonomy', level);
+    var labels = {off:'關閉',suggest:'建議',copilot:'協作',auto:'自動',full:'全自主'};
+    showToast('AI 自主層級已設為「' + (labels[level]||level) + '」');
+    renderSettings();
+  }
+
+  function addAgentMember() {
+    var mems = JSON.parse(localStorage.getItem('bp_task_members')||'[]');
+    var agentCount = mems.filter(function(m){ return m.type === 'agent'; }).length;
+    var newAgent = {
+      id: 'agent-' + Date.now(),
+      name: 'AI Agent ' + (agentCount + 1),
+      type: 'agent',
+      role: 'AI 助理',
+      color: '#7C5CFC'
+    };
+    mems.push(newAgent);
+    localStorage.setItem('bp_task_members', JSON.stringify(mems));
+    if(typeof _scheduleFirestoreSync === 'function') _scheduleFirestoreSync();
+    showToast('已新增 AI Agent');
+    renderSettings();
+  }
+
+  function removeMember(memberId) {
+    var mems = JSON.parse(localStorage.getItem('bp_task_members')||'[]');
+    mems = mems.filter(function(m){ return m.id !== memberId; });
+    localStorage.setItem('bp_task_members', JSON.stringify(mems));
+    if(typeof _scheduleFirestoreSync === 'function') _scheduleFirestoreSync();
+    showToast('已移除成員');
     renderSettings();
   }
 
@@ -4654,7 +4811,132 @@ canvas{display:block;margin:0 auto 24px}
       if(!c.agentActions) c.agentActions = [];
       if(c.agentCanAct === undefined) c.agentCanAct = false;
       if(!c.assigneeId) c.assigneeId = '';
+      // v0.9.0: new fields for AI PM + Agent collaboration
+      if(!c.projectId) c.projectId = '';
+      if(!c.dependencies) c.dependencies = [];
+      if(!c.assigneeType) c.assigneeType = 'human';
+      if(!c.agentAutonomy) c.agentAutonomy = 'suggest';
+      if(!c.estimatedHours) c.estimatedHours = 0;
       return c;
+    }
+
+    // v0.9.0: AI PM insight generation (local heuristics)
+    function generatePmInsights(cards, members, currentCycle) {
+      var insights = [];
+      var now = new Date();
+      var todayStr = now.toISOString().slice(0,10);
+      var activeCards = cards.filter(function(c){ return !c.archived && c.columnId !== 'done'; });
+
+      // 1. Due today
+      var dueToday = activeCards.filter(function(c){ return c.dueDate && c.dueDate.slice(0,10) === todayStr; });
+      if(dueToday.length > 0) {
+        insights.push({
+          type: 'warn', icon: '⚡',
+          title: dueToday.length + ' 個任務今天到期',
+          desc: dueToday.map(function(c){ return '「' + c.title + '」'; }).join('、'),
+          reason: '依據：到期日 = 今天 (' + (now.getMonth()+1) + '/' + now.getDate() + ')，狀態仍在進行中。建議優先處理或調整時程。',
+          action: 'view', actionLabel: '查看'
+        });
+      }
+
+      // 2. Overdue tasks
+      var overdue = activeCards.filter(function(c){
+        return c.dueDate && c.dueDate.slice(0,10) < todayStr && c.columnId !== 'done';
+      });
+      if(overdue.length > 0) {
+        insights.push({
+          type: 'risk', icon: '🔴',
+          title: overdue.length + ' 個任務已逾期',
+          desc: overdue.map(function(c){ return '「' + c.title + '」'; }).slice(0,3).join('、') + (overdue.length > 3 ? '⋯' : ''),
+          reason: '依據：這些任務的到期日已過，但狀態不是「已完成」。建議立即處理或調整到期日。',
+          action: 'view', actionLabel: '查看'
+        });
+      }
+
+      // 3. Workload imbalance
+      var memberLoad = {};
+      activeCards.forEach(function(c){
+        if(c.assigneeId && c.cycleId === (currentCycle ? currentCycle.id : '')) {
+          if(!memberLoad[c.assigneeId]) memberLoad[c.assigneeId] = {total:0, done:0, name:''};
+          memberLoad[c.assigneeId].total++;
+        }
+      });
+      cards.filter(function(c){ return !c.archived && c.columnId === 'done' && c.assigneeId && c.cycleId === (currentCycle ? currentCycle.id : ''); })
+        .forEach(function(c){
+          if(memberLoad[c.assigneeId]) memberLoad[c.assigneeId].done++;
+        });
+      members.forEach(function(m){ if(memberLoad[m.id]) memberLoad[m.id].name = m.name; });
+      var overloaded = [];
+      Object.keys(memberLoad).forEach(function(mid){
+        var ml = memberLoad[mid];
+        if(ml.total >= 6 && ml.done / ml.total < 0.35 && ml.name) {
+          overloaded.push(ml);
+        }
+      });
+      if(overloaded.length > 0) {
+        var ol = overloaded[0];
+        insights.push({
+          type: 'risk', icon: '⚠️',
+          title: ol.name + ' 的工作量超載',
+          desc: '本週有 ' + ol.total + ' 個任務，完成率 ' + Math.round(ol.done/ol.total*100) + '%。建議重新分配。',
+          reason: '依據：' + ol.name + ' 本週任務 ' + ol.total + ' 個（完成 ' + ol.done + '），完成率低於團隊平均。',
+          action: 'rebalance', actionLabel: '調整'
+        });
+      }
+
+      // 4. Stale tasks (no update > 5 days, still in doing)
+      var stale = activeCards.filter(function(c){
+        if(c.columnId !== 'doing') return false;
+        var lastUpdate = c.updatedAt || c.createdAt || 0;
+        if(!lastUpdate) return false;
+        var daysSince = Math.floor((now.getTime() - new Date(lastUpdate).getTime()) / 86400000);
+        return daysSince >= 5;
+      });
+      if(stale.length > 0) {
+        insights.push({
+          type: 'info', icon: '💡',
+          title: stale.length + ' 個任務超過 5 天沒更新',
+          desc: stale.map(function(c){ return '「' + c.title + '」'; }).slice(0,2).join('、'),
+          reason: '依據：這些任務停在「進行中」已超過 5 天且無進度更新。建議拆解子任務或重新評估。',
+          action: 'view', actionLabel: '查看'
+        });
+      }
+
+      // 5. Inbox unprocessed
+      var inboxCount = cards.filter(function(c){ return c.columnId === 'inbox' && !c.archived; }).length;
+      if(inboxCount >= 3) {
+        insights.push({
+          type: 'info', icon: '📥',
+          title: inboxCount + ' 項待分類',
+          desc: '收件匣有未處理的任務等待分類。',
+          reason: '依據：收件匣中有 ' + inboxCount + ' 個任務尚未分類到目標欄位。',
+          action: 'inbox', actionLabel: '前往分類'
+        });
+      }
+
+      return insights.slice(0, 5); // max 5 insights
+    }
+
+    // v0.9.0: AI classification suggestion for inbox cards
+    function suggestClassification(card) {
+      var title = (card.title || '').toLowerCase();
+      var source = card.source || 'manual';
+      var suggestion = { column: '', confidence: 'low', label: '' };
+
+      // Rule-based classification
+      if(title.indexOf('bug') !== -1 || title.indexOf('錯誤') !== -1 || title.indexOf('修復') !== -1 || source === 'customer') {
+        suggestion = { column: 'doing', confidence: 'high', label: '進行中（Bug）' };
+      } else if(title.indexOf('研究') !== -1 || title.indexOf('分析') !== -1 || title.indexOf('評估') !== -1) {
+        suggestion = { column: 'todo', confidence: 'high', label: '待處理（研究）' };
+      } else if(title.indexOf('優化') !== -1 || title.indexOf('重構') !== -1 || title.indexOf('升級') !== -1) {
+        suggestion = { column: 'todo', confidence: 'medium', label: '待處理？' };
+      } else if(source === 'ai' || source === 'claude-mcp') {
+        suggestion = { column: 'todo', confidence: 'high', label: '待處理' };
+      } else if(source === 'meeting') {
+        suggestion = { column: 'todo', confidence: 'medium', label: '待處理？' };
+      }
+
+      return suggestion;
     }
 
     function getISOWeek(d){
@@ -4756,12 +5038,78 @@ canvas{display:block;margin:0 auto 24px}
       genId: genId, migrateCard: migrateCard,
       ensureCurrentCycle: ensureCurrentCycle, ensureDefaultMember: ensureDefaultMember,
       getISOWeek: getISOWeek, fmtMD: fmtMD,
+      generatePmInsights: generatePmInsights,
+      suggestClassification: suggestClassification,
       DEFAULT_COLS: DEFAULT_COLS, TASK_CATEGORIES: TASK_CATEGORIES,
       PRIORITY_LABELS: PRIORITY_LABELS, PRIORITY_COLORS: PRIORITY_COLORS
     };
   })();
 
-  // ==================== MODULE: TASK INBOX / TRIAGE (v0.8.2) ====================
+  // ==================== AI PM BAR — Global Component (v0.9.0) ====================
+  function renderAiPmBar() {
+    var T = _taskShared;
+    var cards = T.getCards().map(T.migrateCard);
+    var members = T.ensureDefaultMember();
+    var cycle = T.ensureCurrentCycle();
+    var insights = T.generatePmInsights(cards, members, cycle);
+
+    if(insights.length === 0) return '';
+
+    var isCollapsed = window._aiPmCollapsed || false;
+    var html = '<div class="ai-pm-bar ' + (isCollapsed ? 'collapsed' : 'expanded') + '" id="aiPmBar">';
+
+    // Header
+    html += '<div class="ai-pm-header" onclick="window._aiPmToggle()">';
+    html += '<div class="ai-pm-avatar"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M7 10l2 2 4-4"/></svg></div>';
+    html += '<div class="ai-pm-summary"><strong>AI PM</strong> — ' + insights.length + ' 件事需要你注意</div>';
+    html += '<div class="ai-pm-badge">' + insights.length + '</div>';
+    html += '<button class="ai-pm-toggle"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 ' + (isCollapsed ? '5l4 4 4-4' : '9l4-4 4 4') + '"/></svg></button>';
+    html += '</div>';
+
+    // Cards
+    html += '<div class="ai-pm-cards">';
+    insights.forEach(function(ins, idx) {
+      html += '<div class="ai-card" id="aiCard' + idx + '">';
+      html += '<div class="ai-card-icon ' + ins.type + '">' + ins.icon + '</div>';
+      html += '<div class="ai-card-body">';
+      html += '<div class="ai-card-title">' + ins.title + '</div>';
+      html += '<div class="ai-card-desc">' + ins.desc + '</div>';
+      html += '<div class="ai-card-reason">' + ins.reason + '</div>';
+      html += '</div>';
+      html += '<div class="ai-card-actions">';
+      if(ins.action === 'inbox') {
+        html += '<button class="ai-btn accept" onclick="event.stopPropagation();navigate(\'biz-inbox\')">' + ins.actionLabel + '</button>';
+      } else {
+        html += '<button class="ai-btn accept" onclick="event.stopPropagation();window._aiPmDismiss(' + idx + ')">' + ins.actionLabel + '</button>';
+      }
+      html += '<button class="ai-btn later" onclick="event.stopPropagation();window._aiPmDismiss(' + idx + ')">稍後</button>';
+      html += '<button class="ai-btn why" onclick="event.stopPropagation();var el=document.getElementById(\'aiCard' + idx + '\');el.classList.toggle(\'show-reason\')">為什麼</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  window._aiPmToggle = function() {
+    window._aiPmCollapsed = !window._aiPmCollapsed;
+    var bar = document.getElementById('aiPmBar');
+    if(bar) {
+      bar.className = 'ai-pm-bar ' + (window._aiPmCollapsed ? 'collapsed' : 'expanded');
+    }
+  };
+  window._aiPmDismiss = function(idx) {
+    var card = document.getElementById('aiCard' + idx);
+    if(card) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(20px)';
+      card.style.transition = 'all .25s ease';
+      setTimeout(function(){ card.style.display = 'none'; }, 250);
+    }
+  };
+
+  // ==================== MODULE: TASK INBOX / TRIAGE (v0.9.0) ====================
   function renderTaskInbox() {
     var content = document.getElementById('content');
     var mainEl = document.getElementById('main');
@@ -4792,6 +5140,8 @@ canvas{display:block;margin:0 auto 24px}
       }
 
       var html = '';
+      // AI PM Bar
+      html += renderAiPmBar();
       // Header
       html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">';
       html += '<div style="display:flex;align-items:center;gap:12px">';
@@ -4861,7 +5211,19 @@ canvas{display:block;margin:0 auto 24px}
           if(srcLabel) html += '<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:' + srcColor + '10;color:' + srcColor + ';font-weight:600">' + srcLabel + '</span>';
           if(_assigneeName) html += '<span style="font-size:11px;color:var(--ink-muted)">' + _assigneeName + '</span>';
           if(dueStr) html += '<span style="font-size:11px;color:' + (dueClass==='overdue'?'var(--rose)':dueClass==='urgent'?'var(--gold)':'var(--ink-dim)') + '">' + dueStr + '</span>';
-          html += '</div></div></div>';
+          html += '</div>';
+          // AI Classification suggestion
+          var aiSug = T.suggestClassification(card);
+          if(aiSug && aiSug.confidence){
+            var _confColors = {high:'var(--teal)',medium:'var(--primary)',low:'var(--gold)'};
+            var _confLabels = {high:'高信心',medium:'中信心',low:'低信心'};
+            var _colLabels = {todo:'待辦',doing:'進行中',review:'待審',done:'完成'};
+            html += '<div class="inbox-ai-tag ' + aiSug.confidence + '" onclick="event.stopPropagation();window._inboxAiAccept(\'' + card.id + '\',\'' + aiSug.column + '\')" title="AI 建議：移至' + (_colLabels[aiSug.column]||aiSug.column) + '">';
+            html += '<svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5Z"/></svg> ';
+            html += (aiSug.label||'') + ' <span style="opacity:.7;font-size:10px">' + (_confLabels[aiSug.confidence]||'') + '</span>';
+            html += '</div>';
+          }
+          html += '</div></div>';
           // Right: triage action buttons
           html += '<div class="inbox-triage-actions" style="display:flex;gap:6px;align-items:center;flex-shrink:0">';
           // Accept → dropdown to select target column
@@ -4955,6 +5317,12 @@ canvas{display:block;margin:0 auto 24px}
         .sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
       showToast('已封存');
       renderInboxBoard();
+    };
+
+    // AI Classification: one-click accept suggestion
+    window._inboxAiAccept = function(cardId, targetCol){
+      _inboxMoveCard(cardId, targetCol);
+      showToast('AI 建議已接受');
     };
 
     // Quick add to inbox
@@ -5384,6 +5752,9 @@ canvas{display:block;margin:0 auto 24px}
       var sq = (window._kbSearch||'').toLowerCase();
       var html = '';
 
+      // AI PM Bar (v0.9.0)
+      html += renderAiPmBar();
+
       // Header: Title + Cycle Switcher
       var _cyc = ensureCurrentCycle();
       var _allCyc = getCycles().sort(function(a,b){ return a.startDate < b.startDate ? -1 : 1; });
@@ -5441,9 +5812,8 @@ canvas{display:block;margin:0 auto 24px}
         html += '</div>';
       }
 
-      // ── LIST VIEW ──
+      // ── LIST VIEW V2 (v0.9.0) ──
       if(viewMode === 'list'){
-        // Group all non-inbox, non-archived cards by column status
         var allActiveCards = cards.filter(function(c){ return c.columnId !== 'inbox' && !c.archived; });
         if(sq){
           allActiveCards = allActiveCards.filter(function(c){
@@ -5451,55 +5821,77 @@ canvas{display:block;margin:0 auto 24px}
           });
         }
 
-        // List header row
         html += '<div class="kb-list-view">';
-        html += '<div class="kb-list-header" style="display:grid;grid-template-columns:4px 1fr 100px 90px 90px 80px;gap:12px;padding:8px 14px;font-size:11px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)">';
-        html += '<span></span><span>任務</span><span>分類</span><span>狀態</span><span>指派</span><span>到期</span>';
-        html += '</div>';
+        // Header
+        html += '<div class="lv2-header"><span></span><span>任務</span><span>分類</span><span>狀態</span><span>指派</span><span>到期</span></div>';
 
         boardCols.forEach(function(col){
           var colCards = allActiveCards.filter(function(c){ return c.columnId === col.id; })
             .sort(function(a,b){ return (a.order||0)-(b.order||0); });
           if(colCards.length === 0) return;
 
-          // Column group header
-          html += '<div style="padding:10px 14px 6px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)">';
-          html += '<div style="width:10px;height:10px;border-radius:50%;background:' + col.color + '"></div>';
-          html += '<span style="font-size:13px;font-weight:700;color:var(--ink)">' + col.label + '</span>';
-          html += '<span style="font-size:11px;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + colCards.length + '</span>';
+          // Group header
+          html += '<div class="lv2-group">';
+          html += '<div class="g-dot" style="background:' + col.color + '"></div>';
+          html += '<span class="g-label">' + col.label + '</span>';
+          html += '<span class="g-count">' + colCards.length + '</span>';
           html += '</div>';
 
           colCards.forEach(function(card){
             var cat = TASK_CATEGORIES[card.category] || TASK_CATEGORIES.product;
             var _mem = (card.assigneeId) ? members.find(function(m){ return m.id === card.assigneeId; }) : null;
             var _assigneeName = card.assignee || (_mem ? _mem.name : '');
-            var dueStr='';
-            var dueClass='';
-            if(card.dueDate){var d=new Date(card.dueDate);var diff=Math.ceil((d.getTime()-Date.now())/86400000);dueStr=d.toLocaleDateString('zh-TW',{month:'short',day:'numeric'});if(diff<0)dueClass='overdue';else if(diff<=3)dueClass='urgent';}
-            var priHtml = '';
-            if(card.priority && card.priority !== 'none'){
-              priHtml = '<span style="font-size:9px;font-weight:700;color:' + PRIORITY_COLORS[card.priority] + ';padding:1px 5px;border-radius:3px;background:' + PRIORITY_COLORS[card.priority] + '12;margin-left:6px">' + PRIORITY_LABELS[card.priority] + '</span>';
+            var _assigneeType = card.assigneeType || 'human';
+            var _assigneeInitial = _assigneeName ? _assigneeName.charAt(0).toUpperCase() : '';
+            var isDone = col.id === 'done';
+            var dueStr='', dueClass='';
+            if(card.dueDate){
+              var d=new Date(card.dueDate);
+              var diff=Math.ceil((d.getTime()-Date.now())/86400000);
+              dueStr=(d.getMonth()+1)+'/'+d.getDate();
+              if(isDone) dueClass='';
+              else if(diff<0) dueClass='overdue';
+              else if(diff===0) dueClass='today';
+              else if(diff<=3) dueClass='today';
             }
+
+            // Priority bar class
+            var priClass = 'p1';
+            if(card.priority === 'high') priClass = 'p4';
+            else if(card.priority === 'medium') priClass = 'p3';
+            else if(card.priority === 'low') priClass = 'p2';
+
             var clDone=(card.checklist||[]).filter(function(x){return x.done;}).length;
             var clTotal=(card.checklist||[]).length;
-            var clHtml = clTotal > 0 ? '<span style="font-size:10px;color:var(--ink-dim);margin-left:6px">' + IC.check + ' ' + clDone + '/' + clTotal + '</span>' : '';
 
-            html += '<div class="kb-list-row" style="display:grid;grid-template-columns:4px 1fr 100px 90px 90px 80px;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(0,0,0,.04);cursor:pointer;transition:background .1s;align-items:center" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'transparent\'" onclick="window._kbEditCard(\'' + card.id + '\')">';
-            // Color bar
-            html += '<div style="width:4px;height:24px;border-radius:2px;background:' + cat.color + '"></div>';
-            // Title + priority + checklist
-            html += '<div style="min-width:0;display:flex;align-items:center">';
-            html += '<span style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (card.title||'未命名') + '</span>';
-            html += priHtml + clHtml;
+            html += '<div class="lv2-row' + (isDone ? ' completed' : '') + '" onclick="window._kbOpenDetail(\'' + card.id + '\')" style="' + (isDone ? 'opacity:.6' : '') + '">';
+            // Checkbox
+            html += '<div class="lv2-check' + (isDone ? ' done' : '') + '" onclick="event.stopPropagation();window._kbToggleDone(\'' + card.id + '\')"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="' + (isDone ? '#fff' : 'transparent') + '" stroke-width="2"><path d="M2 5l2.5 2.5L8 3"/></svg></div>';
+            // Title area
+            html += '<div class="lv2-title-area">';
+            html += '<div class="lv2-pri ' + priClass + '"></div>';
+            html += '<span class="lv2-title">' + (card.title||'未命名') + '</span>';
+            if(clTotal > 0) html += '<span class="lv2-sub-count">' + clDone + '/' + clTotal + '</span>';
             html += '</div>';
             // Category
-            html += '<span style="font-size:11px;font-weight:600;color:' + cat.color + '">' + cat.label + '</span>';
-            // Status (column name)
-            html += '<span style="font-size:11px;color:' + col.color + ';font-weight:600">' + col.label + '</span>';
+            html += '<span class="lv2-cat" style="background:' + cat.color + '14;color:' + cat.color + '">' + cat.label + '</span>';
+            // Status
+            html += '<span class="lv2-status"><span class="dot" style="background:' + col.color + '"></span>' + col.label + '</span>';
             // Assignee
-            html += '<span style="font-size:11px;color:var(--ink-muted)">' + (_assigneeName || '—') + '</span>';
-            // Due date
-            html += '<span style="font-size:11px;color:' + (dueClass==='overdue'?'var(--rose)':dueClass==='urgent'?'var(--gold)':'var(--ink-dim)') + '">' + (dueStr || '—') + '</span>';
+            if(_assigneeName) {
+              html += '<span class="lv2-assignee"><span class="lv2-avatar ' + _assigneeType + '">' + (_assigneeType === 'agent' ? 'AI' : _assigneeInitial) + '</span>' + _assigneeName + '</span>';
+            } else {
+              html += '<span class="lv2-assignee" style="color:var(--ink-dim)">—</span>';
+            }
+            // Due
+            if(dueStr) {
+              var dueLabel = dueStr;
+              if(dueClass === 'today') dueLabel = '今天';
+              if(isDone) dueLabel = dueStr + ' ✓';
+              html += '<span class="lv2-due ' + dueClass + '">' + dueLabel + '</span>';
+            } else {
+              html += '<span class="lv2-due">—</span>';
+            }
             html += '</div>';
           });
         });
@@ -5512,10 +5904,13 @@ canvas{display:block;margin:0 auto 24px}
         }
         html += '</div>';
 
+        // Detail Panel container (v0.9.0)
+        html += '<div class="detail-panel" id="kbDetailPanel"></div>';
+
         content.innerHTML = html;
         _kbBindSearch();
         _kbFirstVisitNudge();
-        return; // skip board rendering
+        return;
       }
 
       // ── BOARD VIEW ──
@@ -6527,6 +6922,134 @@ canvas{display:block;margin:0 auto 24px}
     window._kbAddCol = _kbAddCol;
     window._kbSetView = function(mode){ window._kbViewMode = mode; renderBoard(); };
     window._kbToggleArchived = function(){window._kbShowArchived=!window._kbShowArchived;showArchived=window._kbShowArchived;renderBoard();};
+
+    // ── Detail Panel (v0.9.0) ──
+    window._kbOpenDetail = function(cardId) {
+      var card = cards.find(function(c){ return c.id === cardId; });
+      if(!card) { window._kbEditCard(cardId); return; }
+      var panel = document.getElementById('kbDetailPanel');
+      if(!panel) { window._kbEditCard(cardId); return; }
+
+      var col = cols.find(function(c){ return c.id === card.columnId; }) || {label:'—',color:'#999'};
+      var cat = TASK_CATEGORIES[card.category] || TASK_CATEGORIES.product;
+      var _mem = card.assigneeId ? members.find(function(m){ return m.id === card.assigneeId; }) : null;
+      var _name = card.assignee || (_mem ? _mem.name : '—');
+      var _type = card.assigneeType || 'human';
+      var _initial = _name && _name !== '—' ? _name.charAt(0).toUpperCase() : '?';
+      var cyc = card.cycleId ? (getCycles().find(function(c){ return c.id === card.cycleId; }) || {label:'—'}) : {label:'—'};
+
+      var dueStr = '—';
+      if(card.dueDate) {
+        var dd = new Date(card.dueDate);
+        dueStr = (dd.getMonth()+1) + '/' + dd.getDate();
+        var diff = Math.ceil((dd.getTime() - Date.now()) / 86400000);
+        if(diff === 0) dueStr = '今天 (' + dueStr + ')';
+        else if(diff < 0) dueStr = dueStr + '（逾期 ' + Math.abs(diff) + ' 天）';
+      }
+
+      var priLabel = {high:'緊急',medium:'中',low:'低',none:'無'}[card.priority||'none'];
+      var priColor = PRIORITY_COLORS[card.priority] || 'var(--ink-dim)';
+      var autonomyLabels = {off:'OFF',suggest:'SUGGEST（建議）',copilot:'COPILOT',auto:'AUTO',full:'FULL'};
+      var autoLabel = autonomyLabels[card.agentAutonomy || 'suggest'] || 'SUGGEST';
+
+      var h = '';
+      // Header
+      h += '<div class="detail-panel-header">';
+      h += '<button class="detail-panel-close" onclick="window._kbCloseDetail()"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button>';
+      h += '<button style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:' + col.color + '"><span style="width:8px;height:8px;border-radius:50%;background:' + col.color + '"></span>' + col.label + '</button>';
+      h += '<div style="margin-left:auto;display:flex;gap:4px">';
+      h += '<button class="detail-panel-close" onclick="window._kbEditCard(\'' + cardId + '\')" title="完整編輯"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 17.5V15l10-10 2.5 2.5L6.5 17.5H4z"/></svg></button>';
+      h += '</div></div>';
+
+      // Body
+      h += '<div class="detail-panel-body">';
+      h += '<div class="detail-panel-title" contenteditable="true" onblur="window._kbUpdateTitle(\'' + cardId + '\',this.textContent)">' + (card.title||'未命名') + '</div>';
+
+      // Props grid
+      h += '<div class="dp-props">';
+      h += '<span class="dp-prop-label"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg> 指派</span>';
+      h += '<span class="dp-prop-value"><span class="lv2-avatar ' + _type + '" style="width:18px;height:18px;font-size:9px;display:inline-flex;vertical-align:middle;margin-right:4px">' + (_type === 'agent' ? 'AI' : _initial) + '</span>' + _name + '</span>';
+      h += '<span class="dp-prop-label"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg> 到期</span>';
+      h += '<span class="dp-prop-value" style="color:' + (dueStr.indexOf('逾期') !== -1 ? 'var(--rose)' : dueStr.indexOf('今天') !== -1 ? 'var(--gold)' : 'var(--ink-sec)') + ';font-weight:' + (dueStr === '—' ? '400' : '600') + '">' + dueStr + '</span>';
+      h += '<span class="dp-prop-label"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8l3 3 5-5"/></svg> 優先級</span>';
+      h += '<span class="dp-prop-value"><span style="display:inline-block;width:3px;height:14px;background:' + priColor + ';border-radius:2px;vertical-align:middle;margin-right:6px"></span>' + priLabel + '</span>';
+      h += '<span class="dp-prop-label"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h8M4 8h8M4 12h4"/></svg> 分類</span>';
+      h += '<span class="dp-prop-value"><span style="font-size:11px;font-weight:600;color:' + cat.color + '">' + cat.label + '</span></span>';
+      h += '<span class="dp-prop-label"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5"/><path d="M8 5v3l2 1"/></svg> 週期</span>';
+      h += '<span class="dp-prop-value">' + cyc.label + '</span>';
+      h += '<span class="dp-prop-label" style="color:var(--primary)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--primary)" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M6 8l2 2 3-3"/></svg> Agent</span>';
+      h += '<span class="dp-prop-value" style="color:var(--primary);font-weight:500">' + autoLabel + '</span>';
+      h += '</div>';
+
+      // Description
+      h += '<div class="dp-section"><div class="dp-section-title">描述</div>';
+      h += '<div class="dp-desc">' + (card.description || '<span style="color:var(--ink-dim)">點擊新增描述...</span>') + '</div></div>';
+
+      // Checklist
+      var cl = card.checklist || [];
+      if(cl.length > 0) {
+        var clDone = cl.filter(function(x){return x.done;}).length;
+        h += '<div class="dp-section"><div class="dp-section-title">子任務 <span style="color:var(--ink-dim);font-weight:400;text-transform:none;letter-spacing:0">' + clDone + '/' + cl.length + '</span></div>';
+        cl.forEach(function(item){
+          h += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:' + (item.done ? 'var(--ink-dim)' : 'var(--ink-sec)') + ';' + (item.done ? 'text-decoration:line-through' : '') + '">';
+          h += '<div style="width:14px;height:14px;border:2px solid ' + (item.done ? 'var(--teal)' : 'var(--border)') + ';border-radius:3px;background:' + (item.done ? 'var(--teal)' : 'transparent') + ';flex-shrink:0"></div>';
+          h += (item.text || item.label || '');
+          h += '</div>';
+        });
+        h += '</div>';
+      }
+
+      // Activity Timeline
+      var acts = (card.agentActions || []).concat(
+        (card.stateHistory || []).map(function(sh){ return {type:'state', timestamp: sh.timestamp || sh.date, description: sh.from + ' → ' + sh.to, isHuman: true}; })
+      ).sort(function(a,b){ return new Date(b.timestamp||0) - new Date(a.timestamp||0); });
+
+      if(acts.length > 0 || (card.activities || []).length > 0) {
+        h += '<div class="dp-section"><div class="dp-section-title">活動紀錄</div>';
+        acts.slice(0,8).forEach(function(act){
+          var isAgent = !act.isHuman;
+          h += '<div class="dp-activity' + (isAgent && act.reasoning ? ' show-reason' : '') + '">';
+          h += '<div class="dp-act-avatar ' + (isAgent ? 'agent' : 'human') + '">' + (isAgent ? 'AI' : _initial) + '</div>';
+          h += '<div class="dp-act-content">';
+          h += '<div class="dp-act-text">' + (isAgent ? '<span class="agent-tag">AI 助手</span> ' : '<strong>' + _name + '</strong> ') + (act.description || '') + '</div>';
+          if(act.timestamp) h += '<div class="dp-act-time">' + new Date(act.timestamp).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div>';
+          if(isAgent && act.reasoning) h += '<div class="dp-act-reason">' + act.reasoning + '</div>';
+          h += '</div></div>';
+        });
+        h += '</div>';
+      }
+
+      h += '</div>'; // body end
+      panel.innerHTML = h;
+      panel.classList.add('open');
+    };
+
+    window._kbCloseDetail = function() {
+      var panel = document.getElementById('kbDetailPanel');
+      if(panel) panel.classList.remove('open');
+    };
+
+    window._kbUpdateTitle = function(cardId, newTitle) {
+      var card = cards.find(function(c){ return c.id === cardId; });
+      if(card && newTitle && newTitle.trim()) {
+        card.title = newTitle.trim();
+        saveCards(cards);
+      }
+    };
+
+    window._kbToggleDone = function(cardId) {
+      var card = cards.find(function(c){ return c.id === cardId; });
+      if(!card) return;
+      if(card.columnId === 'done') {
+        card.columnId = 'todo';
+      } else {
+        card.columnId = 'done';
+      }
+      card.stateHistory = card.stateHistory || [];
+      card.stateHistory.push({from: card.columnId === 'done' ? 'other' : 'done', to: card.columnId, timestamp: new Date().toISOString()});
+      saveCards(cards);
+      renderBoard();
+    };
 
     // ── AI Decompose Flow ──
     window._kbShowDecompose = function(){
@@ -17716,6 +18239,95 @@ function loadHistory(){
         })()}
       </div>
 
+      <!-- ═══ AI Agent 與自主性 ═══ -->
+      <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px">AI Agent 設定</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">管理團隊成員、設定 AI 自主層級</div>
+          </div>
+        </div>
+
+        ${(function(){
+          var mems = JSON.parse(localStorage.getItem('bp_task_members')||'[]');
+          var globalAutonomy = localStorage.getItem('bp_agent_autonomy') || 'suggest';
+          var levels = [
+            {id:'off',label:'關閉',desc:'AI 不會主動行動',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg>'},
+            {id:'suggest',label:'建議',desc:'AI 給建議，你決定是否採用',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 7v3l2 2"/></svg>'},
+            {id:'copilot',label:'協作',desc:'AI 起草，你審核確認後生效',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 15l3-3 3 3 6-6"/></svg>'},
+            {id:'auto',label:'自動',desc:'AI 自動執行低風險操作，高風險前詢問',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5Z"/></svg>'},
+            {id:'full',label:'全自主',desc:'AI 完全自主行動，僅回報結果',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><path d="M6 10l3 3 5-5"/></svg>'}
+          ];
+
+          var html = '';
+
+          // Autonomy Level Dial
+          html += '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:20px;margin-bottom:16px">';
+          html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">';
+          html += '<div style="width:32px;height:32px;border-radius:var(--r-sm);background:linear-gradient(135deg,rgba(124,92,252,.15),rgba(124,92,252,.05));display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5Z"/></svg></div>';
+          html += '<div><div style="font-size:14px;font-weight:700;color:var(--ink)">全域自主層級</div>';
+          html += '<div style="font-size:11px;color:var(--ink-muted)">所有 AI Agent 的預設行為模式</div></div></div>';
+
+          // Level steps
+          html += '<div class="autonomy-steps">';
+          levels.forEach(function(lv, i){
+            var isActive = (globalAutonomy === lv.id);
+            var passedIdx = levels.findIndex(function(l){ return l.id === globalAutonomy; });
+            var isPassed = (i <= passedIdx);
+            html += '<div class="autonomy-step' + (isActive ? ' active' : '') + '" onclick="app.setAgentAutonomy(\''+lv.id+'\')" style="cursor:pointer">';
+            html += '<div class="step-dot" style="' + (isPassed ? 'background:var(--primary);border-color:var(--primary)' : '') + '">' + (isActive ? lv.icon : '') + '</div>';
+            html += '<div class="step-label" style="' + (isActive ? 'color:var(--primary);font-weight:700' : '') + '">' + lv.label + '</div>';
+            html += '</div>';
+            if(i < levels.length - 1){
+              html += '<div style="flex:1;height:2px;background:' + (isPassed && i < passedIdx ? 'var(--primary)' : 'var(--border)') + ';margin:0 -4px;align-self:flex-start;margin-top:14px"></div>';
+            }
+          });
+          html += '</div>';
+          // Description of current level
+          var curLevel = levels.find(function(l){ return l.id === globalAutonomy; }) || levels[1];
+          html += '<div style="margin-top:14px;padding:12px 16px;background:linear-gradient(135deg,rgba(124,92,252,.06),rgba(124,92,252,.02));border-radius:var(--r-md);border:1px solid rgba(124,92,252,.1)">';
+          html += '<div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:2px">' + curLevel.label + ' 模式</div>';
+          html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.5">' + curLevel.desc + '</div>';
+          html += '</div>';
+          html += '</div>';
+
+          // Team Members
+          html += '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:20px">';
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
+          html += '<div style="font-size:14px;font-weight:700;color:var(--ink)">團隊成員</div>';
+          html += '<button class="btn btn-ghost" onclick="app.addAgentMember()" style="font-size:12px;padding:6px 12px"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增 Agent</button>';
+          html += '</div>';
+
+          if(mems.length === 0){
+            html += '<div style="text-align:center;padding:24px;color:var(--ink-dim);font-size:13px">尚未設定團隊成員<br><span style="font-size:12px;color:var(--ink-muted)">在任務中心的設定中新增成員</span></div>';
+          } else {
+            mems.forEach(function(m){
+              var isAgent = (m.type === 'agent');
+              html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">';
+              // Avatar
+              if(isAgent){
+                html += '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7C5CFC,#A78BFA);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;box-shadow:0 0 0 2px rgba(124,92,252,.25)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5Z"/></svg></div>';
+              } else {
+                html += '<div style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">' + (m.name||'?').charAt(0) + '</div>';
+              }
+              // Info
+              html += '<div style="flex:1;min-width:0">';
+              html += '<div style="display:flex;align-items:center;gap:6px">';
+              html += '<span style="font-size:14px;font-weight:600;color:var(--ink)">' + (m.name||'未命名') + '</span>';
+              html += '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;' + (isAgent ? 'color:var(--primary);background:var(--primary-light)' : 'color:var(--teal);background:rgba(27,168,145,.1)') + '">' + (isAgent ? 'Agent' : '人類') + '</span>';
+              html += '</div>';
+              html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">' + (m.role||'團隊成員') + '</div>';
+              html += '</div>';
+              // Remove button
+              html += '<button onclick="app.removeMember(\''+m.id+'\')" class="btn btn-ghost" style="padding:6px;color:var(--ink-muted)" title="移除"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button>';
+              html += '</div>';
+            });
+          }
+          html += '</div>';
+          return html;
+        })()}
+      </div>
+
       <!-- ═══ 方案與用量 ═══ -->
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">方案與用量</div>
@@ -19163,6 +19775,9 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     toggleModule,
     setCycleDuration,
     setCycleStartDay,
+    setAgentAutonomy,
+    addAgentMember,
+    removeMember,
   };
 
   // ==================== BLOG FUNCTIONS ====================
@@ -20331,4 +20946,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.8.3 -->
+</html><!-- v0.9.0 -->
