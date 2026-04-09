@@ -3347,7 +3347,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.11.0</div>
+        <div class="sidebar-version">v0.11.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4319,12 +4319,12 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
-    // biz-spec / biz-inbox / biz-cycle → all redirect to biz-planning (v0.11.0 merge)
+    // biz-spec / biz-inbox / biz-cycle → all redirect to biz-planning (v0.11.1 merge)
     if (moduleId === 'biz-spec' || moduleId === 'biz-inbox' || moduleId === 'biz-cycle') {
       moduleId = 'biz-planning';
     }
 
-    // biz-planning → merged task planning (backlog + cycle) (v0.11.0)
+    // biz-planning → merged task planning (backlog + cycle) (v0.11.1)
     if (moduleId === 'biz-planning') {
       if (window._bizReactRoot) {
         try { window._bizReactRoot.unmount(); } catch(e) {}
@@ -5327,15 +5327,14 @@ canvas{display:block;margin:0 auto 24px}
       var existing = cycles.find(function(c){ return c.startDate === startStr; });
       if(existing) return existing;
 
-      // Build label based on duration
+      // Build label based on duration — date range only, no week numbers
       var label;
       if(duration === 7){
-        label = 'W' + weekNum + '（' + fmtMD(cycleStart) + '-' + fmtMD(cycleEnd) + '）';
+        label = fmtMD(cycleStart) + ' — ' + fmtMD(cycleEnd);
       } else if(duration === 14){
-        var weekNum2 = getISOWeek(cycleEnd);
-        label = 'W' + weekNum + '-' + weekNum2 + '（' + fmtMD(cycleStart) + '-' + fmtMD(cycleEnd) + '）';
+        label = fmtMD(cycleStart) + ' — ' + fmtMD(cycleEnd);
       } else {
-        label = fmtMD(cycleStart) + '-' + fmtMD(cycleEnd) + '（' + duration + '天）';
+        label = fmtMD(cycleStart) + ' — ' + fmtMD(cycleEnd) + '（' + duration + '天）';
       }
 
       var newCycle = {
@@ -6156,15 +6155,8 @@ canvas{display:block;margin:0 auto 24px}
       html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0">任務規劃</h2>';
       html += '<p style="font-size:13px;color:var(--ink-muted);margin:4px 0 0">管理需求、決定每一輪的工作內容</p>';
       html += '</div></div>';
-      // Actions - ALWAYS show cycle switcher
+      // Actions - add button only
       html += '<div style="display:flex;gap:8px;align-items:center">';
-      var cycIdx = allCycles.findIndex(function(c){ return c.id === currentCycle.id; });
-      html += '<div style="display:flex;align-items:center;gap:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:4px 8px">';
-      html += '<button onclick="window._cpCyclePrev()" style="width:24px;height:24px;border:none;background:transparent;cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted)' + (cycIdx<=0?';opacity:.3;pointer-events:none':'') + '"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="10,3 5,8 10,13"/></svg></button>';
-      html += '<span style="font-size:12px;font-weight:700;color:var(--ink);min-width:100px;text-align:center">' + currentCycle.label + '</span>';
-      html += '<button onclick="window._cpCycleNext()" style="width:24px;height:24px;border:none;background:transparent;cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted)"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
-      html += '</div>';
-      html += '<button onclick="window._cpShowSettings()" style="width:34px;height:34px;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-muted)" title="週期設定"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><circle cx="12" cy="4" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="14" cy="20" r="2"/></svg></button>';
       html += '<button class="btn btn-accent" onclick="window._tpOpenCard(null, \'inbox\')" style="padding:8px 16px;font-size:13px"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增需求</button>';
       html += '</div></div>';
 
@@ -6172,23 +6164,17 @@ canvas{display:block;margin:0 auto 24px}
     }
 
     function renderBacklog(){
-      var sq = (window._blSearch||'').toLowerCase();
       var filterCat = window._blFilterCat || 'all';
       var filtered = backlogCards;
 
       if(filterCat !== 'all'){
         filtered = filtered.filter(function(c){ return c.category === filterCat; });
       }
-      if(sq){
-        filtered = filtered.filter(function(c){
-          return (c.title||'').toLowerCase().indexOf(sq) !== -1 || (c.description||'').toLowerCase().indexOf(sq) !== -1;
-        });
-      }
 
       var html = '';
       html += renderHeader();
 
-      // ── Cycle info bar (always visible) ──
+      // ── Cycle data ──
       var cfg = T.getCycleConfig();
       var cycleCards = getCycleCards(currentCycle.id);
       var duration = cfg.duration || 7;
@@ -6197,52 +6183,68 @@ canvas{display:block;margin:0 auto 24px}
       var totalCount = cycleCards.length;
       var _now = new Date();
       var _cycEnd = new Date(currentCycle.endDate);
+      var _cycStart = new Date(currentCycle.startDate);
       var _daysLeft = Math.max(0, Math.ceil((_cycEnd.getTime() - _now.getTime()) / 86400000));
+      var _totalDays = Math.max(1, Math.ceil((_cycEnd.getTime() - _cycStart.getTime()) / 86400000));
+      var _elapsed = _totalDays - _daysLeft;
+      var timeProgressPct = Math.min(100, Math.round(_elapsed / _totalDays * 100));
       var completionPct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
 
-      html += '<div style="display:flex;align-items:center;gap:16px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:16px;flex-wrap:wrap">';
-      html += '<div style="font-size:13px;color:var(--ink)"><span style="font-weight:700">' + (duration === 7 ? '1 週' : duration === 14 ? '2 週' : duration + ' 天') + '</span> 為一個週期</div>';
-      html += '<div style="width:1px;height:16px;background:var(--border)"></div>';
-      html += '<div style="font-size:13px;color:var(--ink)">剩餘 <span style="font-weight:700;color:' + (_daysLeft<=1?'var(--rose)':_daysLeft<=3?'var(--gold)':'var(--primary)') + '">' + _daysLeft + '</span> 天</div>';
-      html += '<div style="width:1px;height:16px;background:var(--border)"></div>';
-      html += '<div style="font-size:13px;color:var(--ink)">已排 <span style="font-weight:700">' + totalCount + '</span>，完成 <span style="font-weight:700;color:var(--teal)">' + doneCount + '</span></div>';
-      html += '<div style="width:1px;height:16px;background:var(--border)"></div>';
-      var circumference = 2 * Math.PI * 28;
-      var strokeDashoffset = circumference * (1 - completionPct / 100);
-      html += '<div style="width:56px;height:56px;flex-shrink:0;position:relative">';
-      html += '<svg width="56" height="56" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="none" stroke="var(--border)" stroke-width="5"/><circle cx="32" cy="32" r="28" fill="none" stroke="var(--teal)" stroke-width="5" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + strokeDashoffset + '" stroke-linecap="round" transform="rotate(-90 32 32)"/></svg>';
-      html += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--ink)">' + completionPct + '%</div>';
-      html += '</div></div>';
+      // ── Cycle timeline card ──
+      var cycIdx = allCycles.findIndex(function(c){ return c.id === currentCycle.id; });
+      var fmtDate = function(ds){ var d = new Date(ds); return (d.getMonth()+1) + '/' + d.getDate(); };
+      var startLabel = fmtDate(currentCycle.startDate);
+      var endLabel = fmtDate(currentCycle.endDate);
+      var daysLeftColor = _daysLeft <= 1 ? 'var(--rose)' : _daysLeft <= 3 ? 'var(--gold)' : 'var(--teal)';
 
-      // ── Capacity bar ──
-      var capacityColor = totalCount <= suggestedCapacity * 0.8 ? 'var(--teal)' : totalCount <= suggestedCapacity ? 'var(--gold)' : 'var(--rose)';
-      var capacityFillPct = Math.min(100, Math.round(totalCount / suggestedCapacity * 100));
-      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:12px">';
-      html += '<span style="color:var(--ink);font-weight:600">容量</span>';
-      html += '<span style="color:var(--ink-muted)">' + totalCount + ' / ' + suggestedCapacity + '</span>';
-      html += '<div style="flex:1;height:6px;background:var(--bg-hover);border-radius:3px;overflow:hidden"><div style="width:' + capacityFillPct + '%;height:100%;background:' + capacityColor + ';border-radius:3px;transition:width .3s"></div></div>';
+      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:16px 20px;margin-bottom:20px">';
+      // Row 1: Cycle navigation + settings
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+      html += '<div style="display:flex;align-items:center;gap:8px">';
+      html += '<button onclick="window._cpCyclePrev()" style="width:28px;height:28px;border:none;background:var(--bg-hover);cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s' + (cycIdx<=0?';opacity:.3;pointer-events:none':'') + '" onmouseover="this.style.background=\'var(--border)\'" onmouseout="this.style.background=\'var(--bg-hover)\'"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="10,3 5,8 10,13"/></svg></button>';
+      html += '<div style="text-align:center"><div style="font-size:15px;font-weight:700;color:var(--ink)">' + startLabel + ' — ' + endLabel + '</div></div>';
+      html += '<button onclick="window._cpCycleNext()" style="width:28px;height:28px;border:none;background:var(--bg-hover);cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s" onmouseover="this.style.background=\'var(--border)\'" onmouseout="this.style.background=\'var(--bg-hover)\'"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
+      html += '</div>';
+      html += '<button onclick="window._cpShowSettings()" style="padding:4px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:transparent;cursor:pointer;color:var(--ink-muted);font-size:11px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s" onmouseover="this.style.borderColor=\'var(--ink-muted)\'" onmouseout="this.style.borderColor=\'var(--border)\'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>週期設定</button>';
+      html += '</div>';
+      // Row 2: Timeline progress bar
+      html += '<div style="position:relative;height:6px;background:var(--bg-hover);border-radius:3px;margin-bottom:10px;overflow:hidden">';
+      html += '<div style="position:absolute;left:0;top:0;height:100%;width:' + timeProgressPct + '%;background:linear-gradient(90deg,' + daysLeftColor + ',var(--primary));border-radius:3px;transition:width .4s"></div>';
+      html += '</div>';
+      // Row 3: Stats
+      html += '<div style="display:flex;align-items:center;gap:16px;font-size:12px;color:var(--ink-muted)">';
+      html += '<span>剩餘 <strong style="color:' + daysLeftColor + '">' + _daysLeft + '</strong> 天</span>';
+      html += '<span style="opacity:.3">|</span>';
+      html += '<span>已排 <strong style="color:var(--ink)">' + totalCount + '</strong> / ' + suggestedCapacity + '</span>';
+      html += '<span style="opacity:.3">|</span>';
+      html += '<span>完成 <strong style="color:var(--teal)">' + doneCount + '</strong></span>';
+      if(completionPct > 0) {
+        html += '<span style="opacity:.3">|</span>';
+        html += '<span style="color:var(--teal);font-weight:600">' + completionPct + '%</span>';
+      }
+      html += '</div>';
       html += '</div>';
 
       // ── Dual pane layout ──
-      html += '<div style="display:flex;gap:20px;min-height:calc(100vh - 380px)">';
+      html += '<div style="display:flex;gap:20px;min-height:calc(100vh - 340px)">';
 
-      // ── LEFT PANE: Backlog with filters ──
+      // ── LEFT PANE: 需求池 ──
       html += '<div style="flex:1;min-width:0">';
 
-      // Category filter chips (above left pane only)
+      // Left pane title
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg> 需求池 <span style="font-size:12px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + backlogCards.length + '</span></div>';
+      html += '</div>';
+
+      // Category filter chips
       html += '<div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap">';
       catKeys.forEach(function(key){
         var count = key === 'all' ? backlogCards.length : backlogCards.filter(function(c){ return c.category === key; }).length;
         var isActive = filterCat === key;
-        html += '<button onclick="window._blSetFilter(\'' + key + '\')" style="padding:6px 14px;border:1px solid ' + (isActive ? 'var(--primary)' : 'var(--border)') + ';border-radius:20px;background:' + (isActive ? 'var(--primary)' : 'transparent') + ';color:' + (isActive ? '#fff' : 'var(--ink-muted)') + ';font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit">' + catLabels[key];
+        html += '<button onclick="window._blSetFilter(\'' + key + '\')" style="padding:5px 12px;border:1px solid ' + (isActive ? 'var(--primary)' : 'var(--border)') + ';border-radius:20px;background:' + (isActive ? 'var(--primary)' : 'transparent') + ';color:' + (isActive ? '#fff' : 'var(--ink-muted)') + ';font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit">' + catLabels[key];
         if(count > 0) html += ' <span style="opacity:.7">' + count + '</span>';
         html += '</button>';
       });
-      html += '</div>';
-
-      // ── Search ──
-      html += '<div style="margin-bottom:16px">';
-      html += bpSearchBar('blSearchInput', window._blSearch||'', '搜尋需求…');
       html += '</div>';
 
       // Backlog list: group by priority
@@ -6251,9 +6253,9 @@ canvas{display:block;margin:0 auto 24px}
         html += '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(148,163,184,.1),rgba(148,163,184,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid rgba(148,163,184,.12)">';
         html += '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
         html += '</div>';
-        if(filterCat !== 'all' || sq){
+        if(filterCat !== 'all'){
           html += '<div style="font-size:15px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">沒有符合條件的需求</div>';
-          html += '<div style="font-size:13px;color:var(--ink-dim)">試試調整篩選條件</div>';
+          html += '<div style="font-size:13px;color:var(--ink-dim)">試試切換分類篩選</div>';
         } else {
           html += '<div style="font-size:15px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">待排需求池是空的</div>';
           html += '<div style="font-size:13px;color:var(--ink-dim);line-height:1.6">點擊「新增需求」建立項目</div>';
@@ -6280,14 +6282,23 @@ canvas{display:block;margin:0 auto 24px}
           html += '</div>';
           priCards.forEach(function(card){
             var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
-            var estH = card.estimatedHours ? ' · ' + card.estimatedHours + 'h' : '';
-            html += '<div class="tc-card" style="padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="window._tpOpenCard(\'' + card.id + '\')" id="card-' + card.id + '">';
+            html += '<div class="tc-card" style="padding:10px 14px;margin-bottom:6px;cursor:pointer" onclick="window._tpOpenCard(\'' + card.id + '\')" id="card-' + card.id + '">';
+            html += '<div style="display:flex;align-items:center;gap:10px">';
             html += '<div style="width:4px;height:4px;border-radius:50%;background:' + getPriorityColor(card.priority||'none') + ';flex-shrink:0"></div>';
             html += '<div style="flex:1;min-width:0">';
             html += '<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (card.title||'未命名') + '</div>';
-            html += '<div style="font-size:11px;color:var(--ink-dim);margin-top:2px">' + cat.label + estH + '</div>';
             html += '</div>';
             html += '<button class="tc-btn-schedule" onclick="event.stopPropagation();window._blScheduleCard(\'' + card.id + '\')"><svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><circle cx="10" cy="10" r="7.5"/><polyline points="10,6 10,10 13,12"/></svg>排入</button>';
+            html += '</div>';
+            // Category + Tags row (separate)
+            html += '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding-left:14px;flex-wrap:wrap">';
+            html += '<span style="font-size:10px;font-weight:600;color:' + cat.color + ';background:' + cat.color + '12;padding:2px 8px;border-radius:4px">' + cat.label + '</span>';
+            if(card.tags && card.tags.length > 0){
+              card.tags.forEach(function(tag){
+                html += '<span style="font-size:10px;font-weight:500;color:var(--ink-muted);background:var(--bg-hover);padding:2px 7px;border-radius:4px">' + tag + '</span>';
+              });
+            }
+            html += '</div>';
             html += '</div>';
           });
           html += '</div>';
@@ -6299,7 +6310,7 @@ canvas{display:block;margin:0 auto 24px}
       // ── RIGHT PANE: Current cycle tasks grouped by status ──
       html += '<div style="flex:1;min-width:0">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
-      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 本期任務 <span style="font-size:12px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + totalCount + '</span></div>';
+      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 週期任務 <span style="font-size:12px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + totalCount + '</span></div>';
       html += '<button onclick="navigate(\'biz-tasks\')" style="font-size:12px;color:var(--primary);background:transparent;border:none;cursor:pointer;font-weight:600;font-family:inherit">任務看板 →</button>';
       html += '</div>';
 
@@ -6322,13 +6333,23 @@ canvas{display:block;margin:0 auto 24px}
           html += '</div>';
           colCards.forEach(function(card){
             var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
-            html += '<div class="tc-card" style="padding:10px 14px;margin-bottom:4px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="window._tpOpenCard(\'' + card.id + '\')" id="card-' + card.id + '">';
+            html += '<div class="tc-card" style="padding:10px 14px;margin-bottom:4px;cursor:pointer" onclick="window._tpOpenCard(\'' + card.id + '\')" id="card-' + card.id + '">';
+            html += '<div style="display:flex;align-items:center;gap:10px">';
             html += '<div style="width:6px;height:6px;border-radius:50%;background:' + col.color + ';flex-shrink:0"></div>';
             html += '<div style="flex:1;min-width:0">';
             html += '<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (card.title||'未命名') + '</div>';
-            html += '<div style="font-size:11px;color:var(--ink-dim);margin-top:2px">' + cat.label + '</div>';
             html += '</div>';
             html += '<button class="tc-btn-unschedule" onclick="event.stopPropagation();window._cpUnscheduleCard(\'' + card.id + '\')">← 退回</button>';
+            html += '</div>';
+            // Category + Tags row (separate)
+            html += '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding-left:16px;flex-wrap:wrap">';
+            html += '<span style="font-size:10px;font-weight:600;color:' + cat.color + ';background:' + cat.color + '12;padding:2px 8px;border-radius:4px">' + cat.label + '</span>';
+            if(card.tags && card.tags.length > 0){
+              card.tags.forEach(function(tag){
+                html += '<span style="font-size:10px;font-weight:500;color:var(--ink-muted);background:var(--bg-hover);padding:2px 7px;border-radius:4px">' + tag + '</span>';
+              });
+            }
+            html += '</div>';
             html += '</div>';
           });
           html += '</div>';
@@ -6340,15 +6361,6 @@ canvas{display:block;margin:0 auto 24px}
       html += '</div>'; // end dual-pane
 
       content.innerHTML = html;
-
-      // Search handler
-      var inp = document.getElementById('blSearchInput');
-      if(inp){
-        var composing = false;
-        inp.addEventListener('compositionstart', function(){ composing = true; });
-        inp.addEventListener('compositionend', function(){ composing = false; window._blSearch = inp.value; renderBacklog(); });
-        inp.addEventListener('input', function(){ if(!composing){ window._blSearch = inp.value; renderBacklog(); } });
-      }
     }
 
     // ── Select card ──
@@ -6536,21 +6548,24 @@ canvas{display:block;margin:0 auto 24px}
       setTimeout(function(){ if(window._kbShowDetail) window._kbShowDetail(cardId); }, 200);
     };
 
-    // ── Open card edit modal (handles kanban init) ──
+    // ── Open card modal (preview for existing, edit for new) ──
     window._tpOpenCard = function(cardId, defaultCol){
-      if(window._kbShowCardEdit){
-        window._kbShowCardEdit(cardId || null, defaultCol || 'inbox');
-      } else {
-        // Kanban not initialized yet — init it silently, then open modal
+      // Ensure kanban module is initialized (defines _kbShowCardEdit/_kbShowCardView)
+      if(!window._kbShowCardEdit){
         var savedModule = state.currentModule;
         renderKanban();
         state.currentModule = savedModule;
-        // Now re-render planning page and open modal
         renderTaskPlanning();
-        setTimeout(function(){
-          if(window._kbShowCardEdit) window._kbShowCardEdit(cardId || null, defaultCol || 'inbox');
-        }, 50);
       }
+      setTimeout(function(){
+        if(cardId && window._kbShowCardView){
+          // Existing card → preview first (has "編輯" button inside)
+          window._kbShowCardView(cardId);
+        } else if(window._kbShowCardEdit){
+          // New card → go straight to edit
+          window._kbShowCardEdit(cardId || null, defaultCol || 'inbox');
+        }
+      }, 50);
     };
 
     // ── Quick add modal ──
@@ -6857,7 +6872,7 @@ canvas{display:block;margin:0 auto 24px}
       // Right: Current cycle tasks grouped by status
       h += '<div style="flex:1;min-width:0">';
       h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
-      h += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 本期任務 <span style="font-size:12px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + totalCount + '</span></div>';
+      h += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 週期任務 <span style="font-size:12px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + totalCount + '</span></div>';
       h += '<button onclick="navigate(\'biz-tasks\')" style="font-size:12px;color:var(--primary);background:transparent;border:none;cursor:pointer;font-weight:600;font-family:inherit">任務看板 →</button>';
       h += '</div>';
 
@@ -6906,7 +6921,7 @@ canvas{display:block;margin:0 auto 24px}
   function renderTaskInbox(){ renderTaskPlanning(); }
   function renderCyclePlanning(){ window._tpActiveTab = 'cycle'; renderTaskPlanning(); }
 
-// ==================== MODULE: CYCLE PLANNING / 週期規劃 (DEPRECATED v0.11.0 — merged into renderTaskPlanning) ====================
+// ==================== MODULE: CYCLE PLANNING / 週期規劃 (DEPRECATED v0.11.1 — merged into renderTaskPlanning) ====================
   // Old standalone function replaced by renderCycleTab() inside renderTaskPlanning.
   // Kept as dead code for reference, will be cleaned up in future version.
   function _deprecated_renderCyclePlanning_old() {
@@ -7078,7 +7093,7 @@ canvas{display:block;margin:0 auto 24px}
       // ── Right pane: Current cycle (grouped by status) ──
       html += '<div style="flex:1;min-width:0">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
-      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 本期任務 <span style="font-size:12px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + totalCount + '</span></div>';
+      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 週期任務 <span style="font-size:12px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + totalCount + '</span></div>';
       html += '<button onclick="navigate(\'biz-tasks\')" style="font-size:12px;color:var(--primary);background:transparent;border:none;cursor:pointer;font-weight:600;font-family:inherit">任務看板 →</button>';
       html += '</div>';
 
@@ -7847,7 +7862,7 @@ canvas{display:block;margin:0 auto 24px}
         if(allActiveCards.length === 0){
           html += '<div style="text-align:center;padding:60px 20px;color:var(--ink-muted)">';
           html += '<div style="font-size:15px;font-weight:600;margin-bottom:6px">' + (sq ? '找不到符合的任務' : '本期還沒有任務') + '</div>';
-          html += '<div style="font-size:13px;color:var(--ink-dim)">到「任務規劃」安排本期任務</div>';
+          html += '<div style="font-size:13px;color:var(--ink-dim)">到「任務規劃」安排週期任務</div>';
           html += '</div>';
         }
         html += '</div>';
@@ -8510,16 +8525,18 @@ canvas{display:block;margin:0 auto 24px}
       }
 
       // Type/Category
-      m += '<div class="kb-section"><label class="kb-label">類型</label>';
+      m += '<div class="kb-section"><label class="kb-label">分類</label>';
       m += '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:' + cat.color + ';background:' + cat.color + '12;padding:4px 10px;border-radius:6px"><span style="width:6px;height:6px;border-radius:50%;background:' + cat.color + '"></span>' + cat.label + '</span>';
-      if(card.tags && card.tags.length > 0) {
-        m += '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">';
-        card.tags.forEach(function(tag){
-          m += '<span style="font-size:11px;padding:2px 8px;border-radius:4px;background:' + cat.color + '15;color:' + cat.color + ';font-weight:500">' + tag + '</span>';
-        });
-        m += '</div>';
-      }
       m += '</div>';
+      // Tags (separate section)
+      if(card.tags && card.tags.length > 0) {
+        m += '<div class="kb-section"><label class="kb-label">標籤</label>';
+        m += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+        card.tags.forEach(function(tag){
+          m += '<span style="font-size:11px;padding:3px 10px;border-radius:4px;background:var(--bg-hover);color:var(--ink-muted);font-weight:500">' + tag + '</span>';
+        });
+        m += '</div></div>';
+      }
 
       // Assignee
       m += '<div class="kb-section"><label class="kb-label">負責人</label><div style="font-size:14px;color:var(--ink)">' + (card.assignee || '<span style="color:var(--ink-dim)">未指派</span>') + '</div></div>';
@@ -8721,7 +8738,7 @@ canvas{display:block;margin:0 auto 24px}
         m += '<button type="button" class="kb-priority-btn' + (priorityVal===p?' sel':'') + '" data-p="' + p + '" style="' + (priorityVal===p?'background:'+PRIORITY_COLORS[p]+';border-color:'+PRIORITY_COLORS[p]:'') + '">' + PRIORITY_LABELS[p] + '</button>';
       });
       m += '</div></div>';
-      m += '<div class="kb-section"><label class="kb-label">類型</label>';
+      m += '<div class="kb-section"><label class="kb-label">分類</label>';
       // Collapsed: show selected category; click to expand grid
       var _selCat = TASK_CATEGORIES[catVal] || TASK_CATEGORIES.product;
       m += '<div id="kbF_catSelected" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:all .15s" onclick="var g=document.getElementById(\'kbF_catGrid\');var s=this;if(g.style.display===\'none\'){g.style.display=\'grid\';s.style.display=\'none\';}else{g.style.display=\'none\';}">';
@@ -8739,7 +8756,8 @@ canvas{display:block;margin:0 auto 24px}
         m += '<div style="font-size:12px;font-weight:600;color:' + (isSel ? cat.color : 'var(--ink)') + '">' + cat.label + '</div>';
         m += '</button>';
       });
-      m += '</div>';
+      m += '</div></div>';
+      m += '<div class="kb-section"><label class="kb-label">標籤</label>';
       m += '<div id="kbF_tagArea">';
       m += _kbBuildTagChips(catVal, tagsVal);
       m += '</div></div>';
@@ -23310,4 +23328,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.11.0 -->
+</html><!-- v0.11.1 -->
