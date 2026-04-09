@@ -3077,7 +3077,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.9.3</div>
+        <div class="sidebar-version">v0.9.4</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3129,7 +3129,7 @@ canvas{display:block;margin:0 auto 24px}
     listChecks: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="M3 6l1.5 1.5L7 5"/><path d="M3 12l1.5 1.5L7 11"/><path d="M3 18l1.5 1.5L7 17"/></svg>',
     inbox: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>',
     clock: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    // Pipeline icons (v0.9.3)
+    // Pipeline icons (v0.9.4)
     specEdit: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.375 2.625a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.375-9.375z"/></svg>',
     // Module architecture v2 icons
     users: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
@@ -4032,7 +4032,7 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
-    // biz-spec → vanilla JS spec workshop (v0.9.3)
+    // biz-spec → vanilla JS spec workshop (v0.9.4)
     if (moduleId === 'biz-spec') {
       if (window._bizReactRoot) {
         try { window._bizReactRoot.unmount(); } catch(e) {}
@@ -5104,6 +5104,8 @@ canvas{display:block;margin:0 auto 24px}
 
   // ==================== AI PM BAR — Global Component (v0.9.0) ====================
   function renderAiPmBar() {
+    // v0.9.4: AI PM bar disabled — feature not useful enough yet
+    return '';
     var T = _taskShared;
     var cards = T.getCards().map(T.migrateCard);
     var members = T.ensureDefaultMember();
@@ -5166,7 +5168,7 @@ canvas{display:block;margin:0 auto 24px}
     }
   };
 
-  // ==================== MODULE: SPEC WORKSHOP / 需求工坊 (v0.9.3) ====================
+  // ==================== MODULE: SPEC WORKSHOP / 需求工坊 (v0.9.4) ====================
   //
   // Pipeline Step 1: 把想法變成結構化需求卡，自動拆解成任務灌入需求池
   // 格式參考：Shape Up Pitch × Gherkin AC × BeyondPath 需求卡 v1.0
@@ -5958,7 +5960,7 @@ canvas{display:block;margin:0 auto 24px}
     var workCols = cols.filter(function(c){ return c.id !== 'inbox'; });
 
     function renderCycleBoard(){
-      // v0.9.3: fallback — if no cards have cycleId, also include cards assigned to this week's date range
+      // v0.9.4: fallback — if no cards have cycleId, also include cards assigned to this week's date range
       var _cycStart = new Date(currentCycle.startDate);
       var _cycEnd = new Date(currentCycle.endDate);
       _cycStart.setHours(0,0,0,0);
@@ -6030,7 +6032,7 @@ canvas{display:block;margin:0 auto 24px}
       var _expectedPct = Math.min(100, Math.round(_daysPassed / _totalDays * 100));
       var _onTrack = progressPct >= (_expectedPct - 15);
 
-      // v0.9.3: only show stats grid when there are actual tasks
+      // v0.9.4: only show stats grid when there are actual tasks
       if(totalCount > 0){
       html += '<div class="cycle-stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">';
       // Days remaining
@@ -21757,4 +21759,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.9.3 -->
+</html><!-- v0.9.4 -->
