@@ -6548,24 +6548,136 @@ canvas{display:block;margin:0 auto 24px}
       setTimeout(function(){ if(window._kbShowDetail) window._kbShowDetail(cardId); }, 200);
     };
 
-    // ── Open card modal (preview for existing, edit for new) ──
+    // ── Open card: preview for existing, edit for new ──
     window._tpOpenCard = function(cardId, defaultCol){
-      // Ensure kanban module is initialized (defines _kbShowCardEdit/_kbShowCardView)
-      if(!window._kbShowCardEdit){
-        var savedModule = state.currentModule;
-        renderKanban();
-        state.currentModule = savedModule;
-        renderTaskPlanning();
-      }
-      setTimeout(function(){
-        if(cardId && window._kbShowCardView){
-          // Existing card → preview first (has "編輯" button inside)
-          window._kbShowCardView(cardId);
-        } else if(window._kbShowCardEdit){
-          // New card → go straight to edit
-          window._kbShowCardEdit(cardId || null, defaultCol || 'inbox');
+      if(!cardId){
+        // New card → edit modal
+        if(!window._kbShowCardEdit){
+          var savedModule = state.currentModule;
+          renderKanban();
+          state.currentModule = savedModule;
+          renderTaskPlanning();
         }
-      }, 50);
+        setTimeout(function(){
+          if(window._kbShowCardEdit) window._kbShowCardEdit(null, defaultCol || 'inbox');
+        }, 50);
+        return;
+      }
+      // Existing card → self-contained preview modal
+      var allCards = JSON.parse(localStorage.getItem('bp_kanban_cards') || '[]');
+      var card = allCards.find(function(c){ return c.id === cardId; });
+      if(!card) return;
+      var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
+      var priLabel = {high:'高',medium:'中',low:'低',none:'—'}[card.priority||'none'];
+      var priColor = {high:'var(--rose)',medium:'var(--gold)',low:'var(--teal)'}[card.priority] || 'var(--ink-dim)';
+      var colLabels = {inbox:'收件匣',todo:'待處理',doing:'進行中',review:'驗收中',done:'已完成'};
+      var colLabel = colLabels[card.columnId] || card.columnId;
+
+      var ov = document.createElement('div');
+      ov.className = 'kb-modal-overlay';
+      ov.onclick = function(e){ if(e.target === ov) ov.remove(); };
+
+      var m = '';
+      m += '<div class="kb-modal" style="width:960px" onclick="event.stopPropagation()">';
+      // Header
+      m += '<div class="kb-modal-header">';
+      m += '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">';
+      m += '<div style="width:28px;height:28px;border-radius:var(--r-md);background:' + cat.color + '15;display:flex;align-items:center;justify-content:center;flex-shrink:0"><div style="width:8px;height:8px;border-radius:50%;background:' + cat.color + '"></div></div>';
+      m += '<h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (card.title||'未命名') + '</h3></div>';
+      m += '<div style="display:flex;gap:6px;align-items:center;flex-shrink:0">';
+      m += '<button id="tpPreviewEditBtn" style="background:none;border:none;color:var(--primary);cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;transition:background .12s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 17.5V15l10-10 2.5 2.5L6.5 17.5H4z"/></svg> 編輯</button>';
+      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="this.closest(\'.kb-modal-overlay\').remove()"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div></div>';
+
+      // Body: Two columns
+      m += '<div class="kb-modal-body"><div class="kb-modal-2col" style="grid-template-columns:3fr 2fr">';
+
+      // LEFT: Content
+      m += '<div style="display:flex;flex-direction:column;gap:16px">';
+      // Description
+      m += '<div class="kb-section"><label class="kb-label">描述</label>';
+      m += '<div style="font-size:14px;line-height:1.7;color:var(--ink);min-height:40px">' + (card.description || '<span style="color:var(--ink-dim)">尚無描述</span>') + '</div></div>';
+      // Checklist
+      if(card.checklist && card.checklist.length > 0){
+        var clDone = card.checklist.filter(function(it){return it.done;}).length;
+        m += '<div class="kb-section"><label class="kb-label">檢查清單 ' + clDone + '/' + card.checklist.length + '</label>';
+        card.checklist.forEach(function(it){
+          m += '<div style="padding:6px 8px;background:var(--bg-hover);border-radius:var(--r-sm);margin-bottom:4px;display:flex;align-items:center;gap:8px">';
+          m += '<span style="color:' + (it.done?'var(--teal)':'var(--ink-dim)') + '">' + (it.done?'&#10003;':'&#9675;') + '</span>';
+          m += '<span style="font-size:13px;' + (it.done?'text-decoration:line-through;color:var(--ink-dim)':'color:var(--ink)') + '">' + (it.text||'') + '</span></div>';
+        });
+        m += '</div>';
+      }
+      // Custom fields
+      if(card.customFields && card.customFields.length > 0){
+        m += '<div class="kb-section"><label class="kb-label">自訂欄位</label>';
+        card.customFields.forEach(function(f){
+          m += '<div style="margin-bottom:6px"><span style="font-size:11px;color:var(--ink-muted);font-weight:600">' + (f.label||'') + '</span> <span style="font-size:13px;color:var(--ink)">' + (f.value||'') + '</span></div>';
+        });
+        m += '</div>';
+      }
+      // Discussion (last 3)
+      if(card.discussion && card.discussion.length > 0){
+        m += '<div class="kb-section"><label class="kb-label">討論串 (' + card.discussion.length + ')</label>';
+        card.discussion.slice(-3).reverse().forEach(function(d){
+          var t = d.at ? new Date(d.at).toLocaleDateString('zh-TW',{month:'short',day:'numeric'}) : '';
+          m += '<div style="padding:8px;background:var(--bg-hover);border-radius:var(--r-sm);margin-bottom:4px"><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:11px;font-weight:600;color:var(--ink-sec)">' + (d.by||'') + '</span><span style="font-size:10px;color:var(--ink-dim)">' + t + '</span></div><div style="font-size:13px;line-height:1.5;color:var(--ink)">' + (d.text||'') + '</div></div>';
+        });
+        m += '</div>';
+      }
+      m += '</div>'; // end left
+
+      // RIGHT: Metadata
+      m += '<div style="display:flex;flex-direction:column;gap:14px">';
+      m += '<div class="kb-section"><label class="kb-label">狀態</label><div style="font-size:14px;color:var(--ink);font-weight:600">' + colLabel + '</div></div>';
+      m += '<div class="kb-section"><label class="kb-label">優先度</label><span style="font-size:13px;font-weight:600;color:' + priColor + '">' + priLabel + '</span></div>';
+      // Category
+      m += '<div class="kb-section"><label class="kb-label">分類</label>';
+      m += '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:' + cat.color + ';background:' + cat.color + '12;padding:4px 10px;border-radius:6px"><span style="width:6px;height:6px;border-radius:50%;background:' + cat.color + '"></span>' + cat.label + '</span></div>';
+      // Tags
+      if(card.tags && card.tags.length > 0){
+        m += '<div class="kb-section"><label class="kb-label">標籤</label><div style="display:flex;flex-wrap:wrap;gap:6px">';
+        card.tags.forEach(function(tag){
+          m += '<span style="font-size:11px;padding:3px 10px;border-radius:4px;background:var(--bg-hover);color:var(--ink-muted);font-weight:500">' + tag + '</span>';
+        });
+        m += '</div></div>';
+      }
+      m += '<div class="kb-section"><label class="kb-label">負責人</label><div style="font-size:14px;color:var(--ink)">' + (card.assignee || '<span style="color:var(--ink-dim)">未指派</span>') + '</div></div>';
+      if(card.dueDate){
+        var dd = new Date(card.dueDate);
+        var dueDateStr = dd.toLocaleDateString('zh-TW');
+        var isOverdue = dd < new Date();
+        m += '<div class="kb-section"><label class="kb-label">到期日</label><div style="font-size:14px;color:' + (isOverdue?'var(--rose)':'var(--ink)') + ';font-weight:' + (isOverdue?'600':'400') + '">' + dueDateStr + (isOverdue?' (逾期)':'') + '</div></div>';
+      }
+      // Activity (last 5)
+      if(card.activities && card.activities.length > 0){
+        m += '<div class="kb-section" style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border)"><label class="kb-label">活動紀錄</label>';
+        var actTexts = {created:'建立',moved:'移動',updated:'更新',archived:'封存',unarchived:'復原',assigned:'指派',commented:'留言'};
+        card.activities.slice(-5).reverse().forEach(function(a){
+          var t = a.at ? new Date(a.at).toLocaleDateString('zh-TW',{month:'short',day:'numeric'}) : '';
+          m += '<div style="font-size:11px;color:var(--ink-dim);margin-bottom:4px">' + (actTexts[a.action]||a.action||'') + ' · ' + t + '</div>';
+        });
+        m += '</div>';
+      }
+      m += '</div>'; // end right
+      m += '</div></div>'; // end 2col + body
+      m += '</div>'; // end modal
+
+      ov.innerHTML = m;
+      document.body.appendChild(ov);
+
+      // Edit button → close preview, open edit
+      ov.querySelector('#tpPreviewEditBtn').addEventListener('click', function(){
+        ov.remove();
+        if(!window._kbShowCardEdit){
+          var savedModule = state.currentModule;
+          renderKanban();
+          state.currentModule = savedModule;
+          renderTaskPlanning();
+        }
+        setTimeout(function(){
+          if(window._kbShowCardEdit) window._kbShowCardEdit(cardId);
+        }, 50);
+      });
     };
 
     // ── Quick add modal ──
