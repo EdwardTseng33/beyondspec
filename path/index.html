@@ -9045,6 +9045,7 @@ canvas{display:block;margin:0 auto 24px}
     // ── Expose to Window ──
     window._kbAddCard = function(colId){window._kbShowCardEdit(null,colId);};
     window._kbEditCard = function(cardId){_kbShowCardView(cardId);};
+    window._kbShowCardView = function(cardId){_kbShowCardView(cardId);};
     window._kbToggleCheckItem = function(cardId, idx) {
       var card = cards.find(function(c){return c.id===cardId;});
       if(card && card.checklist && card.checklist[idx] !== undefined) {
