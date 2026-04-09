@@ -3067,7 +3067,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.9.0</div>
+        <div class="sidebar-version">v0.9.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4939,6 +4939,50 @@ canvas{display:block;margin:0 auto 24px}
       return suggestion;
     }
 
+    // v0.9.0: Agent auto-assignment logic
+    // Evaluates whether to assign/suggest agent based on autonomy level and card context
+    function tryAgentAssignment(card, allCards) {
+      var autonomy = localStorage.getItem('bp_agent_autonomy') || 'suggest';
+      if(autonomy === 'off') return null;
+
+      var members = getMembers();
+      var agents = members.filter(function(m){ return m.type === 'agent'; });
+      if(agents.length === 0) return null;
+
+      // Find the least-loaded agent
+      var agentLoads = agents.map(function(agent) {
+        var count = allCards.filter(function(c){ return c.assigneeId === agent.id && c.columnId !== 'done' && !c.archived; }).length;
+        return { agent: agent, load: count };
+      });
+      agentLoads.sort(function(a, b){ return a.load - b.load; });
+      var bestAgent = agentLoads[0];
+
+      // Determine if card is suitable for agent
+      var title = (card.title || '').toLowerCase();
+      var isAgentFriendly = (
+        title.indexOf('自動') !== -1 || title.indexOf('批次') !== -1 ||
+        title.indexOf('更新') !== -1 || title.indexOf('同步') !== -1 ||
+        title.indexOf('生成') !== -1 || title.indexOf('報告') !== -1 ||
+        title.indexOf('整理') !== -1 || title.indexOf('彙整') !== -1 ||
+        card.source === 'ai' || card.source === 'claude-mcp' ||
+        card.assigneeType === 'agent'
+      );
+
+      var result = {
+        agent: bestAgent.agent,
+        confidence: isAgentFriendly ? 'high' : 'medium',
+        reason: isAgentFriendly ? '任務特徵適合 AI 處理' : bestAgent.agent.name + ' 目前負載最低（' + bestAgent.load + ' 項）'
+      };
+
+      if(autonomy === 'auto' || autonomy === 'full') {
+        result.action = 'auto'; // auto-assign
+      } else {
+        result.action = 'suggest'; // just suggest
+      }
+
+      return result;
+    }
+
     function getISOWeek(d){
       var tmp = new Date(d.valueOf());
       tmp.setDate(tmp.getDate() + 3 - (tmp.getDay() + 6) % 7);
@@ -5040,6 +5084,7 @@ canvas{display:block;margin:0 auto 24px}
       getISOWeek: getISOWeek, fmtMD: fmtMD,
       generatePmInsights: generatePmInsights,
       suggestClassification: suggestClassification,
+      tryAgentAssignment: tryAgentAssignment,
       DEFAULT_COLS: DEFAULT_COLS, TASK_CATEGORIES: TASK_CATEGORIES,
       PRIORITY_LABELS: PRIORITY_LABELS, PRIORITY_COLORS: PRIORITY_COLORS
     };
@@ -5409,6 +5454,8 @@ canvas{display:block;margin:0 auto 24px}
       var cycIdx = allCycles.findIndex(function(c){ return c.id === currentCycle.id; });
 
       var html = '';
+      // AI PM Bar
+      html += renderAiPmBar();
       // Header
       html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px">';
       html += '<div style="display:flex;align-items:center;gap:12px">';
@@ -5436,6 +5483,54 @@ canvas{display:block;margin:0 auto 24px}
       html += '<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">';
       html += '<div style="height:100%;width:' + progressPct + '%;background:linear-gradient(90deg,var(--primary),var(--teal));border-radius:3px;transition:width .4s ease"></div>';
       html += '</div></div>';
+
+      // Cycle Health Dashboard
+      var _now = new Date();
+      var _cycleEnd = new Date(currentCycle.endDate);
+      var _cycleStart = new Date(currentCycle.startDate);
+      var _daysLeft = Math.max(0, Math.ceil((_cycleEnd.getTime() - _now.getTime()) / 86400000));
+      var _totalDays = Math.max(1, Math.ceil((_cycleEnd.getTime() - _cycleStart.getTime()) / 86400000));
+      var _daysPassed = _totalDays - _daysLeft;
+      var _doingCount = cycleCards.filter(function(c){ return c.columnId === 'doing'; }).length;
+      var _reviewCount = cycleCards.filter(function(c){ return c.columnId === 'review'; }).length;
+      var _overdueCount = cycleCards.filter(function(c){ return c.dueDate && new Date(c.dueDate) < _now && c.columnId !== 'done'; }).length;
+      var _agentCards = cycleCards.filter(function(c){ return c.assigneeType === 'agent'; }).length;
+      var _velocity = _daysPassed > 0 ? (doneCount / _daysPassed).toFixed(1) : '—';
+      var _expectedPct = Math.min(100, Math.round(_daysPassed / _totalDays * 100));
+      var _onTrack = progressPct >= (_expectedPct - 15);
+
+      html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">';
+      // Days remaining
+      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;text-align:center">';
+      html += '<div style="font-size:22px;font-weight:800;color:' + (_daysLeft <= 1 ? 'var(--rose)' : _daysLeft <= 3 ? 'var(--gold)' : 'var(--ink)') + '">' + _daysLeft + '</div>';
+      html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">剩餘天數</div>';
+      html += '</div>';
+      // Velocity
+      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;text-align:center">';
+      html += '<div style="font-size:22px;font-weight:800;color:var(--primary)">' + _velocity + '</div>';
+      html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">日均完成</div>';
+      html += '</div>';
+      // On-track status
+      html += '<div style="background:var(--bg-card);border:1px solid ' + (_onTrack ? 'rgba(27,168,145,.2)' : 'rgba(217,68,98,.2)') + ';border-radius:var(--r-lg);padding:14px;text-align:center">';
+      html += '<div style="font-size:14px;font-weight:700;color:' + (_onTrack ? 'var(--teal)' : 'var(--rose)') + '">' + (_onTrack ? '進度正常' : '落後進度') + '</div>';
+      html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">預期 ' + _expectedPct + '% · 實際 ' + progressPct + '%</div>';
+      html += '</div>';
+      // Risk items
+      var _riskCount = _overdueCount + _doingCount;
+      html += '<div style="background:var(--bg-card);border:1px solid ' + (_riskCount > 0 ? 'rgba(224,138,58,.2)' : 'var(--border)') + ';border-radius:var(--r-lg);padding:14px;text-align:center">';
+      html += '<div style="font-size:22px;font-weight:800;color:' + (_overdueCount > 0 ? 'var(--rose)' : _riskCount > 0 ? 'var(--gold)' : 'var(--teal)') + '">' + _riskCount + '</div>';
+      html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">' + (_overdueCount > 0 ? _overdueCount + ' 逾期' : '需關注') + '</div>';
+      html += '</div>';
+      html += '</div>';
+
+      // Agent contribution bar (if any agent cards exist)
+      if(_agentCards > 0) {
+        var _agentPct = Math.round(_agentCards / totalCount * 100);
+        html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;padding:10px 14px;background:linear-gradient(135deg,rgba(124,92,252,.04),rgba(124,92,252,.01));border-radius:var(--r-lg);border:1px solid rgba(124,92,252,.1)">';
+        html += '<div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#7C5CFC,#A78BFA);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5Z"/></svg></div>';
+        html += '<div style="flex:1;font-size:12px;color:var(--ink-muted)">AI Agent 負責 <span style="font-weight:700;color:var(--primary)">' + _agentCards + ' 項</span>（' + _agentPct + '%）本週期任務</div>';
+        html += '</div>';
+      }
 
       // Group cards by column (like a focused board)
       if(cycleCards.length === 0){
@@ -5909,6 +6004,7 @@ canvas{display:block;margin:0 auto 24px}
 
         content.innerHTML = html;
         _kbBindSearch();
+        _kbBindKeyboard();
         _kbFirstVisitNudge();
         return;
       }
@@ -6054,6 +6150,7 @@ canvas{display:block;margin:0 auto 24px}
       content.innerHTML = html;
       _kbBindSearch();
       _kbBindDragDrop();
+      _kbBindKeyboard();
       _kbBindScrollAffordance();
       _kbBindSmartWheel();
       _kbBindMobileSwipe();
@@ -6088,16 +6185,137 @@ canvas{display:block;margin:0 auto 24px}
           var cardId=e.dataTransfer.getData('text/plain'),newCol=body.dataset.col;
           if(!cardId||!newCol) return;
           var card=cards.find(function(c){return c.id===cardId;});
-          if(card && card.columnId!==newCol){
+          if(!card) return;
+
+          // Calculate drop position for reordering
+          var afterEl = _kbGetDragAfterElement(body, e.clientY);
+          var colCards = cards.filter(function(c){ return c.columnId === newCol && !c.archived && c.id !== cardId; })
+            .sort(function(a,b){ return (a.order||0)-(b.order||0); });
+
+          if(card.columnId !== newCol){
             var oldLabel = (cols.find(function(c){return c.id===card.columnId;})||{}).label||card.columnId;
             var newLabel = (cols.find(function(c){return c.id===newCol;})||{}).label||newCol;
             card.columnId=newCol;card.updatedAt=new Date().toISOString();
             card.activities.push({action:'moved',by:'user',at:card.updatedAt,from:oldLabel,to:newLabel});
-            saveCards(cards);renderBoard();
+
+            // Agent auto-assignment when card enters 'doing' or 'todo'
+            if((newCol === 'doing' || newCol === 'todo') && !card.assigneeId) {
+              var agentSug = T.tryAgentAssignment(card, cards);
+              if(agentSug) {
+                if(agentSug.action === 'auto') {
+                  card.assigneeId = agentSug.agent.id;
+                  card.assignee = agentSug.agent.name;
+                  card.assigneeType = 'agent';
+                  card.agentAutonomy = localStorage.getItem('bp_agent_autonomy') || 'suggest';
+                  card.activities.push({action:'auto-assigned',by:'agent',at:new Date().toISOString(),description:'AI 自動指派給 ' + agentSug.agent.name,reasoning:agentSug.reason});
+                  showToast('AI 已自動指派給 ' + agentSug.agent.name);
+                } else if(agentSug.action === 'suggest') {
+                  showToast('建議指派給 ' + agentSug.agent.name + '（' + agentSug.reason + '）', 5000);
+                }
+              }
+            }
           }
+
+          // Reorder within column
+          if(afterEl){
+            var afterCard = cards.find(function(c){ return c.id === afterEl.dataset.card; });
+            if(afterCard) card.order = (afterCard.order || 0) - 0.5;
+          } else {
+            card.order = colCards.length > 0 ? (colCards[colCards.length-1].order||0) + 1 : 0;
+          }
+          // Normalize order values
+          cards.filter(function(c){ return c.columnId === newCol && !c.archived; })
+            .sort(function(a,b){ return (a.order||0)-(b.order||0); })
+            .forEach(function(c, i){ c.order = i; });
+
+          saveCards(cards);renderBoard();
         });
       });
     }
+
+    // Helper: find the element after the drag cursor position
+    function _kbGetDragAfterElement(container, y) {
+      var els = Array.prototype.slice.call(container.querySelectorAll('.kanban-card:not(.dragging)'));
+      var closest = null;
+      var closestOffset = Number.NEGATIVE_INFINITY;
+      els.forEach(function(el) {
+        var box = el.getBoundingClientRect();
+        var offset = y - box.top - box.height / 2;
+        if(offset < 0 && offset > closestOffset) {
+          closestOffset = offset;
+          closest = el;
+        }
+      });
+      return closest;
+    }
+
+    // ── Keyboard Shortcuts ──
+    function _kbBindKeyboard(){
+      if(window._kbKeyHandler) document.removeEventListener('keydown', window._kbKeyHandler);
+      window._kbKeyHandler = function(e) {
+        // Ignore if typing in input/textarea
+        var tag = (e.target.tagName||'').toLowerCase();
+        if(tag === 'input' || tag === 'textarea' || e.target.contentEditable === 'true') return;
+
+        // N: new task
+        if(e.key === 'n' && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          window._kbAddCard('todo');
+        }
+        // I: go to inbox
+        if(e.key === 'i' && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          navigate('biz-inbox');
+        }
+        // L: toggle list/board view
+        if(e.key === 'l' && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          var mode = (window._kbViewMode || 'board') === 'board' ? 'list' : 'board';
+          window._kbSetView(mode);
+        }
+        // ?: show shortcuts help
+        if(e.key === '?' || (e.key === '/' && e.shiftKey)) {
+          e.preventDefault();
+          window._kbShowShortcuts();
+        }
+        // Escape: close detail panel
+        if(e.key === 'Escape') {
+          var panel = document.getElementById('kbDetailPanel');
+          if(panel && panel.classList.contains('open')) {
+            window._kbCloseDetail();
+            e.preventDefault();
+          }
+        }
+      };
+      document.addEventListener('keydown', window._kbKeyHandler);
+    }
+
+    // Shortcuts help modal
+    window._kbShowShortcuts = function(){
+      var ov = document.createElement('div');
+      ov.className = 'kb-modal-overlay';
+      ov.onclick = function(e){if(e.target===ov)ov.remove();};
+      var m = '<div class="kb-modal" style="width:380px" onclick="event.stopPropagation()">';
+      m += '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">鍵盤快捷鍵</h3>';
+      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button></div>';
+      m += '<div class="kb-modal-body" style="padding:16px 24px">';
+      var shortcuts = [
+        {key:'N',desc:'新增任務到待辦'},
+        {key:'I',desc:'前往收件匣'},
+        {key:'L',desc:'切換列表 / 看板視圖'},
+        {key:'Esc',desc:'關閉詳情面板'},
+        {key:'?',desc:'顯示快捷鍵說明'}
+      ];
+      shortcuts.forEach(function(s){
+        m += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">';
+        m += '<span style="font-size:13px;color:var(--ink-sec)">' + s.desc + '</span>';
+        m += '<kbd style="font-size:12px;font-weight:700;color:var(--primary);background:var(--primary-light);padding:3px 10px;border-radius:6px;font-family:inherit">' + s.key + '</kbd>';
+        m += '</div>';
+      });
+      m += '</div></div>';
+      ov.innerHTML = m;
+      document.body.appendChild(ov);
+    };
 
     // ── Scroll Affordance (desktop fade edges + dot nav) ──
     function _kbBindScrollAffordance(){
@@ -6985,19 +7203,29 @@ canvas{display:block;margin:0 auto 24px}
       h += '<div class="dp-section"><div class="dp-section-title">描述</div>';
       h += '<div class="dp-desc">' + (card.description || '<span style="color:var(--ink-dim)">點擊新增描述...</span>') + '</div></div>';
 
-      // Checklist
+      // Checklist (interactive)
       var cl = card.checklist || [];
+      var clDone = cl.filter(function(x){return x.done;}).length;
+      h += '<div class="dp-section"><div class="dp-section-title" style="display:flex;align-items:center;justify-content:space-between">子任務 <span style="color:var(--ink-dim);font-weight:400;text-transform:none;letter-spacing:0">' + clDone + '/' + cl.length + '</span></div>';
       if(cl.length > 0) {
-        var clDone = cl.filter(function(x){return x.done;}).length;
-        h += '<div class="dp-section"><div class="dp-section-title">子任務 <span style="color:var(--ink-dim);font-weight:400;text-transform:none;letter-spacing:0">' + clDone + '/' + cl.length + '</span></div>';
-        cl.forEach(function(item){
-          h += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;color:' + (item.done ? 'var(--ink-dim)' : 'var(--ink-sec)') + ';' + (item.done ? 'text-decoration:line-through' : '') + '">';
-          h += '<div style="width:14px;height:14px;border:2px solid ' + (item.done ? 'var(--teal)' : 'var(--border)') + ';border-radius:3px;background:' + (item.done ? 'var(--teal)' : 'transparent') + ';flex-shrink:0"></div>';
-          h += (item.text || item.label || '');
+        var clPct = Math.round(clDone / cl.length * 100);
+        h += '<div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:10px;overflow:hidden"><div style="height:100%;width:' + clPct + '%;background:var(--teal);border-radius:2px;transition:width .3s ease"></div></div>';
+        cl.forEach(function(item, idx){
+          h += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;color:' + (item.done ? 'var(--ink-dim)' : 'var(--ink-sec)') + ';cursor:pointer;transition:opacity .15s" onclick="window._dpToggleChecklist(\'' + cardId + '\',' + idx + ')" onmouseover="this.style.opacity=\'.85\'" onmouseout="this.style.opacity=\'1\'">';
+          h += '<div style="width:16px;height:16px;border:2px solid ' + (item.done ? 'var(--teal)' : 'var(--border)') + ';border-radius:4px;background:' + (item.done ? 'var(--teal)' : 'transparent') + ';flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s">';
+          if(item.done) h += '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><polyline points="2,6 5,9 10,3"/></svg>';
+          h += '</div>';
+          h += '<span style="' + (item.done ? 'text-decoration:line-through;opacity:.7' : '') + ';flex:1">' + (item.text || item.label || '') + '</span>';
+          if(item.done) h += '<button onclick="event.stopPropagation();window._dpRemoveChecklist(\'' + cardId + '\',' + idx + ')" style="background:none;border:none;color:var(--ink-dim);cursor:pointer;padding:2px;opacity:.5;font-size:11px" title="移除">✕</button>';
           h += '</div>';
         });
-        h += '</div>';
       }
+      // Add new checklist item
+      h += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;margin-top:4px">';
+      h += '<div style="width:16px;height:16px;border:2px dashed var(--border);border-radius:4px;flex-shrink:0"></div>';
+      h += '<input id="dpNewChecklist" type="text" placeholder="新增子任務..." style="flex:1;border:none;background:transparent;color:var(--ink);font-size:13px;font-family:inherit;outline:none;padding:2px 0" onkeydown="if(event.key===\'Enter\'){window._dpAddChecklist(\'' + cardId + '\',this.value);this.value=\'\';}">';
+      h += '</div>';
+      h += '</div>';
 
       // Activity Timeline
       var acts = (card.agentActions || []).concat(
@@ -7049,6 +7277,33 @@ canvas{display:block;margin:0 auto 24px}
       card.stateHistory.push({from: card.columnId === 'done' ? 'other' : 'done', to: card.columnId, timestamp: new Date().toISOString()});
       saveCards(cards);
       renderBoard();
+    };
+
+    // ── Detail Panel: Checklist operations ──
+    window._dpToggleChecklist = function(cardId, idx) {
+      var card = cards.find(function(c){ return c.id === cardId; });
+      if(!card || !card.checklist || !card.checklist[idx]) return;
+      card.checklist[idx].done = !card.checklist[idx].done;
+      saveCards(cards);
+      window._kbOpenDetail(cardId);
+    };
+
+    window._dpAddChecklist = function(cardId, text) {
+      if(!text || !text.trim()) return;
+      var card = cards.find(function(c){ return c.id === cardId; });
+      if(!card) return;
+      if(!card.checklist) card.checklist = [];
+      card.checklist.push({text: text.trim(), done: false});
+      saveCards(cards);
+      window._kbOpenDetail(cardId);
+    };
+
+    window._dpRemoveChecklist = function(cardId, idx) {
+      var card = cards.find(function(c){ return c.id === cardId; });
+      if(!card || !card.checklist) return;
+      card.checklist.splice(idx, 1);
+      saveCards(cards);
+      window._kbOpenDetail(cardId);
     };
 
     // ── AI Decompose Flow ──
@@ -20946,4 +21201,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.9.0 -->
+</html><!-- v0.9.1 -->
