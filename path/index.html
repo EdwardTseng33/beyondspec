@@ -2433,6 +2433,7 @@ canvas{display:block;margin:0 auto 24px}
 /* ══════════ KANBAN BOARD (v2.1.0 — responsive + scroll affordance) ══════════ */
 @keyframes kbSlideIn{0%{transform:translateY(-12px);opacity:0}60%{transform:translateY(2px);opacity:1}100%{transform:translateY(0);opacity:1}}
 @keyframes kbPulseGlow{0%{box-shadow:0 0 0 0 rgba(124,92,252,.4)}70%{box-shadow:0 0 0 8px rgba(124,92,252,0)}100%{box-shadow:0 0 0 0 rgba(124,92,252,0)}}
+@keyframes kbHintIn{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes kbSlideOut{0%{transform:translateX(0);opacity:1}100%{transform:translateX(100%);opacity:0}}
 @keyframes kbNudgeScroll{0%{transform:translateX(0)}30%{transform:translateX(-24px)}60%{transform:translateX(8px)}100%{transform:translateX(0)}}
 /* Board wrapper with fade edges */
@@ -2631,9 +2632,11 @@ canvas{display:block;margin:0 auto 24px}
 }
 
 /* ══════════ AI PM BAR (v0.9.0) ══════════ */
-.ai-pm-bar{background:linear-gradient(135deg,rgba(124,92,252,.04) 0%,rgba(124,92,252,.01) 100%);border-bottom:1px solid var(--border);overflow:hidden;transition:max-height .3s ease}
+.ai-pm-bar{background:linear-gradient(135deg,rgba(124,92,252,.04) 0%,rgba(124,92,252,.01) 100%);border-bottom:1px solid var(--border);overflow:hidden;transition:max-height .3s cubic-bezier(.22,1,.36,1);position:relative}
 .ai-pm-bar.collapsed{max-height:52px}
-.ai-pm-bar.expanded{max-height:400px}
+.ai-pm-bar.expanded{max-height:600px}
+.ai-pm-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(124,92,252,.3),transparent);animation:aiShimmer 2.5s ease-in-out infinite;opacity:.6}
+@keyframes aiShimmer{0%{transform:translateX(-100%)}50%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
 .ai-pm-header{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer}
 .ai-pm-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7C5CFC,#A78BFA);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px rgba(124,92,252,.18);flex-shrink:0}
 .ai-pm-avatar svg{width:16px;height:16px;color:#fff}
@@ -2647,14 +2650,14 @@ canvas{display:block;margin:0 auto 24px}
 .ai-card:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.06)}
 .ai-card-icon{width:30px;height:30px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
 .ai-card-icon.warn{background:var(--gold-bg);color:var(--gold)}
-.ai-card-icon.info{background:rgba(59,130,246,.08);color:#3B82F6}
+.ai-card-icon.info{background:var(--primary-light);color:var(--primary)}
 .ai-card-icon.risk{background:var(--rose-bg);color:var(--rose)}
 .ai-card-icon.success{background:var(--teal-bg);color:var(--teal)}
 .ai-card-body{flex:1;min-width:0}
 .ai-card-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
 .ai-card-desc{font-size:12px;color:var(--ink-muted);line-height:1.4}
-.ai-card-reason{font-size:11px;color:var(--primary);margin-top:4px;line-height:1.4;display:none;background:var(--primary-light);padding:4px 8px;border-radius:4px}
-.ai-card.show-reason .ai-card-reason{display:block}
+.ai-card-reason{font-size:11px;color:var(--primary);margin-top:4px;line-height:1.4;background:var(--primary-light);padding:0 8px;border-radius:6px;max-height:0;overflow:hidden;opacity:0;transition:max-height .28s cubic-bezier(.22,1,.36,1),opacity .18s ease,padding .28s ease}
+.ai-card.show-reason .ai-card-reason{max-height:80px;opacity:1;padding:6px 8px}
 .ai-card-actions{display:flex;gap:4px;flex-shrink:0;align-self:center}
 .ai-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
 .ai-btn.accept{color:var(--teal);border-color:rgba(27,168,145,.3)}
@@ -2663,10 +2666,14 @@ canvas{display:block;margin:0 auto 24px}
 .ai-btn.later:hover{background:var(--bg-hover);color:var(--ink-sec)}
 .ai-btn.why{color:var(--primary);border:none;padding:4px 6px;background:transparent}
 .ai-btn.why:hover{background:var(--primary-light)}
+.ai-btn:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(124,92,252,.3)}
+.ai-pm-toggle:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(124,92,252,.3)}
 @media(max-width:768px){
   .ai-pm-cards{padding:4px 12px 12px}
   .ai-card{padding:8px 10px;gap:8px}
   .ai-card-actions{flex-direction:column;gap:2px}
+  .ai-pm-summary{font-size:12px}
+  .ai-pm-badge{font-size:9px;padding:2px 6px}
 }
 
 /* ══════════ LIST VIEW V2 (v0.9.0) ══════════ */
@@ -2708,9 +2715,11 @@ canvas{display:block;margin:0 auto 24px}
 .detail-panel-header{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
 .detail-panel-close{width:28px;height:28px;border-radius:6px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-dim);transition:all .15s}
 .detail-panel-close:hover{background:var(--bg-hover);color:var(--ink)}
+.detail-panel-close:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(124,92,252,.3)}
 .detail-panel-body{flex:1;overflow-y:auto;padding:18px}
 .detail-panel-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:14px;line-height:1.3;letter-spacing:-.3px;outline:none;border-radius:4px;padding:2px 4px;transition:all .15s;border:1px solid transparent}
-.detail-panel-title:focus{border-color:var(--primary);background:var(--bg-input,var(--bg-card));box-shadow:0 0 0 3px rgba(124,92,252,.08)}
+.detail-panel-title:focus,.detail-panel-title:focus-visible{border-color:var(--primary);background:var(--bg-input,var(--bg-card));box-shadow:0 0 0 3px rgba(124,92,252,.08)}
+.dp-desc:focus,.dp-desc:focus-visible{outline:none;border:1px solid var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.08)}
 .dp-props{display:grid;grid-template-columns:90px 1fr;gap:6px 10px;margin-bottom:16px}
 .dp-prop-label{font-size:12px;color:var(--ink-dim);font-weight:500;padding:5px 0;display:flex;align-items:center;gap:4px}
 .dp-prop-label svg{width:13px;height:13px}
@@ -2741,9 +2750,10 @@ canvas{display:block;margin:0 auto 24px}
 /* ══════════ INBOX AI CLASSIFICATION (v0.9.0) ══════════ */
 .inbox-ai-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
 .inbox-ai-tag.high{background:var(--teal-bg);color:var(--teal);border:1px solid rgba(27,168,145,.2)}
-.inbox-ai-tag.medium{background:rgba(59,130,246,.08);color:#3B82F6;border:1px solid rgba(59,130,246,.2)}
+.inbox-ai-tag.medium{background:var(--primary-light);color:var(--primary);border:1px solid rgba(124,92,252,.2)}
 .inbox-ai-tag.low{background:var(--gold-bg);color:var(--gold);border:1px solid rgba(224,138,58,.2)}
 .inbox-ai-tag:hover{transform:scale(1.05)}
+.inbox-ai-tag:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(124,92,252,.3)}
 .inbox-source-badge{font-size:10px;padding:1px 6px;border-radius:4px;font-weight:600}
 
 /* ══════════ AUTONOMY CONTROL (v0.9.0) ══════════ */
@@ -3067,7 +3077,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.9.1</div>
+        <div class="sidebar-version">v0.9.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3119,6 +3129,8 @@ canvas{display:block;margin:0 auto 24px}
     listChecks: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="M3 6l1.5 1.5L7 5"/><path d="M3 12l1.5 1.5L7 11"/><path d="M3 18l1.5 1.5L7 17"/></svg>',
     inbox: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>',
     clock: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    // Pipeline icons (v0.9.3)
+    specEdit: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.375 2.625a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.375-9.375z"/></svg>',
     // Module architecture v2 icons
     users: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
     calendar: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
@@ -3717,11 +3729,11 @@ canvas{display:block;margin:0 auto 24px}
       { id: 'report', label: '市場報告', icon: 'fileText' }
     ];
 
-    // 商業模組 — 7 模組（Tasks=vanilla kanban, 其餘=React Business）
+    // 商業模組 — Pipeline: 定義→蒐集→執行→覆盤
     const bizItems = [
-      { id: 'biz-inbox', label: '收件匣', icon: 'inbox', modKey: 'mod-tasks', layer: 1, q: '有什麼新任務進來？', parent: 'tasks' },
-      { id: 'biz-tasks', label: '任務總表', icon: 'listChecks', modKey: 'mod-tasks', layer: 1, q: '今天該做什麼？', parent: 'tasks' },
-      { id: 'biz-cycle', label: '本週週期', icon: 'clock', modKey: 'mod-tasks', layer: 1, q: '這週要完成什麼？', parent: 'tasks' },
+      { id: 'biz-spec', label: '需求工坊', icon: 'specEdit', modKey: 'mod-tasks', layer: 1, q: '把想法變成可執行的需求', parent: 'tasks' },
+      { id: 'biz-inbox', label: '需求池', icon: 'inbox', modKey: 'mod-tasks', layer: 1, q: '所有待排程的需求在這裡', parent: 'tasks' },
+      { id: 'biz-tasks', label: '任務看板', icon: 'listChecks', modKey: 'mod-tasks', layer: 1, q: '本週該做什麼？', parent: 'tasks' },
       { id: 'biz-contacts', label: '客戶管理', icon: 'users', modKey: 'mod-contacts', layer: 1, q: '這個人跟我們什麼關係？' },
       { id: 'biz-quotes', label: '報價提案', icon: 'fileText', modKey: 'mod-quotes', layer: 2, q: '怎麼快速產一份專業報價？' },
       { id: 'biz-billing', label: '收款管理', icon: 'dollarSign', modKey: 'mod-billing', layer: 2, q: '錢收到了嗎？' },
@@ -3867,7 +3879,7 @@ canvas{display:block;margin:0 auto 24px}
           onTabChange: function(tab) {
             // Map internal biz tabs back to consolidated sidebar items
             // bd/contacts → biz-contacts, invoices/ar → biz-billing
-            var tabToSidebar = { 'pipeline':'biz-deals', 'bd':'biz-contacts', 'contacts':'biz-contacts', 'tasks':'biz-tasks', 'inbox':'biz-inbox', 'cycle':'biz-cycle', 'proposals':'biz-quotes', 'invoices':'biz-billing', 'ar':'biz-billing', 'meetings':'biz-meetings', 'analytics':'biz-insights', 'docs':'biz-docs', 'roles':'biz-deals' };
+            var tabToSidebar = { 'pipeline':'biz-deals', 'bd':'biz-contacts', 'contacts':'biz-contacts', 'tasks':'biz-tasks', 'inbox':'biz-inbox', 'cycle':'biz-tasks','spec':'biz-spec', 'proposals':'biz-quotes', 'invoices':'biz-billing', 'ar':'biz-billing', 'meetings':'biz-meetings', 'analytics':'biz-insights', 'docs':'biz-docs', 'roles':'biz-deals' };
             var bizId = tabToSidebar[tab] || Object.keys(BIZ_TAB_MAP).find(function(k) { return BIZ_TAB_MAP[k] === tab; });
             if (bizId && state.currentModule !== bizId) {
               state.currentModule = bizId;
@@ -4020,7 +4032,17 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
-    // biz-inbox → vanilla JS inbox triage (not React)
+    // biz-spec → vanilla JS spec workshop (v0.9.3)
+    if (moduleId === 'biz-spec') {
+      if (window._bizReactRoot) {
+        try { window._bizReactRoot.unmount(); } catch(e) {}
+        window._bizReactRoot = null;
+      }
+      renderSpecWorkshop();
+      return;
+    }
+
+    // biz-inbox → vanilla JS inbox / requirement pool (not React)
     if (moduleId === 'biz-inbox') {
       if (window._bizReactRoot) {
         try { window._bizReactRoot.unmount(); } catch(e) {}
@@ -4030,23 +4052,13 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
-    // biz-tasks → vanilla JS kanban (not React)
+    // biz-tasks → vanilla JS kanban + cycle merged (not React)
     if (moduleId === 'biz-tasks') {
       if (window._bizReactRoot) {
         try { window._bizReactRoot.unmount(); } catch(e) {}
         window._bizReactRoot = null;
       }
       renderKanban();
-      return;
-    }
-
-    // biz-cycle → vanilla JS cycle sprint view (not React)
-    if (moduleId === 'biz-cycle') {
-      if (window._bizReactRoot) {
-        try { window._bizReactRoot.unmount(); } catch(e) {}
-        window._bizReactRoot = null;
-      }
-      renderTaskCycle();
       return;
     }
 
@@ -4752,7 +4764,7 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   // ==================== SHARED: Task Data Layer (v0.8.2) ====================
-  // Shared data accessors for biz-inbox, biz-tasks, biz-cycle pages
+  // Shared data accessors for biz-spec, biz-inbox, biz-tasks pages
   var _taskShared = (function(){
     var KB_COLS_KEY = 'bp_kanban_cols';
     var KB_CARDS_KEY = 'bp_kanban_cards';
@@ -5100,7 +5112,7 @@ canvas{display:block;margin:0 auto 24px}
 
     if(insights.length === 0) return '';
 
-    var isCollapsed = window._aiPmCollapsed || false;
+    var isCollapsed = window._aiPmCollapsed !== undefined ? window._aiPmCollapsed : true;
     var html = '<div class="ai-pm-bar ' + (isCollapsed ? 'collapsed' : 'expanded') + '" id="aiPmBar">';
 
     // Header
@@ -5154,6 +5166,506 @@ canvas{display:block;margin:0 auto 24px}
     }
   };
 
+  // ==================== MODULE: SPEC WORKSHOP / 需求工坊 (v0.9.3) ====================
+  //
+  // Pipeline Step 1: 把想法變成結構化需求卡，自動拆解成任務灌入需求池
+  // 格式參考：Shape Up Pitch × Gherkin AC × BeyondPath 需求卡 v1.0
+  //
+  var SPEC_STORAGE_KEY = 'bp_spec_cards';
+
+  function getSpecCards(){
+    try{ var s = localStorage.getItem(SPEC_STORAGE_KEY); return s ? JSON.parse(s) : []; }catch(e){ return []; }
+  }
+  function saveSpecCards(arr){ localStorage.setItem(SPEC_STORAGE_KEY, JSON.stringify(arr)); }
+
+  function renderSpecWorkshop() {
+    var content = document.getElementById('content');
+    var mainEl = document.getElementById('main');
+    if (mainEl) { mainEl.style.overflow = ''; mainEl.style.height = ''; }
+    var appEl = document.getElementById('app');
+    if (appEl) appEl.style.overflow = '';
+
+    var specs = getSpecCards();
+    var T = _taskShared;
+
+    // Count inbox items sourced from specs
+    var allCards = T.getCards().map(T.migrateCard);
+    var specSourcedCount = allCards.filter(function(c){ return c.source === 'spec' && !c.archived; }).length;
+
+    function renderWorkshopHome(){
+      var html = '';
+
+      // Header
+      html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:16px">';
+      html += '<div style="display:flex;align-items:center;gap:14px">';
+      html += '<div style="width:44px;height:44px;border-radius:var(--r-lg);background:linear-gradient(135deg,var(--primary),rgba(124,92,252,.6));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(124,92,252,.25)">';
+      html += '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.375 2.625a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.375-9.375z"/></svg>';
+      html += '</div>';
+      html += '<div>';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0">需求工坊</h2>';
+      html += '<p style="font-size:13px;color:var(--ink-muted);margin:4px 0 0">把想法變成所有人都看得懂的需求，AI 自動拆解成任務</p>';
+      html += '</div></div>';
+      html += '<button class="btn btn-accent" onclick="window._specStartNew()" style="padding:10px 20px;font-size:14px;font-weight:600"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px;vertical-align:-2px"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增需求</button>';
+      html += '</div>';
+
+      // Pipeline flow indicator
+      html += '<div style="display:flex;align-items:center;gap:0;margin-bottom:28px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg)">';
+      var pipeSteps = [
+        {label:'定義需求',icon:'specEdit',active:true,count:specs.length},
+        {label:'需求池',icon:'inbox',active:false,count:specSourcedCount},
+        {label:'排程執行',icon:'listChecks',active:false,count:''},
+        {label:'覆盤',icon:'activity',active:false,count:''}
+      ];
+      pipeSteps.forEach(function(step, i){
+        html += '<div style="display:flex;align-items:center;gap:8px;' + (step.active ? 'color:var(--primary);font-weight:700' : 'color:var(--ink-muted)') + ';font-size:13px;flex-shrink:0">';
+        html += '<div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;' + (step.active ? 'background:var(--primary);color:#fff' : 'background:var(--bg-hover);color:var(--ink-dim)') + '">' + (i+1) + '</div>';
+        html += '<span>' + step.label + '</span>';
+        if(step.count !== '' && step.count > 0) html += '<span style="font-size:11px;padding:1px 7px;border-radius:10px;background:' + (step.active ? 'rgba(124,92,252,.12)' : 'var(--bg-hover)') + ';font-weight:600">' + step.count + '</span>';
+        html += '</div>';
+        if(i < pipeSteps.length - 1) html += '<div style="flex:1;height:1px;background:var(--border);margin:0 12px"></div>';
+      });
+      html += '</div>';
+
+      // Spec cards list
+      if(specs.length === 0){
+        // Empty state - first time onboarding
+        html += '<div style="text-align:center;padding:60px 24px">';
+        html += '<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(124,92,252,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 24px;border:1px solid rgba(124,92,252,.12)">';
+        html += '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.375 2.625a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.375-9.375z"/></svg>';
+        html += '</div>';
+        html += '<div style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px">從一個想法開始</div>';
+        html += '<div style="font-size:14px;color:var(--ink-muted);line-height:1.7;max-width:420px;margin:0 auto 24px">';
+        html += '告訴 AI 你想做什麼，它會引導你把想法結構化成<br>PM、設計師、工程師、QA 都看得懂的需求卡，<br>然後自動拆解成可執行的任務。';
+        html += '</div>';
+        html += '<button class="btn btn-accent" onclick="window._specStartNew()" style="padding:12px 28px;font-size:15px;font-weight:600">開始第一張需求卡</button>';
+        // Feature highlights
+        html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px;text-align:left;max-width:560px;margin-left:auto;margin-right:auto">';
+        var feats = [
+          {icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',t:'對話式引導',d:'不用填表格，跟 AI 聊就好'},
+          {icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>',t:'結構化產出',d:'所有角色都看得懂'},
+          {icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',t:'一鍵拆解',d:'自動拆成子任務'}
+        ];
+        feats.forEach(function(f){
+          html += '<div style="padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg)">';
+          html += '<div style="margin-bottom:10px">' + f.icon + '</div>';
+          html += '<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">' + f.t + '</div>';
+          html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.5">' + f.d + '</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+        html += '</div>';
+      } else {
+        // Spec cards grid
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">';
+        specs.sort(function(a,b){ return (b.updatedAt||b.createdAt||0) - (a.updatedAt||a.createdAt||0); }).forEach(function(spec){
+          var statusColors = {draft:'var(--gold)',ready:'var(--teal)',decomposed:'var(--primary)'};
+          var statusLabels = {draft:'草稿',ready:'完成',decomposed:'已拆解'};
+          var st = spec.status || 'draft';
+          var acCount = (spec.acceptanceCriteria || []).length;
+          var taskCount = (spec.decomposedTasks || []).length;
+          var appetiteLabel = spec.appetite ? spec.appetite + (spec.appetiteUnit === 'day' ? ' 天' : ' 週') : '未定';
+
+          html += '<div class="spec-card" onclick="window._specOpen(\'' + spec.id + '\')" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;cursor:pointer;transition:all .18s cubic-bezier(.4,0,.2,1);position:relative">';
+          // Status badge
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+          html += '<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:' + statusColors[st] + '14;color:' + statusColors[st] + ';text-transform:uppercase;letter-spacing:.5px">' + statusLabels[st] + '</span>';
+          html += '<span style="font-size:11px;color:var(--ink-dim)">#' + (spec.number || '—') + '</span>';
+          html += '</div>';
+          // Title
+          html += '<div style="font-size:15px;font-weight:700;color:var(--ink);line-height:1.4;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + (spec.title || '未命名需求') + '</div>';
+          // One-liner
+          if(spec.oneLiner) html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.5;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + spec.oneLiner + '</div>';
+          // Meta
+          html += '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-dim)">';
+          html += '<span style="display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7.5"/><polyline points="10,6 10,10 13,12"/></svg>' + appetiteLabel + '</span>';
+          if(acCount > 0) html += '<span style="display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4,10 8,14 16,6"/></svg>' + acCount + ' 驗收</span>';
+          if(taskCount > 0) html += '<span style="display:flex;align-items:center;gap:4px;color:var(--primary)"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' + taskCount + ' 任務</span>';
+          html += '</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+
+      content.innerHTML = html;
+
+      // Add hover effect
+      var specCards = document.querySelectorAll('.spec-card');
+      specCards.forEach(function(el){
+        el.addEventListener('mouseover', function(){ el.style.borderColor='var(--primary)'; el.style.boxShadow='0 4px 20px rgba(124,92,252,.1)'; el.style.transform='translateY(-2px)'; });
+        el.addEventListener('mouseout', function(){ el.style.borderColor='var(--border)'; el.style.boxShadow='none'; el.style.transform='none'; });
+      });
+    }
+
+    // ── New Spec: Step-by-step guided creation ──
+    window._specStartNew = function(){
+      var spec = {
+        id: 'spec_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+        number: specs.length + 1,
+        status: 'draft',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        title: '',
+        oneLiner: '',
+        problem: '',
+        targetUser: '',
+        successMetrics: '',
+        appetite: '',
+        appetiteUnit: 'week',
+        inScope: [],
+        outOfScope: [],
+        acceptanceCriteria: [],
+        designRef: '',
+        techNotes: '',
+        dependencies: '',
+        decomposedTasks: []
+      };
+      specs.push(spec);
+      saveSpecCards(specs);
+      _specRenderEditor(spec.id);
+    };
+
+    window._specOpen = function(specId){
+      _specRenderEditor(specId);
+    };
+
+    function _specRenderEditor(specId){
+      var spec = specs.find(function(s){ return s.id === specId; });
+      if(!spec) return;
+
+      var html = '';
+
+      // Back button + title
+      html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">';
+      html += '<button class="btn btn-ghost" onclick="window._specBack()" style="padding:8px;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>';
+      html += '<div style="flex:1">';
+      html += '<div style="font-size:11px;font-weight:600;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">需求卡 #' + (spec.number||'—') + '</div>';
+      html += '</div>';
+      // Actions
+      html += '<div style="display:flex;gap:8px">';
+      if(spec.status !== 'decomposed' && spec.acceptanceCriteria.length > 0){
+        html += '<button class="btn btn-accent" onclick="window._specDecompose(\'' + specId + '\')" style="font-size:13px;padding:8px 16px"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>拆解為任務</button>';
+      }
+      html += '<button class="btn btn-ghost" onclick="window._specDelete(\'' + specId + '\')" style="font-size:12px;color:var(--rose);padding:8px" title="刪除"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,6 16,6"/><path d="M6,6v10a2 2 0 002 2h4a2 2 0 002-2V6"/><path d="M8,6V4a1 1 0 011-1h2a1 1 0 011 1v2"/></svg></button>';
+      html += '</div></div>';
+
+      // ── Spec Editor Form ──
+      html += '<div style="display:flex;flex-direction:column;gap:20px">';
+
+      // Section 1: What
+      html += _specSection('概述', '一句話說清楚這個需求在做什麼', [
+        _specField('title', '需求標題', 'text', spec.title, '例：客戶聯絡紀錄側邊欄'),
+        _specField('oneLiner', '一句話描述', 'text', spec.oneLiner, '在 [場景] 下幫 [誰] 解決 [什麼問題]')
+      ], 'var(--primary)');
+
+      // Section 2: Why
+      html += _specSection('問題與動機', '為什麼要做？現在哪裡不行？', [
+        _specField('problem', '問題描述', 'textarea', spec.problem, '用一個真實的故事說明現狀的痛點。例：「業務每次要查客戶歷史，要在 3 個工具之間切換，每週浪費 2 小時」'),
+        _specField('targetUser', '目標用戶', 'text', spec.targetUser, '誰最需要這個功能？描述他們的角色和行為'),
+        _specField('successMetrics', '成功指標', 'text', spec.successMetrics, '怎樣算成功？例：查詢時間從 5 分鐘降到 30 秒')
+      ], 'var(--teal)');
+
+      // Section 3: Scope
+      html += _specSection('範圍與邊界', '做什麼、不做什麼、要花多少時間', [
+        _specField('appetite', '時間容量', 'appetite', spec.appetite + '|' + spec.appetiteUnit, '願意花多少時間？這會決定需求的邊界'),
+        _specField('inScope', '要做的事', 'list', JSON.stringify(spec.inScope), '每行一項，明確列出要交付的功能'),
+        _specField('outOfScope', '不做的事（Rabbit Holes）', 'list', JSON.stringify(spec.outOfScope), '每行一項，明確說不做什麼，以及為什麼不做')
+      ], 'var(--gold)');
+
+      // Section 4: Acceptance Criteria
+      html += _specSection('驗收條件', 'Given → When → Then：怎樣算做完？', [
+        _specField('acceptanceCriteria', '場景', 'ac', JSON.stringify(spec.acceptanceCriteria), '')
+      ], 'var(--rose)');
+
+      // Section 5: References (collapsible)
+      html += _specSection('參考（選填）', '設計稿、技術筆記、依賴關係', [
+        _specField('designRef', '設計參考', 'textarea', spec.designRef, 'Figma 連結、低保真流程描述、視覺參考'),
+        _specField('techNotes', '技術考量', 'textarea', spec.techNotes, 'API 設計、資料模型、效能需求等'),
+        _specField('dependencies', '依賴關係', 'text', spec.dependencies, '這張卡依賴哪些其他需求或外部條件？')
+      ], 'var(--ink-muted)', true);
+
+      html += '</div>';
+
+      // Decomposed tasks (if any)
+      if(spec.decomposedTasks && spec.decomposedTasks.length > 0){
+        html += '<div style="margin-top:28px;padding-top:24px;border-top:2px solid var(--border)">';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
+        html += '<div style="display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><span style="font-size:15px;font-weight:700;color:var(--ink)">拆解結果</span><span style="font-size:12px;color:var(--ink-muted)">' + spec.decomposedTasks.length + ' 個任務</span></div>';
+        html += '<button class="btn btn-accent" onclick="window._specPushToInbox(\'' + specId + '\')" style="font-size:13px;padding:8px 16px">送入需求池</button>';
+        html += '</div>';
+        spec.decomposedTasks.forEach(function(task, idx){
+          var roleColors = {DESIGN:'var(--primary)',FRONTEND:'#3B82F6',BACKEND:'var(--teal)',QA:'var(--gold)',PM:'var(--rose)'};
+          html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:6px">';
+          html += '<div style="width:24px;height:24px;border-radius:50%;background:' + (roleColors[task.role]||'var(--ink-dim)') + '14;color:' + (roleColors[task.role]||'var(--ink-dim)') + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0">' + (idx+1) + '</div>';
+          html += '<div style="flex:1;min-width:0">';
+          html += '<div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px">' + (task.title||'') + '</div>';
+          html += '<div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-muted)">';
+          html += '<span style="padding:1px 6px;border-radius:3px;background:' + (roleColors[task.role]||'var(--ink-dim)') + '14;color:' + (roleColors[task.role]||'var(--ink-dim)') + ';font-weight:600">' + (task.role||'') + '</span>';
+          if(task.estimate) html += '<span>' + task.estimate + '</span>';
+          html += '</div>';
+          if(task.ac) html += '<div style="font-size:11px;color:var(--ink-dim);margin-top:4px;line-height:1.5;font-family:\'SF Mono\',monospace">' + task.ac + '</div>';
+          html += '</div></div>';
+        });
+        html += '</div>';
+      }
+
+      content.innerHTML = html;
+      _specBindInputs(specId);
+    }
+
+    // ── Helper: render a spec section ──
+    function _specSection(title, subtitle, fields, accentColor, collapsed){
+      var h = '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">';
+      h += '<div style="padding:18px 20px;border-top:2px solid ' + accentColor + '">';
+      h += '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px">' + title + '</div>';
+      h += '<div style="font-size:12px;color:var(--ink-muted)">' + subtitle + '</div>';
+      h += '</div>';
+      h += '<div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px' + (collapsed ? ';display:none' : '') + '">';
+      fields.forEach(function(f){ h += f; });
+      h += '</div></div>';
+      return h;
+    }
+
+    // ── Helper: render a spec field ──
+    function _specField(key, label, type, value, placeholder){
+      var h = '<div>';
+      h += '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);display:block;margin-bottom:6px">' + label + '</label>';
+      var inputStyle = 'width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;background:var(--bg);color:var(--ink);box-sizing:border-box;font-family:inherit;transition:border-color .15s';
+
+      if(type === 'text'){
+        h += '<input type="text" data-spec-key="' + key + '" value="' + (value||'').replace(/"/g,'&quot;') + '" placeholder="' + placeholder + '" style="' + inputStyle + '">';
+      } else if(type === 'textarea'){
+        h += '<textarea data-spec-key="' + key + '" placeholder="' + placeholder + '" rows="3" style="' + inputStyle + ';resize:vertical">' + (value||'') + '</textarea>';
+      } else if(type === 'appetite'){
+        var parts = (value||'').split('|');
+        var amt = parts[0] || '';
+        var unit = parts[1] || 'week';
+        h += '<div style="display:flex;gap:8px">';
+        h += '<input type="number" data-spec-key="appetite" value="' + amt + '" placeholder="數量" min="1" max="52" style="' + inputStyle + ';width:100px">';
+        h += '<select data-spec-key="appetiteUnit" style="' + inputStyle + ';width:auto;cursor:pointer">';
+        h += '<option value="day"' + (unit==='day'?' selected':'') + '>天</option>';
+        h += '<option value="week"' + (unit==='week'?' selected':'') + '>週</option>';
+        h += '</select>';
+        h += '</div>';
+      } else if(type === 'list'){
+        var items = [];
+        try{ items = JSON.parse(value||'[]'); }catch(e){}
+        h += '<div data-spec-list="' + key + '">';
+        items.forEach(function(item, idx){
+          h += '<div style="display:flex;gap:6px;margin-bottom:6px">';
+          h += '<input type="text" data-spec-list-item="' + key + '" data-idx="' + idx + '" value="' + (item||'').replace(/"/g,'&quot;') + '" placeholder="' + placeholder + '" style="' + inputStyle + '">';
+          h += '<button onclick="window._specRemoveListItem(\'' + key + '\',' + idx + ')" style="border:none;background:none;cursor:pointer;color:var(--ink-dim);padding:4px;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button>';
+          h += '</div>';
+        });
+        h += '<button onclick="window._specAddListItem(\'' + key + '\')" class="btn btn-ghost" style="font-size:12px;padding:6px 12px;width:100%"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增項目</button>';
+        h += '</div>';
+      } else if(type === 'ac'){
+        var acs = [];
+        try{ acs = JSON.parse(value||'[]'); }catch(e){}
+        h += '<div data-spec-ac="acceptanceCriteria">';
+        acs.forEach(function(ac, idx){
+          h += '<div style="background:var(--bg-app);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;margin-bottom:8px;position:relative">';
+          h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+          h += '<span style="font-size:12px;font-weight:700;color:var(--ink-muted)">場景 ' + (idx+1) + '</span>';
+          h += '<button onclick="window._specRemoveAC(' + idx + ')" style="border:none;background:none;cursor:pointer;color:var(--ink-dim);padding:2px"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button>';
+          h += '</div>';
+          h += '<input type="text" data-spec-ac-name="' + idx + '" value="' + (ac.name||'').replace(/"/g,'&quot;') + '" placeholder="場景名稱" style="' + inputStyle + ';margin-bottom:6px;font-weight:600">';
+          h += '<div style="display:flex;gap:4px;margin-bottom:4px;align-items:center"><span style="font-size:11px;font-weight:700;color:var(--teal);width:50px;flex-shrink:0">Given</span><input type="text" data-spec-ac-given="' + idx + '" value="' + (ac.given||'').replace(/"/g,'&quot;') + '" placeholder="前置條件" style="' + inputStyle + ';font-size:13px"></div>';
+          h += '<div style="display:flex;gap:4px;margin-bottom:4px;align-items:center"><span style="font-size:11px;font-weight:700;color:var(--gold);width:50px;flex-shrink:0">When</span><input type="text" data-spec-ac-when="' + idx + '" value="' + (ac.when||'').replace(/"/g,'&quot;') + '" placeholder="用戶行動" style="' + inputStyle + ';font-size:13px"></div>';
+          h += '<div style="display:flex;gap:4px;align-items:center"><span style="font-size:11px;font-weight:700;color:var(--primary);width:50px;flex-shrink:0">Then</span><input type="text" data-spec-ac-then="' + idx + '" value="' + (ac.then||'').replace(/"/g,'&quot;') + '" placeholder="預期結果" style="' + inputStyle + ';font-size:13px"></div>';
+          h += '</div>';
+        });
+        h += '<button onclick="window._specAddAC()" class="btn btn-ghost" style="font-size:12px;padding:8px 12px;width:100%"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增驗收場景</button>';
+        h += '</div>';
+      }
+      h += '</div>';
+      return h;
+    }
+
+    // ── Bind input events for auto-save ──
+    function _specBindInputs(specId){
+      var spec = specs.find(function(s){ return s.id === specId; });
+      if(!spec) return;
+
+      // Text / textarea / number / select fields
+      document.querySelectorAll('[data-spec-key]').forEach(function(el){
+        var key = el.getAttribute('data-spec-key');
+        var handler = function(){
+          if(key === 'appetite'){ spec.appetite = el.value; }
+          else if(key === 'appetiteUnit'){ spec.appetiteUnit = el.value; }
+          else { spec[key] = el.value; }
+          spec.updatedAt = Date.now();
+          if(spec.title && spec.oneLiner && spec.problem) spec.status = 'ready';
+          saveSpecCards(specs);
+        };
+        el.addEventListener('input', handler);
+        el.addEventListener('change', handler);
+        el.addEventListener('focus', function(){ el.style.borderColor = 'var(--primary)'; });
+        el.addEventListener('blur', function(){ el.style.borderColor = 'var(--border)'; });
+      });
+
+      // List items
+      document.querySelectorAll('[data-spec-list-item]').forEach(function(el){
+        var key = el.getAttribute('data-spec-list-item');
+        var idx = parseInt(el.getAttribute('data-idx'));
+        el.addEventListener('input', function(){
+          spec[key][idx] = el.value;
+          spec.updatedAt = Date.now();
+          saveSpecCards(specs);
+        });
+        el.addEventListener('focus', function(){ el.style.borderColor = 'var(--primary)'; });
+        el.addEventListener('blur', function(){ el.style.borderColor = 'var(--border)'; });
+      });
+
+      // AC fields
+      document.querySelectorAll('[data-spec-ac-name],[data-spec-ac-given],[data-spec-ac-when],[data-spec-ac-then]').forEach(function(el){
+        var attr = el.getAttributeNames().find(function(a){ return a.indexOf('data-spec-ac-') === 0; });
+        var parts = attr.split('-');
+        var field = parts[parts.length - 1]; // name, given, when, then
+        var idx = parseInt(el.getAttribute(attr));
+        el.addEventListener('input', function(){
+          if(spec.acceptanceCriteria[idx]) spec.acceptanceCriteria[idx][field] = el.value;
+          spec.updatedAt = Date.now();
+          if(spec.title && spec.acceptanceCriteria.length > 0) spec.status = 'ready';
+          saveSpecCards(specs);
+        });
+        el.addEventListener('focus', function(){ el.style.borderColor = 'var(--primary)'; });
+        el.addEventListener('blur', function(){ el.style.borderColor = 'var(--border)'; });
+      });
+    }
+
+    // ── List operations ──
+    window._specAddListItem = function(key){
+      var spec = specs.find(function(s){ return s.id === _specCurrentId(); });
+      if(!spec) return;
+      if(!spec[key]) spec[key] = [];
+      spec[key].push('');
+      spec.updatedAt = Date.now();
+      saveSpecCards(specs);
+      _specRenderEditor(spec.id);
+    };
+    window._specRemoveListItem = function(key, idx){
+      var spec = specs.find(function(s){ return s.id === _specCurrentId(); });
+      if(!spec || !spec[key]) return;
+      spec[key].splice(idx, 1);
+      spec.updatedAt = Date.now();
+      saveSpecCards(specs);
+      _specRenderEditor(spec.id);
+    };
+
+    // ── AC operations ──
+    window._specAddAC = function(){
+      var spec = specs.find(function(s){ return s.id === _specCurrentId(); });
+      if(!spec) return;
+      spec.acceptanceCriteria.push({name:'',given:'',when:'',then:''});
+      spec.updatedAt = Date.now();
+      saveSpecCards(specs);
+      _specRenderEditor(spec.id);
+    };
+    window._specRemoveAC = function(idx){
+      var spec = specs.find(function(s){ return s.id === _specCurrentId(); });
+      if(!spec) return;
+      spec.acceptanceCriteria.splice(idx, 1);
+      spec.updatedAt = Date.now();
+      saveSpecCards(specs);
+      _specRenderEditor(spec.id);
+    };
+
+    // ── Get current spec id from DOM ──
+    function _specCurrentId(){
+      var el = document.querySelector('[data-spec-key="title"]');
+      if(!el) return '';
+      // Find spec by matching current input values
+      var titleVal = el.value;
+      var found = specs.find(function(s){ return s.title === titleVal; });
+      return found ? found.id : (specs.length > 0 ? specs[specs.length-1].id : '');
+    }
+
+    // ── Decompose spec into tasks ──
+    window._specDecompose = function(specId){
+      var spec = specs.find(function(s){ return s.id === specId; });
+      if(!spec) return;
+
+      var tasks = [];
+      // 1. Design task (from spec itself)
+      tasks.push({title:'設計 UI/UX：' + spec.title, role:'DESIGN', estimate:'2-3 天', ac:'符合 BeyondPath 設計系統、通過視覺審查'});
+
+      // 2. From acceptance criteria → implementation tasks
+      spec.acceptanceCriteria.forEach(function(ac, i){
+        if(ac.name || ac.given){
+          tasks.push({
+            title:'實作：' + (ac.name || '場景 ' + (i+1)),
+            role:'FRONTEND',
+            estimate:'1-2 天',
+            ac: (ac.given ? 'Given ' + ac.given + ' ' : '') + (ac.when ? 'When ' + ac.when + ' ' : '') + (ac.then ? 'Then ' + ac.then : '')
+          });
+        }
+      });
+
+      // 3. QA task
+      if(spec.acceptanceCriteria.length > 0){
+        tasks.push({title:'測試驗收：' + spec.title, role:'QA', estimate:'1-2 天', ac: spec.acceptanceCriteria.length + ' 個驗收場景 + 邊界測試'});
+      }
+
+      // 4. From technical notes → backend tasks
+      if(spec.techNotes && spec.techNotes.trim()){
+        tasks.push({title:'技術實作：' + spec.title, role:'BACKEND', estimate:'2-3 天', ac: spec.techNotes.slice(0, 80) + '...'});
+      }
+
+      // 5. Documentation
+      tasks.push({title:'文件更新：' + spec.title, role:'PM', estimate:'0.5 天', ac:'需求卡、操作指南同步更新'});
+
+      spec.decomposedTasks = tasks;
+      spec.status = 'decomposed';
+      spec.updatedAt = Date.now();
+      saveSpecCards(specs);
+      showToast('已拆解為 ' + tasks.length + ' 個子任務');
+      _specRenderEditor(specId);
+    };
+
+    // ── Push decomposed tasks to inbox ──
+    window._specPushToInbox = function(specId){
+      var spec = specs.find(function(s){ return s.id === specId; });
+      if(!spec || !spec.decomposedTasks || spec.decomposedTasks.length === 0) return;
+
+      var allCards = T.getCards().map(T.migrateCard);
+      spec.decomposedTasks.forEach(function(task){
+        var newCard = T.migrateCard({
+          id: T.genId(),
+          title: task.title,
+          description: task.ac || '',
+          columnId: 'inbox',
+          category: task.role === 'DESIGN' ? 'dev' : task.role === 'QA' ? 'qa' : task.role === 'BACKEND' ? 'dev' : task.role === 'PM' ? 'product' : 'dev',
+          source: 'spec',
+          specId: specId,
+          specNumber: spec.number,
+          createdAt: Date.now(),
+          order: 0
+        });
+        allCards.push(newCard);
+      });
+      T.saveCards(allCards);
+      showToast(spec.decomposedTasks.length + ' 個任務已送入需求池');
+      navigate('biz-inbox');
+    };
+
+    // ── Delete spec ──
+    window._specDelete = function(specId){
+      if(!confirm('確定刪除此需求卡？')) return;
+      specs = specs.filter(function(s){ return s.id !== specId; });
+      saveSpecCards(specs);
+      showToast('已刪除');
+      renderWorkshopHome();
+    };
+
+    // ── Back to list ──
+    window._specBack = function(){
+      specs = getSpecCards(); // refresh
+      renderWorkshopHome();
+    };
+
+    renderWorkshopHome();
+  }
+
   // ==================== MODULE: TASK INBOX / TRIAGE (v0.9.0) ====================
   function renderTaskInbox() {
     var content = document.getElementById('content');
@@ -5169,8 +5681,8 @@ canvas{display:block;margin:0 auto 24px}
     var inboxCards = cards.filter(function(c){ return c.columnId === 'inbox' && !c.archived; })
       .sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
 
-    var srcLabels = {ai:'AI 拆解','claude-mcp':'AI 助手',meeting:'會議',email:'Email',import:'匯入',manual:'手動新增'};
-    var srcColors = {ai:'var(--primary)','claude-mcp':'var(--primary)',meeting:'var(--teal)',email:'var(--gold)',import:'var(--ink-muted)',manual:'var(--ink-dim)'};
+    var srcLabels = {ai:'AI 拆解','claude-mcp':'AI 助手',meeting:'會議',email:'Email',import:'匯入',manual:'手動新增',spec:'需求卡'};
+    var srcColors = {ai:'var(--primary)','claude-mcp':'var(--primary)',meeting:'var(--teal)',email:'var(--gold)',import:'var(--ink-muted)',manual:'var(--ink-dim)',spec:'var(--primary)'};
 
     // Get non-inbox columns for triage target
     var targetCols = cols.filter(function(c){ return c.id !== 'inbox'; });
@@ -5245,10 +5757,9 @@ canvas{display:block;margin:0 auto 24px}
             if(diff<0) dueClass='overdue'; else if(diff<=3) dueClass='urgent';
           }
 
-          html += '<div class="inbox-triage-card" data-card="' + card.id + '" onclick="window._inboxShowDetail(\'' + card.id + '\')">';
-          // Left: color bar + content
+          html += '<div class="inbox-triage-card" data-card="' + card.id + '" onclick="window._inboxShowDetail(\'' + card.id + '\')" style="border-top:2px solid ' + cat.color + '">';
+          // Content area (no left color bar — design principle)
           html += '<div style="display:flex;gap:12px;flex:1;min-width:0;align-items:flex-start">';
-          html += '<div style="width:4px;border-radius:2px;background:' + cat.color + ';align-self:stretch;flex-shrink:0"></div>';
           html += '<div style="flex:1;min-width:0">';
           html += '<div style="font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;margin-bottom:4px">' + (card.title||'未命名') + '</div>';
           html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
@@ -5447,7 +5958,27 @@ canvas{display:block;margin:0 auto 24px}
     var workCols = cols.filter(function(c){ return c.id !== 'inbox'; });
 
     function renderCycleBoard(){
-      var cycleCards = cards.filter(function(c){ return c.cycleId === currentCycle.id && !c.archived && c.columnId !== 'inbox'; });
+      // v0.9.3: fallback — if no cards have cycleId, also include cards assigned to this week's date range
+      var _cycStart = new Date(currentCycle.startDate);
+      var _cycEnd = new Date(currentCycle.endDate);
+      _cycStart.setHours(0,0,0,0);
+      _cycEnd.setHours(23,59,59,999);
+      var cycleCards = cards.filter(function(c){
+        if(c.archived || c.columnId === 'inbox') return false;
+        // Direct cycle assignment
+        if(c.cycleId === currentCycle.id) return true;
+        // Fallback: cards with dueDate within cycle range (if no cycleId set)
+        if(!c.cycleId && c.dueDate){
+          var d = new Date(c.dueDate);
+          return d >= _cycStart && d <= _cycEnd;
+        }
+        // Fallback: cards created within cycle range with no cycleId
+        if(!c.cycleId && c.createdAt){
+          var cr = new Date(c.createdAt);
+          return cr >= _cycStart && cr <= _cycEnd;
+        }
+        return false;
+      });
       var doneCount = cycleCards.filter(function(c){ return c.columnId === 'done'; }).length;
       var totalCount = cycleCards.length;
       var progressPct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
@@ -5499,29 +6030,31 @@ canvas{display:block;margin:0 auto 24px}
       var _expectedPct = Math.min(100, Math.round(_daysPassed / _totalDays * 100));
       var _onTrack = progressPct >= (_expectedPct - 15);
 
-      html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">';
+      // v0.9.3: only show stats grid when there are actual tasks
+      if(totalCount > 0){
+      html += '<div class="cycle-stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">';
       // Days remaining
       html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;text-align:center">';
       html += '<div style="font-size:22px;font-weight:800;color:' + (_daysLeft <= 1 ? 'var(--rose)' : _daysLeft <= 3 ? 'var(--gold)' : 'var(--ink)') + '">' + _daysLeft + '</div>';
       html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">剩餘天數</div>';
       html += '</div>';
-      // Velocity
+      // Completed
       html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;text-align:center">';
-      html += '<div style="font-size:22px;font-weight:800;color:var(--primary)">' + _velocity + '</div>';
-      html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">日均完成</div>';
+      html += '<div style="font-size:22px;font-weight:800;color:var(--teal)">' + doneCount + '</div>';
+      html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">已完成</div>';
       html += '</div>';
       // On-track status
       html += '<div style="background:var(--bg-card);border:1px solid ' + (_onTrack ? 'rgba(27,168,145,.2)' : 'rgba(217,68,98,.2)') + ';border-radius:var(--r-lg);padding:14px;text-align:center">';
       html += '<div style="font-size:14px;font-weight:700;color:' + (_onTrack ? 'var(--teal)' : 'var(--rose)') + '">' + (_onTrack ? '進度正常' : '落後進度') + '</div>';
       html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">預期 ' + _expectedPct + '% · 實際 ' + progressPct + '%</div>';
       html += '</div>';
-      // Risk items
-      var _riskCount = _overdueCount + _doingCount;
-      html += '<div style="background:var(--bg-card);border:1px solid ' + (_riskCount > 0 ? 'rgba(224,138,58,.2)' : 'var(--border)') + ';border-radius:var(--r-lg);padding:14px;text-align:center">';
-      html += '<div style="font-size:22px;font-weight:800;color:' + (_overdueCount > 0 ? 'var(--rose)' : _riskCount > 0 ? 'var(--gold)' : 'var(--teal)') + '">' + _riskCount + '</div>';
-      html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">' + (_overdueCount > 0 ? _overdueCount + ' 逾期' : '需關注') + '</div>';
+      // In progress
+      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;text-align:center">';
+      html += '<div style="font-size:22px;font-weight:800;color:var(--primary)">' + _doingCount + '</div>';
+      html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">進行中</div>';
       html += '</div>';
       html += '</div>';
+      } // end totalCount > 0 stats grid
 
       // Agent contribution bar (if any agent cards exist)
       if(_agentCards > 0) {
@@ -6288,6 +6821,22 @@ canvas{display:block;margin:0 auto 24px}
         }
       };
       document.addEventListener('keydown', window._kbKeyHandler);
+
+      // First-time keyboard shortcut hint
+      if(!localStorage.getItem('bp_kb_hint_shown')) {
+        setTimeout(function(){
+          var hintEl = document.createElement('div');
+          hintEl.id = 'kbShortcutHint';
+          hintEl.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:9999;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-sec);animation:kbHintIn .4s cubic-bezier(.22,1,.36,1);max-width:320px';
+          hintEl.innerHTML = '<div style="flex-shrink:0;width:28px;height:28px;border-radius:8px;background:var(--primary-light);display:flex;align-items:center;justify-content:center"><kbd style="font-size:12px;font-weight:700;color:var(--primary);font-family:inherit">?</kbd></div><div>按 <kbd style="font-size:11px;font-weight:700;color:var(--primary);background:var(--primary-light);padding:1px 6px;border-radius:4px;font-family:inherit">?</kbd> 查看鍵盤快捷鍵</div><button onclick="this.parentElement.remove();localStorage.setItem(\'bp_kb_hint_shown\',\'1\')" style="flex-shrink:0;background:none;border:none;color:var(--ink-dim);cursor:pointer;padding:4px;font-size:16px;line-height:1">&times;</button>';
+          document.body.appendChild(hintEl);
+          setTimeout(function(){
+            var h = document.getElementById('kbShortcutHint');
+            if(h) { h.style.opacity='0'; h.style.transition='opacity .3s ease'; setTimeout(function(){ if(h.parentNode) h.remove(); }, 300); }
+            localStorage.setItem('bp_kb_hint_shown','1');
+          }, 8000);
+        }, 2000);
+      }
     }
 
     // Shortcuts help modal
@@ -6534,7 +7083,7 @@ canvas{display:block;margin:0 auto 24px}
       // ── Header ──
       m += '<div class="kb-modal-header">';
       m += '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">';
-      m += '<div style="width:4px;height:24px;border-radius:2px;background:' + cat.color + ';flex-shrink:0"></div>';
+      m += '<div style="width:28px;height:28px;border-radius:var(--r-md);background:' + cat.color + '15;display:flex;align-items:center;justify-content:center;flex-shrink:0"><div style="width:8px;height:8px;border-radius:50%;background:' + cat.color + '"></div></div>';
       m += '<h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (card.title||'未命名') + '</h3></div>';
       m += '<div style="display:flex;gap:6px;align-items:center;flex-shrink:0">';
       m += '<button style="background:none;border:none;color:var(--primary);cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;transition:background .12s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="document.querySelector(\'.kb-modal-overlay\').remove();window._kbShowCardEdit(\'' + card.id + '\')">' + IC.edit + ' 編輯</button>';
@@ -6550,7 +7099,7 @@ canvas{display:block;margin:0 auto 24px}
       // Description — editable contenteditable div
       m += '<div class="kb-section">';
       m += '<label class="kb-label">描述</label>';
-      m += '<div class="kb-detail-desc" contenteditable="true" data-placeholder="點擊輸入描述…" id="kbDetailDesc">' + (card.description||'') + '</div>';
+      m += '<div class="kb-detail-desc" contenteditable="true" role="textbox" aria-label="任務描述" data-placeholder="點擊輸入描述…" id="kbDetailDesc">' + (card.description||'') + '</div>';
       m += '</div>';
 
 
@@ -7181,7 +7730,7 @@ canvas{display:block;margin:0 auto 24px}
 
       // Body
       h += '<div class="detail-panel-body">';
-      h += '<div class="detail-panel-title" contenteditable="true" onblur="window._kbUpdateTitle(\'' + cardId + '\',this.textContent)">' + (card.title||'未命名') + '</div>';
+      h += '<div class="detail-panel-title" contenteditable="true" role="textbox" aria-label="任務標題" onblur="window._kbUpdateTitle(\'' + cardId + '\',this.textContent)">' + (card.title||'未命名') + '</div>';
 
       // Props grid
       h += '<div class="dp-props">';
@@ -7190,7 +7739,7 @@ canvas{display:block;margin:0 auto 24px}
       h += '<span class="dp-prop-label"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12"/></svg> 到期</span>';
       h += '<span class="dp-prop-value" style="color:' + (dueStr.indexOf('逾期') !== -1 ? 'var(--rose)' : dueStr.indexOf('今天') !== -1 ? 'var(--gold)' : 'var(--ink-sec)') + ';font-weight:' + (dueStr === '—' ? '400' : '600') + '">' + dueStr + '</span>';
       h += '<span class="dp-prop-label"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8l3 3 5-5"/></svg> 優先級</span>';
-      h += '<span class="dp-prop-value"><span style="display:inline-block;width:3px;height:14px;background:' + priColor + ';border-radius:2px;vertical-align:middle;margin-right:6px"></span>' + priLabel + '</span>';
+      h += '<span class="dp-prop-value"><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:' + priColor + ';background:' + priColor + '15;padding:2px 8px;border-radius:4px"><span style="width:6px;height:6px;border-radius:50%;background:' + priColor + '"></span>' + priLabel + '</span></span>';
       h += '<span class="dp-prop-label"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h8M4 8h8M4 12h4"/></svg> 分類</span>';
       h += '<span class="dp-prop-value"><span style="font-size:11px;font-weight:600;color:' + cat.color + '">' + cat.label + '</span></span>';
       h += '<span class="dp-prop-label"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5"/><path d="M8 5v3l2 1"/></svg> 週期</span>';
@@ -18554,7 +19103,14 @@ function loadHistory(){
           html += '</div>';
 
           if(mems.length === 0){
-            html += '<div style="text-align:center;padding:24px;color:var(--ink-dim);font-size:13px">尚未設定團隊成員<br><span style="font-size:12px;color:var(--ink-muted)">在任務中心的設定中新增成員</span></div>';
+            html += '<div style="padding:20px;border-radius:var(--r-md);background:linear-gradient(135deg,rgba(124,92,252,.04),rgba(27,168,145,.04));border:1px dashed rgba(124,92,252,.2)">';
+            html += '<div style="display:flex;align-items:flex-start;gap:14px">';
+            html += '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(124,92,252,.04));display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5Z"/></svg></div>';
+            html += '<div style="flex:1">';
+            html += '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px">AI Agent 能幫你做什麼？</div>';
+            html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.6;margin-bottom:12px">Agent 會自動分析任務優先序、建議每日排程、追蹤逾期風險，讓你專注在決策，AI 處理繁瑣的管理工作。</div>';
+            html += '<button onclick="app.addAgentMember()" class="btn btn-accent" style="font-size:12px;padding:6px 16px;border-radius:var(--r-md)"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px;vertical-align:-1px"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>建立第一位 Agent</button>';
+            html += '</div></div></div>';
           } else {
             mems.forEach(function(m){
               var isAgent = (m.type === 'agent');
@@ -21201,4 +21757,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.9.1 -->
+</html><!-- v0.9.3 -->
