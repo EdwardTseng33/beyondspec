@@ -2607,6 +2607,21 @@ canvas{display:block;margin:0 auto 24px}
   .kb-mobile-tabs{display:none !important}
 }
 
+/* ══════════ TASK INBOX / TRIAGE (v0.8.2) ══════════ */
+.inbox-triage-list{display:flex;flex-direction:column;gap:4px}
+.inbox-triage-card{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;transition:all .18s cubic-bezier(.4,0,.2,1)}
+.inbox-triage-card:hover{border-color:var(--primary);box-shadow:0 2px 12px rgba(124,92,252,.06);transform:translateX(2px)}
+.inbox-triage-card:hover .inbox-triage-actions{opacity:1}
+.inbox-triage-actions{opacity:0;transition:opacity .15s ease}
+.btn-triage{width:32px;height:32px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s ease;color:var(--ink-muted)}
+.btn-triage:hover{transform:scale(1.1)}
+.btn-triage-accept:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+.btn-triage-dismiss:hover{background:var(--rose);color:#fff;border-color:var(--rose)}
+@media(max-width:768px){
+  .inbox-triage-actions{opacity:1}
+  .inbox-triage-card{padding:10px 12px}
+}
+
 /* ══════════ CONTACTS / CUSTOMER MANAGEMENT (v0.9.5) ══════════ */
 .ct-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .ct-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:all .18s cubic-bezier(.4,0,.2,1);position:relative}
@@ -2920,7 +2935,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.8.1</div>
+        <div class="sidebar-version">v0.8.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -2970,6 +2985,8 @@ canvas{display:block;margin:0 auto 24px}
     diamond: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M2 9h20"/></svg>',
     crosshair: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>',
     listChecks: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="M3 6l1.5 1.5L7 5"/><path d="M3 12l1.5 1.5L7 11"/><path d="M3 18l1.5 1.5L7 17"/></svg>',
+    inbox: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>',
+    clock: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
     // Module architecture v2 icons
     users: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
     calendar: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
@@ -3519,7 +3536,9 @@ canvas{display:block;margin:0 auto 24px}
 
     // 商業模組 — 7 模組（Tasks=vanilla kanban, 其餘=React Business）
     const bizItems = [
-      { id: 'biz-tasks', label: '任務中心', icon: 'listChecks', modKey: 'mod-tasks', layer: 1, q: '今天該做什麼？' },
+      { id: 'biz-inbox', label: '收件匣', icon: 'inbox', modKey: 'mod-tasks', layer: 1, q: '有什麼新任務進來？', parent: 'tasks' },
+      { id: 'biz-tasks', label: '任務總表', icon: 'listChecks', modKey: 'mod-tasks', layer: 1, q: '今天該做什麼？', parent: 'tasks' },
+      { id: 'biz-cycle', label: '本週週期', icon: 'clock', modKey: 'mod-tasks', layer: 1, q: '這週要完成什麼？', parent: 'tasks' },
       { id: 'biz-contacts', label: '客戶管理', icon: 'users', modKey: 'mod-contacts', layer: 1, q: '這個人跟我們什麼關係？' },
       { id: 'biz-quotes', label: '報價提案', icon: 'fileText', modKey: 'mod-quotes', layer: 2, q: '怎麼快速產一份專業報價？' },
       { id: 'biz-billing', label: '收款管理', icon: 'dollarSign', modKey: 'mod-billing', layer: 2, q: '錢收到了嗎？' },
@@ -3550,12 +3569,27 @@ canvas{display:block;margin:0 auto 24px}
 
     // Business modules section (only show if any enabled)
     if (visibleBiz.length > 0) {
-      navHtml += visibleBiz.map(item => {
-        return `<div class="nav-item ${state.currentModule === item.id ? 'active' : ''}" onclick="app.navClick(event,'${item.id}')" title="${item.label}">
-          ${ICONS[item.icon]}
-          <span>${item.label}</span>
-        </div>`;
-      }).join('');
+      // Group task sub-items under a category header
+      var taskItems = visibleBiz.filter(function(i){return i.parent === 'tasks';});
+      var otherBiz = visibleBiz.filter(function(i){return !i.parent;});
+      if(taskItems.length > 0){
+        navHtml += '<div class="nav-category">任務</div>';
+        navHtml += taskItems.map(item => {
+          return `<div class="nav-item nav-sub ${state.currentModule === item.id ? 'active' : ''}" onclick="app.navClick(event,'${item.id}')" title="${item.label}">
+            ${ICONS[item.icon]}
+            <span>${item.label}</span>
+          </div>`;
+        }).join('');
+      }
+      if(otherBiz.length > 0){
+        navHtml += '<div class="nav-category">商業</div>';
+        navHtml += otherBiz.map(item => {
+          return `<div class="nav-item ${state.currentModule === item.id ? 'active' : ''}" onclick="app.navClick(event,'${item.id}')" title="${item.label}">
+            ${ICONS[item.icon]}
+            <span>${item.label}</span>
+          </div>`;
+        }).join('');
+      }
     }
 
     // Settings (always visible)
@@ -3650,7 +3684,7 @@ canvas{display:block;margin:0 auto 24px}
           onTabChange: function(tab) {
             // Map internal biz tabs back to consolidated sidebar items
             // bd/contacts → biz-contacts, invoices/ar → biz-billing
-            var tabToSidebar = { 'pipeline':'biz-deals', 'bd':'biz-contacts', 'contacts':'biz-contacts', 'tasks':'biz-tasks', 'proposals':'biz-quotes', 'invoices':'biz-billing', 'ar':'biz-billing', 'meetings':'biz-meetings', 'analytics':'biz-insights', 'docs':'biz-docs', 'roles':'biz-deals' };
+            var tabToSidebar = { 'pipeline':'biz-deals', 'bd':'biz-contacts', 'contacts':'biz-contacts', 'tasks':'biz-tasks', 'inbox':'biz-inbox', 'cycle':'biz-cycle', 'proposals':'biz-quotes', 'invoices':'biz-billing', 'ar':'biz-billing', 'meetings':'biz-meetings', 'analytics':'biz-insights', 'docs':'biz-docs', 'roles':'biz-deals' };
             var bizId = tabToSidebar[tab] || Object.keys(BIZ_TAB_MAP).find(function(k) { return BIZ_TAB_MAP[k] === tab; });
             if (bizId && state.currentModule !== bizId) {
               state.currentModule = bizId;
@@ -3803,6 +3837,16 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
+    // biz-inbox → vanilla JS inbox triage (not React)
+    if (moduleId === 'biz-inbox') {
+      if (window._bizReactRoot) {
+        try { window._bizReactRoot.unmount(); } catch(e) {}
+        window._bizReactRoot = null;
+      }
+      renderTaskInbox();
+      return;
+    }
+
     // biz-tasks → vanilla JS kanban (not React)
     if (moduleId === 'biz-tasks') {
       if (window._bizReactRoot) {
@@ -3810,6 +3854,16 @@ canvas{display:block;margin:0 auto 24px}
         window._bizReactRoot = null;
       }
       renderKanban();
+      return;
+    }
+
+    // biz-cycle → vanilla JS cycle sprint view (not React)
+    if (moduleId === 'biz-cycle') {
+      if (window._bizReactRoot) {
+        try { window._bizReactRoot.unmount(); } catch(e) {}
+        window._bizReactRoot = null;
+      }
+      renderTaskCycle();
       return;
     }
 
@@ -4514,6 +4568,573 @@ canvas{display:block;margin:0 auto 24px}
       clearBtn + '</div>';
   }
 
+  // ==================== SHARED: Task Data Layer (v0.8.2) ====================
+  // Shared data accessors for biz-inbox, biz-tasks, biz-cycle pages
+  var _taskShared = (function(){
+    var KB_COLS_KEY = 'bp_kanban_cols';
+    var KB_CARDS_KEY = 'bp_kanban_cards';
+    var KB_CYCLES_KEY = 'bp_kanban_cycles';
+    var KB_MEMBERS_KEY = 'bp_team_members';
+    var KB_ACTIVE_CYCLE_KEY = 'bp_active_cycle';
+    var DEFAULT_COLS = [
+      {id:'inbox',label:'收件匣',color:'#94A3B8'},
+      {id:'todo',label:'待處理',color:'#7C5CFC'},
+      {id:'doing',label:'進行中',color:'#E08A3A'},
+      {id:'review',label:'驗收中',color:'#3B82F6'},
+      {id:'done',label:'已完成',color:'#1BA891'}
+    ];
+    var TASK_CATEGORIES = {
+      product:   {label:'產品規劃', color:'#7C5CFC', tags:['Spec','UX研究','Roadmap','Analytics']},
+      dev:       {label:'設計開發', color:'#3B82F6', tags:['FE','BE','App','Infra','UI','DevOps','Research']},
+      qa:        {label:'項目驗收', color:'#1BA891', tags:['QA','UAT','Release','Hotfix']},
+      marketing: {label:'市場行銷', color:'#E08A3A', tags:['Content','SEO','Ads','Social','PR','Event']},
+      sales:     {label:'業務接洽', color:'#D94462', tags:['Lead','Proposal','Contract','Follow-up']},
+      admin:     {label:'人事行政', color:'#94A3B8', tags:['HR','Finance','Legal','Procurement']}
+    };
+    var PRIORITY_LABELS = {high:'高',medium:'中',low:'低'};
+    var PRIORITY_COLORS = {high:'var(--rose)',medium:'var(--gold)',low:'var(--teal)'};
+
+    function getCols(){try{var s=localStorage.getItem(KB_COLS_KEY);if(s){var p=JSON.parse(s);return p&&p.length?p:DEFAULT_COLS;}return DEFAULT_COLS;}catch(e){return DEFAULT_COLS;}}
+    function saveCols(c){localStorage.setItem(KB_COLS_KEY,JSON.stringify(c));}
+    function getCards(){try{var s=localStorage.getItem(KB_CARDS_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
+    function saveCards(c){localStorage.setItem(KB_CARDS_KEY,JSON.stringify(c));_scheduleFirestoreSync();}
+    function getCycles(){try{var s=localStorage.getItem(KB_CYCLES_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
+    function saveCycles(c){localStorage.setItem(KB_CYCLES_KEY,JSON.stringify(c));}
+    function getMembers(){try{var s=localStorage.getItem(KB_MEMBERS_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
+    function saveMembers(m){localStorage.setItem(KB_MEMBERS_KEY,JSON.stringify(m));}
+    function getActiveCycleId(){return localStorage.getItem(KB_ACTIVE_CYCLE_KEY)||'';}
+    function setActiveCycleId(id){localStorage.setItem(KB_ACTIVE_CYCLE_KEY,id);}
+    function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+
+    function migrateCard(c){
+      if(!c.type) c.type='product';
+      if(!c.category) {
+        var typeToCategory = {task:'product',spec:'product',product:'product',dev:'dev',design:'dev',bug:'dev',qa:'qa',sales:'sales',marketing:'marketing',finance:'admin',hr:'admin'};
+        c.category = typeToCategory[c.type] || 'product';
+      }
+      if(!c.tags) c.tags = [];
+      if(!c.checklist) c.checklist=[];
+      if(!c.customFields) c.customFields=[];
+      if(!c.activities) c.activities=[];
+      if(!c.attachments) c.attachments=[];
+      if(c.archived===undefined) c.archived=false;
+      if(!c.priority) c.priority='none';
+      if(!c.source) c.source='manual';
+      if(!c.subTasks) c.subTasks=[];
+      if(!c.discussion) c.discussion=[];
+      if(!c.stateHistory) c.stateHistory=[];
+      if(!c.collaborators) c.collaborators=[];
+      if(!c.cycleId) c.cycleId = '';
+      if(!c.agentActions) c.agentActions = [];
+      if(c.agentCanAct === undefined) c.agentCanAct = false;
+      if(!c.assigneeId) c.assigneeId = '';
+      return c;
+    }
+
+    function getISOWeek(d){
+      var tmp = new Date(d.valueOf());
+      tmp.setDate(tmp.getDate() + 3 - (tmp.getDay() + 6) % 7);
+      var week1 = new Date(tmp.getFullYear(), 0, 4);
+      return 1 + Math.round(((tmp.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+    }
+    function fmtMD(d){ return (d.getMonth()+1) + '/' + d.getDate(); }
+
+    function ensureCurrentCycle(){
+      var cycles = getCycles();
+      var now = new Date();
+      var day = now.getDay();
+      var diffMon = day === 0 ? -6 : 1 - day;
+      var monday = new Date(now);
+      monday.setDate(now.getDate() + diffMon);
+      monday.setHours(0,0,0,0);
+      var sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23,59,59,999);
+      var monStr = monday.toISOString().slice(0,10);
+      var sunStr = sunday.toISOString().slice(0,10);
+      var weekNum = getISOWeek(monday);
+      var existing = cycles.find(function(c){ return c.startDate === monStr; });
+      if(existing) return existing;
+      var newCycle = {
+        id: 'cycle_' + genId(),
+        label: 'W' + weekNum + '（' + fmtMD(monday) + '-' + fmtMD(sunday) + '）',
+        startDate: monStr,
+        endDate: sunStr,
+        status: 'active',
+        goals: [],
+        stats: { total:0, completed:0, carryOver:0, agentContributions:0 }
+      };
+      cycles.push(newCycle);
+      saveCycles(cycles);
+      setActiveCycleId(newCycle.id);
+      return newCycle;
+    }
+
+    function ensureDefaultMember(){
+      var members = getMembers();
+      if(members.length === 0){
+        members.push({
+          id: 'owner',
+          name: '我',
+          role: 'founder',
+          agent: { type: 'single', name: 'AI 助手', provider: 'claude-cowork', autoLevel: 'suggest', personas: [] }
+        });
+        saveMembers(members);
+      }
+      return members;
+    }
+
+    return {
+      getCols: getCols, saveCols: saveCols,
+      getCards: getCards, saveCards: saveCards,
+      getCycles: getCycles, saveCycles: saveCycles,
+      getMembers: getMembers, saveMembers: saveMembers,
+      getActiveCycleId: getActiveCycleId, setActiveCycleId: setActiveCycleId,
+      genId: genId, migrateCard: migrateCard,
+      ensureCurrentCycle: ensureCurrentCycle, ensureDefaultMember: ensureDefaultMember,
+      getISOWeek: getISOWeek, fmtMD: fmtMD,
+      DEFAULT_COLS: DEFAULT_COLS, TASK_CATEGORIES: TASK_CATEGORIES,
+      PRIORITY_LABELS: PRIORITY_LABELS, PRIORITY_COLORS: PRIORITY_COLORS
+    };
+  })();
+
+  // ==================== MODULE: TASK INBOX / TRIAGE (v0.8.2) ====================
+  function renderTaskInbox() {
+    var content = document.getElementById('content');
+    var mainEl = document.getElementById('main');
+    if (mainEl) { mainEl.style.overflow = ''; mainEl.style.height = ''; }
+    var appEl = document.getElementById('app');
+    if (appEl) appEl.style.overflow = '';
+
+    var T = _taskShared;
+    var cols = T.getCols();
+    var cards = T.getCards().map(T.migrateCard);
+    var members = T.ensureDefaultMember();
+    var inboxCards = cards.filter(function(c){ return c.columnId === 'inbox' && !c.archived; })
+      .sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+
+    var srcLabels = {ai:'AI 拆解','claude-mcp':'AI 助手',meeting:'會議',email:'Email',import:'匯入',manual:'手動新增'};
+    var srcColors = {ai:'var(--primary)','claude-mcp':'var(--primary)',meeting:'var(--teal)',email:'var(--gold)',import:'var(--ink-muted)',manual:'var(--ink-dim)'};
+
+    // Get non-inbox columns for triage target
+    var targetCols = cols.filter(function(c){ return c.id !== 'inbox'; });
+
+    function renderInboxBoard(){
+      var sq = (window._inboxSearch||'').toLowerCase();
+      var filtered = inboxCards;
+      if(sq){
+        filtered = inboxCards.filter(function(c){
+          return (c.title||'').toLowerCase().indexOf(sq) !== -1 || (c.description||'').toLowerCase().indexOf(sq) !== -1;
+        });
+      }
+
+      var html = '';
+      // Header
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">';
+      html += '<div style="display:flex;align-items:center;gap:12px">';
+      html += '<div style="width:40px;height:40px;border-radius:var(--r-lg);background:linear-gradient(135deg,rgba(148,163,184,.15),rgba(148,163,184,.05));display:flex;align-items:center;justify-content:center">';
+      html += '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
+      html += '</div>';
+      html += '<div>';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0">收件匣</h2>';
+      html += '<p style="font-size:13px;color:var(--ink-muted);margin:4px 0 0">分類新進任務，決定下一步</p>';
+      html += '</div></div>';
+      // Action buttons
+      html += '<div style="display:flex;gap:8px">';
+      html += '<button class="btn btn-accent" onclick="window._inboxQuickAdd()" style="padding:8px 16px;font-size:13px"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增</button>';
+      html += '<button class="btn btn-outline" onclick="window._kbShowDecompose()" style="padding:8px 16px;font-size:13px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v4M8 10v4M2 8h4M10 8h4"/><circle cx="8" cy="8" r="2"/></svg> AI 拆解</button>';
+      html += '</div></div>';
+
+      // Search bar
+      html += '<div style="margin-bottom:20px">';
+      html += bpSearchBar('inboxSearchInput', window._inboxSearch||'', '搜尋收件匣…');
+      html += '</div>';
+
+      // Stats bar
+      var aiCount = filtered.filter(function(c){ return c.source === 'ai' || c.source === 'claude-mcp'; }).length;
+      var meetCount = filtered.filter(function(c){ return c.source === 'meeting'; }).length;
+      var manualCount = filtered.filter(function(c){ return c.source === 'manual'; }).length;
+      html += '<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">';
+      html += '<div style="font-size:12px;color:var(--ink-muted);padding:6px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg)">' + filtered.length + ' 項待分類</div>';
+      if(aiCount > 0) html += '<div style="font-size:12px;color:var(--primary);padding:6px 12px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.15);border-radius:var(--r-lg)"><svg width="10" height="10" viewBox="0 0 10 10" fill="var(--primary)" style="margin-right:4px"><circle cx="5" cy="5" r="3"/></svg>AI ' + aiCount + '</div>';
+      if(meetCount > 0) html += '<div style="font-size:12px;color:var(--teal);padding:6px 12px;background:rgba(27,168,145,.06);border:1px solid rgba(27,168,145,.15);border-radius:var(--r-lg)">會議 ' + meetCount + '</div>';
+      html += '</div>';
+
+      if(filtered.length === 0){
+        // Empty state
+        html += '<div style="text-align:center;padding:80px 20px">';
+        html += '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(148,163,184,.1),rgba(148,163,184,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:1px solid rgba(148,163,184,.12)">';
+        html += '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
+        html += '</div>';
+        html += '<div style="font-size:16px;font-weight:600;color:var(--ink-muted);margin-bottom:6px">收件匣清空了</div>';
+        html += '<div style="font-size:13px;color:var(--ink-dim);line-height:1.6">所有新進任務都已分類完成<br>AI 拆解、會議紀錄會自動匯入這裡</div>';
+        html += '</div>';
+      } else {
+        // Card list (Linear-style list view for triage)
+        html += '<div class="inbox-triage-list">';
+        filtered.forEach(function(card){
+          var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
+          var _mem = (card.assigneeId) ? members.find(function(m){ return m.id === card.assigneeId; }) : null;
+          var _assigneeName = card.assignee || (_mem ? _mem.name : '');
+          var srcLabel = srcLabels[card.source] || '';
+          var srcColor = srcColors[card.source] || 'var(--ink-dim)';
+          var dueStr = '';
+          var dueClass = '';
+          if(card.dueDate){
+            var d = new Date(card.dueDate);
+            var diff = Math.ceil((d.getTime()-Date.now())/86400000);
+            dueStr = d.toLocaleDateString('zh-TW',{month:'short',day:'numeric'});
+            if(diff<0) dueClass='overdue'; else if(diff<=3) dueClass='urgent';
+          }
+
+          html += '<div class="inbox-triage-card" data-card="' + card.id + '" onclick="window._inboxShowDetail(\'' + card.id + '\')">';
+          // Left: color bar + content
+          html += '<div style="display:flex;gap:12px;flex:1;min-width:0;align-items:flex-start">';
+          html += '<div style="width:4px;border-radius:2px;background:' + cat.color + ';align-self:stretch;flex-shrink:0"></div>';
+          html += '<div style="flex:1;min-width:0">';
+          html += '<div style="font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;margin-bottom:4px">' + (card.title||'未命名') + '</div>';
+          html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+          html += '<span style="font-size:11px;font-weight:600;color:' + cat.color + '">' + cat.label + '</span>';
+          if(srcLabel) html += '<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:' + srcColor + '10;color:' + srcColor + ';font-weight:600">' + srcLabel + '</span>';
+          if(_assigneeName) html += '<span style="font-size:11px;color:var(--ink-muted)">' + _assigneeName + '</span>';
+          if(dueStr) html += '<span style="font-size:11px;color:' + (dueClass==='overdue'?'var(--rose)':dueClass==='urgent'?'var(--gold)':'var(--ink-dim)') + '">' + dueStr + '</span>';
+          html += '</div></div></div>';
+          // Right: triage action buttons
+          html += '<div class="inbox-triage-actions" style="display:flex;gap:6px;align-items:center;flex-shrink:0">';
+          // Accept → dropdown to select target column
+          html += '<div style="position:relative">';
+          html += '<button class="btn-triage btn-triage-accept" onclick="event.stopPropagation();window._inboxTriageAccept(\'' + card.id + '\',event)" title="接受 → 移至..."><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="4,10 8,14 16,6"/></svg></button>';
+          html += '</div>';
+          // Dismiss (archive)
+          html += '<button class="btn-triage btn-triage-dismiss" onclick="event.stopPropagation();window._inboxTriageDismiss(\'' + card.id + '\')" title="略過（封存）"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button>';
+          html += '</div></div>';
+        });
+        html += '</div>';
+      }
+
+      content.innerHTML = html;
+
+      // Search handler
+      var inp = document.getElementById('inboxSearchInput');
+      if(inp){
+        var composing = false;
+        inp.addEventListener('compositionstart', function(){ composing = true; });
+        inp.addEventListener('compositionend', function(){ composing = false; window._inboxSearch = inp.value; renderInboxBoard(); });
+        inp.addEventListener('input', function(){ if(!composing){ window._inboxSearch = inp.value; renderInboxBoard(); } });
+      }
+    }
+
+    // Triage: Accept → show column picker dropdown
+    window._inboxTriageAccept = function(cardId, evt){
+      // Remove existing dropdown
+      var old = document.querySelector('.inbox-col-picker');
+      if(old) old.remove();
+
+      var btn = evt.currentTarget;
+      var rect = btn.getBoundingClientRect();
+      var dd = document.createElement('div');
+      dd.className = 'inbox-col-picker';
+      dd.style.cssText = 'position:fixed;top:' + (rect.bottom+4) + 'px;right:' + (window.innerWidth - rect.right) + 'px;z-index:9999;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);padding:4px;min-width:140px';
+
+      targetCols.forEach(function(col){
+        var item = document.createElement('button');
+        item.style.cssText = 'display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:transparent;cursor:pointer;border-radius:var(--r-md);font-size:13px;color:var(--ink);text-align:left';
+        item.innerHTML = '<div style="width:10px;height:10px;border-radius:50%;background:' + col.color + ';flex-shrink:0"></div>' + col.label;
+        item.onmouseover = function(){ item.style.background = 'var(--bg-hover)'; };
+        item.onmouseout = function(){ item.style.background = 'transparent'; };
+        item.onclick = function(){
+          dd.remove();
+          _inboxMoveCard(cardId, col.id);
+        };
+        dd.appendChild(item);
+      });
+
+      document.body.appendChild(dd);
+      // Close on outside click
+      setTimeout(function(){
+        function closePicker(e){ if(!dd.contains(e.target)){ dd.remove(); document.removeEventListener('click', closePicker); } }
+        document.addEventListener('click', closePicker);
+      }, 10);
+    };
+
+    function _inboxMoveCard(cardId, targetColId){
+      var allCards = T.getCards().map(T.migrateCard);
+      var idx = allCards.findIndex(function(c){ return c.id === cardId; });
+      if(idx === -1) return;
+      allCards[idx].columnId = targetColId;
+      // Auto-assign to current cycle if moving out of inbox
+      var cyc = T.ensureCurrentCycle();
+      if(!allCards[idx].cycleId) allCards[idx].cycleId = cyc.id;
+      // Add state history
+      allCards[idx].stateHistory = allCards[idx].stateHistory || [];
+      allCards[idx].stateHistory.push({from:'inbox', to:targetColId, at:Date.now(), by:'user'});
+      T.saveCards(allCards);
+      // Refresh
+      cards = T.getCards().map(T.migrateCard);
+      inboxCards = cards.filter(function(c){ return c.columnId === 'inbox' && !c.archived; })
+        .sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+      var targetCol = targetCols.find(function(c){ return c.id === targetColId; });
+      showToast('已移至「' + (targetCol ? targetCol.label : targetColId) + '」');
+      renderInboxBoard();
+    }
+
+    // Triage: Dismiss → archive
+    window._inboxTriageDismiss = function(cardId){
+      var allCards = T.getCards().map(T.migrateCard);
+      var idx = allCards.findIndex(function(c){ return c.id === cardId; });
+      if(idx === -1) return;
+      allCards[idx].archived = true;
+      allCards[idx].stateHistory = allCards[idx].stateHistory || [];
+      allCards[idx].stateHistory.push({from:'inbox', to:'archived', at:Date.now(), by:'user'});
+      T.saveCards(allCards);
+      cards = T.getCards().map(T.migrateCard);
+      inboxCards = cards.filter(function(c){ return c.columnId === 'inbox' && !c.archived; })
+        .sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+      showToast('已封存');
+      renderInboxBoard();
+    };
+
+    // Quick add to inbox
+    window._inboxQuickAdd = function(){
+      var ov = document.createElement('div');
+      ov.className = 'kb-overlay';
+      ov.innerHTML = '<div class="kb-modal" style="max-width:480px">' +
+        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">新增至收件匣</h3><button class="kb-modal-close" onclick="this.closest(\'.kb-overlay\').remove()"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
+        '<div class="kb-modal-body" style="padding:16px 20px">' +
+        '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:6px;display:block">任務標題</label>' +
+        '<input type="text" id="inboxQuickTitle" placeholder="輸入任務名稱…" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;background:var(--bg);color:var(--ink);box-sizing:border-box" autofocus>' +
+        '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin:12px 0 6px;display:block">備註（選填）</label>' +
+        '<textarea id="inboxQuickDesc" placeholder="簡單描述…" rows="3" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:13px;background:var(--bg);color:var(--ink);resize:vertical;box-sizing:border-box"></textarea>' +
+        '</div>' +
+        '<div class="kb-modal-footer" style="justify-content:flex-end">' +
+        '<button class="btn btn-ghost" onclick="this.closest(\'.kb-overlay\').remove()">取消</button>' +
+        '<button class="btn btn-accent" id="inboxQuickSave">新增</button>' +
+        '</div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function(e){ if(e.target === ov) ov.remove(); });
+      var saveBtn = document.getElementById('inboxQuickSave');
+      if(saveBtn) saveBtn.addEventListener('click', function(){
+        var title = (document.getElementById('inboxQuickTitle').value || '').trim();
+        if(!title){ showToast('請輸入標題'); return; }
+        var desc = (document.getElementById('inboxQuickDesc').value || '').trim();
+        var newCard = T.migrateCard({
+          id: T.genId(),
+          title: title,
+          description: desc,
+          columnId: 'inbox',
+          category: 'product',
+          source: 'manual',
+          createdAt: Date.now(),
+          order: 0
+        });
+        var allCards = T.getCards().map(T.migrateCard);
+        allCards.push(newCard);
+        T.saveCards(allCards);
+        cards = T.getCards().map(T.migrateCard);
+        inboxCards = cards.filter(function(c){ return c.columnId === 'inbox' && !c.archived; })
+          .sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+        ov.remove();
+        showToast('已新增至收件匣');
+        renderInboxBoard();
+      });
+      // Enter to submit
+      var titleInp = document.getElementById('inboxQuickTitle');
+      if(titleInp) titleInp.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); saveBtn.click(); } });
+    };
+
+    // Detail → navigate to kanban detail view
+    window._inboxShowDetail = function(cardId){
+      // Switch to biz-tasks and open detail
+      navigate('biz-tasks');
+      setTimeout(function(){ if(window._kbShowDetail) window._kbShowDetail(cardId); }, 200);
+    };
+
+    renderInboxBoard();
+  }
+
+  // ==================== MODULE: TASK CYCLE / SPRINT (v0.8.2) ====================
+  function renderTaskCycle() {
+    var content = document.getElementById('content');
+    var mainEl = document.getElementById('main');
+    if (mainEl) { mainEl.style.overflow = ''; mainEl.style.height = ''; }
+    var appEl = document.getElementById('app');
+    if (appEl) appEl.style.overflow = '';
+
+    var T = _taskShared;
+    var cols = T.getCols();
+    var cards = T.getCards().map(T.migrateCard);
+    var members = T.ensureDefaultMember();
+    var currentCycle = T.ensureCurrentCycle();
+    var allCycles = T.getCycles().sort(function(a,b){ return a.startDate < b.startDate ? -1 : 1; });
+
+    // Non-inbox columns only
+    var workCols = cols.filter(function(c){ return c.id !== 'inbox'; });
+
+    function renderCycleBoard(){
+      var cycleCards = cards.filter(function(c){ return c.cycleId === currentCycle.id && !c.archived && c.columnId !== 'inbox'; });
+      var doneCount = cycleCards.filter(function(c){ return c.columnId === 'done'; }).length;
+      var totalCount = cycleCards.length;
+      var progressPct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
+      var cycIdx = allCycles.findIndex(function(c){ return c.id === currentCycle.id; });
+
+      var html = '';
+      // Header
+      html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px">';
+      html += '<div style="display:flex;align-items:center;gap:12px">';
+      html += '<div style="width:40px;height:40px;border-radius:var(--r-lg);background:linear-gradient(135deg,rgba(124,92,252,.15),rgba(124,92,252,.05));display:flex;align-items:center;justify-content:center">';
+      html += '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+      html += '</div>';
+      html += '<div>';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0">本週週期</h2>';
+      html += '<p style="font-size:13px;color:var(--ink-muted);margin:4px 0 0">聚焦這週要完成的任務</p>';
+      html += '</div></div>';
+
+      // Cycle switcher
+      html += '<div style="display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:6px 12px">';
+      html += '<button style="width:28px;height:28px;border-radius:var(--r-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-muted)' + (cycIdx <= 0 ? ';opacity:.3;pointer-events:none' : '') + '" onclick="window._cyclePrev()"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="10,3 5,8 10,13"/></svg></button>';
+      html += '<div style="text-align:center;min-width:140px"><div style="font-size:13px;font-weight:700;color:var(--ink)">' + currentCycle.label + '</div></div>';
+      html += '<button style="width:28px;height:28px;border-radius:var(--r-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-muted)" onclick="window._cycleNext()"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
+      html += '</div></div>';
+
+      // Progress bar
+      html += '<div style="margin-bottom:24px">';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+      html += '<span style="font-size:13px;font-weight:600;color:var(--ink)">' + doneCount + '/' + totalCount + ' 任務完成</span>';
+      html += '<span style="font-size:13px;font-weight:700;color:var(--primary)">' + progressPct + '%</span>';
+      html += '</div>';
+      html += '<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">';
+      html += '<div style="height:100%;width:' + progressPct + '%;background:linear-gradient(90deg,var(--primary),var(--teal));border-radius:3px;transition:width .4s ease"></div>';
+      html += '</div></div>';
+
+      // Group cards by column (like a focused board)
+      if(cycleCards.length === 0){
+        html += '<div style="text-align:center;padding:60px 20px">';
+        html += '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.08),rgba(124,92,252,.02));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:1px solid rgba(124,92,252,.1)">';
+        html += '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+        html += '</div>';
+        html += '<div style="font-size:16px;font-weight:600;color:var(--ink-muted);margin-bottom:6px">這個週期還沒有任務</div>';
+        html += '<div style="font-size:13px;color:var(--ink-dim);line-height:1.6">從任務總表拖曳或指派任務至此週期<br>或在任務詳情中選擇週期</div>';
+        html += '<button class="btn btn-outline" onclick="navigate(\'biz-tasks\')" style="margin-top:16px;font-size:13px">前往任務總表</button>';
+        html += '</div>';
+      } else {
+        // Render as grouped list by column status
+        workCols.forEach(function(col){
+          var colCards = cycleCards.filter(function(c){ return c.columnId === col.id; })
+            .sort(function(a,b){ return (a.order||0)-(b.order||0); });
+          if(colCards.length === 0) return;
+
+          html += '<div style="margin-bottom:20px">';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">';
+          html += '<div style="width:10px;height:10px;border-radius:50%;background:' + col.color + '"></div>';
+          html += '<span style="font-size:14px;font-weight:700;color:var(--ink)">' + col.label + '</span>';
+          html += '<span style="font-size:12px;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + colCards.length + '</span>';
+          html += '</div>';
+
+          colCards.forEach(function(card){
+            var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
+            var _mem = (card.assigneeId) ? members.find(function(m){ return m.id === card.assigneeId; }) : null;
+            var _assigneeName = card.assignee || (_mem ? _mem.name : '');
+            var dueStr = '';
+            var dueClass = '';
+            if(card.dueDate){
+              var d = new Date(card.dueDate);
+              var diff = Math.ceil((d.getTime()-Date.now())/86400000);
+              dueStr = d.toLocaleDateString('zh-TW',{month:'short',day:'numeric'});
+              if(diff<0) dueClass='overdue'; else if(diff<=3) dueClass='urgent';
+            }
+            var clDone = (card.checklist||[]).filter(function(x){return x.done;}).length;
+            var clTotal = (card.checklist||[]).length;
+
+            html += '<div class="cycle-task-card" onclick="window._cycleShowDetail(\'' + card.id + '\')" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:6px;cursor:pointer;transition:all .15s ease"';
+            html += ' onmouseover="this.style.borderColor=\'var(--primary)\';this.style.boxShadow=\'0 2px 8px rgba(124,92,252,.08)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.boxShadow=\'none\'">';
+            // Color indicator
+            html += '<div style="width:4px;height:32px;border-radius:2px;background:' + cat.color + ';flex-shrink:0"></div>';
+            // Content
+            html += '<div style="flex:1;min-width:0">';
+            html += '<div style="font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (card.title||'未命名') + '</div>';
+            html += '<div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap">';
+            html += '<span style="font-size:11px;font-weight:600;color:' + cat.color + '">' + cat.label + '</span>';
+            if(_assigneeName) html += '<span style="font-size:11px;color:var(--ink-muted)">' + _assigneeName + '</span>';
+            if(clTotal > 0) html += '<span style="font-size:11px;color:var(--ink-dim)">' + clDone + '/' + clTotal + '</span>';
+            if(dueStr) html += '<span style="font-size:11px;color:' + (dueClass==='overdue'?'var(--rose)':dueClass==='urgent'?'var(--gold)':'var(--ink-dim)') + '">' + dueStr + '</span>';
+            html += '</div></div>';
+            // Priority indicator
+            if(card.priority && card.priority !== 'none'){
+              html += '<div style="font-size:10px;font-weight:700;color:' + T.PRIORITY_COLORS[card.priority] + ';padding:2px 6px;border-radius:3px;background:' + T.PRIORITY_COLORS[card.priority] + '12;flex-shrink:0">' + T.PRIORITY_LABELS[card.priority] + '</div>';
+            }
+            html += '</div>';
+          });
+          html += '</div>';
+        });
+
+        // Carry-over button
+        var unfinished = cycleCards.filter(function(c){ return c.columnId !== 'done'; }).length;
+        if(unfinished > 0){
+          html += '<div style="text-align:center;padding-top:16px;border-top:1px solid var(--border)">';
+          html += '<button class="btn btn-ghost" onclick="window._cycleCarryOver()" style="font-size:13px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="margin-right:6px"><path d="M3 8h10M10 5l3 3-3 3"/><line x1="3" y1="12" x2="8" y2="12" stroke-dasharray="2 2"/></svg>結轉 ' + unfinished + ' 項至下週</button>';
+          html += '</div>';
+        }
+      }
+
+      content.innerHTML = html;
+    }
+
+    // Cycle navigation
+    window._cyclePrev = function(){
+      var idx = allCycles.findIndex(function(c){ return c.id === currentCycle.id; });
+      if(idx > 0){ currentCycle = allCycles[idx-1]; renderCycleBoard(); }
+    };
+    window._cycleNext = function(){
+      var idx = allCycles.findIndex(function(c){ return c.id === currentCycle.id; });
+      if(idx < allCycles.length - 1){ currentCycle = allCycles[idx+1]; renderCycleBoard(); }
+    };
+
+    // Carry-over
+    window._cycleCarryOver = function(){
+      var nextMonday = new Date(currentCycle.endDate);
+      nextMonday.setDate(nextMonday.getDate() + 1);
+      var nextCycle = allCycles.find(function(c){ return c.startDate === nextMonday.toISOString().slice(0,10); });
+      if(!nextCycle){
+        // Create next cycle
+        var nextSunday = new Date(nextMonday);
+        nextSunday.setDate(nextMonday.getDate() + 6);
+        nextCycle = {
+          id: 'cycle_' + T.genId(),
+          label: 'W' + T.getISOWeek(nextMonday) + '（' + T.fmtMD(nextMonday) + '-' + T.fmtMD(nextSunday) + '）',
+          startDate: nextMonday.toISOString().slice(0,10),
+          endDate: nextSunday.toISOString().slice(0,10),
+          status: 'active',
+          goals: [],
+          stats: { total:0, completed:0, carryOver:0, agentContributions:0 }
+        };
+        allCycles.push(nextCycle);
+        T.saveCycles(allCycles);
+      }
+      // Move unfinished cards to next cycle
+      var allCards = T.getCards().map(T.migrateCard);
+      var moved = 0;
+      allCards.forEach(function(c){
+        if(c.cycleId === currentCycle.id && c.columnId !== 'done' && !c.archived && c.columnId !== 'inbox'){
+          c.cycleId = nextCycle.id;
+          moved++;
+        }
+      });
+      T.saveCards(allCards);
+      cards = T.getCards().map(T.migrateCard);
+      showToast('已結轉 ' + moved + ' 項至 ' + nextCycle.label);
+      currentCycle = nextCycle;
+      renderCycleBoard();
+    };
+
+    // Detail → navigate to kanban detail view
+    window._cycleShowDetail = function(cardId){
+      navigate('biz-tasks');
+      setTimeout(function(){ if(window._kbShowDetail) window._kbShowDetail(cardId); }, 200);
+    };
+
+    renderCycleBoard();
+  }
+
   // ==================== MODULE: KANBAN TASK BOARD (v1.0.0) ====================
   function renderKanban() {
     var content = document.getElementById('content');
@@ -4730,7 +5351,7 @@ canvas{display:block;margin:0 auto 24px}
 
       html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
       html += '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="12" y="2" width="6" height="6" rx="1"/><rect x="2" y="12" width="6" height="6" rx="1"/><rect x="12" y="12" width="6" height="6" rx="1"/></svg> 任務中心</h2>';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="12" y="2" width="6" height="6" rx="1"/><rect x="2" y="12" width="6" height="6" rx="1"/><rect x="12" y="12" width="6" height="6" rx="1"/></svg> 任務總表</h2>';
       html += '</div>';
       // Cycle Switcher
       html += '<div class="cycle-switcher" style="display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:6px 12px">';
@@ -4756,9 +5377,22 @@ canvas{display:block;margin:0 auto 24px}
       html += bpSearchBar('kbSearchInput', window._kbSearch||'', '搜尋任務…');
       html += '</div>';
 
+      // Board columns: exclude inbox (inbox has its own page now)
+      var boardCols = cols.filter(function(c){ return c.id !== 'inbox'; });
+
+      // Inbox count badge — link to inbox page
+      var _inboxCount = cards.filter(function(c){ return c.columnId === 'inbox' && !c.archived; }).length;
+      if(_inboxCount > 0){
+        html += '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(148,163,184,.06);border:1px solid rgba(148,163,184,.12);border-radius:var(--r-lg);margin-bottom:12px;cursor:pointer" onclick="navigate(\'biz-inbox\')">';
+        html += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
+        html += '<span style="font-size:13px;color:var(--ink-muted)">' + _inboxCount + ' 項待分類</span>';
+        html += '<span style="font-size:12px;color:var(--primary);margin-left:auto;font-weight:600">前往收件匣 →</span>';
+        html += '</div>';
+      }
+
       // Mobile tabs (hidden on desktop via CSS)
       html += '<div class="kb-mobile-tabs" id="kbMobileTabs" style="display:none">';
-      cols.forEach(function(col, ci){
+      boardCols.forEach(function(col, ci){
         var colCount = cards.filter(function(c){ return c.columnId === col.id && !c.archived; }).length;
         html += '<button class="kb-mobile-tab' + (ci === (window._kbMobileActiveIdx||0) ? ' active' : '') + '" data-colidx="' + ci + '" onclick="window._kbMobileSwitch(' + ci + ')">';
         html += '<span class="tab-dot" style="background:' + col.color + '"></span>';
@@ -4771,7 +5405,7 @@ canvas{display:block;margin:0 auto 24px}
       // Kanban columns (wrapped for scroll affordance)
       html += '<div class="kanban-board-wrap" id="kbBoardWrap">';
       html += '<div class="kanban-board" id="kbBoard">';
-      cols.forEach(function(col, ci){
+      boardCols.forEach(function(col, ci){
         var colCards = cards.filter(function(c){
           if(c.columnId !== col.id) return false;
           if(!showArchived && c.archived) return false;
@@ -19514,4 +20148,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.8.1 -->
+</html><!-- v0.8.2 -->
