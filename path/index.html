@@ -3117,6 +3117,79 @@ canvas{display:block;margin:0 auto 24px}
 }
 .tc-btn-unschedule:hover{color:var(--rose);border-color:rgba(217,68,98,.3)}
 
+/* — Planning v2: drag rows — */
+.tp-row{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;
+  border-radius:var(--r-md);cursor:grab;user-select:none;
+  transition:all .15s cubic-bezier(.4,0,.2,1);
+  animation:tc-fadeUp .22s cubic-bezier(.22,1,.36,1) both;
+  border:1px solid transparent;
+}
+.tp-row:hover{background:var(--bg-hover);border-color:var(--border)}
+.tp-row:active{cursor:grabbing}
+.tp-row.dragging{opacity:.4;border:1px dashed var(--primary)}
+.tp-row .tp-grip{
+  width:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;
+  opacity:.25;transition:opacity .15s;cursor:grab;
+}
+.tp-row:hover .tp-grip{opacity:.6}
+.tp-row .tp-grip span{width:10px;height:2px;border-radius:1px;background:var(--ink-muted);display:block}
+.tp-row .tp-title{flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tp-row .tp-pri{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tp-row .tp-cat{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.tp-row .tp-tag{font-size:10px;font-weight:500;color:var(--ink-muted);background:var(--bg-hover);padding:2px 7px;border-radius:4px;white-space:nowrap}
+.tp-row .tp-avatar{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tp-row .tp-due{font-size:11px;color:var(--ink-dim);white-space:nowrap;flex-shrink:0}
+.tp-row .tp-due.overdue{color:var(--rose);font-weight:600}
+
+/* — Planning v2: drop zones — */
+.tp-dropzone{
+  min-height:48px;border:2px dashed transparent;border-radius:var(--r-lg);
+  transition:all .2s cubic-bezier(.4,0,.2,1);padding:4px;
+}
+.tp-dropzone.drag-over{border-color:var(--primary);background:rgba(124,92,252,.04)}
+
+/* — Planning v2: cycle card — */
+.tp-cycle-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:14px 16px;margin-bottom:12px;
+  transition:border-color .2s;
+}
+.tp-cycle-card.drag-over{border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.1)}
+.tp-cycle-card.next-cycle{opacity:.85}
+.tp-cycle-card.next-cycle:hover{opacity:1}
+
+/* — Planning v2: filter dropdown — */
+.tp-filter-btn{
+  padding:5px 12px;border:1px solid var(--border);border-radius:var(--r-md);
+  background:transparent;color:var(--ink-muted);font-size:11px;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:4px;
+  white-space:nowrap;
+}
+.tp-filter-btn:hover{border-color:var(--ink-muted);color:var(--ink)}
+.tp-filter-btn.active{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.04)}
+.tp-filter-drop{
+  position:absolute;top:calc(100% + 4px);left:0;min-width:150px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);
+  box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;padding:6px 0;
+  animation:tc-fadeUp .15s cubic-bezier(.22,1,.36,1) both;
+}
+.tp-filter-drop label{
+  display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:12px;
+  color:var(--ink);cursor:pointer;transition:background .1s;
+}
+.tp-filter-drop label:hover{background:var(--bg-hover)}
+.tp-filter-drop input[type=checkbox]{width:14px;height:14px;accent-color:var(--primary);cursor:pointer}
+
+/* — Planning v2: section group toggle — */
+.tp-group-hdr{
+  display:flex;align-items:center;gap:6px;padding:6px 4px;cursor:pointer;
+  border-radius:var(--r-md);transition:background .12s;user-select:none;
+}
+.tp-group-hdr:hover{background:var(--bg-hover)}
+.tp-group-hdr .tp-arrow{transition:transform .2s;display:flex}
+.tp-group-hdr .tp-arrow.collapsed{transform:rotate(-90deg)}
+
 .tc-btn-archive{
   padding:4px 10px;border:1px solid var(--border);border-radius:var(--r-md);
   background:transparent;color:var(--ink-dim);font-size:11px;font-weight:600;
@@ -3355,7 +3428,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.11.4</div>
+        <div class="sidebar-version">v0.12.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6147,222 +6220,479 @@ canvas{display:block;margin:0 auto 24px}
     var catKeys = ['all','product','dev','qa','marketing','sales','admin'];
     var catLabels = {all:'全部',product:'產品',dev:'開發',qa:'驗收',marketing:'行銷',sales:'業務',admin:'行政'};
 
-    // ── Render shared header with tabs ──
+    // ── Render shared header (v2: no add button — moved to filter row) ──
     function renderHeader(){
-      var cycleCards = getCycleCards(currentCycle.id);
-      var blCount = backlogCards.length;
-      var cycCount = cycleCards.length;
-
       var html = '';
       html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap;animation:tc-fadeUp .3s cubic-bezier(.22,1,.36,1) both">';
       html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
       html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg> 任務規劃</h2>';
       html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">管理需求、決定每一輪的工作內容</span>';
-      html += '</div>';
-      html += '<div style="display:flex;gap:8px;align-items:center">';
-      html += '<button class="btn btn-accent" onclick="window._tpOpenCard(null, \'inbox\')" style="padding:8px 16px;font-size:13px"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增需求</button>';
       html += '</div></div>';
-
       return html;
     }
 
-    function renderBacklog(){
-      var filterCat = window._blFilterCat || 'all';
-      var filtered = backlogCards;
+    // ── Build filter dropdown HTML ──
+    function buildFilterDrop(id, label, options, selectedArr){
+      var hasActive = selectedArr && selectedArr.length > 0;
+      var h = '<div style="position:relative;display:inline-block" id="' + id + 'Wrap">';
+      h += '<button class="tp-filter-btn' + (hasActive ? ' active' : '') + '" onclick="window._tpToggleDrop(\'' + id + '\')">';
+      h += label;
+      if(hasActive) h += ' (' + selectedArr.length + ')';
+      h += ' <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>';
+      h += '</button>';
+      h += '<div class="tp-filter-drop" id="' + id + 'List" style="display:none">';
+      options.forEach(function(opt){
+        var checked = selectedArr && selectedArr.indexOf(opt.value) !== -1;
+        h += '<label>';
+        h += '<input type="checkbox" ' + (checked ? 'checked' : '') + ' data-filter-group="' + id + '" data-filter-val="' + opt.value + '" onchange="window._tpFilterChange(\'' + id + '\',\'' + opt.value + '\',this.checked)"/>';
+        if(opt.dot) h += '<span style="width:7px;height:7px;border-radius:50%;background:' + opt.dot + ';flex-shrink:0"></span>';
+        h += opt.label + '</label>';
+      });
+      h += '<div style="border-top:1px solid var(--border);margin-top:4px;padding:6px 14px 2px">';
+      h += '<button style="background:none;border:none;color:var(--ink-muted);font-size:11px;cursor:pointer;font-family:inherit;padding:0" onclick="window._tpClearFilter(\'' + id + '\')">清除</button>';
+      h += '</div></div></div>';
+      return h;
+    }
 
-      if(filterCat !== 'all'){
-        filtered = filtered.filter(function(c){ return c.category === filterCat; });
+    // ── Build single-row task item (used by both panes) ──
+    function buildTaskRow(card, dragSource){
+      var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
+      var priColor = getPriorityColor(card.priority || 'none');
+      var assignee = card.assignee || '';
+      var initial = assignee ? assignee.charAt(0).toUpperCase() : '';
+      var dueStr = '';
+      var isOverdue = false;
+      if(card.dueDate){
+        var dd = new Date(card.dueDate + 'T00:00:00');
+        var now = new Date();
+        now.setHours(0,0,0,0);
+        dueStr = (dd.getMonth()+1) + '/' + dd.getDate();
+        if(dd < now && card.columnId !== 'done') isOverdue = true;
       }
+      var h = '<div class="tp-row" draggable="true" data-card-id="' + card.id + '" data-drag-source="' + dragSource + '" onclick="window._tpOpenCard(\'' + card.id + '\')">';
+      // Grip handle
+      h += '<div class="tp-grip"><span></span><span></span><span></span></div>';
+      // Priority dot
+      h += '<div class="tp-pri" style="background:' + priColor + '"></div>';
+      // Title
+      h += '<div class="tp-title">' + (card.title || '未命名') + '</div>';
+      // Category chip
+      h += '<span class="tp-cat" style="color:' + cat.color + ';background:' + cat.color + '12">' + cat.label + '</span>';
+      // Tags (max 2 + overflow)
+      if(card.tags && card.tags.length > 0){
+        var showTags = card.tags.slice(0, 2);
+        showTags.forEach(function(tag){ h += '<span class="tp-tag">' + tag + '</span>'; });
+        if(card.tags.length > 2) h += '<span class="tp-tag">+' + (card.tags.length - 2) + '</span>';
+      }
+      // Assignee
+      if(initial) h += '<div class="tp-avatar">' + initial + '</div>';
+      // Due date
+      if(dueStr) h += '<span class="tp-due' + (isOverdue ? ' overdue' : '') + '">' + dueStr + '</span>';
+      h += '</div>';
+      return h;
+    }
+
+    function renderBacklog(){
+      // ── Filter state ──
+      var fPri = window._tpFilterPri || [];
+      var fCat = window._tpFilterCat || [];
+      var fTag = window._tpFilterTag || [];
+
+      var filtered = backlogCards;
+      if(fPri.length > 0) filtered = filtered.filter(function(c){ return fPri.indexOf(c.priority || 'none') !== -1; });
+      if(fCat.length > 0) filtered = filtered.filter(function(c){ return fCat.indexOf(c.category || 'product') !== -1; });
+      if(fTag.length > 0) filtered = filtered.filter(function(c){
+        if(!c.tags || c.tags.length === 0) return false;
+        return fTag.some(function(t){ return c.tags.indexOf(t) !== -1; });
+      });
 
       var html = '';
       html += renderHeader();
 
       // ── Cycle data ──
-      var cfg = T.getCycleConfig();
       var cycleCards = getCycleCards(currentCycle.id);
-      var duration = cfg.duration || 7;
-      var suggestedCapacity = cfg.suggestedCapacity || (duration === 7 ? 8 : 16);
       var doneCount = cycleCards.filter(function(c){ return c.columnId === 'done'; }).length;
       var totalCount = cycleCards.length;
       var _now = new Date();
-      var _cycEnd = new Date(currentCycle.endDate);
-      var _cycStart = new Date(currentCycle.startDate);
+      var _cycEnd = new Date(currentCycle.endDate + 'T00:00:00');
+      var _cycStart = new Date(currentCycle.startDate + 'T00:00:00');
       var _daysLeft = Math.max(0, Math.ceil((_cycEnd.getTime() - _now.getTime()) / 86400000));
       var _totalDays = Math.max(1, Math.ceil((_cycEnd.getTime() - _cycStart.getTime()) / 86400000));
       var _elapsed = _totalDays - _daysLeft;
       var timeProgressPct = Math.min(100, Math.round(_elapsed / _totalDays * 100));
       var completionPct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
 
-      // ── Cycle timeline card ──
       var cycIdx = allCycles.findIndex(function(c){ return c.id === currentCycle.id; });
-      var fmtDate = function(ds){ var d = new Date(ds); return (d.getMonth()+1) + '/' + d.getDate(); };
+      var fmtDate = function(ds){ var d = new Date(ds + 'T00:00:00'); return (d.getMonth()+1) + '/' + d.getDate(); };
       var startLabel = fmtDate(currentCycle.startDate);
       var endLabel = fmtDate(currentCycle.endDate);
       var daysLeftColor = _daysLeft <= 1 ? 'var(--rose)' : _daysLeft <= 3 ? 'var(--gold)' : 'var(--teal)';
 
-      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:16px 20px;margin-bottom:20px">';
-      // Row 1: Cycle navigation + settings
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+      // ── Cycle timeline bar ──
+      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:14px 20px;margin-bottom:20px">';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
       html += '<div style="display:flex;align-items:center;gap:8px">';
-      html += '<button onclick="window._cpCyclePrev()" style="width:28px;height:28px;border:none;background:var(--bg-hover);cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s' + (cycIdx<=0?';opacity:.3;pointer-events:none':'') + '" onmouseover="this.style.background=\'var(--border)\'" onmouseout="this.style.background=\'var(--bg-hover)\'"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="10,3 5,8 10,13"/></svg></button>';
-      html += '<div style="text-align:center"><div style="font-size:15px;font-weight:700;color:var(--ink)">' + startLabel + ' — ' + endLabel + '</div></div>';
-      html += '<button onclick="window._cpCycleNext()" style="width:28px;height:28px;border:none;background:var(--bg-hover);cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s" onmouseover="this.style.background=\'var(--border)\'" onmouseout="this.style.background=\'var(--bg-hover)\'"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
+      html += '<button onclick="window._cpCyclePrev()" style="width:26px;height:26px;border:none;background:var(--bg-hover);cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s' + (cycIdx<=0?';opacity:.3;pointer-events:none':'') + '"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="10,3 5,8 10,13"/></svg></button>';
+      html += '<div style="font-size:15px;font-weight:700;color:var(--ink)">' + startLabel + ' — ' + endLabel + '</div>';
+      html += '<button onclick="window._cpCycleNext()" style="width:26px;height:26px;border:none;background:var(--bg-hover);cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
       html += '</div>';
-      html += '<button onclick="window._cpShowSettings()" style="padding:4px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:transparent;cursor:pointer;color:var(--ink-muted);font-size:11px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s" onmouseover="this.style.borderColor=\'var(--ink-muted)\'" onmouseout="this.style.borderColor=\'var(--border)\'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>週期設定</button>';
-      html += '</div>';
-      // Row 2: Timeline progress bar
-      html += '<div style="position:relative;height:6px;background:var(--bg-hover);border-radius:3px;margin-bottom:10px;overflow:hidden">';
-      html += '<div style="position:absolute;left:0;top:0;height:100%;width:' + timeProgressPct + '%;background:linear-gradient(90deg,' + daysLeftColor + ',var(--primary));border-radius:3px;transition:width .4s"></div>';
-      html += '</div>';
-      // Row 3: Stats
-      html += '<div style="display:flex;align-items:center;gap:16px;font-size:12px;color:var(--ink-muted)">';
+      html += '<div style="display:flex;align-items:center;gap:12px">';
+      html += '<div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ink-muted)">';
       html += '<span>剩餘 <strong style="color:' + daysLeftColor + '">' + _daysLeft + '</strong> 天</span>';
       html += '<span style="opacity:.3">|</span>';
-      html += '<span>已排 <strong style="color:var(--ink)">' + totalCount + '</strong> / ' + suggestedCapacity + '</span>';
+      html += '<span>已排 <strong style="color:var(--ink)">' + totalCount + '</strong> 筆</span>';
       html += '<span style="opacity:.3">|</span>';
       html += '<span>完成 <strong style="color:var(--teal)">' + doneCount + '</strong></span>';
-      if(completionPct > 0) {
-        html += '<span style="opacity:.3">|</span>';
-        html += '<span style="color:var(--teal);font-weight:600">' + completionPct + '%</span>';
-      }
+      if(completionPct > 0){ html += '<span style="color:var(--teal);font-weight:600;margin-left:2px">' + completionPct + '%</span>'; }
       html += '</div>';
-      html += '</div>';
+      html += '<button onclick="window._cpShowSettings()" style="padding:4px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:transparent;cursor:pointer;color:var(--ink-muted);font-size:11px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>週期設定</button>';
+      html += '</div></div>';
+      html += '<div style="position:relative;height:5px;background:var(--bg-hover);border-radius:3px;overflow:hidden">';
+      html += '<div style="position:absolute;left:0;top:0;height:100%;width:' + timeProgressPct + '%;background:linear-gradient(90deg,' + daysLeftColor + ',var(--primary));border-radius:3px;transition:width .4s"></div>';
+      html += '</div></div>';
 
       // ── Dual pane layout ──
-      html += '<div style="display:flex;gap:20px;min-height:calc(100vh - 340px)">';
+      html += '<div style="display:flex;gap:1px;min-height:calc(100vh - 320px);position:relative">';
+      // Vertical separator
+      html += '<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border);z-index:1"></div>';
 
-      // ── LEFT PANE: 需求池 ──
-      html += '<div style="flex:1;min-width:0">';
+      // ══════ LEFT PANE: 需求池 ══════
+      html += '<div style="flex:1;min-width:0;padding-right:16px">';
 
-      // Left pane title
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
-      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg> 需求池 <span style="font-size:12px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + backlogCards.length + '</span></div>';
+      // Title + Add button + Filters
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">';
+      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;margin-right:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg> 需求池 <span style="font-size:11px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 7px;border-radius:10px">' + backlogCards.length + '</span></div>';
+      // Add button (moved from header)
+      html += '<button class="btn btn-accent" onclick="window._tpOpenCard(null,\'inbox\')" style="padding:5px 14px;font-size:12px;display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增</button>';
+      html += '<div style="flex:1"></div>';
+      // Filter dropdowns
+      var priOpts = [{value:'high',label:'高',dot:'#D94462'},{value:'medium',label:'中',dot:'#E08A3A'},{value:'low',label:'低',dot:'#3B82F6'},{value:'none',label:'一般',dot:'#9CA3AF'}];
+      html += buildFilterDrop('tpPri', '優先度', priOpts, fPri);
+      var catOpts = [{value:'product',label:'產品規劃',dot:T.TASK_CATEGORIES.product.color},{value:'dev',label:'設計開發',dot:T.TASK_CATEGORIES.dev.color},{value:'qa',label:'項目驗收',dot:T.TASK_CATEGORIES.qa.color},{value:'marketing',label:'市場行銷',dot:T.TASK_CATEGORIES.marketing.color},{value:'sales',label:'業務接洽',dot:T.TASK_CATEGORIES.sales.color},{value:'admin',label:'人事行政',dot:T.TASK_CATEGORIES.admin.color}];
+      html += buildFilterDrop('tpCat', '分類', catOpts, fCat);
+      // Collect all unique tags from backlog for tag filter
+      var allTags = {};
+      backlogCards.forEach(function(c){ if(c.tags) c.tags.forEach(function(t){ allTags[t] = true; }); });
+      var tagOpts = Object.keys(allTags).sort().map(function(t){ return {value:t,label:t}; });
+      if(tagOpts.length > 0) html += buildFilterDrop('tpTag', '標籤', tagOpts, fTag);
+      // Clear all filters
+      if(fPri.length > 0 || fCat.length > 0 || fTag.length > 0){
+        html += '<button style="background:none;border:none;color:var(--ink-dim);font-size:11px;cursor:pointer;font-family:inherit;padding:2px 6px;text-decoration:underline" onclick="window._tpClearAllFilters()">清除篩選</button>';
+      }
       html += '</div>';
 
-      // Category filter chips
-      html += '<div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap">';
-      catKeys.forEach(function(key){
-        var count = key === 'all' ? backlogCards.length : backlogCards.filter(function(c){ return c.category === key; }).length;
-        var isActive = filterCat === key;
-        html += '<button onclick="window._blSetFilter(\'' + key + '\')" style="padding:5px 12px;border:1px solid ' + (isActive ? 'var(--primary)' : 'var(--border)') + ';border-radius:20px;background:' + (isActive ? 'var(--primary)' : 'transparent') + ';color:' + (isActive ? '#fff' : 'var(--ink-muted)') + ';font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit">' + catLabels[key];
-        if(count > 0) html += ' <span style="opacity:.7">' + count + '</span>';
-        html += '</button>';
-      });
-      html += '</div>';
-
-      // Backlog list: group by priority
+      // Left pane drop zone + list
+      html += '<div class="tp-dropzone" id="tpDropBacklog" style="overflow-y:auto;max-height:calc(100vh - 380px)">';
       if(filtered.length === 0){
-        html += '<div style="text-align:center;padding:60px 20px">';
-        html += '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(148,163,184,.1),rgba(148,163,184,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid rgba(148,163,184,.12)">';
-        html += '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
-        html += '</div>';
-        if(filterCat !== 'all'){
-          html += '<div style="font-size:15px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">沒有符合條件的需求</div>';
-          html += '<div style="font-size:13px;color:var(--ink-dim)">試試切換分類篩選</div>';
+        html += '<div style="text-align:center;padding:48px 16px">';
+        if(fPri.length > 0 || fCat.length > 0 || fTag.length > 0){
+          html += '<div style="font-size:14px;color:var(--ink-muted);margin-bottom:4px">沒有符合條件的需求</div>';
+          html += '<div style="font-size:12px;color:var(--ink-dim)">調整篩選條件試試</div>';
         } else {
-          html += '<div style="font-size:15px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">待排需求池是空的</div>';
-          html += '<div style="font-size:13px;color:var(--ink-dim);line-height:1.6">點擊「新增需求」建立項目</div>';
+          html += '<div style="font-size:14px;color:var(--ink-muted);margin-bottom:4px">需求池是空的</div>';
+          html += '<div style="font-size:12px;color:var(--ink-dim)">點「新增」建立第一筆需求</div>';
         }
         html += '</div>';
       } else {
-        html += '<div style="overflow-y:auto;max-height:calc(100vh - 400px)">';
-        // Group by priority
-        var priGroups = {high:[],medium:[],low:[],none:[]};
-        filtered.forEach(function(card){
-          var pri = card.priority || 'none';
-          if(!priGroups[pri]) priGroups[pri] = [];
-          priGroups[pri].push(card);
-        });
-        var priOrderList = ['high','medium','low','none'];
-        priOrderList.forEach(function(priKey){
-          var priCards = priGroups[priKey];
-          if(priCards.length === 0) return;
-          html += '<div style="margin-bottom:12px">';
-          html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:0 4px">';
-          html += '<div style="width:6px;height:6px;border-radius:50%;background:' + getPriorityColor(priKey) + '"></div>';
-          html += '<span style="font-size:12px;font-weight:700;color:var(--ink-muted)">' + getPriorityLabel(priKey) + '</span>';
-          html += '<span style="font-size:11px;color:var(--ink-dim)">' + priCards.length + '</span>';
-          html += '</div>';
-          priCards.forEach(function(card){
-            var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
-            html += '<div class="tc-card" style="padding:10px 14px;margin-bottom:6px;cursor:pointer" onclick="window._tpOpenCard(\'' + card.id + '\')" id="card-' + card.id + '">';
-            html += '<div style="display:flex;align-items:center;gap:10px">';
-            html += '<div style="width:4px;height:4px;border-radius:50%;background:' + getPriorityColor(card.priority||'none') + ';flex-shrink:0"></div>';
-            html += '<div style="flex:1;min-width:0">';
-            html += '<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (card.title||'未命名') + '</div>';
-            html += '</div>';
-            html += '<button class="tc-btn-schedule" onclick="event.stopPropagation();window._blScheduleCard(\'' + card.id + '\')"><svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><circle cx="10" cy="10" r="7.5"/><polyline points="10,6 10,10 13,12"/></svg>排入</button>';
-            html += '</div>';
-            // Category + Tags row (separate)
-            html += '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding-left:14px;flex-wrap:wrap">';
-            html += '<span style="font-size:10px;font-weight:600;color:' + cat.color + ';background:' + cat.color + '12;padding:2px 8px;border-radius:4px">' + cat.label + '</span>';
-            if(card.tags && card.tags.length > 0){
-              card.tags.forEach(function(tag){
-                html += '<span style="font-size:10px;font-weight:500;color:var(--ink-muted);background:var(--bg-hover);padding:2px 7px;border-radius:4px">' + tag + '</span>';
-              });
-            }
-            html += '</div>';
-            html += '</div>';
-          });
-          html += '</div>';
-        });
-        html += '</div>';
+        filtered.forEach(function(card){ html += buildTaskRow(card, 'backlog'); });
       }
+      html += '</div>';
       html += '</div>'; // end LEFT PANE
 
-      // ── RIGHT PANE: Current cycle tasks grouped by status ──
-      html += '<div style="flex:1;min-width:0">';
-      html += '<div style="display:flex;align-items:center;margin-bottom:12px">';
-      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 週期任務 <span style="font-size:12px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + totalCount + '</span></div>';
+      // ══════ RIGHT PANE: 週期任務 ══════
+      html += '<div style="flex:1;min-width:0;padding-left:16px;background:linear-gradient(180deg,rgba(124,92,252,.015),rgba(124,92,252,.003));border-radius:0 var(--r-xl) var(--r-xl) 0">';
+
+      // ── Current cycle card ──
+      html += '<div class="tp-cycle-card tp-dropzone" id="tpDropCurrent">';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
+      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 本週期 <span style="font-size:12px;font-weight:500;color:var(--ink-muted)">' + startLabel + '—' + endLabel + '</span></div>';
+      html += '<span style="font-size:11px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + totalCount + '</span>';
       html += '</div>';
 
       if(cycleCards.length === 0){
-        html += '<div style="text-align:center;padding:40px 16px;background:var(--bg-card);border:2px dashed var(--border);border-radius:var(--r-lg)">';
-        html += '<div style="font-size:14px;color:var(--ink-muted);margin-bottom:4px">本期還沒有任務</div>';
-        html += '<div style="font-size:12px;color:var(--ink-dim)">從左邊需求池點「排入」加入任務</div>';
-        html += '</div>';
+        html += '<div style="text-align:center;padding:32px 12px;border:2px dashed var(--border);border-radius:var(--r-lg);color:var(--ink-dim);font-size:13px">拖曳需求至此排入本週期</div>';
       } else {
-        var colOrder = [{id:'todo',label:'待處理',color:'#7C5CFC'},{id:'doing',label:'進行中',color:'#E08A3A'},{id:'review',label:'驗收中',color:'#3B82F6'},{id:'done',label:'已完成',color:'#1BA891'}];
-        html += '<div style="overflow-y:auto;max-height:calc(100vh - 400px)">';
+        var colOrder = [{id:'doing',label:'進行中',color:'#E08A3A'},{id:'todo',label:'待處理',color:'#7C5CFC'},{id:'review',label:'驗收中',color:'#3B82F6'},{id:'done',label:'已完成',color:'#1BA891'}];
         colOrder.forEach(function(col){
           var colCards = cycleCards.filter(function(c){ return c.columnId === col.id; });
-          if(colCards.length === 0) return;
-          html += '<div style="margin-bottom:12px">';
-          html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:0 4px">';
-          html += '<div style="width:6px;height:6px;border-radius:50%;background:' + col.color + '"></div>';
+          if(colCards.length === 0 && col.id !== 'todo') return;
+          var isCollapsed = window['_tpCollapse_' + col.id];
+          // Group header (clickable to collapse)
+          html += '<div class="tp-group-hdr" onclick="window._tpToggleGroup(\'' + col.id + '\')" style="margin-bottom:' + (isCollapsed ? '6' : '4') + 'px">';
+          html += '<span class="tp-arrow' + (isCollapsed ? ' collapsed' : '') + '"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--ink-muted)" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg></span>';
+          html += '<span style="width:7px;height:7px;border-radius:50%;background:' + col.color + '"></span>';
           html += '<span style="font-size:12px;font-weight:700;color:var(--ink-muted)">' + col.label + '</span>';
           html += '<span style="font-size:11px;color:var(--ink-dim)">' + colCards.length + '</span>';
           html += '</div>';
-          colCards.forEach(function(card){
-            var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
-            html += '<div class="tc-card" style="padding:10px 14px;margin-bottom:4px;cursor:pointer" onclick="window._tpOpenCard(\'' + card.id + '\')" id="card-' + card.id + '">';
-            html += '<div style="display:flex;align-items:center;gap:10px">';
-            html += '<div style="width:6px;height:6px;border-radius:50%;background:' + col.color + ';flex-shrink:0"></div>';
-            html += '<div style="flex:1;min-width:0">';
-            html += '<div style="font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (card.title||'未命名') + '</div>';
-            html += '</div>';
-            html += '<button class="tc-btn-unschedule" onclick="event.stopPropagation();window._cpUnscheduleCard(\'' + card.id + '\')">← 退回</button>';
-            html += '</div>';
-            // Category + Tags row (separate)
-            html += '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;padding-left:16px;flex-wrap:wrap">';
-            html += '<span style="font-size:10px;font-weight:600;color:' + cat.color + ';background:' + cat.color + '12;padding:2px 8px;border-radius:4px">' + cat.label + '</span>';
-            if(card.tags && card.tags.length > 0){
-              card.tags.forEach(function(tag){
-                html += '<span style="font-size:10px;font-weight:500;color:var(--ink-muted);background:var(--bg-hover);padding:2px 7px;border-radius:4px">' + tag + '</span>';
-              });
+          if(!isCollapsed){
+            if(colCards.length === 0){
+              html += '<div style="padding:12px;border:1.5px dashed var(--border);border-radius:var(--r-md);text-align:center;color:var(--ink-dim);font-size:12px;margin-bottom:8px">拖曳需求至此</div>';
+            } else {
+              colCards.forEach(function(card){ html += buildTaskRow(card, 'current'); });
             }
-            html += '</div>';
-            html += '</div>';
-          });
-          html += '</div>';
+          }
         });
-        html += '</div>';
       }
-      html += '</div>'; // end RIGHT PANE
+      html += '</div>'; // end current cycle card
 
+      // ── Next cycle card ──
+      var nextCycIdx = cycIdx + 1;
+      var nextCycle = nextCycIdx < allCycles.length ? allCycles[nextCycIdx] : null;
+      if(!nextCycle){
+        // Auto-create next cycle placeholder
+        var ncStart = new Date(currentCycle.endDate + 'T00:00:00');
+        ncStart.setDate(ncStart.getDate() + 1);
+        var ncEnd = new Date(ncStart);
+        ncEnd.setDate(ncEnd.getDate() + ((cfg.duration || 7) - 1));
+        var ncStartStr = ncStart.toISOString().split('T')[0];
+        var ncEndStr = ncEnd.toISOString().split('T')[0];
+        // Check if it already exists
+        nextCycle = allCycles.find(function(c){ return c.startDate === ncStartStr; });
+        if(!nextCycle){
+          nextCycle = {id:'cycle_next_' + ncStartStr, label:'下週期', startDate:ncStartStr, endDate:ncEndStr};
+          // Save it
+          allCycles.push(nextCycle);
+          T.saveCycles(allCycles);
+        }
+      }
+      var nextCycleCards = getCycleCards(nextCycle.id);
+      var ncStart2 = fmtDate(nextCycle.startDate);
+      var ncEnd2 = fmtDate(nextCycle.endDate);
+
+      html += '<div class="tp-cycle-card next-cycle tp-dropzone" id="tpDropNext">';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+      html += '<div style="font-size:13px;font-weight:700;color:var(--ink-muted);display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 下週期 <span style="font-size:11px;font-weight:500;color:var(--ink-dim)">' + ncStart2 + '—' + ncEnd2 + '</span></div>';
+      html += '<span style="font-size:11px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + nextCycleCards.length + '</span>';
+      html += '</div>';
+      if(nextCycleCards.length === 0){
+        html += '<div style="padding:16px;border:1.5px dashed var(--border);border-radius:var(--r-md);text-align:center;color:var(--ink-dim);font-size:12px">拖曳需求至此預排下週期</div>';
+      } else {
+        nextCycleCards.forEach(function(card){ html += buildTaskRow(card, 'next'); });
+      }
+      html += '</div>'; // end next cycle card
+
+      html += '</div>'; // end RIGHT PANE
       html += '</div>'; // end dual-pane
 
       content.innerHTML = html;
+
+      // ── Attach drag & drop handlers ──
+      _tpInitDragDrop();
+    }
+
+    // ═══════════════════════════════════════════════════
+    // ── Task Planning v2: Filter handlers ──
+    // ═══════════════════════════════════════════════════
+
+    window._tpToggleDrop = function(id){
+      var listEl = document.getElementById(id + 'List');
+      if(!listEl) return;
+      var isOpen = listEl.style.display !== 'none';
+      // Close all other dropdowns first
+      var allDrops = document.querySelectorAll('.tp-filter-drop');
+      for(var i = 0; i < allDrops.length; i++) allDrops[i].style.display = 'none';
+      if(!isOpen) listEl.style.display = 'block';
+    };
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', function(e){
+      if(!e.target.closest('.tp-filter-btn') && !e.target.closest('.tp-filter-drop')){
+        var allDrops = document.querySelectorAll('.tp-filter-drop');
+        for(var i = 0; i < allDrops.length; i++) allDrops[i].style.display = 'none';
+      }
+    });
+
+    window._tpFilterChange = function(group, value, checked){
+      var stateKey = group === 'tpPri' ? '_tpFilterPri' : group === 'tpCat' ? '_tpFilterCat' : '_tpFilterTag';
+      var arr = window[stateKey] || [];
+      if(checked){
+        if(arr.indexOf(value) === -1) arr.push(value);
+      } else {
+        arr = arr.filter(function(v){ return v !== value; });
+      }
+      window[stateKey] = arr;
+      renderBacklog();
+    };
+
+    window._tpClearFilter = function(id){
+      var stateKey = id === 'tpPri' ? '_tpFilterPri' : id === 'tpCat' ? '_tpFilterCat' : '_tpFilterTag';
+      window[stateKey] = [];
+      renderBacklog();
+    };
+
+    window._tpClearAllFilters = function(){
+      window._tpFilterPri = [];
+      window._tpFilterCat = [];
+      window._tpFilterTag = [];
+      renderBacklog();
+    };
+
+    // ═══════════════════════════════════════════════════
+    // ── Task Planning v2: Group toggle (collapse/expand) ──
+    // ═══════════════════════════════════════════════════
+
+    window._tpToggleGroup = function(colId){
+      window['_tpCollapse_' + colId] = !window['_tpCollapse_' + colId];
+      renderBacklog();
+    };
+
+    // ═══════════════════════════════════════════════════
+    // ── Task Planning v2: Drag & Drop ──
+    // ═══════════════════════════════════════════════════
+
+    function _tpInitDragDrop(){
+      var rows = document.querySelectorAll('.tp-row[draggable="true"]');
+      var zones = document.querySelectorAll('.tp-dropzone');
+
+      for(var i = 0; i < rows.length; i++){
+        (function(row){
+          row.addEventListener('dragstart', function(e){
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', row.getAttribute('data-card-id'));
+            e.dataTransfer.setData('application/x-tp-source', row.getAttribute('data-drag-source'));
+            row.classList.add('dragging');
+            // Slight delay so the drag ghost renders before class is applied
+            setTimeout(function(){ row.style.opacity = '0.4'; }, 0);
+          });
+          row.addEventListener('dragend', function(){
+            row.classList.remove('dragging');
+            row.style.opacity = '';
+            // Clean up all drag-over states
+            var overs = document.querySelectorAll('.drag-over');
+            for(var j = 0; j < overs.length; j++) overs[j].classList.remove('drag-over');
+          });
+        })(rows[i]);
+      }
+
+      for(var z = 0; z < zones.length; z++){
+        (function(zone){
+          zone.addEventListener('dragover', function(e){
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            zone.classList.add('drag-over');
+          });
+          zone.addEventListener('dragenter', function(e){
+            e.preventDefault();
+            zone.classList.add('drag-over');
+          });
+          zone.addEventListener('dragleave', function(e){
+            // Only remove if leaving the zone itself, not a child
+            if(e.relatedTarget && zone.contains(e.relatedTarget)) return;
+            zone.classList.remove('drag-over');
+          });
+          zone.addEventListener('drop', function(e){
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+
+            var cardId = e.dataTransfer.getData('text/plain');
+            var fromSource = e.dataTransfer.getData('application/x-tp-source');
+            if(!cardId) return;
+
+            var targetZoneId = zone.id;
+            var targetType = null;
+            if(targetZoneId === 'tpDropBacklog') targetType = 'backlog';
+            else if(targetZoneId === 'tpDropCurrent') targetType = 'current';
+            else if(targetZoneId === 'tpDropNext') targetType = 'next';
+            else return;
+
+            // No-op if same zone
+            if(fromSource === targetType) return;
+            if(fromSource === 'backlog' && targetType === 'backlog') return;
+
+            // Get card data and update
+            var allCards = T.getCards().map(T.migrateCard);
+            var idx = -1;
+            for(var k = 0; k < allCards.length; k++){
+              if(allCards[k].id === cardId){ idx = k; break; }
+            }
+            if(idx === -1) return;
+
+            var card = allCards[idx];
+            var fromLabel = '';
+            var toLabel = '';
+
+            if(targetType === 'backlog'){
+              // Move to backlog (unschedule)
+              fromLabel = card.cycleId === currentCycle.id ? '本週期' : '下週期';
+              toLabel = '需求池';
+              card.columnId = 'inbox';
+              card.cycleId = null;
+              card.stateHistory = card.stateHistory || [];
+              card.stateHistory.push({from: fromSource, to: 'inbox', at: Date.now(), by: 'user'});
+            } else if(targetType === 'current'){
+              // Move to current cycle
+              fromLabel = fromSource === 'backlog' ? '需求池' : '下週期';
+              toLabel = '本週期';
+              card.columnId = card.columnId === 'inbox' ? 'todo' : card.columnId;
+              card.cycleId = currentCycle.id;
+              card.stateHistory = card.stateHistory || [];
+              card.stateHistory.push({from: fromSource, to: 'current', at: Date.now(), by: 'user', cycleId: currentCycle.id});
+            } else if(targetType === 'next'){
+              // Move to next cycle
+              fromLabel = fromSource === 'backlog' ? '需求池' : '本週期';
+              toLabel = '下週期';
+              card.columnId = card.columnId === 'inbox' ? 'todo' : card.columnId;
+              // nextCycle should be accessible — find it from allCycles
+              var cycs = T.getCycles();
+              var curIdx = -1;
+              for(var m = 0; m < cycs.length; m++){
+                if(cycs[m].id === currentCycle.id){ curIdx = m; break; }
+              }
+              var nc = curIdx >= 0 && curIdx + 1 < cycs.length ? cycs[curIdx + 1] : null;
+              if(nc){
+                card.cycleId = nc.id;
+                card.stateHistory = card.stateHistory || [];
+                card.stateHistory.push({from: fromSource, to: 'next', at: Date.now(), by: 'user', cycleId: nc.id});
+              }
+            }
+
+            allCards[idx] = card;
+            T.saveCards(allCards);
+            // Refresh local state
+            cards = T.getCards().map(T.migrateCard);
+            backlogCards = getBacklogCards();
+
+            showToast(fromLabel + ' → ' + toLabel, null, function(){
+              // Undo
+              var undoCards = T.getCards().map(T.migrateCard);
+              var ui = -1;
+              for(var n = 0; n < undoCards.length; n++){
+                if(undoCards[n].id === cardId){ ui = n; break; }
+              }
+              if(ui === -1) return;
+              if(targetType === 'backlog'){
+                // Undo: put back to original cycle
+                undoCards[ui].columnId = 'todo';
+                undoCards[ui].cycleId = fromSource === 'current' ? currentCycle.id : (function(){
+                  var cycs2 = T.getCycles();
+                  var ci = -1;
+                  for(var p = 0; p < cycs2.length; p++){ if(cycs2[p].id === currentCycle.id){ ci = p; break; } }
+                  return ci >= 0 && ci + 1 < cycs2.length ? cycs2[ci + 1].id : null;
+                })();
+              } else {
+                // Undo: put back to original location
+                if(fromSource === 'backlog'){
+                  undoCards[ui].columnId = 'inbox';
+                  undoCards[ui].cycleId = null;
+                } else if(fromSource === 'current'){
+                  undoCards[ui].cycleId = currentCycle.id;
+                } else if(fromSource === 'next'){
+                  var cycs3 = T.getCycles();
+                  var ci2 = -1;
+                  for(var q = 0; q < cycs3.length; q++){ if(cycs3[q].id === currentCycle.id){ ci2 = q; break; } }
+                  undoCards[ui].cycleId = ci2 >= 0 && ci2 + 1 < cycs3.length ? cycs3[ci2 + 1].id : null;
+                }
+              }
+              T.saveCards(undoCards);
+              cards = T.getCards().map(T.migrateCard);
+              backlogCards = getBacklogCards();
+              renderBacklog();
+            });
+
+            renderBacklog();
+          });
+        })(zones[z]);
+      }
     }
 
     // ── Select card ──
@@ -6371,7 +6701,7 @@ canvas{display:block;margin:0 auto 24px}
       renderBacklog();
     };
 
-    // ── Set filter category ──
+    // ── Set filter category (legacy, kept for kanban board) ──
     window._blSetFilter = function(cat){
       window._blFilterCat = cat;
       window._blSearch = '';
@@ -23469,4 +23799,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.11.4 -->
+</html><!-- v0.12.0 -->
