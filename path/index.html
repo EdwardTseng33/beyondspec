@@ -3347,7 +3347,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.10.1</div>
+        <div class="sidebar-version">v0.10.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -20148,44 +20148,105 @@ function loadHistory(){
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div>
             <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px">模組管理</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">依角色需求開啟或隱藏模組</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">依需求開啟模組，團隊共享或個人專屬一目了然</div>
           </div>
         </div>
         ${(function(){
-          const em = getEnabledModules();
-          const mods = [
-            { key:'mod-diagnose', label:'PATH 診斷', icon:'pulse', q:'這個方向值得做嗎？', layer:0 },
-            { key:'mod-lab', label:'Lab 研究', icon:'flask', q:'用戶怎麼看我的產品？', layer:0 },
-            { key:'mod-survey', label:'問卷引擎', icon:'clipboard', q:'怎麼收集真實回饋？', layer:0 },
-            { key:'mod-market', label:'市場探測', icon:'trendUp', q:'市場有多大？', layer:0 },
-            { key:'mod-report', label:'市場報告', icon:'fileText', q:'完整分析怎麼說？', layer:0 },
-            { key:'mod-tasks', label:'任務中心', icon:'listChecks', q:'今天該做什麼？', layer:1 },
-            { key:'mod-contacts', label:'客戶管理', icon:'users', q:'這個人跟我們什麼關係？', layer:1 },
-            { key:'mod-quotes', label:'報價提案', icon:'fileText', q:'怎麼快速產一份專業報價？', layer:2 },
-            { key:'mod-billing', label:'收款管理', icon:'dollarSign', q:'錢收到了嗎？', layer:2 },
-            { key:'mod-meetings', label:'會議紀錄', icon:'calendar', q:'上次跟客戶講了什麼？', layer:2 },
-            { key:'mod-insights', label:'AI 儀表板', icon:'activity', q:'公司現在狀況怎樣？', layer:3 },
-            { key:'mod-docs', label:'文件庫', icon:'folder', q:'那份合約在哪裡？', layer:2 }
+          var em = getEnabledModules();
+          var curPlan = state.plan || 'free';
+
+          /* ── 模組定義 ── */
+          var personalMods = [
+            { key:'mod-diagnose', label:'PATH 診斷', icon:'pulse', q:'這個方向值得做嗎？', minPlan:'free' },
+            { key:'mod-lab', label:'Lab 研究', icon:'flask', q:'用戶怎麼看我的產品？', minPlan:'starter' },
+            { key:'mod-survey', label:'問卷引擎', icon:'clipboard', q:'怎麼收集真實回饋？', minPlan:'starter' },
+            { key:'mod-market', label:'市場探測', icon:'trendUp', q:'市場有多大？', minPlan:'starter' },
+            { key:'mod-report', label:'市場報告', icon:'fileText', q:'完整分析怎麼說？', minPlan:'starter' }
           ];
-          const layerLabels = {0:'驗證',1:'核心',2:'按需',3:'智慧'};
-          const layerColors = {0:'var(--violet,var(--primary))',1:'var(--primary)',2:'var(--teal)',3:'var(--gold)'};
-          return '<div class="bp-settings-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">' + mods.map(m => {
-            const on = em[m.key];
-            var layerBg = m.layer===0?'rgba(124,92,252,.08)':m.layer===1?'var(--primary-light)':m.layer===2?'rgba(27,168,145,.1)':'rgba(224,138,58,.1)';
-            const layerBadge = '<span style="font-size:10px;font-weight:700;color:'+layerColors[m.layer]+';background:'+layerBg+';padding:2px 7px;border-radius:10px;letter-spacing:.03em">'+layerLabels[m.layer]+'</span>';
-            return '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:14px;display:flex;flex-direction:column;gap:10px;transition:all .15s;border:1.5px solid '+(on?'rgba(124,92,252,.2)':'transparent')+'">' +
-              '<div style="display:flex;align-items:center;justify-content:space-between">' +
-                '<div style="width:32px;height:32px;border-radius:var(--r-sm);background:'+(on?'var(--primary-light)':'var(--bg-hover)')+';color:'+(on?'var(--primary)':'var(--ink-muted)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">' + ICONS[m.icon] + '</div>' +
-                '<button onclick="app.toggleModule(\''+m.key+'\')" style="width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;transition:all .25s cubic-bezier(.4,0,.2,1);background:'+(on?'var(--primary)':'var(--bg-hover)')+';flex-shrink:0" title="'+(on?'點擊隱藏':'點擊啟用')+'">' +
-                  '<div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:'+(on?'19px':'3px')+';transition:left .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>' +
-                '</button>' +
-              '</div>' +
-              '<div>' +
-                '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:13px;font-weight:700;color:var(--ink)">' + m.label + '</span>' + layerBadge + '</div>' +
-                '<div style="font-size:11px;color:var(--ink-muted);line-height:1.4">' + m.q + '</div>' +
-              '</div>' +
-            '</div>';
-          }).join('') + '</div>';
+          var teamMods = [
+            { key:'mod-tasks', label:'任務中心', icon:'listChecks', q:'今天該做什麼？', minPlan:'free' },
+            { key:'mod-contacts', label:'客戶管理', icon:'users', q:'這個人跟我們什麼關係？', minPlan:'free' },
+            { key:'mod-quotes', label:'報價提案', icon:'fileText', q:'怎麼快速產一份專業報價？', minPlan:'starter' },
+            { key:'mod-billing', label:'收款管理', icon:'dollarSign', q:'錢收到了嗎？', minPlan:'pro', sensitive:true },
+            { key:'mod-meetings', label:'會議紀錄', icon:'calendar', q:'上次跟客戶講了什麼？', minPlan:'starter' },
+            { key:'mod-insights', label:'AI 儀表板', icon:'activity', q:'公司現在狀況怎樣？', minPlan:'pro' },
+            { key:'mod-docs', label:'文件庫', icon:'folder', q:'那份合約在哪裡？', minPlan:'pro' }
+          ];
+
+          /* ── 方案層級比較 ── */
+          var planRank = { free:0, starter:1, pro:2, enterprise:3 };
+          var planLabelMap = { free:'Free', starter:'Starter', pro:'Pro', enterprise:'Enterprise' };
+          var planColorMap = { free:'var(--ink-muted)', starter:'var(--gold)', pro:'var(--primary)', enterprise:'var(--teal)' };
+
+          function isLocked(mod) {
+            return planRank[curPlan] < planRank[mod.minPlan];
+          }
+
+          /* ── 渲染單一模組卡片 ── */
+          function renderModCard(m, visibility) {
+            var on = em[m.key];
+            var locked = isLocked(m);
+            var visColor = visibility === 'personal' ? 'var(--primary)' : 'var(--teal)';
+            var visBg = visibility === 'personal' ? 'rgba(124,92,252,.08)' : 'rgba(27,168,145,.08)';
+            var visLabel = visibility === 'personal' ? '個人專屬' : '團隊共享';
+            var visIcon = visibility === 'personal' ? '<svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><path d="M10 3v-1M10 18v-1M17 10h1M2 10h1M14.5 5.5l.7-.7M4.8 15.2l.7-.7M14.5 14.5l.7.7M4.8 4.8l.7.7"/></svg>' : '<svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 8a4 4 0 1 0-8 0"/><circle cx="10" cy="14" r="1"/><path d="M4 8v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>';
+
+            var card = '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:14px;display:flex;flex-direction:column;gap:10px;transition:all .15s;border:1.5px solid ' + (locked ? 'transparent' : on ? 'rgba(124,92,252,.2)' : 'transparent') + ';' + (locked ? 'opacity:.55' : '') + '">';
+
+            /* Row 1: icon + toggle/lock */
+            card += '<div style="display:flex;align-items:center;justify-content:space-between">';
+            card += '<div style="width:32px;height:32px;border-radius:var(--r-sm);background:' + (locked ? 'var(--bg-hover)' : on ? 'var(--primary-light)' : 'var(--bg-hover)') + ';color:' + (locked ? 'var(--ink-dim)' : on ? 'var(--primary)' : 'var(--ink-muted)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">' + ICONS[m.icon] + '</div>';
+
+            if (locked) {
+              card += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:' + planColorMap[m.minPlan] + ';background:' + (m.minPlan === 'starter' ? 'rgba(224,138,58,.1)' : m.minPlan === 'pro' ? 'rgba(124,92,252,.08)' : 'rgba(27,168,145,.08)') + ';padding:3px 8px;border-radius:10px"><svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="9" width="10" height="8" rx="1.5"/><path d="M7 9V7a3 3 0 0 1 6 0v2"/></svg> ' + planLabelMap[m.minPlan] + '</div>';
+            } else {
+              card += '<button onclick="app.toggleModule(\'' + m.key + '\')" style="width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;transition:all .25s cubic-bezier(.4,0,.2,1);background:' + (on ? 'var(--primary)' : 'var(--bg-hover)') + ';flex-shrink:0" title="' + (on ? '點擊隱藏' : '點擊啟用') + '">';
+              card += '<div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:' + (on ? '19px' : '3px') + ';transition:left .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>';
+              card += '</button>';
+            }
+            card += '</div>';
+
+            /* Row 2: name + badges */
+            card += '<div>';
+            card += '<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;flex-wrap:wrap">';
+            card += '<span style="font-size:13px;font-weight:700;color:var(--ink)">' + m.label + '</span>';
+            card += '<span style="font-size:9px;font-weight:700;color:' + visColor + ';background:' + visBg + ';padding:2px 6px;border-radius:8px;letter-spacing:.02em;display:inline-flex;align-items:center;gap:3px">' + visIcon + visLabel + '</span>';
+            if (m.sensitive) {
+              card += '<span style="font-size:9px;font-weight:600;color:var(--gold);background:rgba(224,138,58,.08);padding:2px 6px;border-radius:8px">金額限管理員</span>';
+            }
+            card += '</div>';
+            card += '<div style="font-size:11px;color:var(--ink-muted);line-height:1.4">' + m.q + '</div>';
+            card += '</div>';
+            card += '</div>';
+            return card;
+          }
+
+          /* ── 組裝兩個分組 ── */
+          var html = '';
+
+          /* 個人工作台 */
+          html += '<div style="margin-bottom:20px">';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">';
+          html += '<div style="width:24px;height:24px;border-radius:6px;background:rgba(124,92,252,.1);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M3 18v-1a7 7 0 0 1 14 0v1"/></svg></div>';
+          html += '<div style="font-size:14px;font-weight:700;color:var(--ink)">你的工作台</div>';
+          html += '<span style="font-size:11px;color:var(--ink-muted)">僅自己可見的驗證工具</span>';
+          html += '</div>';
+          html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">';
+          personalMods.forEach(function(m) { html += renderModCard(m, 'personal'); });
+          html += '</div></div>';
+
+          /* 團隊營運 */
+          html += '<div>';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">';
+          html += '<div style="width:24px;height:24px;border-radius:6px;background:rgba(27,168,145,.1);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><circle cx="7" cy="7" r="3"/><circle cx="14" cy="9" r="3"/><path d="M1 17v-1a5 5 0 0 1 8 0"/><path d="M11 17v-1a5 5 0 0 1 6 0"/></svg></div>';
+          html += '<div style="font-size:14px;font-weight:700;color:var(--ink)">團隊營運</div>';
+          html += '<span style="font-size:11px;color:var(--ink-muted)">團隊成員皆可存取</span>';
+          html += '</div>';
+          html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">';
+          teamMods.forEach(function(m) { html += renderModCard(m, 'team'); });
+          html += '</div></div>';
+
+          return html;
         })()}
       </div>
 
@@ -20413,21 +20474,27 @@ function loadHistory(){
               </tr>
             </thead>
             <tbody>
-              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">AI Credits</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">每月 Credits</td><td style="text-align:center;padding:10px 6px">30</td><td style="text-align:center;padding:10px 6px;color:var(--gold);font-weight:700">500</td><td style="text-align:center;padding:10px 6px;color:var(--primary);font-weight:700">3,000</td><td style="text-align:center;padding:10px 6px;color:var(--teal);font-weight:700">無限</td></tr>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">基本資訊</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">價格</td><td style="text-align:center;padding:10px 6px">免費</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">NT$390/月</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">NT$990/月</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">洽談</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">每月 AI Credits</td><td style="text-align:center;padding:10px 6px">30</td><td style="text-align:center;padding:10px 6px;color:var(--gold);font-weight:700">500</td><td style="text-align:center;padding:10px 6px;color:var(--primary);font-weight:700">3,000</td><td style="text-align:center;padding:10px 6px;color:var(--teal);font-weight:700">無限</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">AI 模型</td><td style="text-align:center;padding:10px 6px">Sonnet</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">Sonnet</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">Sonnet / Opus</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">全模型</td></tr>
-              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">AI 功能</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">PATH 診斷（5 cr）</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">文件匯入（8 cr）</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">問卷生成（10 cr）</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">市場探測（15 cr）</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">Lab 研究（20 cr）</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">市場報告（25 cr）</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">平台功能</td></tr>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">團隊營運模組</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">任務中心</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">客戶管理</td><td style="text-align:center;padding:10px 6px">50 筆</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">無限</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">報價提案</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">會議紀錄</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">收款管理（含催收）</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">文件庫（連結制）</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">AI 儀表板</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">個人驗證工具</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">PATH 診斷</td><td style="text-align:center;padding:10px 6px">3 次/月</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">無限</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">Lab / 問卷 / 市場探測</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">市場報告</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
+              <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">平台與協作</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">團隊協作</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">最多 5 人</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">最多 20 人</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">管理員角色</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">Claude MCP 連接</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">資料匯出</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">團隊協作</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">1-20 人</td></tr>
               <tr><td style="padding:10px 6px">歷史紀錄</td><td style="text-align:center;padding:10px 6px">最近 5 筆</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">無限 + API</td></tr>
             </tbody>
           </table>
@@ -20435,24 +20502,30 @@ function loadHistory(){
         ${plan==='free' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.handleUpgrade()">升級方案 · 從 NT$390/月起</button>' : plan==='starter' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.handleUpgrade()">升級到 Pro · NT$990/月</button>' : ''}
       </div>
 
-      <!-- ═══ 團隊協作（Enterprise 預留）═══ -->
-      ${plan==='enterprise' ? `
+      <!-- ═══ 團隊協作（Pro+）═══ -->
+      ${(plan==='pro' || plan==='enterprise') ? `
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">團隊管理</div>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
           <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">${(state.user.avatar||'E')}</div>
           <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--ink)">${state.user.name}</div><div style="font-size:12px;color:var(--ink-muted)">${state.user.email} · 擁有者</div></div>
-          <span style="font-size:12px;color:var(--teal);font-weight:600;background:var(--bg-app);padding:4px 10px;border-radius:12px">Owner</span>
+          <span style="font-size:12px;color:${plan==='enterprise'?'var(--teal)':'var(--primary)'};font-weight:600;background:var(--bg-app);padding:4px 10px;border-radius:12px">Owner</span>
         </div>
+        ${plan==='enterprise' ? `
+        <div style="padding:10px 14px;background:rgba(27,168,145,.06);border:1px solid rgba(27,168,145,.15);border-radius:var(--r-md);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><rect x="5" y="9" width="10" height="8" rx="1.5"/><path d="M7 9V7a3 3 0 0 1 6 0v2"/></svg>
+          <span style="font-size:12px;color:var(--teal);font-weight:600">管理員角色已啟用 · 可控制敏感資料可見性</span>
+        </div>` : ''}
         <button class="btn btn-outline" style="width:100%;padding:10px 0;font-size:14px" onclick="app.showToast('團隊管理功能即將推出')">
           <span style="margin-right:6px">+</span> 邀請團隊成員
         </button>
-        <div style="margin-top:12px;font-size:13px;color:var(--ink-muted);text-align:center">Enterprise 方案支援最多 20 位成員協作，含角色權限管理</div>
+        <div style="margin-top:12px;font-size:13px;color:var(--ink-muted);text-align:center">${plan==='enterprise' ? 'Enterprise 方案支援最多 20 位成員，含管理員角色與權限控制' : 'Pro 方案支援最多 5 位成員協作'}</div>
       </div>
       ` : `
-      <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;opacity:.65">
+      <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;opacity:.55">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">團隊協作</div>
-        <div style="font-size:14px;color:var(--ink-muted);line-height:1.6">Enterprise 方案可邀請最多 20 位團隊成員共同管理，支援角色權限管理。</div>
+        <div style="font-size:14px;color:var(--ink-muted);line-height:1.6;margin-bottom:14px">Pro 方案起可邀請團隊成員共同管理，Enterprise 支援管理員角色與權限控制。</div>
+        <button class="btn btn-gold" style="width:100%;padding:10px 0;font-size:13px" onclick="app.handleUpgrade()">升級到 Pro · 開啟團隊協作</button>
       </div>
       `}
 
@@ -22954,4 +23027,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.10.1 -->
+</html><!-- v0.10.2 -->
