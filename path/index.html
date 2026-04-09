@@ -3355,7 +3355,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.11.3</div>
+        <div class="sidebar-version">v0.11.4</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6154,16 +6154,11 @@ canvas{display:block;margin:0 auto 24px}
       var cycCount = cycleCards.length;
 
       var html = '';
-      html += '<div class="tc-section-header">';
-      html += '<div style="display:flex;align-items:center;gap:12px;flex:1">';
-      html += '<div style="width:40px;height:40px;border-radius:var(--r-lg);background:linear-gradient(135deg,rgba(124,92,252,.15),rgba(124,92,252,.05));display:flex;align-items:center;justify-content:center">';
-      html += '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
+      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap;animation:tc-fadeUp .3s cubic-bezier(.22,1,.36,1) both">';
+      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg> 任務規劃</h2>';
+      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">管理需求、決定每一輪的工作內容</span>';
       html += '</div>';
-      html += '<div>';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0">任務規劃</h2>';
-      html += '<p style="font-size:13px;color:var(--ink-muted);margin:4px 0 0">管理需求、決定每一輪的工作內容</p>';
-      html += '</div></div>';
-      // Actions - add button only
       html += '<div style="display:flex;gap:8px;align-items:center">';
       html += '<button class="btn btn-accent" onclick="window._tpOpenCard(null, \'inbox\')" style="padding:8px 16px;font-size:13px"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增需求</button>';
       html += '</div></div>';
@@ -7889,15 +7884,11 @@ canvas{display:block;margin:0 auto 24px}
       // View mode: board (default) or list
       var viewMode = window._kbViewMode || 'board';
 
-      html += '<div class="tc-section-header">';
-      html += '<div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">';
-      html += '<div style="width:40px;height:40px;border-radius:var(--r-lg);background:linear-gradient(135deg,rgba(27,168,145,.15),rgba(27,168,145,.05));display:flex;align-items:center;justify-content:center">';
-      html += '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="14" rx="2"/><rect x="12" y="3" width="6" height="10" rx="2"/></svg>';
+      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap;animation:tc-fadeUp .3s cubic-bezier(.22,1,.36,1) both">';
+      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="14" rx="2"/><rect x="12" y="3" width="6" height="10" rx="2"/></svg> 任務看板</h2>';
+      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">追蹤任務進度，拖曳卡片推進工作</span>';
       html += '</div>';
-      html += '<div>';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0">任務看板</h2>';
-      html += '<p style="font-size:13px;color:var(--ink-muted);margin:4px 0 0">追蹤任務進度，拖曳卡片推進工作</p>';
-      html += '</div></div>';
       // Right side: view toggle + cycle switcher
       html += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
       // Board/List toggle
@@ -23478,4 +23469,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.11.3 -->
+</html><!-- v0.11.4 -->
