@@ -3347,7 +3347,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.10.2</div>
+        <div class="sidebar-version">v0.10.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4019,7 +4019,6 @@ canvas{display:block;margin:0 auto 24px}
 
     // 商業模組 — Pipeline: 定義→蒐集→排程→執行
     const bizItems = [
-      { id: 'biz-spec', label: '需求工坊', icon: 'specEdit', modKey: 'mod-tasks', layer: 1, q: '捕捉想法、定義需求', parent: 'tasks' },
       { id: 'biz-inbox', label: '需求池', icon: 'inbox', modKey: 'mod-tasks', layer: 1, q: '所有待排程的需求在這裡', parent: 'tasks' },
       { id: 'biz-cycle', label: '週期規劃', icon: 'clock', modKey: 'mod-tasks', layer: 1, q: '這一輪做什麼？排程與承諾', parent: 'tasks' },
       { id: 'biz-tasks', label: '任務看板', icon: 'listChecks', modKey: 'mod-tasks', layer: 1, q: '本週該做什麼？', parent: 'tasks' },
@@ -4168,7 +4167,7 @@ canvas{display:block;margin:0 auto 24px}
           onTabChange: function(tab) {
             // Map internal biz tabs back to consolidated sidebar items
             // bd/contacts → biz-contacts, invoices/ar → biz-billing
-            var tabToSidebar = { 'pipeline':'biz-deals', 'bd':'biz-contacts', 'contacts':'biz-contacts', 'tasks':'biz-tasks', 'inbox':'biz-inbox', 'cycle':'biz-cycle','spec':'biz-spec', 'proposals':'biz-quotes', 'invoices':'biz-billing', 'ar':'biz-billing', 'meetings':'biz-meetings', 'analytics':'biz-insights', 'docs':'biz-docs', 'roles':'biz-deals' };
+            var tabToSidebar = { 'pipeline':'biz-deals', 'bd':'biz-contacts', 'contacts':'biz-contacts', 'tasks':'biz-tasks', 'inbox':'biz-inbox', 'cycle':'biz-cycle','spec':'biz-inbox', 'proposals':'biz-quotes', 'invoices':'biz-billing', 'ar':'biz-billing', 'meetings':'biz-meetings', 'analytics':'biz-insights', 'docs':'biz-docs', 'roles':'biz-deals' };
             var bizId = tabToSidebar[tab] || Object.keys(BIZ_TAB_MAP).find(function(k) { return BIZ_TAB_MAP[k] === tab; });
             if (bizId && state.currentModule !== bizId) {
               state.currentModule = bizId;
@@ -4321,14 +4320,9 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
-    // biz-spec → vanilla JS spec workshop (v0.9.5)
+    // biz-spec → redirect to biz-inbox (需求工坊 removed in v0.10.3)
     if (moduleId === 'biz-spec') {
-      if (window._bizReactRoot) {
-        try { window._bizReactRoot.unmount(); } catch(e) {}
-        window._bizReactRoot = null;
-      }
-      renderSpecWorkshop();
-      return;
+      moduleId = 'biz-inbox';
     }
 
     // biz-inbox → vanilla JS backlog / requirement pool (not React)
@@ -6218,7 +6212,7 @@ canvas{display:block;margin:0 auto 24px}
           html += '<div style="font-size:13px;color:var(--ink-dim)">試試調整篩選條件</div>';
         } else {
           html += '<div style="font-size:15px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">需求池是空的</div>';
-          html += '<div style="font-size:13px;color:var(--ink-dim);line-height:1.6">從需求工坊新增需求，或直接快速新增<br>AI 拆解的任務也會進入這裡</div>';
+          html += '<div style="font-size:13px;color:var(--ink-dim);line-height:1.6">點擊「新增需求」建立項目<br>AI 拆解的任務也會匯入這裡</div>';
           html += '<button class="btn btn-accent" onclick="window._blQuickAdd()" style="margin-top:16px;padding:10px 24px;font-size:14px">新增第一筆需求</button>';
         }
         html += '</div>';
@@ -6246,15 +6240,39 @@ canvas{display:block;margin:0 auto 24px}
 
           html += '<div style="flex:1;min-width:0">';
 
-          // Title row with priority badge
+          // Row 1: Title + priority badge
           html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">';
           html += '<div style="flex:1;font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;word-break:break-word">' + (card.title||'未命名') + '</div>';
           if(priLabel) html += '<span style="font-size:10px;font-weight:700;color:' + priColor + ';padding:2px 6px;border-radius:3px;background:' + priColor + '12;flex-shrink:0">' + priLabel + '</span>';
           html += '</div>';
 
-          // Meta row
-          html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">';
-          html += '<span style="font-size:11px;font-weight:600;color:' + cat.color + '">' + cat.label + '</span>';
+          // Row 2: Description preview (critical for human review)
+          if(card.description){
+            var descPreview = card.description.replace(/[#*\-\[\]>]/g,'').replace(/\n+/g,' ').trim();
+            if(descPreview.length > 120) descPreview = descPreview.substring(0,120) + '…';
+            if(descPreview) html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.5;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + descPreview + '</div>';
+          }
+
+          // Row 3: Checklist preview (if exists)
+          if(clTotal > 0){
+            var clItems = (card.checklist||[]).slice(0,3);
+            html += '<div style="margin-bottom:6px">';
+            clItems.forEach(function(item){
+              html += '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:' + (item.done ? 'var(--ink-dim)' : 'var(--ink-sec)') + ';line-height:1.6">';
+              html += '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="' + (item.done ? 'var(--teal)' : 'var(--ink-dim)') + '" stroke-width="1.5" stroke-linecap="round">';
+              if(item.done) html += '<rect x="2" y="2" width="12" height="12" rx="2" fill="rgba(27,168,145,.1)"/><polyline points="5,8 7,10 11,6"/>';
+              else html += '<rect x="2" y="2" width="12" height="12" rx="2"/>';
+              html += '</svg>';
+              html += '<span style="' + (item.done ? 'text-decoration:line-through;opacity:.7' : '') + '">' + (item.text||'') + '</span>';
+              html += '</div>';
+            });
+            if(clTotal > 3) html += '<div style="font-size:10px;color:var(--ink-dim);padding-left:18px">還有 ' + (clTotal - 3) + ' 項…</div>';
+            html += '</div>';
+          }
+
+          // Row 4: Meta badges
+          html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">';
+          html += '<span style="font-size:11px;font-weight:600;color:' + cat.color + ';background:' + cat.color + '10;padding:1px 8px;border-radius:4px">' + cat.label + '</span>';
           if(srcLabel) html += '<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:' + srcColor + '10;color:' + srcColor + ';font-weight:600">' + srcLabel + '</span>';
           if(clTotal > 0) html += '<span style="font-size:11px;color:var(--ink-dim)">' + clDone + '/' + clTotal + '</span>';
           if(card.dueDate){
@@ -6263,10 +6281,15 @@ canvas{display:block;margin:0 auto 24px}
             var dc = diff<0?'var(--rose)':diff<=3?'var(--gold)':'var(--ink-dim)';
             html += '<span style="font-size:11px;color:' + dc + '">' + d.toLocaleDateString('zh-TW',{month:'short',day:'numeric'}) + '</span>';
           }
+          if(card.assignee || card.assigneeId){
+            var _am = card.assigneeId ? members.find(function(m){ return m.id === card.assigneeId; }) : null;
+            var _aName = card.assignee || (_am ? _am.name : '');
+            if(_aName) html += '<span style="font-size:11px;color:var(--ink-dim)">@' + _aName + '</span>';
+          }
           html += '</div>';
 
-          // Hover-revealed action buttons
-          html += '<div style="display:flex;gap:6px;opacity:0;transition:opacity .15s ease" onmouseenter="this.style.opacity=\'1\'" onmouseleave="this.style.opacity=\'0\'">';
+          // Row 5: Action buttons (always visible for review workflow)
+          html += '<div style="display:flex;gap:6px">';
           html += '<button class="tc-btn-schedule" onclick="event.stopPropagation();window._blScheduleCard(\'' + card.id + '\')"><svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:3px;vertical-align:-1px"><circle cx="10" cy="10" r="7.5"/><polyline points="10,6 10,10 13,12"/></svg>排入本期</button>';
           html += '<button class="tc-btn-archive" onclick="event.stopPropagation();window._blArchiveCard(\'' + card.id + '\')">封存</button>';
           html += '</div>';
@@ -7710,9 +7733,9 @@ canvas{display:block;margin:0 auto 24px}
         html += '三步開始你的工作流程：</div>';
         html += '<div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;max-width:520px;margin:0 auto 28px">';
         var _obSteps = [
-          {n:'1',t:'寫下需求',d:'在需求工坊用 AI 拆解想法',nav:'biz-spec',color:'var(--primary)'},
-          {n:'2',t:'排入週期',d:'從需求池挑選本期任務',nav:'biz-cycle',color:'var(--gold)'},
-          {n:'3',t:'開始執行',d:'在這裡追蹤進度',nav:'biz-tasks',color:'var(--teal)'}
+          {n:'1',t:'新增需求',d:'在需求池建立待辦項目',nav:'biz-inbox',color:'var(--primary)'},
+          {n:'2',t:'排入週期',d:'挑選本期要做的需求',nav:'biz-cycle',color:'var(--gold)'},
+          {n:'3',t:'開始執行',d:'在看板追蹤執行進度',nav:'biz-tasks',color:'var(--teal)'}
         ];
         _obSteps.forEach(function(s){
           html += '<div onclick="navigate(\'' + s.nav + '\')" style="flex:1;min-width:140px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;transition:all .15s;text-align:left" onmouseover="this.style.borderColor=\'' + s.color + '\'" onmouseout="this.style.borderColor=\'var(--border)\'">';
@@ -7722,7 +7745,7 @@ canvas{display:block;margin:0 auto 24px}
           html += '</div>';
         });
         html += '</div>';
-        html += '<button class="btn btn-accent" onclick="navigate(\'biz-spec\')" style="padding:10px 24px;font-size:14px;font-weight:600">前往需求工坊</button>';
+        html += '<button class="btn btn-accent" onclick="navigate(\'biz-inbox\')" style="padding:10px 24px;font-size:14px;font-weight:600">前往需求池</button>';
         html += '</div>';
       }
       // Empty search result for board view
@@ -7761,7 +7784,7 @@ canvas{display:block;margin:0 auto 24px}
     }
 
     function _kbBindDragDrop(){
-      var boardCards = content.querySelectorAll('.kanban-card[draggable]');
+      var boardCards = content.querySelectorAll('.kb-card-v2[draggable]');
       var colBodies = content.querySelectorAll('.kanban-col-body');
       boardCards.forEach(function(el){
         el.addEventListener('dragstart',function(e){el.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',el.dataset.card);setTimeout(function(){el.style.opacity='0.3';el.style.transform='rotate(2deg) scale(.95)';},0);});
@@ -7843,7 +7866,7 @@ canvas{display:block;margin:0 auto 24px}
 
     // Helper: find the element after the drag cursor position
     function _kbGetDragAfterElement(container, y) {
-      var els = Array.prototype.slice.call(container.querySelectorAll('.kanban-card:not(.dragging)'));
+      var els = Array.prototype.slice.call(container.querySelectorAll('.kb-card-v2:not(.dragging)'));
       var closest = null;
       var closestOffset = Number.NEGATIVE_INFINITY;
       els.forEach(function(el) {
@@ -9149,13 +9172,11 @@ canvas{display:block;margin:0 auto 24px}
       {id:'nav-tasks',label:'任務看板',hint:'看板與列表',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="14" rx="2"/><rect x="12" y="3" width="6" height="10" rx="2"/></svg>',action:function(){navigate('biz-tasks')}},
       {id:'nav-inbox',label:'需求池',hint:'待排程項目',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="16 10 12 10 10 13 8 13 6 10 2 10"/><path d="M4.2 4.5L2 10v5a2 2 0 002 2h12a2 2 0 002-2v-5l-2.2-5.5A2 2 0 0013.9 3H6.1a2 2 0 00-1.9 1.5z"/></svg>',action:function(){navigate('biz-inbox')}},
       {id:'nav-cycle',label:'週期規劃',hint:'本期安排',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><polyline points="10,6 10,10 13,12"/></svg>',action:function(){navigate('biz-cycle')}},
-      {id:'nav-spec',label:'需求工坊',hint:'定義需求',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z"/><polyline points="12 3 12 8 17 8"/></svg>',action:function(){navigate('biz-spec')}},
       {id:'nav-contacts',label:'客戶管理',hint:'聯絡人',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-3 3-5.5 7-5.5s7 2.5 7 5.5"/></svg>',action:function(){navigate('biz-contacts')}},
       {id:'nav-quotes',label:'報價提案',hint:'報價單',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg>',action:function(){navigate('biz-quotes')}}
     ];
     var CMD_ACTIONS = [
       {id:'act-new-task',label:'建立新任務',hint:'N',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>',action:function(){navigate('biz-tasks');setTimeout(function(){if(window._kbAddCard)window._kbAddCard('todo');},200)}},
-      {id:'act-new-spec',label:'建立新需求',hint:'',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M16 2l2 2-10 10-3 1 1-3L16 2z"/></svg>',action:function(){navigate('biz-spec');setTimeout(function(){if(window._specStartNew)window._specStartNew();},200)}},
       {id:'act-toggle-dark',label:'切換深色模式',hint:'',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 10a7 7 0 11-7-7 5 5 0 007 7z"/></svg>',action:function(){if(window.app&&window.app.toggleTheme)window.app.toggleTheme()}}
     ];
 
@@ -23027,4 +23048,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.10.2 -->
+</html><!-- v0.10.3 -->
