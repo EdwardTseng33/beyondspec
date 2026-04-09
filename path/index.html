@@ -3119,15 +3119,20 @@ canvas{display:block;margin:0 auto 24px}
 
 /* — Planning v2: drag rows — */
 .tp-row{
-  display:flex;align-items:center;gap:8px;padding:7px 10px;
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
   border-radius:var(--r-md);cursor:grab;user-select:none;
   transition:all .15s cubic-bezier(.4,0,.2,1);
   animation:tc-fadeUp .22s cubic-bezier(.22,1,.36,1) both;
-  border:1px solid transparent;
+  border:1px solid var(--border);background:var(--bg-card);
+  margin-bottom:6px;
 }
-.tp-row:hover{background:var(--bg-hover);border-color:var(--border)}
+.tp-row:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.08)}
 .tp-row:active{cursor:grabbing}
 .tp-row.dragging{opacity:.4;border:1px dashed var(--primary)}
+.tp-row.tp-pri-high{border-left:3px solid #D94462}
+.tp-row.tp-pri-medium{border-left:3px solid #E08A3A}
+.tp-row.tp-pri-low{border-left:3px solid #3B82F6}
+.tp-row.tp-overdue{background:rgba(217,68,98,.03)}
 .tp-row .tp-grip{
   width:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;
   opacity:.25;transition:opacity .15s;cursor:grab;
@@ -3149,6 +3154,11 @@ canvas{display:block;margin:0 auto 24px}
 }
 .tp-dropzone.drag-over{border-color:var(--primary);background:rgba(124,92,252,.04)}
 
+/* — Planning v2: pane card — */
+.tp-pane-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:16px;
+}
 /* — Planning v2: cycle card — */
 .tp-cycle-card{
   background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);
@@ -3159,27 +3169,11 @@ canvas{display:block;margin:0 auto 24px}
 .tp-cycle-card.next-cycle{opacity:.85}
 .tp-cycle-card.next-cycle:hover{opacity:1}
 
-/* — Planning v2: filter dropdown — */
-.tp-filter-btn{
-  padding:5px 12px;border:1px solid var(--border);border-radius:var(--r-md);
-  background:transparent;color:var(--ink-muted);font-size:11px;font-weight:600;
-  cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:4px;
-  white-space:nowrap;
-}
-.tp-filter-btn:hover{border-color:var(--ink-muted);color:var(--ink)}
-.tp-filter-btn.active{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.04)}
-.tp-filter-drop{
-  position:absolute;top:calc(100% + 4px);left:0;min-width:150px;
-  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);
-  box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:200;padding:6px 0;
-  animation:tc-fadeUp .15s cubic-bezier(.22,1,.36,1) both;
-}
-.tp-filter-drop label{
-  display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:12px;
-  color:var(--ink);cursor:pointer;transition:background .1s;
-}
-.tp-filter-drop label:hover{background:var(--bg-hover)}
-.tp-filter-drop input[type=checkbox]{width:14px;height:14px;accent-color:var(--primary);cursor:pointer}
+/* — Planning v2: inline bpSelect sizing — */
+.tp-pane-card .bp-select{display:inline-block;width:auto;min-width:90px}
+.tp-pane-card .bp-select-trigger{padding:6px 12px;height:32px;font-size:12px;font-weight:600;border-radius:var(--r-md)}
+.tp-pane-card .bp-select-list{min-width:120px;border-radius:var(--r-md)}
+.tp-pane-card .bp-select-item{padding:7px 14px;font-size:12px}
 
 /* — Planning v2: section group toggle — */
 .tp-group-hdr{
@@ -3428,7 +3422,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.12.0</div>
+        <div class="sidebar-version">v0.12.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6231,27 +6225,12 @@ canvas{display:block;margin:0 auto 24px}
       return html;
     }
 
-    // ── Build filter dropdown HTML ──
-    function buildFilterDrop(id, label, options, selectedArr){
-      var hasActive = selectedArr && selectedArr.length > 0;
-      var h = '<div style="position:relative;display:inline-block" id="' + id + 'Wrap">';
-      h += '<button class="tp-filter-btn' + (hasActive ? ' active' : '') + '" onclick="window._tpToggleDrop(\'' + id + '\')">';
-      h += label;
-      if(hasActive) h += ' (' + selectedArr.length + ')';
-      h += ' <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg>';
-      h += '</button>';
-      h += '<div class="tp-filter-drop" id="' + id + 'List" style="display:none">';
-      options.forEach(function(opt){
-        var checked = selectedArr && selectedArr.indexOf(opt.value) !== -1;
-        h += '<label>';
-        h += '<input type="checkbox" ' + (checked ? 'checked' : '') + ' data-filter-group="' + id + '" data-filter-val="' + opt.value + '" onchange="window._tpFilterChange(\'' + id + '\',\'' + opt.value + '\',this.checked)"/>';
-        if(opt.dot) h += '<span style="width:7px;height:7px;border-radius:50%;background:' + opt.dot + ';flex-shrink:0"></span>';
-        h += opt.label + '</label>';
+    // ── Build filter select (uses bpSelect — single-select, consistent design) ──
+    function buildFilterSelect(id, placeholder, options, selectedVal, onChangeFn){
+      var opts = options.map(function(opt){
+        return {value: opt.value, label: opt.label, selected: selectedVal === opt.value};
       });
-      h += '<div style="border-top:1px solid var(--border);margin-top:4px;padding:6px 14px 2px">';
-      h += '<button style="background:none;border:none;color:var(--ink-muted);font-size:11px;cursor:pointer;font-family:inherit;padding:0" onclick="window._tpClearFilter(\'' + id + '\')">清除</button>';
-      h += '</div></div></div>';
-      return h;
+      return bpSelect({id: id, options: opts, placeholder: placeholder, onChange: onChangeFn, style: 'display:inline-block;width:auto;min-width:90px'});
     }
 
     // ── Build single-row task item (used by both panes) ──
@@ -6269,7 +6248,15 @@ canvas{display:block;margin:0 auto 24px}
         dueStr = (dd.getMonth()+1) + '/' + dd.getDate();
         if(dd < now && card.columnId !== 'done') isOverdue = true;
       }
-      var h = '<div class="tp-row" draggable="true" data-card-id="' + card.id + '" data-drag-source="' + dragSource + '" onclick="window._tpOpenCard(\'' + card.id + '\')">';
+      // Row classes: priority left-border + overdue background
+      var rowCls = 'tp-row';
+      var pri = card.priority || 'none';
+      if(pri === 'high') rowCls += ' tp-pri-high';
+      else if(pri === 'medium') rowCls += ' tp-pri-medium';
+      else if(pri === 'low') rowCls += ' tp-pri-low';
+      if(isOverdue) rowCls += ' tp-overdue';
+
+      var h = '<div class="' + rowCls + '" draggable="true" data-card-id="' + card.id + '" data-drag-source="' + dragSource + '" onclick="window._tpOpenCard(\'' + card.id + '\')">';
       // Grip handle
       h += '<div class="tp-grip"><span></span><span></span><span></span></div>';
       // Priority dot
@@ -6293,17 +6280,17 @@ canvas{display:block;margin:0 auto 24px}
     }
 
     function renderBacklog(){
-      // ── Filter state ──
-      var fPri = window._tpFilterPri || [];
-      var fCat = window._tpFilterCat || [];
-      var fTag = window._tpFilterTag || [];
+      // ── Filter state (single-select: string or empty) ──
+      var fPri = window._tpFilterPri || '';
+      var fCat = window._tpFilterCat || '';
+      var fTag = window._tpFilterTag || '';
 
       var filtered = backlogCards;
-      if(fPri.length > 0) filtered = filtered.filter(function(c){ return fPri.indexOf(c.priority || 'none') !== -1; });
-      if(fCat.length > 0) filtered = filtered.filter(function(c){ return fCat.indexOf(c.category || 'product') !== -1; });
-      if(fTag.length > 0) filtered = filtered.filter(function(c){
+      if(fPri) filtered = filtered.filter(function(c){ return (c.priority || 'none') === fPri; });
+      if(fCat) filtered = filtered.filter(function(c){ return (c.category || 'product') === fCat; });
+      if(fTag) filtered = filtered.filter(function(c){
         if(!c.tags || c.tags.length === 0) return false;
-        return fTag.some(function(t){ return c.tags.indexOf(t) !== -1; });
+        return c.tags.indexOf(fTag) !== -1;
       });
 
       var html = '';
@@ -6352,58 +6339,56 @@ canvas{display:block;margin:0 auto 24px}
       html += '</div></div>';
 
       // ── Dual pane layout ──
-      html += '<div style="display:flex;gap:1px;min-height:calc(100vh - 320px);position:relative">';
-      // Vertical separator
-      html += '<div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border);z-index:1"></div>';
+      html += '<div style="display:flex;gap:16px;min-height:calc(100vh - 320px)">';
 
-      // ══════ LEFT PANE: 需求池 ══════
-      html += '<div style="flex:1;min-width:0;padding-right:16px">';
+      // ══════ LEFT PANE: 需求池 (card background) ══════
+      html += '<div class="tp-pane-card" style="flex:1;min-width:0;display:flex;flex-direction:column">';
 
-      // Title + Add button + Filters
+      // Action row: Filters LEFT, flex spacer, Add button RIGHT (matches contacts/quotes pattern)
       html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">';
-      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;margin-right:4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg> 需求池 <span style="font-size:11px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 7px;border-radius:10px">' + backlogCards.length + '</span></div>';
-      // Add button (moved from header)
-      html += '<button class="btn btn-accent" onclick="window._tpOpenCard(null,\'inbox\')" style="padding:5px 14px;font-size:12px;display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增</button>';
-      html += '<div style="flex:1"></div>';
-      // Filter dropdowns
-      var priOpts = [{value:'high',label:'高',dot:'#D94462'},{value:'medium',label:'中',dot:'#E08A3A'},{value:'low',label:'低',dot:'#3B82F6'},{value:'none',label:'一般',dot:'#9CA3AF'}];
-      html += buildFilterDrop('tpPri', '優先度', priOpts, fPri);
-      var catOpts = [{value:'product',label:'產品規劃',dot:T.TASK_CATEGORIES.product.color},{value:'dev',label:'設計開發',dot:T.TASK_CATEGORIES.dev.color},{value:'qa',label:'項目驗收',dot:T.TASK_CATEGORIES.qa.color},{value:'marketing',label:'市場行銷',dot:T.TASK_CATEGORIES.marketing.color},{value:'sales',label:'業務接洽',dot:T.TASK_CATEGORIES.sales.color},{value:'admin',label:'人事行政',dot:T.TASK_CATEGORIES.admin.color}];
-      html += buildFilterDrop('tpCat', '分類', catOpts, fCat);
-      // Collect all unique tags from backlog for tag filter
+      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg> 需求池 <span style="font-size:11px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 7px;border-radius:10px">' + backlogCards.length + '</span></div>';
+      // Filter selects (single-select, bpSelect style)
+      var priOpts = [{value:'high',label:'高優先'},{value:'medium',label:'中優先'},{value:'low',label:'低優先'},{value:'none',label:'一般'}];
+      html += buildFilterSelect('tpFltPri', '優先度', priOpts, fPri, '_tpPickPri');
+      var catOpts = [{value:'product',label:'產品規劃'},{value:'dev',label:'設計開發'},{value:'qa',label:'項目驗收'},{value:'marketing',label:'市場行銷'},{value:'sales',label:'業務接洽'},{value:'admin',label:'人事行政'}];
+      html += buildFilterSelect('tpFltCat', '分類', catOpts, fCat, '_tpPickCat');
+      // Tag filter (only show if tags exist)
       var allTags = {};
       backlogCards.forEach(function(c){ if(c.tags) c.tags.forEach(function(t){ allTags[t] = true; }); });
       var tagOpts = Object.keys(allTags).sort().map(function(t){ return {value:t,label:t}; });
-      if(tagOpts.length > 0) html += buildFilterDrop('tpTag', '標籤', tagOpts, fTag);
+      if(tagOpts.length > 0) html += buildFilterSelect('tpFltTag', '標籤', tagOpts, fTag, '_tpPickTag');
       // Clear all filters
-      if(fPri.length > 0 || fCat.length > 0 || fTag.length > 0){
-        html += '<button style="background:none;border:none;color:var(--ink-dim);font-size:11px;cursor:pointer;font-family:inherit;padding:2px 6px;text-decoration:underline" onclick="window._tpClearAllFilters()">清除篩選</button>';
+      if(fPri || fCat || fTag){
+        html += '<button style="background:none;border:none;color:var(--ink-dim);font-size:11px;cursor:pointer;font-family:inherit;padding:2px 6px;text-decoration:underline" onclick="window._tpClearAllFilters()">清除</button>';
       }
+      html += '<div style="flex:1"></div>';
+      // Add button (RIGHT side, matching contacts/quotes pattern)
+      html += '<button class="btn btn-accent" onclick="window._tpOpenCard(null,\'inbox\')" style="padding:6px 16px;font-size:12px;display:flex;align-items:center;gap:4px;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增需求</button>';
       html += '</div>';
 
       // Left pane drop zone + list
-      html += '<div class="tp-dropzone" id="tpDropBacklog" style="overflow-y:auto;max-height:calc(100vh - 380px)">';
+      html += '<div class="tp-dropzone" id="tpDropBacklog" style="overflow-y:auto;flex:1;min-height:120px">';
       if(filtered.length === 0){
         html += '<div style="text-align:center;padding:48px 16px">';
-        if(fPri.length > 0 || fCat.length > 0 || fTag.length > 0){
+        if(fPri || fCat || fTag){
           html += '<div style="font-size:14px;color:var(--ink-muted);margin-bottom:4px">沒有符合條件的需求</div>';
           html += '<div style="font-size:12px;color:var(--ink-dim)">調整篩選條件試試</div>';
         } else {
           html += '<div style="font-size:14px;color:var(--ink-muted);margin-bottom:4px">需求池是空的</div>';
-          html += '<div style="font-size:12px;color:var(--ink-dim)">點「新增」建立第一筆需求</div>';
+          html += '<div style="font-size:12px;color:var(--ink-dim)">點「新增需求」建立第一筆</div>';
         }
         html += '</div>';
       } else {
         filtered.forEach(function(card){ html += buildTaskRow(card, 'backlog'); });
       }
       html += '</div>';
-      html += '</div>'; // end LEFT PANE
+      html += '</div>'; // end LEFT PANE card
 
-      // ══════ RIGHT PANE: 週期任務 ══════
-      html += '<div style="flex:1;min-width:0;padding-left:16px;background:linear-gradient(180deg,rgba(124,92,252,.015),rgba(124,92,252,.003));border-radius:0 var(--r-xl) var(--r-xl) 0">';
+      // ══════ RIGHT PANE: 週期任務 (card background) ══════
+      html += '<div class="tp-pane-card" style="flex:1;min-width:0;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--bg-card),rgba(124,92,252,.02))">';
 
       // ── Current cycle card ──
-      html += '<div class="tp-cycle-card tp-dropzone" id="tpDropCurrent">';
+      html += '<div class="tp-cycle-card tp-dropzone" id="tpDropCurrent" style="border:none;padding:0;margin-bottom:16px;background:transparent">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
       html += '<div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 本週期 <span style="font-size:12px;font-weight:500;color:var(--ink-muted)">' + startLabel + '—' + endLabel + '</span></div>';
       html += '<span style="font-size:11px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + totalCount + '</span>';
@@ -6417,7 +6402,6 @@ canvas{display:block;margin:0 auto 24px}
           var colCards = cycleCards.filter(function(c){ return c.columnId === col.id; });
           if(colCards.length === 0 && col.id !== 'todo') return;
           var isCollapsed = window['_tpCollapse_' + col.id];
-          // Group header (clickable to collapse)
           html += '<div class="tp-group-hdr" onclick="window._tpToggleGroup(\'' + col.id + '\')" style="margin-bottom:' + (isCollapsed ? '6' : '4') + 'px">';
           html += '<span class="tp-arrow' + (isCollapsed ? ' collapsed' : '') + '"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--ink-muted)" stroke-width="2" stroke-linecap="round"><polyline points="4,6 8,10 12,6"/></svg></span>';
           html += '<span style="width:7px;height:7px;border-radius:50%;background:' + col.color + '"></span>';
@@ -6435,22 +6419,22 @@ canvas{display:block;margin:0 auto 24px}
       }
       html += '</div>'; // end current cycle card
 
+      // ── Divider ──
+      html += '<div style="border-top:1px solid var(--border);margin:4px 0 12px"></div>';
+
       // ── Next cycle card ──
       var nextCycIdx = cycIdx + 1;
       var nextCycle = nextCycIdx < allCycles.length ? allCycles[nextCycIdx] : null;
       if(!nextCycle){
-        // Auto-create next cycle placeholder
         var ncStart = new Date(currentCycle.endDate + 'T00:00:00');
         ncStart.setDate(ncStart.getDate() + 1);
         var ncEnd = new Date(ncStart);
         ncEnd.setDate(ncEnd.getDate() + ((cfg.duration || 7) - 1));
         var ncStartStr = ncStart.toISOString().split('T')[0];
         var ncEndStr = ncEnd.toISOString().split('T')[0];
-        // Check if it already exists
         nextCycle = allCycles.find(function(c){ return c.startDate === ncStartStr; });
         if(!nextCycle){
           nextCycle = {id:'cycle_next_' + ncStartStr, label:'下週期', startDate:ncStartStr, endDate:ncEndStr};
-          // Save it
           allCycles.push(nextCycle);
           T.saveCycles(allCycles);
         }
@@ -6459,7 +6443,7 @@ canvas{display:block;margin:0 auto 24px}
       var ncStart2 = fmtDate(nextCycle.startDate);
       var ncEnd2 = fmtDate(nextCycle.endDate);
 
-      html += '<div class="tp-cycle-card next-cycle tp-dropzone" id="tpDropNext">';
+      html += '<div class="tp-cycle-card next-cycle tp-dropzone" id="tpDropNext" style="border:none;padding:0;background:transparent;opacity:.75">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
       html += '<div style="font-size:13px;font-weight:700;color:var(--ink-muted);display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 下週期 <span style="font-size:11px;font-weight:500;color:var(--ink-dim)">' + ncStart2 + '—' + ncEnd2 + '</span></div>';
       html += '<span style="font-size:11px;font-weight:600;color:var(--ink-dim);background:var(--bg-hover);padding:1px 8px;border-radius:10px">' + nextCycleCards.length + '</span>';
@@ -6471,7 +6455,7 @@ canvas{display:block;margin:0 auto 24px}
       }
       html += '</div>'; // end next cycle card
 
-      html += '</div>'; // end RIGHT PANE
+      html += '</div>'; // end RIGHT PANE card
       html += '</div>'; // end dual-pane
 
       content.innerHTML = html;
@@ -6481,49 +6465,26 @@ canvas{display:block;margin:0 auto 24px}
     }
 
     // ═══════════════════════════════════════════════════
-    // ── Task Planning v2: Filter handlers ──
+    // ── Task Planning v2: Filter handlers (single-select via bpSelect) ──
     // ═══════════════════════════════════════════════════
 
-    window._tpToggleDrop = function(id){
-      var listEl = document.getElementById(id + 'List');
-      if(!listEl) return;
-      var isOpen = listEl.style.display !== 'none';
-      // Close all other dropdowns first
-      var allDrops = document.querySelectorAll('.tp-filter-drop');
-      for(var i = 0; i < allDrops.length; i++) allDrops[i].style.display = 'none';
-      if(!isOpen) listEl.style.display = 'block';
-    };
-
-    // Close dropdowns on outside click
-    document.addEventListener('click', function(e){
-      if(!e.target.closest('.tp-filter-btn') && !e.target.closest('.tp-filter-drop')){
-        var allDrops = document.querySelectorAll('.tp-filter-drop');
-        for(var i = 0; i < allDrops.length; i++) allDrops[i].style.display = 'none';
-      }
-    });
-
-    window._tpFilterChange = function(group, value, checked){
-      var stateKey = group === 'tpPri' ? '_tpFilterPri' : group === 'tpCat' ? '_tpFilterCat' : '_tpFilterTag';
-      var arr = window[stateKey] || [];
-      if(checked){
-        if(arr.indexOf(value) === -1) arr.push(value);
-      } else {
-        arr = arr.filter(function(v){ return v !== value; });
-      }
-      window[stateKey] = arr;
+    window._tpPickPri = function(val){
+      window._tpFilterPri = val;
       renderBacklog();
     };
-
-    window._tpClearFilter = function(id){
-      var stateKey = id === 'tpPri' ? '_tpFilterPri' : id === 'tpCat' ? '_tpFilterCat' : '_tpFilterTag';
-      window[stateKey] = [];
+    window._tpPickCat = function(val){
+      window._tpFilterCat = val;
+      renderBacklog();
+    };
+    window._tpPickTag = function(val){
+      window._tpFilterTag = val;
       renderBacklog();
     };
 
     window._tpClearAllFilters = function(){
-      window._tpFilterPri = [];
-      window._tpFilterCat = [];
-      window._tpFilterTag = [];
+      window._tpFilterPri = '';
+      window._tpFilterCat = '';
+      window._tpFilterTag = '';
       renderBacklog();
     };
 
@@ -23799,4 +23760,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.12.0 -->
+</html><!-- v0.12.1 -->
