@@ -3313,6 +3313,18 @@ canvas{display:block;margin:0 auto 24px}
 .cmd-palette-footer{display:flex;align-items:center;gap:12px;padding:8px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--ink-dim)}
 .cmd-palette-footer kbd{background:var(--bg-hover);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:10px}
 
+/* Touch-friendly: always show actions on mobile */
+@media(max-width:768px){
+  .tc-card .tc-card-actions{opacity:1 !important}
+  .kb-card-v2 .kb-v2-touch-actions{display:flex}
+}
+@media(min-width:769px){
+  .kb-card-v2 .kb-v2-touch-actions{display:none}
+}
+.kb-v2-touch-actions{gap:4px;margin-top:4px}
+.kb-v2-touch-actions button{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--ink-muted);font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.kb-v2-touch-actions button:active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
 </style>
 </head>
 <body>
@@ -6921,7 +6933,8 @@ canvas{display:block;margin:0 auto 24px}
         '<option value="0"' + (curStartDay===0?' selected':'') + '>週日</option>' +
         '</select>' +
         '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px;display:block">建議容量（每週項目數）</label>' +
-        '<input type="number" id="cpCapacity" value="' + curCapacity + '" min="1" max="50" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;margin-bottom:20px;font-family:inherit">' +
+        '<input type="number" id="cpCapacity" value="' + curCapacity + '" min="1" max="50" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;margin-bottom:4px;font-family:inherit">' +
+        '<div style="font-size:11px;color:var(--ink-dim);margin-bottom:20px">每個週期的建議任務數量上限</div>' +
         '<div style="font-size:12px;color:var(--ink-dim);margin-bottom:12px;line-height:1.5">更改設定後，下一個新週期會套用新的長度與起始日。當前週期不受影響。</div>' +
         '</div>' +
         '<div class="kb-modal-footer" style="justify-content:flex-end">' +
@@ -7583,8 +7596,8 @@ canvas{display:block;margin:0 auto 24px}
 
         var mobileActiveClass = (ci === (window._kbMobileActiveIdx||0)) ? ' mobile-active' : '';
         var isInbox = col.id === 'inbox';
-        html += '<div class="kanban-col' + mobileActiveClass + (isInbox ? ' inbox-col' : '') + '" data-col="' + col.id + '" data-colidx="' + ci + '" style="background:' + hexToRgba(col.color,0.02) + ';border:1px solid ' + hexToRgba(col.color,0.15) + '">';
-        html += '<div class="kanban-col-header" style="background:' + hexToRgba(col.color,0.10) + ';">';
+        html += '<div class="kanban-col' + mobileActiveClass + (isInbox ? ' inbox-col' : '') + '" data-col="' + col.id + '" data-colidx="' + ci + '" style="background:' + hexToRgba(col.color,0.04) + ';border:1px solid ' + hexToRgba(col.color,0.18) + '">';
+        html += '<div class="kanban-col-header" style="background:' + hexToRgba(col.color,0.12) + ';">';
         html += '<div style="display:flex;align-items:center;gap:8px">';
         if(isInbox){
           html += '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="' + col.color + '" stroke-width="1.5" stroke-linecap="round"><path d="M2 7h3l1.5 2h1l1.5-2h3"/><rect x="1" y="2" width="12" height="10" rx="2"/></svg>';
@@ -7671,6 +7684,44 @@ canvas{display:block;margin:0 auto 24px}
         });
         html += '</div></div>';
       });
+
+      // Onboarding: empty board state
+      var _totalBoardCards = cards.filter(function(c){ return c.cycleId === _cyc.id && !c.archived && c.columnId !== 'inbox'; }).length;
+      if(_totalBoardCards === 0 && !sq) {
+        html += '<div style="grid-column:1/-1;text-align:center;padding:48px 24px">';
+        html += '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(124,92,252,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:1px solid rgba(124,92,252,.1)">';
+        html += '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="4" rx="1.5"/><rect x="14" y="10" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="4" rx="1.5"/></svg>';
+        html += '</div>';
+        html += '<div style="font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px">本期還沒有任務</div>';
+        html += '<div style="font-size:14px;color:var(--ink-muted);line-height:1.7;max-width:400px;margin:0 auto 24px">';
+        html += '三步開始你的工作流程：</div>';
+        html += '<div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;max-width:520px;margin:0 auto 28px">';
+        var _obSteps = [
+          {n:'1',t:'寫下需求',d:'在需求工坊用 AI 拆解想法',nav:'biz-spec',color:'var(--primary)'},
+          {n:'2',t:'排入週期',d:'從需求池挑選本期任務',nav:'biz-cycle',color:'var(--gold)'},
+          {n:'3',t:'開始執行',d:'在這裡追蹤進度',nav:'biz-tasks',color:'var(--teal)'}
+        ];
+        _obSteps.forEach(function(s){
+          html += '<div onclick="navigate(\'' + s.nav + '\')" style="flex:1;min-width:140px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;transition:all .15s;text-align:left" onmouseover="this.style.borderColor=\'' + s.color + '\'" onmouseout="this.style.borderColor=\'var(--border)\'">';
+          html += '<div style="width:28px;height:28px;border-radius:50%;background:' + s.color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-bottom:10px">' + s.n + '</div>';
+          html += '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px">' + s.t + '</div>';
+          html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.5">' + s.d + '</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+        html += '<button class="btn btn-accent" onclick="navigate(\'biz-spec\')" style="padding:10px 24px;font-size:14px;font-weight:600">前往需求工坊</button>';
+        html += '</div>';
+      }
+      // Empty search result for board view
+      if(_totalBoardCards === 0 && sq) {
+        html += '<div style="grid-column:1/-1;text-align:center;padding:48px 24px">';
+        html += '<div style="width:56px;height:56px;border-radius:50%;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">';
+        html += '<svg width="24" height="24" viewBox="0 0 20 20" fill="none" stroke="var(--ink-dim)" stroke-width="1.5" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><line x1="12.5" y1="12.5" x2="17" y2="17"/></svg>';
+        html += '</div>';
+        html += '<div style="font-size:15px;font-weight:600;color:var(--ink-muted);margin-bottom:6px">找不到符合的任務</div>';
+        html += '<div style="font-size:13px;color:var(--ink-dim)">試試其他關鍵字，或<a href="javascript:void(0)" onclick="window._kbSearch=\'\';renderBoard()" style="color:var(--primary);text-decoration:none;font-weight:600">清除搜尋</a></div>';
+        html += '</div>';
+      }
 
       html += '<div class="kanban-col-add" onclick="window._kbAddCol()">';
       html += '<div style="display:flex;align-items:center;gap:8px;color:var(--ink-muted);font-size:14px">' + IC.plus + ' 新增欄位</div>';
