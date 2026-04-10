@@ -3238,6 +3238,164 @@ canvas{display:block;margin:0 auto 24px}
 .tl-tooltip{position:fixed;z-index:99;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;box-shadow:var(--shadow-card);font-size:12px;color:var(--ink);pointer-events:none;max-width:240px}
 .tl-tooltip strong{display:block;font-size:13px;margin-bottom:4px}
 
+/* ═══ 進程藍圖 Roadmap (v0.14.0) ═══ */
+.rm-wrap{position:relative;display:flex;flex-direction:column;height:calc(100vh - 60px);overflow:hidden;background:var(--bg-card);border-radius:var(--r-xl);border:1px solid var(--border);margin:-12px -8px 0}
+.rm-toolbar{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg-card);z-index:5}
+.rm-title-block{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+.rm-title{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.rm-title svg{color:var(--primary)}
+.rm-sub{font-size:11px;color:var(--ink-dim);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.rm-tool-group{display:flex;align-items:center;gap:4px;background:var(--bg-hover);border-radius:var(--r-md);padding:3px}
+.rm-tool-btn{padding:6px 14px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--ink-dim);border-radius:var(--r-sm);cursor:pointer;transition:all .18s;font-family:inherit;display:flex;align-items:center;gap:6px}
+.rm-tool-btn:hover{color:var(--ink)}
+.rm-tool-btn.active{background:var(--bg-card);color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.08),0 0 0 1px rgba(124,92,252,.1)}
+[data-theme="dark"] .rm-tool-btn.active{background:rgba(124,92,252,.18);box-shadow:0 0 0 1px rgba(124,92,252,.3)}
+.rm-today-btn{padding:7px 16px;border:1px solid var(--border);background:var(--bg-card);font-size:12px;font-weight:700;color:var(--primary);border-radius:var(--r-md);cursor:pointer;transition:all .18s;font-family:inherit;display:flex;align-items:center;gap:6px}
+.rm-today-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary);transform:translateY(-1px)}
+.rm-divider{width:1px;height:24px;background:var(--border)}
+.rm-stat{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-sec);font-weight:600}
+.rm-stat-dot{width:8px;height:8px;border-radius:50%}
+.rm-body{display:flex;flex:1;overflow:hidden;position:relative;min-height:0}
+
+/* Left panel — Excel table */
+.rm-left{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-card);position:relative;z-index:2}
+.rm-left-header{display:grid;grid-template-columns:1fr 90px 70px;gap:0;height:44px;align-items:center;padding:0 14px 0 20px;font-size:10px;font-weight:700;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-card);flex-shrink:0}
+.rm-left-body{flex:1;overflow-y:auto;overflow-x:hidden}
+.rm-left-body::-webkit-scrollbar{width:8px}
+.rm-left-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.rm-left-body::-webkit-scrollbar-thumb:hover{background:var(--ink-muted)}
+
+/* Group header (category) */
+.rm-group-header{display:flex;align-items:center;gap:10px;padding:0 14px 0 12px;height:40px;cursor:pointer;font-size:12px;font-weight:700;color:var(--ink);user-select:none;background:var(--bg-card);border-bottom:1px solid var(--border);position:relative}
+.rm-group-header:hover{background:var(--bg-hover)}
+.rm-group-chev{width:14px;height:14px;color:var(--ink-dim);transition:transform .2s;flex-shrink:0}
+.rm-group-header.collapsed .rm-group-chev{transform:rotate(-90deg)}
+.rm-group-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.rm-group-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rm-group-count{font-size:10px;font-weight:700;color:var(--ink-dim);background:var(--bg-hover);padding:2px 8px;border-radius:10px;flex-shrink:0}
+.rm-group-progress{font-size:10px;font-weight:700;color:var(--teal);flex-shrink:0}
+
+/* Task row in left table */
+.rm-row{display:grid;grid-template-columns:1fr 90px 70px;gap:0;align-items:center;height:44px;padding:0 14px 0 36px;font-size:12px;color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background .15s;position:relative}
+[data-theme="dark"] .rm-row{border-bottom-color:rgba(255,255,255,.04)}
+.rm-row:hover{background:var(--bg-hover)}
+.rm-row-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;padding-right:12px;display:flex;align-items:center;gap:8px}
+.rm-row-title .rm-pri-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.rm-row-title .rm-pri-dot.high{background:var(--rose)}
+.rm-row-title .rm-pri-dot.medium{background:var(--gold)}
+.rm-row-title .rm-pri-dot.low{background:var(--primary)}
+.rm-row-title .rm-pri-dot.none{background:var(--ink-dim);opacity:.4}
+.rm-row-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;text-align:center;white-space:nowrap;justify-self:start}
+.rm-row-status.inbox{background:rgba(148,163,184,.15);color:#64748b}
+.rm-row-status.todo{background:rgba(124,92,252,.12);color:var(--primary)}
+.rm-row-status.doing{background:rgba(224,138,58,.15);color:var(--gold)}
+.rm-row-status.review{background:rgba(59,130,246,.14);color:#3B82F6}
+.rm-row-status.done{background:rgba(27,168,145,.15);color:var(--teal)}
+[data-theme="dark"] .rm-row-status.inbox{background:rgba(148,163,184,.2);color:#94A3B8}
+.rm-row-date{font-size:11px;color:var(--ink-dim);font-variant-numeric:tabular-nums;text-align:right;font-weight:600}
+.rm-row-date.overdue{color:var(--rose)}
+
+/* Right panel — Gantt */
+.rm-right{flex:1;overflow:auto;position:relative;background:var(--bg)}
+.rm-right::-webkit-scrollbar{width:10px;height:10px}
+.rm-right::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+.rm-right::-webkit-scrollbar-thumb:hover{background:var(--ink-muted)}
+.rm-right::-webkit-scrollbar-corner{background:transparent}
+
+/* Time axis header (sticky top) */
+.rm-header{position:sticky;top:0;left:0;z-index:6;background:var(--bg-card);border-bottom:1px solid var(--border);height:44px;display:flex;flex-direction:column}
+.rm-header-row1{display:flex;height:22px;border-bottom:1px solid var(--border)}
+.rm-header-row2{display:flex;height:22px}
+.rm-header-major{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--ink-sec);border-right:1px solid var(--border);letter-spacing:.05em;text-transform:uppercase;flex-shrink:0;background:var(--bg-card)}
+.rm-header-minor{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--ink-dim);border-right:1px solid rgba(0,0,0,.04);flex-shrink:0}
+[data-theme="dark"] .rm-header-minor{border-right-color:rgba(255,255,255,.04)}
+.rm-header-minor.today{color:#fff;background:var(--primary);font-weight:800}
+.rm-header-minor.weekend{background:rgba(0,0,0,.025)}
+[data-theme="dark"] .rm-header-minor.weekend{background:rgba(255,255,255,.03)}
+
+/* Gantt canvas */
+.rm-canvas{position:relative;min-height:100%}
+.rm-grid-lines{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0}
+.rm-grid-vline{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.04)}
+[data-theme="dark"] .rm-grid-vline{background:rgba(255,255,255,.04)}
+.rm-grid-vline.major{background:rgba(0,0,0,.08)}
+[data-theme="dark"] .rm-grid-vline.major{background:rgba(255,255,255,.08)}
+.rm-grid-vline.weekend{background:rgba(0,0,0,.02);width:var(--w,1px)}
+[data-theme="dark"] .rm-grid-vline.weekend{background:rgba(255,255,255,.015)}
+
+/* Today line */
+.rm-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--primary);z-index:3;pointer-events:none;box-shadow:0 0 0 1px rgba(124,92,252,.25)}
+.rm-today-line::before{content:'';position:absolute;top:-3px;left:-5px;width:12px;height:12px;border-radius:50%;background:var(--primary);border:2px solid var(--bg-card)}
+
+/* Cycle background band */
+.rm-cycle-band{position:absolute;top:0;bottom:0;border-left:1px dashed rgba(124,92,252,.28);border-right:1px dashed rgba(124,92,252,.28);background:linear-gradient(180deg,rgba(124,92,252,.035) 0%,rgba(124,92,252,.01) 60%);z-index:1;pointer-events:none}
+.rm-cycle-band.current{background:linear-gradient(180deg,rgba(27,168,145,.06) 0%,rgba(27,168,145,.015) 60%);border-color:rgba(27,168,145,.35)}
+.rm-cycle-band.past{background:linear-gradient(180deg,rgba(148,163,184,.04) 0%,transparent 60%);border-color:rgba(148,163,184,.2)}
+[data-theme="dark"] .rm-cycle-band{background:linear-gradient(180deg,rgba(124,92,252,.08) 0%,rgba(124,92,252,.02) 60%)}
+[data-theme="dark"] .rm-cycle-band.current{background:linear-gradient(180deg,rgba(27,168,145,.12) 0%,rgba(27,168,145,.03) 60%)}
+.rm-cycle-label{position:absolute;top:6px;left:8px;font-size:10px;font-weight:800;color:var(--primary);background:var(--bg-card);padding:3px 8px;border-radius:10px;border:1px solid rgba(124,92,252,.25);white-space:nowrap;pointer-events:auto;z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.rm-cycle-band.current .rm-cycle-label{color:var(--teal);border-color:rgba(27,168,145,.35)}
+.rm-cycle-band.past .rm-cycle-label{color:var(--ink-dim);border-color:var(--border);opacity:.8}
+
+/* Group rollup row (matches group header in left) */
+.rm-rollup-row{height:40px;position:relative;border-bottom:1px solid var(--border);background:rgba(0,0,0,.015)}
+[data-theme="dark"] .rm-rollup-row{background:rgba(255,255,255,.02)}
+.rm-rollup-bar{position:absolute;top:12px;height:16px;border-radius:4px;opacity:.5;z-index:2;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.rm-rollup-fill{position:absolute;top:0;left:0;bottom:0;background:rgba(255,255,255,.35);border-radius:4px 0 0 4px}
+
+/* Task row background (matches .rm-row in left, must align) */
+.rm-bar-row{height:44px;position:relative;border-bottom:1px solid rgba(0,0,0,.03)}
+[data-theme="dark"] .rm-bar-row{border-bottom-color:rgba(255,255,255,.04)}
+.rm-bar-row:hover{background:rgba(124,92,252,.02)}
+
+/* Task bar */
+.rm-bar{position:absolute;top:9px;height:26px;border-radius:6px;cursor:pointer;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;z-index:2;transition:transform .15s,box-shadow .15s,filter .15s;min-width:24px;box-shadow:0 1px 2px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.25);user-select:none}
+.rm-bar:hover{transform:translateY(-1px) scale(1.01);box-shadow:0 4px 14px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.35);z-index:5;filter:brightness(1.08)}
+.rm-bar-fill{position:absolute;top:0;left:0;bottom:0;background:rgba(255,255,255,.25);border-radius:6px 0 0 6px;pointer-events:none}
+.rm-bar-title{position:relative;z-index:1;text-overflow:ellipsis;overflow:hidden;flex:1;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.rm-bar.done{opacity:.78}
+.rm-bar.done .rm-bar-title{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.6)}
+.rm-bar.overdue::after{content:'';position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--rose);border:2px solid var(--bg-card);z-index:3}
+.rm-bar.no-date{background:repeating-linear-gradient(45deg,var(--bg-hover),var(--bg-hover) 6px,rgba(0,0,0,.03) 6px,rgba(0,0,0,.03) 12px)!important;color:var(--ink-dim);border:1px dashed var(--border);box-shadow:none;text-shadow:none}
+[data-theme="dark"] .rm-bar.no-date{background:repeating-linear-gradient(45deg,var(--bg-hover),var(--bg-hover) 6px,rgba(255,255,255,.04) 6px,rgba(255,255,255,.04) 12px)!important}
+
+/* Milestone diamond */
+.rm-milestone{position:absolute;top:10px;width:22px;height:22px;transform:rotate(45deg);background:var(--gold);border:2px solid var(--bg-card);z-index:4;cursor:pointer;box-shadow:0 2px 6px rgba(224,138,58,.4)}
+.rm-milestone:hover{transform:rotate(45deg) scale(1.15)}
+
+/* Empty state */
+.rm-empty{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;max-width:400px;padding:24px}
+.rm-empty-icon{width:56px;height:56px;border-radius:14px;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--ink-dim)}
+.rm-empty-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.rm-empty-desc{font-size:13px;color:var(--ink-dim);line-height:1.6;margin-bottom:18px}
+.rm-empty-btn{padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:var(--r-md);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .15s;box-shadow:0 4px 12px rgba(124,92,252,.25)}
+.rm-empty-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(124,92,252,.35)}
+
+/* Tooltip */
+.rm-tooltip{position:fixed;z-index:999;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 16px;box-shadow:0 12px 32px rgba(0,0,0,.18);font-size:12px;color:var(--ink);pointer-events:none;max-width:260px;animation:rm-fadeIn .15s ease both}
+.rm-tooltip strong{display:block;font-size:13px;margin-bottom:6px;color:var(--ink);font-weight:800}
+.rm-tooltip .rm-tt-row{display:flex;align-items:center;gap:6px;margin-top:4px;color:var(--ink-sec);font-size:11px}
+.rm-tooltip .rm-tt-row svg{width:11px;height:11px;opacity:.7}
+@keyframes rm-fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Responsive */
+@media (max-width:900px){
+  .rm-left{width:260px}
+  .rm-left-header{grid-template-columns:1fr 70px;padding:0 10px 0 14px}
+  .rm-row{grid-template-columns:1fr 70px;padding:0 10px 0 28px}
+  .rm-row-date{display:none}
+}
+@media (max-width:640px){
+  .rm-wrap{margin:-8px -4px 0;height:calc(100vh - 50px)}
+  .rm-left{width:200px}
+  .rm-left-header{grid-template-columns:1fr;padding:0 10px}
+  .rm-row{grid-template-columns:1fr;padding:0 10px 0 22px}
+  .rm-row-status,.rm-row-date{display:none}
+  .rm-sub{display:none}
+  .rm-title{font-size:15px}
+  .rm-toolbar{padding:10px 14px;gap:8px}
+}
+
 /* — Detail panel slide-in — */
 .tc-detail-panel{
   background:var(--bg-card);border:1px solid var(--border);border-radius:16px;
@@ -3469,7 +3627,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.13.0</div>
+        <div class="sidebar-version">v0.14.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -3531,7 +3689,9 @@ canvas{display:block;margin:0 auto 24px}
     toggleOn: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="16" cy="12" r="3"/></svg>',
     toggleOff: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="8" cy="12" r="3"/></svg>',
     handshake: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5l-1 1-4-4-1.5 1.5 4 4-1 1-4-4-1.5 1.5 2.5 2.5"/><path d="M3.5 11.5l1 1 4-4 1.5 1.5-4 4 1 1 4-4 1.5 1.5-2.5 2.5"/><path d="M2 6.5l4-3 4 2.5 4-2.5 4 2.5 4-2.5v5"/><path d="M2 6.5v5"/></svg>',
-    ganttChart: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="3" y2="20"/><line x1="3" y1="6" x2="21" y2="6"/><rect x="5" y="9" width="10" height="3" rx="1.5"/><rect x="8" y="14" width="8" height="3" rx="1.5"/><rect x="6" y="19" width="12" height="3" rx="1.5"/></svg>'
+    ganttChart: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="3" y2="20"/><line x1="3" y1="6" x2="21" y2="6"/><rect x="5" y="9" width="10" height="3" rx="1.5"/><rect x="8" y="14" width="8" height="3" rx="1.5"/><rect x="6" y="19" width="12" height="3" rx="1.5"/></svg>',
+    // v0.14.0: 進程藍圖 Roadmap — rolled blueprint with route waypoints
+    roadmap: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l-6 2v14l6-2 6 2 6-2V5l-6 2-6-2z"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="7" x2="15" y2="21"/></svg>'
   };
 
   // ==================== STATE MANAGEMENT ====================
@@ -4142,9 +4302,9 @@ canvas{display:block;margin:0 auto 24px}
 
     // 商業模組 — Pipeline: 定義→蒐集→排程→執行
     const bizItems = [
+      { id: 'biz-roadmap', label: '進程藍圖', icon: 'roadmap', modKey: 'mod-tasks', layer: 1, q: '整體方向要跑多久？', parent: 'tasks' },
       { id: 'biz-planning', label: '任務規劃', icon: 'inbox', modKey: 'mod-tasks', layer: 1, q: '需求管理與週期排程', parent: 'tasks' },
       { id: 'biz-tasks', label: '任務看板', icon: 'listChecks', modKey: 'mod-tasks', layer: 1, q: '本週該做什麼？', parent: 'tasks' },
-      { id: 'biz-timeline', label: '時間軸', icon: 'ganttChart', modKey: 'mod-tasks', layer: 1, q: '任務什麼時候完成？', parent: 'tasks' },
       { id: 'biz-contacts', label: '客戶管理', icon: 'users', modKey: 'mod-contacts', layer: 1, q: '這個人跟我們什麼關係？' },
       { id: 'biz-quotes', label: '報價提案', icon: 'fileText', modKey: 'mod-quotes', layer: 2, q: '怎麼快速產一份專業報價？' },
       { id: 'biz-billing', label: '收款管理', icon: 'dollarSign', modKey: 'mod-billing', layer: 2, q: '錢收到了嗎？' },
@@ -4460,13 +4620,13 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
-    // biz-timeline → vanilla JS swimlane timeline (v0.13.0)
-    if (moduleId === 'biz-timeline') {
+    // biz-roadmap → 進程藍圖 vanilla JS (v0.14.0, replaces legacy timeline)
+    if (moduleId === 'biz-roadmap' || moduleId === 'biz-timeline') {
       if (window._bizReactRoot) {
         try { window._bizReactRoot.unmount(); } catch(e) {}
         window._bizReactRoot = null;
       }
-      renderTimeline();
+      renderRoadmap();
       return;
     }
 
@@ -8046,6 +8206,454 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   // ==================== MODULE: SWIMLANE TIMELINE (v0.13.0) ====================
+  // ==================== 進程藍圖 Roadmap (v0.14.0) ====================
+  // L1 視圖：Excel 式左表 + Gantt 式右圖
+  // 週期背景帶、分類分組、狀態進度填充、三段 zoom（季/月/週）
+  // 點擊任務條開 kanban detail drawer
+  function renderRoadmap() {
+    var content = document.getElementById('content');
+    var mainEl = document.getElementById('main');
+    if (mainEl) { mainEl.style.overflow = 'hidden'; mainEl.style.height = '100vh'; }
+    var appEl = document.getElementById('app');
+    if (appEl) appEl.style.overflow = 'hidden';
+
+    var T = _taskShared;
+    var CATS = T.TASK_CATEGORIES;
+    var cards = T.getCards().map(T.migrateCard).filter(function(c){ return !c.archived; });
+    var cycles = T.getCycles().slice().sort(function(a,b){ return (a.startDate||'').localeCompare(b.startDate||''); });
+    T.ensureCurrentCycle();
+    var activeCycleId = T.getActiveCycleId();
+
+    // ── State ──
+    if(!window._rmState){
+      window._rmState = { zoom: 'month', groupBy: 'category', expanded: {}, filter: '' };
+    }
+    var RM = window._rmState;
+
+    // ── Status → progress mapping ──
+    var STATUS_PROGRESS = { inbox: 0, todo: 15, doing: 50, review: 80, done: 100 };
+    var STATUS_LABELS   = { inbox: '待分類', todo: '待處理', doing: '進行中', review: '驗收中', done: '已完成' };
+    var PRI_BAR_COLOR   = { high: '#D94462', medium: '#E08A3A', low: '#3B82F6', none: '#94A3B8' };
+
+    // ── Zoom config ──
+    // pxPerDay controls horizontal density; unit defines minor column granularity
+    var ZOOM_CFG = {
+      quarter: { label: '季', pxPerDay: 11, minorUnit: 'week', minorCellDays: 7, majorUnit: 'month' },
+      month:   { label: '月', pxPerDay: 30, minorUnit: 'day',  minorCellDays: 1, majorUnit: 'month' },
+      week:    { label: '週', pxPerDay: 72, minorUnit: 'day',  minorCellDays: 1, majorUnit: 'week' }
+    };
+    var zoom = ZOOM_CFG[RM.zoom] || ZOOM_CFG.month;
+
+    // ── Compute date range ──
+    // Anchor around today, include all cycles + cards, pad 14 days each side
+    var today = new Date(); today.setHours(0,0,0,0);
+    var minDate = new Date(today); minDate.setDate(minDate.getDate() - 21);
+    var maxDate = new Date(today); maxDate.setDate(maxDate.getDate() + 49);
+    cycles.forEach(function(cy){
+      if(cy.startDate){ var sd = new Date(cy.startDate); sd.setHours(0,0,0,0); if(sd < minDate) minDate = new Date(sd.getTime() - 7*86400000); }
+      if(cy.endDate){   var ed = new Date(cy.endDate);   ed.setHours(0,0,0,0); if(ed > maxDate) maxDate = new Date(ed.getTime() + 14*86400000); }
+    });
+    cards.forEach(function(c){
+      if(c.startDate){ var sd = new Date(c.startDate); sd.setHours(0,0,0,0); if(sd < minDate) minDate = new Date(sd.getTime() - 7*86400000); }
+      if(c.dueDate){   var dd = new Date(c.dueDate);   dd.setHours(0,0,0,0); if(dd > maxDate) maxDate = new Date(dd.getTime() + 14*86400000); }
+    });
+
+    function daysBetween(a, b){ return Math.round((b.getTime() - a.getTime()) / 86400000); }
+    function addDays(d, n){ var r = new Date(d); r.setDate(r.getDate() + n); r.setHours(0,0,0,0); return r; }
+    function fmtMD(d){ return (d.getMonth()+1) + '/' + d.getDate(); }
+    function fmtYMD(s){ return s ? s.slice(5).replace('-','/') : ''; }
+    function pxForDays(n){ return n * zoom.pxPerDay; }
+
+    var totalDays = daysBetween(minDate, maxDate) + 1;
+    var canvasW = totalDays * zoom.pxPerDay;
+    var todayOffsetPx = daysBetween(minDate, today) * zoom.pxPerDay + (zoom.pxPerDay / 2);
+
+    // ── Group cards by category ──
+    var groups = [];
+    Object.keys(CATS).forEach(function(catKey){
+      var cat = CATS[catKey];
+      var list = cards.filter(function(c){ return (c.category || 'product') === catKey; });
+      if(list.length === 0) return;
+      // Sort: pinned status order, then by startDate/dueDate
+      var statusOrder = { doing:0, review:1, todo:2, inbox:3, done:4 };
+      list.sort(function(a, b){
+        var sa = statusOrder[a.columnId] !== undefined ? statusOrder[a.columnId] : 9;
+        var sb = statusOrder[b.columnId] !== undefined ? statusOrder[b.columnId] : 9;
+        if(sa !== sb) return sa - sb;
+        var da = a.startDate || a.dueDate || '9999';
+        var db = b.startDate || b.dueDate || '9999';
+        return da.localeCompare(db);
+      });
+      var doneCount = list.filter(function(c){ return c.columnId === 'done'; }).length;
+      groups.push({
+        key: catKey,
+        label: cat.label,
+        color: cat.color,
+        cards: list,
+        total: list.length,
+        done: doneCount,
+        progress: list.length ? Math.round(doneCount / list.length * 100) : 0
+      });
+      if(RM.expanded[catKey] === undefined) RM.expanded[catKey] = true;
+    });
+
+    // ── Stats ──
+    var totalCards = cards.length;
+    var totalDone = cards.filter(function(c){ return c.columnId === 'done'; }).length;
+    var overallProgress = totalCards ? Math.round(totalDone / totalCards * 100) : 0;
+
+    // ── Build toolbar ──
+    var toolbarH = '<div class="rm-toolbar">' +
+      '<div class="rm-title-block">' +
+        '<div class="rm-title">' + ICONS.roadmap + '進程藍圖</div>' +
+        '<div class="rm-sub">Roadmap · 週期進程總覽</div>' +
+      '</div>' +
+      '<div class="rm-stat"><span class="rm-stat-dot" style="background:var(--teal)"></span>' + totalDone + ' / ' + totalCards + ' · ' + overallProgress + '%</div>' +
+      '<div class="rm-stat"><span class="rm-stat-dot" style="background:var(--primary)"></span>' + cycles.length + ' 個週期</div>' +
+      '<div class="rm-divider"></div>' +
+      '<div class="rm-tool-group">' +
+        '<button class="rm-tool-btn' + (RM.zoom==='quarter'?' active':'') + '" onclick="window._rmSetZoom(\'quarter\')">季</button>' +
+        '<button class="rm-tool-btn' + (RM.zoom==='month'?' active':'') + '" onclick="window._rmSetZoom(\'month\')">月</button>' +
+        '<button class="rm-tool-btn' + (RM.zoom==='week'?' active':'') + '" onclick="window._rmSetZoom(\'week\')">週</button>' +
+      '</div>' +
+      '<button class="rm-today-btn" onclick="window._rmGoToday()">' +
+        '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="10" y1="16" x2="10" y2="18"/><line x1="2" y1="10" x2="4" y2="10"/><line x1="16" y1="10" x2="18" y2="10"/></svg>' +
+        '今天' +
+      '</button>' +
+    '</div>';
+
+    // ── Build left panel (Excel table) ──
+    var leftH = '<div class="rm-left">' +
+      '<div class="rm-left-header">' +
+        '<div>任務</div>' +
+        '<div>狀態</div>' +
+        '<div style="text-align:right">到期</div>' +
+      '</div>' +
+      '<div class="rm-left-body" id="rmLeftBody">';
+
+    groups.forEach(function(g){
+      var expanded = RM.expanded[g.key];
+      leftH += '<div class="rm-group-header' + (expanded?'':' collapsed') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" data-group="' + g.key + '">' +
+        '<svg class="rm-group-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 8 10 12 14 8"/></svg>' +
+        '<span class="rm-group-dot" style="background:' + g.color + '"></span>' +
+        '<span class="rm-group-label">' + g.label + '</span>' +
+        '<span class="rm-group-count">' + g.done + '/' + g.total + '</span>' +
+        '<span class="rm-group-progress">' + g.progress + '%</span>' +
+      '</div>';
+      if(expanded){
+        g.cards.forEach(function(c){
+          var pri = c.priority || 'none';
+          var status = c.columnId || 'todo';
+          var dueStr = c.dueDate ? fmtYMD(c.dueDate) : '—';
+          var isOverdue = c.dueDate && c.columnId !== 'done' && new Date(c.dueDate) < today;
+          var title = (c.title || '(未命名)').replace(/</g,'&lt;');
+          leftH += '<div class="rm-row" data-card="' + c.id + '" onclick="window._rmOpenCard(\'' + c.id + '\')">' +
+            '<div class="rm-row-title"><span class="rm-pri-dot ' + pri + '"></span>' + title + '</div>' +
+            '<div class="rm-row-status ' + status + '">' + (STATUS_LABELS[status] || status) + '</div>' +
+            '<div class="rm-row-date' + (isOverdue?' overdue':'') + '">' + dueStr + '</div>' +
+          '</div>';
+        });
+      }
+    });
+
+    if(groups.length === 0){
+      leftH += '<div style="padding:40px 20px;text-align:center;color:var(--ink-dim);font-size:12px">尚無任務</div>';
+    }
+
+    leftH += '</div></div>';
+
+    // ── Build right panel (Gantt) ──
+    // Time header — 2 rows: major (month/week) + minor (day/week)
+    var headerRow1 = '', headerRow2 = '';
+
+    if(zoom.minorUnit === 'day'){
+      // Row 1: month grouping; Row 2: day cells
+      var monthGroups = {};
+      for(var i=0; i<totalDays; i++){
+        var d = addDays(minDate, i);
+        var mk = d.getFullYear() + '-' + (d.getMonth()+1);
+        if(!monthGroups[mk]) monthGroups[mk] = { start: i, count: 0, label: (d.getMonth()+1) + '月' + (d.getMonth()===0?' ' + d.getFullYear():''), dayLabel: d.getDate() };
+        monthGroups[mk].count++;
+      }
+      Object.keys(monthGroups).forEach(function(mk){
+        var g = monthGroups[mk];
+        headerRow1 += '<div class="rm-header-major" style="width:' + pxForDays(g.count) + 'px">' + g.label + '</div>';
+      });
+      for(var di=0; di<totalDays; di++){
+        var dd = addDays(minDate, di);
+        var cls = 'rm-header-minor';
+        if(daysBetween(minDate, dd) === daysBetween(minDate, today)) cls += ' today';
+        if(dd.getDay() === 0 || dd.getDay() === 6) cls += ' weekend';
+        headerRow2 += '<div class="' + cls + '" style="width:' + zoom.pxPerDay + 'px">' + dd.getDate() + '</div>';
+      }
+    } else {
+      // quarter zoom: row1 = month, row2 = week cells
+      var monthGroups2 = {};
+      for(var i2=0; i2<totalDays; i2++){
+        var d2 = addDays(minDate, i2);
+        var mk2 = d2.getFullYear() + '-' + (d2.getMonth()+1);
+        if(!monthGroups2[mk2]) monthGroups2[mk2] = { start: i2, count: 0, label: (d2.getMonth()+1) + '月' };
+        monthGroups2[mk2].count++;
+      }
+      Object.keys(monthGroups2).forEach(function(mk){
+        var g = monthGroups2[mk];
+        headerRow1 += '<div class="rm-header-major" style="width:' + pxForDays(g.count) + 'px">' + g.label + '</div>';
+      });
+      // Weekly cells
+      var weekStart = 0;
+      while(weekStart < totalDays){
+        var wd = addDays(minDate, weekStart);
+        var count = Math.min(7, totalDays - weekStart);
+        var isCurrent = (daysBetween(minDate, today) >= weekStart && daysBetween(minDate, today) < weekStart + count);
+        var cls2 = 'rm-header-minor' + (isCurrent ? ' today' : '');
+        var wkLabel = fmtMD(wd);
+        headerRow2 += '<div class="' + cls2 + '" style="width:' + pxForDays(count) + 'px">' + wkLabel + '</div>';
+        weekStart += 7;
+      }
+    }
+
+    // Grid vertical lines
+    var gridLinesH = '';
+    if(zoom.minorUnit === 'day'){
+      for(var gi=0; gi<totalDays; gi++){
+        var gd = addDays(minDate, gi);
+        var x = gi * zoom.pxPerDay;
+        var klass = 'rm-grid-vline';
+        if(gd.getDate() === 1) klass += ' major';
+        gridLinesH += '<div class="' + klass + '" style="left:' + x + 'px"></div>';
+        // weekend shading
+        if(gd.getDay() === 0 || gd.getDay() === 6){
+          gridLinesH += '<div class="rm-grid-vline weekend" style="left:' + x + 'px;--w:' + zoom.pxPerDay + 'px;width:' + zoom.pxPerDay + 'px;background:rgba(0,0,0,.02)"></div>';
+        }
+      }
+    } else {
+      for(var gi2=0; gi2<=totalDays; gi2+=7){
+        var gd2 = addDays(minDate, gi2);
+        var x2 = gi2 * zoom.pxPerDay;
+        var klass2 = 'rm-grid-vline';
+        if(gd2.getDate() <= 7) klass2 += ' major';
+        gridLinesH += '<div class="' + klass2 + '" style="left:' + x2 + 'px"></div>';
+      }
+    }
+
+    // Cycle background bands
+    var cycleBandsH = '';
+    cycles.forEach(function(cy){
+      if(!cy.startDate || !cy.endDate) return;
+      var sd = new Date(cy.startDate); sd.setHours(0,0,0,0);
+      var ed = new Date(cy.endDate); ed.setHours(0,0,0,0);
+      if(ed < minDate || sd > maxDate) return;
+      var sOff = Math.max(0, daysBetween(minDate, sd));
+      var eOff = Math.min(totalDays, daysBetween(minDate, ed) + 1);
+      var left = sOff * zoom.pxPerDay;
+      var width = (eOff - sOff) * zoom.pxPerDay;
+      var isCurrent = (today >= sd && today <= ed);
+      var isPast = ed < today;
+      var bandCls = 'rm-cycle-band' + (isCurrent ? ' current' : '') + (isPast ? ' past' : '');
+      // Stats for this cycle
+      var cyCards = cards.filter(function(c){ return c.cycleId === cy.id; });
+      var cyDone = cyCards.filter(function(c){ return c.columnId === 'done'; }).length;
+      var statLabel = cyCards.length ? ' · ' + cyDone + '/' + cyCards.length : '';
+      var daysLeft = '';
+      if(isCurrent){
+        var dl = daysBetween(today, ed);
+        daysLeft = ' · 剩 ' + (dl + 1) + ' 天';
+      }
+      var label = (cy.label || fmtMD(sd) + '–' + fmtMD(ed)) + statLabel + daysLeft;
+      cycleBandsH += '<div class="' + bandCls + '" style="left:' + left + 'px;width:' + width + 'px">' +
+        '<div class="rm-cycle-label">' + label + '</div>' +
+      '</div>';
+    });
+
+    // Group rollup + task rows (must align row-for-row with left table)
+    var rowsH = '';
+    groups.forEach(function(g){
+      var expanded = RM.expanded[g.key];
+      // Group rollup row: compute from cards with dates
+      var minStart = null, maxEnd = null;
+      g.cards.forEach(function(c){
+        var s = c.startDate ? new Date(c.startDate) : (c.dueDate ? new Date(c.dueDate) : null);
+        var e = c.dueDate ? new Date(c.dueDate) : (c.startDate ? new Date(c.startDate) : null);
+        if(s){ s.setHours(0,0,0,0); if(!minStart || s < minStart) minStart = s; }
+        if(e){ e.setHours(0,0,0,0); if(!maxEnd || e > maxEnd) maxEnd = e; }
+      });
+      var rollupH = '';
+      if(minStart && maxEnd){
+        var rsOff = Math.max(0, daysBetween(minDate, minStart));
+        var reOff = Math.min(totalDays, daysBetween(minDate, maxEnd) + 1);
+        var rLeft = rsOff * zoom.pxPerDay + 2;
+        var rWidth = Math.max(24, (reOff - rsOff) * zoom.pxPerDay - 4);
+        rollupH = '<div class="rm-rollup-bar" style="left:' + rLeft + 'px;width:' + rWidth + 'px;background:' + g.color + '">' +
+          '<div class="rm-rollup-fill" style="width:' + g.progress + '%"></div>' +
+        '</div>';
+      }
+      rowsH += '<div class="rm-rollup-row">' + rollupH + '</div>';
+
+      if(expanded){
+        g.cards.forEach(function(c){
+          var rowH = '<div class="rm-bar-row" data-card="' + c.id + '">';
+          var sd2 = c.startDate ? new Date(c.startDate) : null;
+          var ed2 = c.dueDate ? new Date(c.dueDate) : null;
+          if(sd2) sd2.setHours(0,0,0,0);
+          if(ed2) ed2.setHours(0,0,0,0);
+
+          if(!sd2 && !ed2){
+            // No-date bar pinned to today, slim
+            var ndLeft = todayOffsetPx - 30;
+            rowH += '<div class="rm-bar no-date" style="left:' + ndLeft + 'px;width:60px" onclick="window._rmOpenCard(\'' + c.id + '\')" title="未排程"><span class="rm-bar-title">未排程</span></div>';
+          } else {
+            var bs = sd2 || ed2;
+            var be = ed2 || sd2;
+            if(be < bs) { var tmp = bs; bs = be; be = tmp; }
+            var bsOff = daysBetween(minDate, bs);
+            var beOff = daysBetween(minDate, be) + 1;
+            if(beOff <= 0 || bsOff >= totalDays){ rowH += '</div>'; rowsH += rowH; return; }
+            bsOff = Math.max(0, bsOff);
+            beOff = Math.min(totalDays, beOff);
+            var bLeft = bsOff * zoom.pxPerDay + 1;
+            var bWidth = Math.max(16, (beOff - bsOff) * zoom.pxPerDay - 2);
+            var bColor = CATS[c.category] ? CATS[c.category].color : '#7C5CFC';
+            var status = c.columnId || 'todo';
+            var progress = STATUS_PROGRESS[status] || 0;
+            var isDone = status === 'done';
+            var isOverdue = ed2 && status !== 'done' && ed2 < today;
+            var titleEsc = (c.title || '(未命名)').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+            var barCls = 'rm-bar' + (isDone?' done':'') + (isOverdue?' overdue':'');
+            rowH += '<div class="' + barCls + '" style="left:' + bLeft + 'px;width:' + bWidth + 'px;background:' + bColor + '" ' +
+              'data-card="' + c.id + '" onclick="window._rmOpenCard(\'' + c.id + '\')" ' +
+              'onmouseenter="window._rmShowTip(event,\'' + c.id + '\')" onmouseleave="window._rmHideTip()">' +
+              '<div class="rm-bar-fill" style="width:' + progress + '%"></div>' +
+              '<span class="rm-bar-title">' + titleEsc + '</span>' +
+            '</div>';
+          }
+          rowH += '</div>';
+          rowsH += rowH;
+        });
+      }
+    });
+
+    var emptyH = '';
+    if(groups.length === 0){
+      emptyH = '<div class="rm-empty">' +
+        '<div class="rm-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l-6 2v14l6-2 6 2 6-2V5l-6 2-6-2z"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="7" x2="15" y2="21"/></svg></div>' +
+        '<div class="rm-empty-title">還沒有任務可以顯示</div>' +
+        '<div class="rm-empty-desc">進程藍圖會自動把任務依分類與時程展開。先到任務看板建立幾張卡片，再回來這裡看 Roadmap。</div>' +
+        '<button class="rm-empty-btn" onclick="navigate(\'biz-tasks\')">前往任務看板 →</button>' +
+      '</div>';
+    }
+
+    var rightH = '<div class="rm-right" id="rmRight">' +
+      '<div class="rm-header" style="width:' + canvasW + 'px">' +
+        '<div class="rm-header-row1">' + headerRow1 + '</div>' +
+        '<div class="rm-header-row2">' + headerRow2 + '</div>' +
+      '</div>' +
+      '<div class="rm-canvas" style="width:' + canvasW + 'px">' +
+        '<div class="rm-grid-lines">' + gridLinesH + '</div>' +
+        cycleBandsH +
+        '<div class="rm-today-line" style="left:' + todayOffsetPx + 'px"></div>' +
+        rowsH +
+        emptyH +
+      '</div>' +
+    '</div>';
+
+    // ── Mount ──
+    content.innerHTML = '<div class="rm-wrap" id="rmWrap">' + toolbarH +
+      '<div class="rm-body">' + leftH + rightH + '</div>' +
+    '</div>';
+
+    // ── Scroll sync ──
+    var rmRight = document.getElementById('rmRight');
+    var rmLeftBody = document.getElementById('rmLeftBody');
+    if(rmRight && rmLeftBody){
+      var syncing = false;
+      rmRight.addEventListener('scroll', function(){
+        if(syncing) return;
+        syncing = true;
+        rmLeftBody.scrollTop = rmRight.scrollTop;
+        syncing = false;
+      });
+      rmLeftBody.addEventListener('scroll', function(){
+        if(syncing) return;
+        syncing = true;
+        rmRight.scrollTop = rmLeftBody.scrollTop;
+        syncing = false;
+      });
+    }
+
+    // ── Scroll to today ──
+    window._rmGoToday = function(){
+      var rr = document.getElementById('rmRight');
+      if(!rr) return;
+      var target = todayOffsetPx - rr.clientWidth / 3;
+      rr.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    };
+    setTimeout(window._rmGoToday, 30);
+
+    // ── Zoom switcher ──
+    window._rmSetZoom = function(z){
+      RM.zoom = z;
+      renderRoadmap();
+    };
+
+    // ── Group expand/collapse ──
+    window._rmToggleGroup = function(key){
+      RM.expanded[key] = !RM.expanded[key];
+      renderRoadmap();
+    };
+
+    // ── Open card in kanban drawer ──
+    window._rmOpenCard = function(cardId){
+      var evt = window.event;
+      if(evt){ evt.stopPropagation(); }
+      navigate('biz-tasks');
+      setTimeout(function(){
+        if(typeof window._kbOpenDetail === 'function') {
+          window._kbOpenDetail(cardId);
+        } else if(typeof window._kbEditCard === 'function') {
+          window._kbEditCard(cardId);
+        }
+      }, 180);
+    };
+
+    // ── Tooltip ──
+    var _rmTipEl = null;
+    window._rmShowTip = function(e, cardId){
+      var card = cards.find(function(c){ return c.id === cardId; });
+      if(!card) return;
+      if(!_rmTipEl){
+        _rmTipEl = document.createElement('div');
+        _rmTipEl.className = 'rm-tooltip';
+        document.body.appendChild(_rmTipEl);
+      }
+      var cat = CATS[card.category] || CATS.product;
+      var status = card.columnId || 'todo';
+      var priLabel = { high:'高', medium:'中', low:'低', none:'—' }[card.priority || 'none'];
+      var dateStr = '—';
+      if(card.startDate && card.dueDate){
+        dateStr = fmtYMD(card.startDate) + ' → ' + fmtYMD(card.dueDate);
+      } else if(card.dueDate){
+        dateStr = '截止 ' + fmtYMD(card.dueDate);
+      } else if(card.startDate){
+        dateStr = '起始 ' + fmtYMD(card.startDate);
+      }
+      _rmTipEl.innerHTML = '<strong>' + (card.title || '(未命名)').replace(/</g,'&lt;') + '</strong>' +
+        '<div class="rm-tt-row"><span class="rm-stat-dot" style="background:' + cat.color + ';width:8px;height:8px;border-radius:50%"></span>' + cat.label + '</div>' +
+        '<div class="rm-tt-row">狀態 · ' + (STATUS_LABELS[status] || status) + '</div>' +
+        '<div class="rm-tt-row">優先級 · ' + priLabel + '</div>' +
+        '<div class="rm-tt-row">' + dateStr + '</div>';
+      _rmTipEl.style.display = 'block';
+      var x = e.clientX + 14;
+      var y = e.clientY + 14;
+      if(x + 260 > window.innerWidth) x = e.clientX - 270;
+      if(y + 140 > window.innerHeight) y = e.clientY - 150;
+      _rmTipEl.style.left = x + 'px';
+      _rmTipEl.style.top = y + 'px';
+    };
+    window._rmHideTip = function(){
+      if(_rmTipEl) _rmTipEl.style.display = 'none';
+    };
+  }
+
   function renderTimeline() {
     var content = document.getElementById('content');
     var mainEl = document.getElementById('main');
@@ -10293,7 +10901,7 @@ canvas{display:block;margin:0 auto 24px}
     var CMD_NAV = [
       {id:'nav-planning',label:'任務規劃',hint:'需求與排程',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="16 10 12 10 10 13 8 13 6 10 2 10"/><path d="M4.2 4.5L2 10v5a2 2 0 002 2h12a2 2 0 002-2v-5l-2.2-5.5A2 2 0 0013.9 3H6.1a2 2 0 00-1.9 1.5z"/></svg>',action:function(){navigate('biz-planning')}},
       {id:'nav-tasks',label:'任務看板',hint:'看板與列表',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="14" rx="2"/><rect x="12" y="3" width="6" height="10" rx="2"/></svg>',action:function(){navigate('biz-tasks')}},
-      {id:'nav-timeline',label:'時間軸',hint:'任務時間軸',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="5" x2="3" y2="17"/><line x1="3" y1="5" x2="18" y2="5"/><rect x="5" y="7" width="8" height="2.5" rx="1"/><rect x="7" y="11" width="6" height="2.5" rx="1"/><rect x="5" y="15" width="10" height="2.5" rx="1"/></svg>',action:function(){navigate('biz-timeline')}},
+      {id:'nav-roadmap',label:'進程藍圖',hint:'Roadmap · 週期與專案時程',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l-5 1.6V16.4L7 15l6 1.6L18 15V4.6L13 6 7 4z"/><line x1="7" y1="4" x2="7" y2="15"/><line x1="13" y1="6" x2="13" y2="16.4"/></svg>',action:function(){navigate('biz-roadmap')}},
       {id:'nav-contacts',label:'客戶管理',hint:'聯絡人',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-3 3-5.5 7-5.5s7 2.5 7 5.5"/></svg>',action:function(){navigate('biz-contacts')}},
       {id:'nav-quotes',label:'報價提案',hint:'報價單',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg>',action:function(){navigate('biz-quotes')}}
     ];
@@ -24170,4 +24778,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.13.0 -->
+</html><!-- v0.14.0 · 進程藍圖 Roadmap · 任務中心 L1 視圖 -->
