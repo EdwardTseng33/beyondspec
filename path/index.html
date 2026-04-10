@@ -3284,22 +3284,37 @@ canvas{display:block;margin:0 auto 24px}
 
 /* Left panel — Excel table */
 .rm-left{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-card);position:relative;z-index:2}
-.rm-left-header{display:grid;grid-template-columns:1fr 90px 70px;gap:0;height:44px;align-items:center;padding:0 14px 0 20px;font-size:var(--text-micro,11px);font-weight:var(--fw-label,600);color:var(--ink-dim);letter-spacing:.15em;border-bottom:1px solid var(--border);background:var(--bg-card);flex-shrink:0}
+.rm-left-header{display:grid;grid-template-columns:1fr 90px 70px;gap:0;height:72px;align-items:flex-end;padding:0 14px 10px 20px;font-size:var(--text-micro,11px);font-weight:var(--fw-label,600);color:var(--ink-dim);letter-spacing:.15em;border-bottom:1px solid var(--border);background:var(--bg-card);flex-shrink:0}
 .rm-left-body{flex:1;overflow-y:auto;overflow-x:hidden}
 .rm-left-body::-webkit-scrollbar{width:8px}
 .rm-left-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 .rm-left-body::-webkit-scrollbar-thumb:hover{background:var(--ink-muted)}
 
-/* Group header (category) */
-.rm-group-header{display:flex;align-items:center;gap:10px;padding:0 14px 0 12px;height:40px;cursor:pointer;font-size:var(--text-caption,13px);font-weight:var(--fw-title,700);color:var(--ink);user-select:none;background:var(--bg-card);border-bottom:1px solid var(--border);position:relative;transition:background var(--motion-fast,120ms) var(--ease-out)}
+/* v0.15.2 Group header (cycle) — two-line layout with state tag + progress ring */
+.rm-group-header{display:flex;align-items:center;gap:10px;padding:10px 14px 10px 12px;height:52px;cursor:pointer;user-select:none;background:var(--bg-card);border-bottom:1px solid var(--border);position:relative;transition:background var(--motion-fast,120ms) var(--ease-out);box-sizing:border-box}
 .rm-group-header:hover{background:var(--bg-hover)}
 .rm-group-header:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--primary)}
+.rm-group-header.current{background:linear-gradient(90deg,rgba(27,168,145,.06) 0%,rgba(27,168,145,.015) 60%,transparent 100%);box-shadow:inset 3px 0 0 var(--teal)}
+.rm-group-header.past{opacity:.78}
 .rm-group-chev{width:14px;height:14px;color:var(--ink-dim);transition:transform .2s;flex-shrink:0}
 .rm-group-header.collapsed .rm-group-chev{transform:rotate(-90deg)}
 .rm-group-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-.rm-group-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rm-group-count{font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:var(--ink-dim);background:var(--bg-hover);padding:2px 8px;border-radius:10px;flex-shrink:0;font-variant-numeric:tabular-nums}
-.rm-group-progress{font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:var(--teal);flex-shrink:0;font-variant-numeric:tabular-nums}
+.rm-group-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rm-group-topline{display:flex;align-items:center;gap:6px;min-width:0}
+.rm-group-label{font-size:var(--text-caption,13px);font-weight:var(--fw-title,700);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.rm-group-subline{display:flex;align-items:center;gap:6px;font-size:var(--text-micro,11px);color:var(--ink-dim);font-variant-numeric:tabular-nums}
+.rm-group-daterange{letter-spacing:.02em}
+.rm-group-count{font-size:var(--text-micro,11px);font-weight:var(--fw-label,600);color:var(--ink-muted);background:var(--bg-hover);padding:1px 6px;border-radius:8px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.rm-cycle-tag{display:inline-flex;align-items:center;height:16px;padding:0 6px;font-size:9px;font-weight:var(--fw-title,700);border-radius:4px;letter-spacing:.08em;flex-shrink:0;text-transform:uppercase}
+.rm-cycle-tag.current{background:var(--teal);color:#fff;box-shadow:0 1px 4px rgba(27,168,145,.3)}
+.rm-cycle-tag.past{background:rgba(148,163,184,.2);color:var(--ink-dim)}
+.rm-cycle-tag.future{background:rgba(124,92,252,.14);color:var(--primary)}
+.rm-cycle-tag.backlog{background:rgba(148,163,184,.18);color:var(--ink-muted)}
+/* Progress pill bar in left col (replaces duplicate roll-up in right) */
+.rm-group-progress-ring{position:relative;width:64px;height:6px;flex-shrink:0;border-radius:3px;background:var(--bg-hover);overflow:hidden;margin-left:4px}
+.rm-gpr-track{position:absolute;inset:0;background:var(--bg-hover)}
+.rm-gpr-fill{position:absolute;top:0;left:0;bottom:0;border-radius:3px;transition:width var(--motion-smooth,280ms) var(--ease-smooth)}
+.rm-gpr-num{position:absolute;top:-16px;right:0;font-size:10px;font-weight:var(--fw-title,700);color:var(--ink-sec);font-variant-numeric:tabular-nums;letter-spacing:.02em}
 
 /* Task row in left table */
 .rm-row{display:grid;grid-template-columns:1fr 90px 70px;gap:0;align-items:center;height:44px;padding:0 14px 0 36px;font-size:var(--text-body,14px);color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
@@ -3330,8 +3345,8 @@ canvas{display:block;margin:0 auto 24px}
 .rm-right::-webkit-scrollbar-thumb:hover{background:var(--ink-muted)}
 .rm-right::-webkit-scrollbar-corner{background:transparent}
 
-/* Time axis header (sticky top) */
-.rm-header{position:sticky;top:0;left:0;z-index:6;background:var(--bg-card);border-bottom:1px solid var(--border);height:44px;display:flex;flex-direction:column}
+/* Time axis header (sticky top) — row1 month / row2 day / strip row for cycle labels */
+.rm-header{position:sticky;top:0;left:0;z-index:6;background:var(--bg-card);border-bottom:1px solid var(--border);height:72px;display:flex;flex-direction:column}
 .rm-header-row1{display:flex;height:22px;border-bottom:1px solid var(--border)}
 .rm-header-row2{display:flex;height:22px}
 .rm-header-major{display:flex;align-items:center;justify-content:center;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:var(--ink-sec);border-right:1px solid var(--border);letter-spacing:.06em;flex-shrink:0;background:var(--bg-card)}
@@ -3351,25 +3366,33 @@ canvas{display:block;margin:0 auto 24px}
 .rm-grid-vline.weekend{background:rgba(0,0,0,.02);width:var(--w,1px)}
 [data-theme="dark"] .rm-grid-vline.weekend{background:rgba(255,255,255,.015)}
 
-/* Today line */
-.rm-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--primary);z-index:3;pointer-events:none;box-shadow:0 0 0 1px rgba(124,92,252,.25)}
-.rm-today-line::before{content:'';position:absolute;top:-3px;left:-5px;width:12px;height:12px;border-radius:50%;background:var(--primary);border:2px solid var(--bg-card)}
+/* v0.15.2 Today line — thin 1px with top diamond marker */
+.rm-today-line{position:absolute;top:0;bottom:0;width:1px;background:var(--primary);z-index:5;pointer-events:none;opacity:.7}
+.rm-today-diamond{position:absolute;top:-6px;left:-5px;width:11px;height:11px;background:var(--primary);transform:rotate(45deg);border:2px solid var(--bg-card);box-shadow:0 2px 8px rgba(124,92,252,.45);z-index:6}
 
-/* Cycle background band */
-.rm-cycle-band{position:absolute;top:0;bottom:0;border-left:1px dashed rgba(124,92,252,.28);border-right:1px dashed rgba(124,92,252,.28);background:linear-gradient(180deg,rgba(124,92,252,.035) 0%,rgba(124,92,252,.01) 60%);z-index:1;pointer-events:none}
-.rm-cycle-band.current{background:linear-gradient(180deg,rgba(27,168,145,.06) 0%,rgba(27,168,145,.015) 60%);border-color:rgba(27,168,145,.35)}
-.rm-cycle-band.past{background:linear-gradient(180deg,rgba(148,163,184,.04) 0%,transparent 60%);border-color:rgba(148,163,184,.2)}
-[data-theme="dark"] .rm-cycle-band{background:linear-gradient(180deg,rgba(124,92,252,.08) 0%,rgba(124,92,252,.02) 60%)}
-[data-theme="dark"] .rm-cycle-band.current{background:linear-gradient(180deg,rgba(27,168,145,.12) 0%,rgba(27,168,145,.03) 60%)}
-.rm-cycle-label{position:absolute;top:6px;left:8px;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:var(--primary);background:var(--bg-card);padding:4px 10px;border-radius:999px;border:1px solid rgba(124,92,252,.28);white-space:nowrap;pointer-events:auto;z-index:4;box-shadow:var(--shadow-xs);letter-spacing:.02em;font-variant-numeric:tabular-nums}
-.rm-cycle-band.current .rm-cycle-label{color:var(--teal);border-color:rgba(27,168,145,.35)}
-.rm-cycle-band.past .rm-cycle-label{color:var(--ink-dim);border-color:var(--border);opacity:.8}
+/* v0.15.2 Cycle strip row — fixed label strip above bars (no collision) */
+.rm-cycle-strip-row{position:relative;height:28px;background:var(--bg-subtle,rgba(124,92,252,.03));border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+[data-theme="dark"] .rm-cycle-strip-row{background:rgba(124,92,252,.04)}
+.rm-cycle-strip{position:absolute;top:4px;height:20px;display:flex;align-items:center;justify-content:flex-start;padding:0 10px;background:rgba(124,92,252,.1);border:1px solid rgba(124,92,252,.28);border-radius:10px;z-index:2;overflow:hidden;box-sizing:border-box}
+.rm-cycle-strip.current{background:rgba(27,168,145,.14);border-color:rgba(27,168,145,.45);box-shadow:0 1px 4px rgba(27,168,145,.2)}
+.rm-cycle-strip.past{background:rgba(148,163,184,.1);border-color:rgba(148,163,184,.28);opacity:.72}
+.rm-cycle-strip-label{font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em;font-variant-numeric:tabular-nums;line-height:1}
+.rm-cycle-strip.current .rm-cycle-strip-label{color:var(--teal)}
+.rm-cycle-strip.past .rm-cycle-strip-label{color:var(--ink-dim)}
+[data-theme="dark"] .rm-cycle-strip{background:rgba(124,92,252,.16)}
+[data-theme="dark"] .rm-cycle-strip.current{background:rgba(27,168,145,.2)}
 
-/* Group rollup row (matches group header in left) */
-.rm-rollup-row{height:40px;position:relative;border-bottom:1px solid var(--border);background:rgba(0,0,0,.015)}
-[data-theme="dark"] .rm-rollup-row{background:rgba(255,255,255,.02)}
-.rm-rollup-bar{position:absolute;top:12px;height:16px;border-radius:4px;opacity:.5;z-index:2;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
-.rm-rollup-fill{position:absolute;top:0;left:0;bottom:0;background:rgba(255,255,255,.35);border-radius:4px 0 0 4px}
+/* v0.15.2 Cycle rollup row — cycle IS the atom, rendered as a thick colored bar */
+.rm-rollup-row{height:52px;position:relative;border-bottom:1px solid var(--border)}
+.rm-rollup-row.current{background:linear-gradient(90deg,rgba(27,168,145,.04) 0%,transparent 100%)}
+.rm-cycle-rollup{position:absolute;top:14px;height:24px;border-radius:6px;background:var(--cy-color,#7C5CFC);cursor:pointer;overflow:hidden;z-index:2;display:flex;align-items:center;padding:0 12px;box-shadow:0 2px 6px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.28);transition:transform var(--motion-normal,180ms) var(--ease-out),box-shadow var(--motion-normal,180ms) var(--ease-out),filter var(--motion-normal,180ms) var(--ease-out)}
+.rm-cycle-rollup:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.4);filter:brightness(1.08)}
+.rm-cycle-rollup.past{opacity:.68}
+.rm-cycle-rollup.current{box-shadow:0 4px 14px rgba(27,168,145,.36),inset 0 1px 0 rgba(255,255,255,.35),0 0 0 2px rgba(27,168,145,.22)}
+.rm-cycle-rollup-fill{position:absolute;top:0;left:0;bottom:0;background:rgba(255,255,255,.3);border-radius:6px 0 0 6px;pointer-events:none}
+.rm-cycle-rollup-label{position:relative;z-index:1;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.2);letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.rm-backlog-rollup{position:absolute;top:14px;left:8px;height:24px;display:flex;align-items:center;gap:6px;padding:0 12px;background:var(--bg-hover);border:1px dashed var(--border);border-radius:12px;cursor:pointer;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:var(--ink-muted);transition:background var(--motion-fast,120ms) var(--ease-out)}
+.rm-backlog-rollup:hover{background:rgba(124,92,252,.08);color:var(--primary);border-color:rgba(124,92,252,.28)}
 
 /* Task row background (matches .rm-row in left, must align) */
 .rm-bar-row{height:44px;position:relative;border-bottom:1px solid rgba(0,0,0,.03);animation:rm-rowIn var(--motion-smooth,280ms) var(--ease-smooth) both}
@@ -3391,6 +3414,8 @@ canvas{display:block;margin:0 auto 24px}
 .rm-bar:focus-visible{outline:none;box-shadow:0 0 0 3px var(--bg-card),0 0 0 5px var(--primary);z-index:6}
 .rm-bar-fill{position:absolute;top:0;left:0;bottom:0;background:rgba(255,255,255,.25);border-radius:6px 0 0 6px;pointer-events:none}
 .rm-bar-title{position:relative;z-index:1;text-overflow:ellipsis;overflow:hidden;flex:1;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.rm-bar.slim{padding:0;justify-content:center}
+.rm-bar.slim::before{content:'';display:block;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.9);position:relative;z-index:2}
 .rm-bar.done{opacity:.78}
 .rm-bar.done .rm-bar-title{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.6)}
 .rm-bar.overdue::after{content:'';position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--rose);border:2px solid var(--bg-card);z-index:3}
@@ -3441,17 +3466,19 @@ canvas{display:block;margin:0 auto 24px}
 
 /* Responsive */
 @media (max-width:900px){
-  .rm-left{width:260px}
-  .rm-left-header{grid-template-columns:1fr 70px;padding:0 10px 0 14px}
+  .rm-left{width:280px}
+  .rm-left-header{grid-template-columns:1fr 70px;padding:0 10px 10px 14px}
   .rm-row{grid-template-columns:1fr 70px;padding:0 10px 0 28px}
   .rm-row-date{display:none}
+  .rm-group-progress-ring{width:48px}
 }
 @media (max-width:640px){
   .rm-wrap{margin:-8px -4px 0;height:calc(100vh - 50px)}
-  .rm-left{width:180px}
-  .rm-left-header{grid-template-columns:1fr;padding:0 10px}
+  .rm-left{width:220px}
+  .rm-left-header{grid-template-columns:1fr;padding:0 10px 10px}
   .rm-row{grid-template-columns:1fr;padding:0 10px 0 22px}
   .rm-row-status,.rm-row-date{display:none}
+  .rm-group-progress-ring{display:none}
   .rm-sub{display:none}
   .rm-title{font-size:15px}
   .rm-toolbar{padding:10px 12px;gap:8px;flex-wrap:wrap}
@@ -3749,6 +3776,44 @@ canvas{display:block;margin:0 auto 24px}
 .tc-capacity-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;min-width:60px}
 .tc-capacity-fill{height:100%;border-radius:3px;transition:width .4s cubic-bezier(.22,1,.36,1)}
 
+/* v0.15.2 AI judgement card for 週期管理 */
+.cp-ai-card{display:flex;align-items:stretch;gap:20px;padding:18px 22px;margin:16px 0 0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);position:relative;overflow:hidden}
+.cp-ai-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px;background:var(--primary)}
+.cp-ai-card.cp-ai-healthy::before{background:var(--teal)}
+.cp-ai-card.cp-ai-ahead::before{background:linear-gradient(180deg,#1BA891,#10B981)}
+.cp-ai-card.cp-ai-warn::before{background:var(--gold)}
+.cp-ai-card.cp-ai-danger::before{background:var(--rose)}
+.cp-ai-left{flex:1;min-width:0}
+.cp-ai-tag{display:inline-flex;align-items:center;height:22px;padding:0 10px;font-size:11px;font-weight:700;border-radius:6px;letter-spacing:.06em;margin-bottom:10px}
+.cp-ai-tag-healthy{background:rgba(27,168,145,.14);color:var(--teal)}
+.cp-ai-tag-ahead{background:rgba(27,168,145,.14);color:var(--teal)}
+.cp-ai-tag-warn{background:rgba(224,138,58,.14);color:var(--gold)}
+.cp-ai-tag-danger{background:rgba(217,68,98,.14);color:var(--rose)}
+.cp-ai-head{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.2px;line-height:1.4;margin-bottom:4px}
+.cp-ai-sub{font-size:13px;color:var(--ink-muted);line-height:1.55;max-width:640px}
+.cp-ai-stats{display:flex;align-items:center;gap:18px;padding-left:20px;border-left:1px solid var(--border);flex-shrink:0}
+.cp-ai-stat{text-align:center;min-width:54px}
+.cp-ai-stat-num{font-size:22px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.4px;line-height:1.1}
+.cp-ai-stat-lbl{font-size:10px;color:var(--ink-dim);margin-top:2px;letter-spacing:.04em}
+.cp-ai-danger .cp-ai-stat:first-child .cp-ai-stat-num{color:var(--rose)}
+
+/* Focus card strip */
+.cp-focus-row{margin:14px 0 20px;padding:14px 18px;background:linear-gradient(135deg,rgba(124,92,252,.04),rgba(27,168,145,.03));border:1px solid var(--border);border-radius:var(--r-lg)}
+.cp-focus-label{font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.1em;margin-bottom:10px}
+.cp-focus-list{display:flex;gap:10px;overflow-x:auto;padding-bottom:2px}
+.cp-focus-card{flex:1;min-width:220px;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:transform var(--motion-normal,180ms) var(--ease-out),box-shadow var(--motion-normal,180ms) var(--ease-out)}
+.cp-focus-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.cp-focus-tag{display:inline-flex;align-items:center;height:20px;padding:0 8px;font-size:10px;font-weight:700;color:#fff;border-radius:5px;letter-spacing:.04em;flex-shrink:0}
+.cp-focus-body{flex:1;min-width:0}
+.cp-focus-title{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp-focus-meta{font-size:11px;color:var(--ink-dim);margin-top:2px}
+
+@media(max-width:768px){
+  .cp-ai-card{flex-direction:column;gap:14px;padding:14px 16px}
+  .cp-ai-stats{padding-left:0;padding-top:14px;border-left:none;border-top:1px solid var(--border);justify-content:space-around}
+  .cp-focus-card{min-width:180px}
+}
+
 /* ═══════════════════════════════════════════
    TASK CENTER — RESPONSIVE (v0.9.6)
    ═══════════════════════════════════════════ */
@@ -3890,7 +3955,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.15.1</div>
+        <div class="sidebar-version">v0.15.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4565,10 +4630,14 @@ canvas{display:block;margin:0 auto 24px}
 
     // 商業模組 — Pipeline: 定義→蒐集→排程→執行
     const bizItems = [
-      { id: 'biz-roadmap', label: '進程藍圖', icon: 'roadmap', modKey: 'mod-tasks', layer: 1, q: '整體方向要跑多久？', parent: 'tasks' },
-      { id: 'biz-cycle', label: '當期總覽', icon: 'target', modKey: 'mod-tasks', layer: 2, q: '這個週期跑得怎樣？', parent: 'tasks' },
-      { id: 'biz-tasks', label: '任務看板', icon: 'listChecks', modKey: 'mod-tasks', layer: 3, q: '本週該做什麼？', parent: 'tasks' },
-      { id: 'biz-planning', label: '需求規劃', icon: 'inbox', modKey: 'mod-tasks', layer: 4, q: '需求管理與週期排程', parent: 'tasks' },
+      // v0.15.2: IA 時間漏斗 Far → Near → Now
+      //   L1 biz-roadmap (進程藍圖) · 3-6 月週期節奏
+      //   L2 biz-planning (週期管理) · 當期 + 下期 + 需求池 — 預設每日首頁
+      //   L3 biz-tasks (任務看板) · 當期卡狀態執行
+      //   biz-cycle 已從 sidebar 下架，render 函式保留供 biz-planning 內嵌使用
+      { id: 'biz-roadmap', label: '進程藍圖', icon: 'roadmap', modKey: 'mod-tasks', layer: 1, q: '未來幾個月的節奏？', parent: 'tasks' },
+      { id: 'biz-planning', label: '週期管理', icon: 'target', modKey: 'mod-tasks', layer: 2, q: '當期跑得怎樣？下期要做什麼？', parent: 'tasks' },
+      { id: 'biz-tasks', label: '任務看板', icon: 'listChecks', modKey: 'mod-tasks', layer: 3, q: '今天要做什麼？', parent: 'tasks' },
       { id: 'biz-contacts', label: '客戶管理', icon: 'users', modKey: 'mod-contacts', layer: 1, q: '這個人跟我們什麼關係？' },
       { id: 'biz-quotes', label: '報價提案', icon: 'fileText', modKey: 'mod-quotes', layer: 2, q: '怎麼快速產一份專業報價？' },
       { id: 'biz-billing', label: '收款管理', icon: 'dollarSign', modKey: 'mod-billing', layer: 2, q: '錢收到了嗎？' },
@@ -6068,7 +6137,7 @@ canvas{display:block;margin:0 auto 24px}
       var pipeSteps = [
         {label:'定義需求',count:specs.length,color:'var(--primary)',nav:'biz-spec'},
         {label:'需求池',count:blCount,color:'#94A3B8',nav:'biz-inbox'},
-        {label:'週期規劃',count:cycCount,color:'var(--gold)',nav:'biz-cycle'},
+        {label:'週期管理',count:cycCount,color:'var(--gold)',nav:'biz-planning'},
         {label:'任務看板',count:doneCount,color:'var(--teal)',nav:'biz-tasks'}
       ];
       html += '<div class="tc-pipeline" style="display:flex;align-items:center;gap:0;margin-bottom:28px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);animation:tc-fadeUp .3s cubic-bezier(.22,1,.36,1) both">';
@@ -7916,8 +7985,8 @@ canvas{display:block;margin:0 auto 24px}
       html += '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
       html += '</div>';
       html += '<div>';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0">週期規劃</h2>';
-      html += '<p style="font-size:13px;color:var(--ink-muted);margin:4px 0 0">決定這一輪要做什麼，從需求池排入週期</p>';
+      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0">週期管理</h2>';
+      html += '<p style="font-size:13px;color:var(--ink-muted);margin:4px 0 0">當期戰情 · 下期規劃 · 需求池 三位一體</p>';
       html += '</div></div>';
 
       // Cycle switcher + settings
@@ -7962,6 +8031,103 @@ canvas{display:block;margin:0 auto 24px}
       html += '<div class="tc-capacity-fill" style="width:' + capacityFillPct + '%;background:' + capacityColor + '"></div>';
       html += '</div>';
       html += '</div>';
+
+      // ── v0.15.2 AI 判斷條 + 關注卡 (absorbed from 當期總覽) ──
+      var _today2 = new Date(); _today2.setHours(0,0,0,0);
+      var _cStart = new Date(currentCycle.startDate + 'T00:00:00');
+      var _cEndFull = new Date(currentCycle.endDate + 'T00:00:00');
+      _cEndFull.setHours(23,59,59,999);
+      var _totalDays = Math.max(1, Math.round((_cEndFull - _cStart) / 86400000) + 1);
+      var _elapsedDays = Math.max(0, Math.min(_totalDays, Math.round((_today2 - _cStart) / 86400000) + 1));
+      var _workProgress = totalCount > 0 ? (doneCount / totalCount) : 0;
+      var _timeProgress = Math.min(1, Math.max(0, _elapsedDays / _totalDays));
+      function _parseDate(s){ return s ? new Date(s + 'T00:00:00') : null; }
+      var _overdueCards = cycleCards.filter(function(c){
+        if(c.columnId === 'done') return false;
+        var d = _parseDate(c.dueDate);
+        return d && d < _today2;
+      });
+      var _dueTodayCards = cycleCards.filter(function(c){
+        if(c.columnId === 'done') return false;
+        var d = _parseDate(c.dueDate);
+        if(!d) return false;
+        return d.getTime() === _today2.getTime();
+      });
+      var _staleDoingCards = cycleCards.filter(function(c){
+        if(c.columnId !== 'doing') return false;
+        var u = c.updatedAt || c.createdAt || 0;
+        if(!u) return false;
+        return (Date.now() - u) / 86400000 >= 3;
+      });
+
+      var _state, _tagClass, _tag, _headline, _sub;
+      if(totalCount === 0){
+        _state = 'empty'; _tagClass = 'warn'; _tag = '待排程';
+        _headline = '這個週期還沒有任務';
+        _sub = '從右側需求池點「排入」把本週要做的事拉進來，或按「＋ 新增卡片」直接建立。';
+      } else if(_overdueCards.length >= 3 || (_daysLeft === 0 && _workProgress < 0.7)){
+        _state = 'danger'; _tagClass = 'danger'; _tag = '進度告急';
+        _headline = _overdueCards.length >= 3
+          ? '有 ' + _overdueCards.length + ' 張任務已逾期，需要立刻介入'
+          : '今天就結束了，還有 ' + (totalCount - doneCount) + ' 張沒完成';
+        _sub = '建議先處理下方關注卡，判斷要延期、換人接手、還是直接砍掉。';
+      } else if(_workProgress >= _timeProgress + 0.15){
+        _state = 'ahead'; _tagClass = 'ahead'; _tag = '進度超前';
+        _headline = '節奏很穩，比預期多推進了 ' + Math.round((_workProgress - _timeProgress) * 100) + '%';
+        _sub = '可以考慮把下個週期的卡提前拉進來，或花時間做技術債清理。';
+      } else if(_workProgress < _timeProgress - 0.15){
+        _state = 'warn'; _tagClass = 'warn'; _tag = '進度落後';
+        _headline = '稍微落後，剩 ' + _daysLeft + ' 天要趕上 ' + Math.round((_timeProgress - _workProgress) * 100) + '%';
+        _sub = '看一下哪些卡卡住，是不是有 scope 要砍、或某張卡太大要拆。';
+      } else {
+        _state = 'healthy'; _tagClass = 'healthy'; _tag = '進度穩健';
+        if(_daysLeft === 0) _headline = '今天是最後一天，收尾階段';
+        else if(_daysLeft === 1) _headline = '剩最後 1 天，穩穩收尾';
+        else _headline = '進度跟上節奏，剩 ' + _daysLeft + ' 天';
+        _sub = '維持現在的節奏就好，下方關注卡是今天可以優先處理的項目。';
+      }
+
+      // AI judgement pill card
+      html += '<div class="cp-ai-card cp-ai-' + _tagClass + '">';
+      html += '<div class="cp-ai-left">';
+      html += '<div class="cp-ai-tag cp-ai-tag-' + _tagClass + '">' + _tag + '</div>';
+      html += '<div class="cp-ai-head">' + _headline + '</div>';
+      html += '<div class="cp-ai-sub">' + _sub + '</div>';
+      html += '</div>';
+      html += '<div class="cp-ai-stats">';
+      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _overdueCards.length + '</div><div class="cp-ai-stat-lbl">已逾期</div></div>';
+      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _dueTodayCards.length + '</div><div class="cp-ai-stat-lbl">今日到期</div></div>';
+      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _staleDoingCards.length + '</div><div class="cp-ai-stat-lbl">停滯 ≥3 天</div></div>';
+      html += '</div>';
+      html += '</div>';
+
+      // Focus cards strip (top 3 most urgent)
+      var _focusList = [];
+      _overdueCards.slice(0, 3).forEach(function(c){ _focusList.push({card:c, tag:'逾期', color:'#D94462'}); });
+      if(_focusList.length < 3){
+        _dueTodayCards.slice(0, 3 - _focusList.length).forEach(function(c){ _focusList.push({card:c, tag:'今到期', color:'#E08A3A'}); });
+      }
+      if(_focusList.length < 3){
+        _staleDoingCards.slice(0, 3 - _focusList.length).forEach(function(c){ _focusList.push({card:c, tag:'停滯', color:'#94A3B8'}); });
+      }
+      if(_focusList.length > 0){
+        html += '<div class="cp-focus-row">';
+        html += '<div class="cp-focus-label">聚焦 · 今天可以先動的</div>';
+        html += '<div class="cp-focus-list">';
+        _focusList.forEach(function(f){
+          var fc = f.card;
+          var fcat = T.TASK_CATEGORIES[fc.category] || T.TASK_CATEGORIES.product;
+          var titleEsc = (fc.title || '未命名').replace(/</g,'&lt;');
+          html += '<div class="cp-focus-card" onclick="window._kbOpenDetail&&window._kbOpenDetail(\'' + fc.id + '\')" title="' + titleEsc.replace(/"/g,'&quot;') + '">';
+          html += '<div class="cp-focus-tag" style="background:' + f.color + '">' + f.tag + '</div>';
+          html += '<div class="cp-focus-body">';
+          html += '<div class="cp-focus-title">' + titleEsc + '</div>';
+          html += '<div class="cp-focus-meta"><span style="color:' + fcat.color + '">●</span> ' + fcat.label + '</div>';
+          html += '</div>';
+          html += '</div>';
+        });
+        html += '</div></div>';
+      }
 
       // ── Dual-pane layout with class ──
       html += '<div class="tc-cycle-layout" style="display:flex;gap:20px;min-height:calc(100vh - 420px)">';
@@ -8540,14 +8706,10 @@ canvas{display:block;margin:0 auto 24px}
     var canvasW = totalDays * zoom.pxPerDay;
     var todayOffsetPx = daysBetween(minDate, today) * zoom.pxPerDay + (zoom.pxPerDay / 2);
 
-    // ── Group cards by category ──
+    // ── Group cards by CYCLE (v0.15.2 canonical IA: cycles are the L1 atoms) ──
     var groups = [];
-    Object.keys(CATS).forEach(function(catKey){
-      var cat = CATS[catKey];
-      var list = cards.filter(function(c){ return (c.category || 'product') === catKey; });
-      if(list.length === 0) return;
-      // Sort: pinned status order, then by startDate/dueDate
-      var statusOrder = { doing:0, review:1, todo:2, inbox:3, done:4 };
+    var statusOrder = { doing:0, review:1, todo:2, inbox:3, done:4 };
+    function sortCards(list){
       list.sort(function(a, b){
         var sa = statusOrder[a.columnId] !== undefined ? statusOrder[a.columnId] : 9;
         var sb = statusOrder[b.columnId] !== undefined ? statusOrder[b.columnId] : 9;
@@ -8556,18 +8718,56 @@ canvas{display:block;margin:0 auto 24px}
         var db = b.startDate || b.dueDate || '9999';
         return da.localeCompare(db);
       });
+    }
+    cycles.forEach(function(cy){
+      var list = cards.filter(function(c){ return c.cycleId === cy.id; });
+      sortCards(list);
       var doneCount = list.filter(function(c){ return c.columnId === 'done'; }).length;
+      var sd = cy.startDate ? new Date(cy.startDate) : null;
+      var ed = cy.endDate ? new Date(cy.endDate) : null;
+      if(sd) sd.setHours(0,0,0,0);
+      if(ed) ed.setHours(0,0,0,0);
+      var isCurrent = sd && ed && today >= sd && today <= ed;
+      var isPast = ed && ed < today;
+      var isFuture = sd && sd > today;
+      var cycleColor = isCurrent ? '#1BA891' : (isPast ? '#94A3B8' : '#7C5CFC');
       groups.push({
-        key: catKey,
-        label: cat.label,
-        color: cat.color,
+        key: cy.id,
+        kind: 'cycle',
+        cycle: cy,
+        label: cy.label || (sd ? fmtMD(sd) + '–' + fmtMD(ed || sd) : '週期'),
+        color: cycleColor,
         cards: list,
         total: list.length,
         done: doneCount,
-        progress: list.length ? Math.round(doneCount / list.length * 100) : 0
+        progress: list.length ? Math.round(doneCount / list.length * 100) : 0,
+        startDate: sd,
+        endDate: ed,
+        isCurrent: isCurrent,
+        isPast: isPast,
+        isFuture: isFuture
       });
-      if(RM.expanded[catKey] === undefined) RM.expanded[catKey] = true;
+      if(RM.expanded[cy.id] === undefined) RM.expanded[cy.id] = isCurrent; // default expand current
     });
+    // Backlog: cards with no cycleId
+    var backlog = cards.filter(function(c){ return !c.cycleId; });
+    if(backlog.length){
+      sortCards(backlog);
+      var blDone = backlog.filter(function(c){ return c.columnId === 'done'; }).length;
+      groups.push({
+        key: '_backlog',
+        kind: 'backlog',
+        label: '需求池 · 尚未排入週期',
+        color: '#94A3B8',
+        cards: backlog,
+        total: backlog.length,
+        done: blDone,
+        progress: backlog.length ? Math.round(blDone / backlog.length * 100) : 0,
+        startDate: null,
+        endDate: null
+      });
+      if(RM.expanded._backlog === undefined) RM.expanded._backlog = false;
+    }
 
     // ── Stats ──
     var totalCards = cards.length;
@@ -8597,10 +8797,10 @@ canvas{display:block;margin:0 auto 24px}
       '</button>' +
     '</div>';
 
-    // ── Build left panel (Excel table) ──
+    // ── Build left panel (cycle-first table) ──
     var leftH = '<div class="rm-left">' +
       '<div class="rm-left-header">' +
-        '<div>任務</div>' +
+        '<div>週期 / 任務</div>' +
         '<div>狀態</div>' +
         '<div style="text-align:right">到期</div>' +
       '</div>' +
@@ -8608,12 +8808,37 @@ canvas{display:block;margin:0 auto 24px}
 
     groups.forEach(function(g){
       var expanded = RM.expanded[g.key];
-      leftH += '<div class="rm-group-header' + (expanded?'':' collapsed') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" data-group="' + g.key + '">' +
+      var stateTag = '';
+      if(g.kind === 'cycle'){
+        if(g.isCurrent) stateTag = '<span class="rm-cycle-tag current">當期</span>';
+        else if(g.isPast) stateTag = '<span class="rm-cycle-tag past">已完結</span>';
+        else if(g.isFuture) stateTag = '<span class="rm-cycle-tag future">即將</span>';
+      } else {
+        stateTag = '<span class="rm-cycle-tag backlog">需求池</span>';
+      }
+      var dateRangeStr = '';
+      if(g.startDate && g.endDate){
+        dateRangeStr = '<span class="rm-group-daterange">' + fmtMD(g.startDate) + ' – ' + fmtMD(g.endDate) + '</span>';
+      }
+      var progressW = Math.max(0, Math.min(100, g.progress));
+      leftH += '<div class="rm-group-header' + (expanded?'':' collapsed') + (g.isCurrent?' current':'') + (g.isPast?' past':'') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" data-group="' + g.key + '">' +
         '<svg class="rm-group-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 8 10 12 14 8"/></svg>' +
         '<span class="rm-group-dot" style="background:' + g.color + '"></span>' +
-        '<span class="rm-group-label">' + g.label + '</span>' +
-        '<span class="rm-group-count">' + g.done + '/' + g.total + '</span>' +
-        '<span class="rm-group-progress">' + g.progress + '%</span>' +
+        '<div class="rm-group-main">' +
+          '<div class="rm-group-topline">' +
+            '<span class="rm-group-label">' + g.label + '</span>' +
+            stateTag +
+          '</div>' +
+          '<div class="rm-group-subline">' +
+            dateRangeStr +
+            '<span class="rm-group-count">' + g.done + '/' + g.total + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="rm-group-progress-ring" aria-label="進度 ' + progressW + '%">' +
+          '<div class="rm-gpr-track"></div>' +
+          '<div class="rm-gpr-fill" style="width:' + progressW + '%;background:' + g.color + '"></div>' +
+          '<div class="rm-gpr-num">' + progressW + '%</div>' +
+        '</div>' +
       '</div>';
       if(expanded){
         g.cards.forEach(function(c){
@@ -8711,8 +8936,8 @@ canvas{display:block;margin:0 auto 24px}
       }
     }
 
-    // Cycle background bands
-    var cycleBandsH = '';
+    // v0.15.2: Cycle label strip (fixed row above bars, no collision)
+    var cycleStripH = '';
     cycles.forEach(function(cy){
       if(!cy.startDate || !cy.endDate) return;
       var sd = new Date(cy.startDate); sd.setHours(0,0,0,0);
@@ -8721,48 +8946,50 @@ canvas{display:block;margin:0 auto 24px}
       var sOff = Math.max(0, daysBetween(minDate, sd));
       var eOff = Math.min(totalDays, daysBetween(minDate, ed) + 1);
       var left = sOff * zoom.pxPerDay;
-      var width = (eOff - sOff) * zoom.pxPerDay;
+      var width = Math.max(40, (eOff - sOff) * zoom.pxPerDay);
       var isCurrent = (today >= sd && today <= ed);
       var isPast = ed < today;
-      var bandCls = 'rm-cycle-band' + (isCurrent ? ' current' : '') + (isPast ? ' past' : '');
-      // Stats for this cycle
+      var stripCls = 'rm-cycle-strip' + (isCurrent ? ' current' : '') + (isPast ? ' past' : '');
       var cyCards = cards.filter(function(c){ return c.cycleId === cy.id; });
       var cyDone = cyCards.filter(function(c){ return c.columnId === 'done'; }).length;
-      var statLabel = cyCards.length ? ' · ' + cyDone + '/' + cyCards.length : '';
       var daysLeft = '';
       if(isCurrent){
         var dl = daysBetween(today, ed);
         daysLeft = ' · 剩 ' + (dl + 1) + ' 天';
       }
-      var label = (cy.label || fmtMD(sd) + '–' + fmtMD(ed)) + statLabel + daysLeft;
-      cycleBandsH += '<div class="' + bandCls + '" style="left:' + left + 'px;width:' + width + 'px">' +
-        '<div class="rm-cycle-label">' + label + '</div>' +
+      var cyLabel = (cy.label || fmtMD(sd) + '–' + fmtMD(ed)) + (cyCards.length ? ' · ' + cyDone + '/' + cyCards.length : '') + daysLeft;
+      cycleStripH += '<div class="' + stripCls + '" style="left:' + left + 'px;width:' + width + 'px" title="' + cyLabel.replace(/"/g,'&quot;') + '">' +
+        '<span class="rm-cycle-strip-label">' + cyLabel + '</span>' +
       '</div>';
     });
 
-    // Group rollup + task rows (must align row-for-row with left table)
+    // v0.15.2: Row atoms — cycle rollup bar + (when expanded) card sub-bars
     var rowsH = '';
     groups.forEach(function(g){
       var expanded = RM.expanded[g.key];
-      // Group rollup row: compute from cards with dates
-      var minStart = null, maxEnd = null;
-      g.cards.forEach(function(c){
-        var s = c.startDate ? new Date(c.startDate) : (c.dueDate ? new Date(c.dueDate) : null);
-        var e = c.dueDate ? new Date(c.dueDate) : (c.startDate ? new Date(c.startDate) : null);
-        if(s){ s.setHours(0,0,0,0); if(!minStart || s < minStart) minStart = s; }
-        if(e){ e.setHours(0,0,0,0); if(!maxEnd || e > maxEnd) maxEnd = e; }
-      });
+      // ── Cycle rollup row (atom = cycle) ──
       var rollupH = '';
-      if(minStart && maxEnd){
-        var rsOff = Math.max(0, daysBetween(minDate, minStart));
-        var reOff = Math.min(totalDays, daysBetween(minDate, maxEnd) + 1);
-        var rLeft = rsOff * zoom.pxPerDay + 2;
-        var rWidth = Math.max(24, (reOff - rsOff) * zoom.pxPerDay - 4);
-        rollupH = '<div class="rm-rollup-bar" style="left:' + rLeft + 'px;width:' + rWidth + 'px;background:' + g.color + '">' +
-          '<div class="rm-rollup-fill" style="width:' + g.progress + '%"></div>' +
+      if(g.kind === 'cycle' && g.startDate && g.endDate){
+        var gsOff = Math.max(0, daysBetween(minDate, g.startDate));
+        var geOff = Math.min(totalDays, daysBetween(minDate, g.endDate) + 1);
+        var gLeft = gsOff * zoom.pxPerDay + 2;
+        var gWidth = Math.max(40, (geOff - gsOff) * zoom.pxPerDay - 4);
+        var rollCls = 'rm-cycle-rollup' + (g.isCurrent?' current':'') + (g.isPast?' past':'');
+        var rollLabel = g.label + ' · ' + g.done + '/' + g.total;
+        rollupH = '<div class="' + rollCls + '" style="left:' + gLeft + 'px;width:' + gWidth + 'px;--cy-color:' + g.color + '" ' +
+          'onclick="window._rmToggleGroup(\'' + g.key + '\')" ' +
+          'title="' + rollLabel.replace(/"/g,'&quot;') + '">' +
+          '<div class="rm-cycle-rollup-fill" style="width:' + g.progress + '%"></div>' +
+          (gWidth >= 80 ? '<span class="rm-cycle-rollup-label">' + rollLabel + '</span>' : '') +
+        '</div>';
+      } else if(g.kind === 'backlog'){
+        // Backlog header row is time-free; show a pill-style marker anchored near left edge
+        rollupH = '<div class="rm-backlog-rollup" onclick="window._rmToggleGroup(\'_backlog\')" title="需求池 · 尚未排入週期">' +
+          '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h14M3 12h14M3 18h14"/></svg>' +
+          '<span>需求池 · ' + g.total + ' 張待排程</span>' +
         '</div>';
       }
-      rowsH += '<div class="rm-rollup-row">' + rollupH + '</div>';
+      rowsH += '<div class="rm-rollup-row' + (g.isCurrent?' current':'') + '">' + rollupH + '</div>';
 
       if(expanded){
         g.cards.forEach(function(c){
@@ -8793,7 +9020,9 @@ canvas{display:block;margin:0 auto 24px}
             var isDone = status === 'done';
             var isOverdue = ed2 && status !== 'done' && ed2 < today;
             var titleEsc = (c.title || '(未命名)').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-            var barCls = 'rm-bar' + (isDone?' done':'') + (isOverdue?' overdue':'');
+            // v0.15.2 bug fix: only show title text when bar is wide enough (>= 80px)
+            var showTitle = bWidth >= 80;
+            var barCls = 'rm-bar' + (isDone?' done':'') + (isOverdue?' overdue':'') + (showTitle?'':' slim');
             rowH += '<div class="' + barCls + '" style="left:' + bLeft + 'px;width:' + bWidth + 'px;background:' + bColor + '" ' +
               'data-card="' + c.id + '" tabindex="0" role="button" aria-label="' + titleEsc + ' — ' + (STATUS_LABELS[status] || status) + '" ' +
               'onclick="window._rmOpenCard(\'' + c.id + '\')" ' +
@@ -8801,7 +9030,7 @@ canvas{display:block;margin:0 auto 24px}
               'onmouseenter="window._rmShowTip(event,\'' + c.id + '\')" onmouseleave="window._rmHideTip()" ' +
               'onfocus="window._rmShowTip(event,\'' + c.id + '\')" onblur="window._rmHideTip()">' +
               '<div class="rm-bar-fill" style="width:' + progress + '%"></div>' +
-              '<span class="rm-bar-title">' + titleEsc + '</span>' +
+              (showTitle ? '<span class="rm-bar-title">' + titleEsc + '</span>' : '') +
             '</div>';
           }
           rowH += '</div>';
@@ -8824,11 +9053,11 @@ canvas{display:block;margin:0 auto 24px}
       '<div class="rm-header" style="width:' + canvasW + 'px">' +
         '<div class="rm-header-row1">' + headerRow1 + '</div>' +
         '<div class="rm-header-row2">' + headerRow2 + '</div>' +
+        '<div class="rm-cycle-strip-row">' + cycleStripH + '</div>' +
       '</div>' +
       '<div class="rm-canvas" style="width:' + canvasW + 'px">' +
         '<div class="rm-grid-lines">' + gridLinesH + '</div>' +
-        cycleBandsH +
-        '<div class="rm-today-line" style="left:' + todayOffsetPx + 'px"></div>' +
+        '<div class="rm-today-line" style="left:' + todayOffsetPx + 'px"><div class="rm-today-diamond"></div></div>' +
         rowsH +
         emptyH +
       '</div>' +
@@ -8998,8 +9227,8 @@ canvas{display:block;margin:0 auto 24px}
       content.innerHTML = '<div class="cyc-wrap"><div class="cyc-empty">' +
         '<div class="cyc-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>' +
         '<h3>目前沒有進行中的週期</h3>' +
-        '<p>到「需求規劃」建立第一個週期，就能開始追蹤進度</p>' +
-        '<button class="cyc-action-btn primary" onclick="app.navigate(\'biz-planning\')">前往需求規劃</button>' +
+        '<p>到「週期管理」建立第一個週期，就能開始追蹤進度</p>' +
+        '<button class="cyc-action-btn primary" onclick="app.navigate(\'biz-planning\')">前往週期管理</button>' +
         '</div></div>';
       return;
     }
@@ -9058,7 +9287,7 @@ canvas{display:block;margin:0 auto 24px}
       tagClass = 'warn';
       tag = '待排程';
       headline = '這個週期還沒有任務';
-      sub = '到「需求規劃」或「任務看板」把本週要做的事放進來，戰情室才會開始運作。';
+      sub = '到「週期管理」或「任務看板」把本週要做的事放進來，週期管理才會開始運作。';
     } else if(overdueCards.length >= 3 || (daysLeft === 0 && workProgress < 0.7)){
       state = 'danger';
       tagClass = 'danger';
@@ -9289,7 +9518,7 @@ canvas{display:block;margin:0 auto 24px}
     html += '回到進程藍圖</button>';
     html += '<button class="cyc-action-btn" onclick="app.navigate(\'biz-planning\')">';
     html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
-    html += '進入需求規劃</button>';
+    html += '進入週期管理</button>';
     html += '</div>';
 
     html += '</div>'; // .cyc-wrap
@@ -25433,4 +25662,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.15.1 · L1/L2 UIUX Excellence 打磨：design tokens + AI 透明度 popup + 鍵盤快捷鍵 + 響應式 + dark mode polish · 城堡自評 L1=90.4 / L2=92.9 -->
+</html><!-- v0.15.2 · L1 原子重構（週期為時間軸主原子）+ IA 時間漏斗 Far→Near→Now + biz-planning 吸收 AI 判斷/聚焦卡 + bug 批次修（bar 文字殘缺/today 線/cycle 標籤碰撞/group 重複 bar） -->
