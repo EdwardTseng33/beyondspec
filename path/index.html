@@ -3955,7 +3955,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.15.2</div>
+        <div class="sidebar-version">v0.15.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6897,6 +6897,98 @@ canvas{display:block;margin:0 auto 24px}
       html += '<div style="position:relative;height:5px;background:var(--bg-hover);border-radius:3px;overflow:hidden">';
       html += '<div style="position:absolute;left:0;top:0;height:100%;width:' + timeProgressPct + '%;background:linear-gradient(90deg,' + daysLeftColor + ',var(--primary));border-radius:3px;transition:width .4s"></div>';
       html += '</div></div>';
+
+      // ── v0.15.2 AI 判斷條 + 關注卡（吸收自已廢除的「當期總覽」頁） ──
+      var _today2 = new Date(); _today2.setHours(0,0,0,0);
+      var _workProgress = totalCount > 0 ? (doneCount / totalCount) : 0;
+      var _timeProgressRatio = Math.min(1, Math.max(0, _elapsed / _totalDays));
+      function _parseDate(s){ return s ? new Date(s + 'T00:00:00') : null; }
+      var _overdueCards = cycleCards.filter(function(c){
+        if(c.columnId === 'done') return false;
+        var d = _parseDate(c.dueDate);
+        return d && d < _today2;
+      });
+      var _dueTodayCards = cycleCards.filter(function(c){
+        if(c.columnId === 'done') return false;
+        var d = _parseDate(c.dueDate);
+        if(!d) return false;
+        return d.getTime() === _today2.getTime();
+      });
+      var _staleDoingCards = cycleCards.filter(function(c){
+        if(c.columnId !== 'doing') return false;
+        var u = c.updatedAt || c.createdAt || 0;
+        if(!u) return false;
+        return (Date.now() - u) / 86400000 >= 3;
+      });
+
+      var _tagClass, _tag, _headline, _sub;
+      if(totalCount === 0){
+        _tagClass = 'warn'; _tag = '待排程';
+        _headline = '這個週期還沒有任務';
+        _sub = '從左側需求池拖曳卡片到本週期，或按「新增需求」直接建立。';
+      } else if(_overdueCards.length >= 3 || (_daysLeft === 0 && _workProgress < 0.7)){
+        _tagClass = 'danger'; _tag = '進度告急';
+        _headline = _overdueCards.length >= 3
+          ? '有 ' + _overdueCards.length + ' 張任務已逾期，需要立刻介入'
+          : '今天是最後一天，還有 ' + (totalCount - doneCount) + ' 張沒完成';
+        _sub = '先處理下方關注卡，決定要延期、換人接手、還是直接砍掉。';
+      } else if(_workProgress >= _timeProgressRatio + 0.15){
+        _tagClass = 'ahead'; _tag = '進度超前';
+        _headline = '節奏很穩，比預期多推進了 ' + Math.round((_workProgress - _timeProgressRatio) * 100) + '%';
+        _sub = '可以考慮把下個週期的卡提前拉進來，或花時間做技術債清理。';
+      } else if(_workProgress < _timeProgressRatio - 0.15){
+        _tagClass = 'warn'; _tag = '進度落後';
+        _headline = '稍微落後，剩 ' + _daysLeft + ' 天要趕上 ' + Math.round((_timeProgressRatio - _workProgress) * 100) + '%';
+        _sub = '看一下哪些卡卡住，是不是有 scope 要砍、或某張卡太大要拆。';
+      } else {
+        _tagClass = 'healthy'; _tag = '進度穩健';
+        if(_daysLeft === 0) _headline = '今天是最後一天，收尾階段';
+        else if(_daysLeft === 1) _headline = '剩最後 1 天，穩穩收尾';
+        else _headline = '進度跟上節奏，剩 ' + _daysLeft + ' 天';
+        _sub = '維持現在的節奏就好，下方關注卡是今天可以優先處理的項目。';
+      }
+
+      // AI judgement card
+      html += '<div class="cp-ai-card cp-ai-' + _tagClass + '">';
+      html += '<div class="cp-ai-left">';
+      html += '<div class="cp-ai-tag cp-ai-tag-' + _tagClass + '">' + _tag + '</div>';
+      html += '<div class="cp-ai-head">' + _headline + '</div>';
+      html += '<div class="cp-ai-sub">' + _sub + '</div>';
+      html += '</div>';
+      html += '<div class="cp-ai-stats">';
+      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _overdueCards.length + '</div><div class="cp-ai-stat-lbl">已逾期</div></div>';
+      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _dueTodayCards.length + '</div><div class="cp-ai-stat-lbl">今日到期</div></div>';
+      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _staleDoingCards.length + '</div><div class="cp-ai-stat-lbl">停滯 ≥3 天</div></div>';
+      html += '</div>';
+      html += '</div>';
+
+      // Focus cards strip (top 3 most urgent)
+      var _focusList = [];
+      _overdueCards.slice(0, 3).forEach(function(c){ _focusList.push({card:c, tag:'逾期', color:'#D94462'}); });
+      if(_focusList.length < 3){
+        _dueTodayCards.slice(0, 3 - _focusList.length).forEach(function(c){ _focusList.push({card:c, tag:'今到期', color:'#E08A3A'}); });
+      }
+      if(_focusList.length < 3){
+        _staleDoingCards.slice(0, 3 - _focusList.length).forEach(function(c){ _focusList.push({card:c, tag:'停滯', color:'#94A3B8'}); });
+      }
+      if(_focusList.length > 0){
+        html += '<div class="cp-focus-row">';
+        html += '<div class="cp-focus-label">聚焦 · 今天可以先動的</div>';
+        html += '<div class="cp-focus-list">';
+        _focusList.forEach(function(f){
+          var fc = f.card;
+          var fcat = T.TASK_CATEGORIES[fc.category] || T.TASK_CATEGORIES.product;
+          var titleEsc = (fc.title || '未命名').replace(/</g,'&lt;');
+          html += '<div class="cp-focus-card" onclick="window._tpOpenCard(\'' + fc.id + '\')" title="' + titleEsc.replace(/"/g,'&quot;') + '">';
+          html += '<div class="cp-focus-tag" style="background:' + f.color + '">' + f.tag + '</div>';
+          html += '<div class="cp-focus-body">';
+          html += '<div class="cp-focus-title">' + titleEsc + '</div>';
+          html += '<div class="cp-focus-meta"><span style="color:' + fcat.color + '">●</span> ' + fcat.label + '</div>';
+          html += '</div>';
+          html += '</div>';
+        });
+        html += '</div></div>';
+      }
 
       // ── Dual pane layout ──
       html += '<div style="display:flex;gap:16px;min-height:calc(100vh - 320px)">';
@@ -25662,4 +25754,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.15.2 · L1 原子重構（週期為時間軸主原子）+ IA 時間漏斗 Far→Near→Now + biz-planning 吸收 AI 判斷/聚焦卡 + bug 批次修（bar 文字殘缺/today 線/cycle 標籤碰撞/group 重複 bar） -->
+</html><!-- v0.15.3 · hotfix：把 v0.15.2 的 AI 判斷卡 + 關注卡注入到實際被呼叫的 renderTaskPlanning/renderBacklog（原先誤寫在已廢棄的 renderPlanning() 導致不渲染） -->
