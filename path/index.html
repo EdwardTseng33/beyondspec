@@ -3396,6 +3396,134 @@ canvas{display:block;margin:0 auto 24px}
   .rm-toolbar{padding:10px 14px;gap:8px}
 }
 
+/* ─────────────────────────────────────────────────────────
+   當期總覽 Cycle Overview (v0.15.0) — L2 戰情室
+   Progress ring + smart headline + category pulse + focus cards
+   ───────────────────────────────────────────────────────── */
+.cyc-wrap{max-width:1180px;margin:0 auto;padding:8px 4px 60px;animation:cyc-fadeUp .4s cubic-bezier(.22,1,.36,1) both}
+@keyframes cyc-fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* Top meta row — cycle label + switcher (minimal) */
+.cyc-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
+.cyc-topbar-left{display:flex;align-items:baseline;gap:14px;min-width:0;flex-wrap:wrap}
+.cyc-topbar h2{font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:10px}
+.cyc-cycle-meta{font-size:13px;color:var(--ink-muted);font-weight:450;display:flex;align-items:center;gap:8px}
+.cyc-cycle-meta .cyc-dot{width:6px;height:6px;border-radius:50%;background:var(--teal)}
+.cyc-days-left{font-variant-numeric:tabular-nums;color:var(--ink-dim);font-weight:500}
+.cyc-days-left strong{color:var(--primary);font-size:15px;margin:0 3px}
+
+/* Hero section — progress ring + headline */
+.cyc-hero{display:grid;grid-template-columns:220px 1fr;gap:36px;align-items:center;padding:24px 0 32px;margin-bottom:24px;border-bottom:1px solid var(--border)}
+.cyc-ring-wrap{width:220px;height:220px;position:relative;display:flex;align-items:center;justify-content:center}
+.cyc-ring-svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.cyc-ring-track{fill:none;stroke:var(--border);stroke-width:14}
+.cyc-ring-fill{fill:none;stroke:var(--primary);stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset .9s cubic-bezier(.22,1,.36,1)}
+.cyc-ring-fill.warn{stroke:var(--gold)}
+.cyc-ring-fill.danger{stroke:var(--rose)}
+.cyc-ring-fill.healthy{stroke:var(--primary)}
+.cyc-ring-center{position:relative;text-align:center;z-index:1}
+.cyc-ring-pct{font-size:44px;font-weight:700;color:var(--ink);letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1}
+.cyc-ring-pct small{font-size:18px;color:var(--ink-muted);font-weight:500;margin-left:2px}
+.cyc-ring-caption{font-size:11px;color:var(--ink-dim);letter-spacing:.5px;margin-top:4px;font-weight:500;text-transform:uppercase}
+
+.cyc-hero-text{min-width:0}
+.cyc-headline{font-size:26px;font-weight:700;color:var(--ink);letter-spacing:-.4px;line-height:1.35;margin:0 0 12px}
+.cyc-headline-tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.3px;vertical-align:middle;margin-right:10px;text-transform:uppercase}
+.cyc-headline-tag.healthy{background:rgba(27,168,145,.12);color:var(--teal)}
+.cyc-headline-tag.warn{background:rgba(224,138,58,.12);color:var(--gold)}
+.cyc-headline-tag.danger{background:rgba(217,68,98,.12);color:var(--rose)}
+.cyc-headline-tag.ahead{background:rgba(124,92,252,.12);color:var(--primary)}
+.cyc-subheadline{font-size:14px;color:var(--ink-muted);line-height:1.6;margin:0 0 20px}
+.cyc-hero-stats{display:flex;align-items:baseline;gap:28px;flex-wrap:wrap}
+.cyc-stat{display:flex;flex-direction:column;gap:2px}
+.cyc-stat-num{font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1}
+.cyc-stat-num.danger{color:var(--rose)}
+.cyc-stat-num.warn{color:var(--gold)}
+.cyc-stat-label{font-size:11px;color:var(--ink-dim);font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+
+/* Category pulse section */
+.cyc-section-head{display:flex;align-items:baseline;justify-content:space-between;margin:28px 0 16px;gap:12px}
+.cyc-section-title{font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-.1px;display:flex;align-items:center;gap:8px}
+.cyc-section-title svg{color:var(--ink-muted)}
+.cyc-section-sub{font-size:12px;color:var(--ink-dim);font-weight:450}
+
+.cyc-pulse-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 20px;padding:20px 24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl)}
+.cyc-pulse-row{display:grid;grid-template-columns:80px 1fr 56px;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--border-soft,rgba(0,0,0,.04))}
+.cyc-pulse-row:nth-last-child(-n+2){border-bottom:none}
+.cyc-pulse-label{font-size:13px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:8px}
+.cyc-pulse-label::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--cat-color,var(--ink-muted));flex-shrink:0}
+.cyc-pulse-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;position:relative}
+.cyc-pulse-fill{height:100%;background:var(--cat-color,var(--primary));border-radius:4px;transition:width .8s cubic-bezier(.22,1,.36,1)}
+.cyc-pulse-count{font-size:12px;font-weight:600;color:var(--ink-muted);text-align:right;font-variant-numeric:tabular-nums}
+.cyc-pulse-count strong{color:var(--ink);font-size:13px}
+
+/* Focus cards — things that need attention today */
+.cyc-focus-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.cyc-focus-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;cursor:pointer;transition:all .18s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden}
+.cyc-focus-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md,0 8px 24px rgba(0,0,0,.08));border-color:var(--primary)}
+.cyc-focus-card.danger{border-color:rgba(217,68,98,.3)}
+.cyc-focus-card.danger:hover{border-color:var(--rose);box-shadow:0 8px 24px rgba(217,68,98,.12)}
+.cyc-focus-card.warn{border-color:rgba(224,138,58,.3)}
+.cyc-focus-card.warn:hover{border-color:var(--gold);box-shadow:0 8px 24px rgba(224,138,58,.12)}
+.cyc-focus-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
+.cyc-focus-badge{font-size:10px;font-weight:600;letter-spacing:.4px;padding:3px 8px;border-radius:999px;text-transform:uppercase}
+.cyc-focus-badge.overdue{background:rgba(217,68,98,.12);color:var(--rose)}
+.cyc-focus-badge.duetoday{background:rgba(224,138,58,.12);color:var(--gold)}
+.cyc-focus-badge.review{background:rgba(124,92,252,.12);color:var(--primary)}
+.cyc-focus-badge.stale{background:rgba(148,163,184,.15);color:var(--ink-muted)}
+.cyc-focus-cat{font-size:11px;color:var(--ink-dim);display:flex;align-items:center;gap:5px}
+.cyc-focus-cat::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cat-color,var(--ink-muted))}
+.cyc-focus-title{font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cyc-focus-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--ink-dim);font-weight:450}
+.cyc-focus-meta .sep{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.5}
+
+/* Empty focus state */
+.cyc-focus-empty{padding:32px 24px;text-align:center;background:var(--bg-card);border:1px dashed var(--border);border-radius:12px;color:var(--ink-dim)}
+.cyc-focus-empty-icon{display:inline-flex;width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;background:rgba(27,168,145,.1);color:var(--teal);margin-bottom:10px}
+.cyc-focus-empty-title{font-size:14px;font-weight:600;color:var(--ink);margin:0 0 4px}
+.cyc-focus-empty-sub{font-size:12px;color:var(--ink-muted);margin:0}
+
+/* Action bar — jump to other layers */
+.cyc-actions{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
+.cyc-action-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;border:1px solid var(--border);background:var(--bg-card);color:var(--ink);cursor:pointer;transition:all .16s cubic-bezier(.22,1,.36,1)}
+.cyc-action-btn:hover{border-color:var(--primary);color:var(--primary);transform:translateY(-1px);box-shadow:0 4px 12px rgba(124,92,252,.1)}
+.cyc-action-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.cyc-action-btn.primary:hover{background:var(--primary-dark,#6A48E8);color:#fff;box-shadow:0 6px 16px rgba(124,92,252,.25)}
+.cyc-action-btn svg{flex-shrink:0}
+
+/* Empty state — no current cycle / no cards */
+.cyc-empty{text-align:center;padding:80px 24px;color:var(--ink-dim)}
+.cyc-empty-icon{display:inline-flex;width:72px;height:72px;align-items:center;justify-content:center;border-radius:50%;background:var(--bg-card);border:1px dashed var(--border);color:var(--ink-muted);margin-bottom:16px}
+.cyc-empty h3{font-size:16px;font-weight:600;color:var(--ink);margin:0 0 6px}
+.cyc-empty p{font-size:13px;color:var(--ink-muted);margin:0 0 18px;line-height:1.6}
+
+/* Responsive */
+@media (max-width:900px){
+  .cyc-hero{grid-template-columns:1fr;gap:20px;text-align:center}
+  .cyc-ring-wrap{margin:0 auto}
+  .cyc-hero-stats{justify-content:center}
+  .cyc-pulse-grid{grid-template-columns:1fr;gap:0;padding:16px 18px}
+  .cyc-pulse-row:nth-last-child(-n+2){border-bottom:1px solid var(--border-soft,rgba(0,0,0,.04))}
+  .cyc-pulse-row:last-child{border-bottom:none}
+}
+@media (max-width:640px){
+  .cyc-wrap{padding:4px 0 40px}
+  .cyc-headline{font-size:20px}
+  .cyc-ring-wrap{width:180px;height:180px}
+  .cyc-ring-pct{font-size:36px}
+  .cyc-hero-stats{gap:18px}
+  .cyc-stat-num{font-size:18px}
+  .cyc-pulse-row{grid-template-columns:70px 1fr 48px;gap:10px}
+  .cyc-focus-grid{grid-template-columns:1fr}
+}
+
+/* Dark mode tweaks */
+[data-theme="dark"] .cyc-focus-card{background:rgba(255,255,255,.03)}
+[data-theme="dark"] .cyc-pulse-grid{background:rgba(255,255,255,.03)}
+[data-theme="dark"] .cyc-action-btn{background:rgba(255,255,255,.04)}
+[data-theme="dark"] .cyc-ring-track{stroke:rgba(255,255,255,.08)}
+[data-theme="dark"] .cyc-empty-icon{background:rgba(255,255,255,.03)}
+
 /* — Detail panel slide-in — */
 .tc-detail-panel{
   background:var(--bg-card);border:1px solid var(--border);border-radius:16px;
@@ -3627,7 +3755,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.14.0</div>
+        <div class="sidebar-version">v0.15.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4303,8 +4431,9 @@ canvas{display:block;margin:0 auto 24px}
     // 商業模組 — Pipeline: 定義→蒐集→排程→執行
     const bizItems = [
       { id: 'biz-roadmap', label: '進程藍圖', icon: 'roadmap', modKey: 'mod-tasks', layer: 1, q: '整體方向要跑多久？', parent: 'tasks' },
-      { id: 'biz-planning', label: '任務規劃', icon: 'inbox', modKey: 'mod-tasks', layer: 1, q: '需求管理與週期排程', parent: 'tasks' },
-      { id: 'biz-tasks', label: '任務看板', icon: 'listChecks', modKey: 'mod-tasks', layer: 1, q: '本週該做什麼？', parent: 'tasks' },
+      { id: 'biz-cycle', label: '當期總覽', icon: 'target', modKey: 'mod-tasks', layer: 2, q: '這個週期跑得怎樣？', parent: 'tasks' },
+      { id: 'biz-tasks', label: '任務看板', icon: 'listChecks', modKey: 'mod-tasks', layer: 3, q: '本週該做什麼？', parent: 'tasks' },
+      { id: 'biz-planning', label: '需求規劃', icon: 'inbox', modKey: 'mod-tasks', layer: 4, q: '需求管理與週期排程', parent: 'tasks' },
       { id: 'biz-contacts', label: '客戶管理', icon: 'users', modKey: 'mod-contacts', layer: 1, q: '這個人跟我們什麼關係？' },
       { id: 'biz-quotes', label: '報價提案', icon: 'fileText', modKey: 'mod-quotes', layer: 2, q: '怎麼快速產一份專業報價？' },
       { id: 'biz-billing', label: '收款管理', icon: 'dollarSign', modKey: 'mod-billing', layer: 2, q: '錢收到了嗎？' },
@@ -4603,9 +4732,19 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
-    // biz-spec / biz-inbox / biz-cycle → all redirect to biz-planning (v0.11.3 merge)
-    if (moduleId === 'biz-spec' || moduleId === 'biz-inbox' || moduleId === 'biz-cycle') {
+    // biz-spec / biz-inbox → redirect to biz-planning (v0.11.3 merge)
+    if (moduleId === 'biz-spec' || moduleId === 'biz-inbox') {
       moduleId = 'biz-planning';
+    }
+
+    // biz-cycle → 當期總覽 vanilla JS (v0.15.0, dedicated L2 cycle overview)
+    if (moduleId === 'biz-cycle') {
+      if (window._bizReactRoot) {
+        try { window._bizReactRoot.unmount(); } catch(e) {}
+        window._bizReactRoot = null;
+      }
+      renderCycleOverview();
+      return;
     }
 
     // biz-planning → merged task planning (backlog + cycle) (v0.11.3)
@@ -4614,8 +4753,6 @@ canvas{display:block;margin:0 auto 24px}
         try { window._bizReactRoot.unmount(); } catch(e) {}
         window._bizReactRoot = null;
       }
-      // If coming from biz-cycle, default to cycle tab
-      if (arguments[0] === 'biz-cycle') window._tpActiveTab = 'cycle';
       renderTaskPlanning();
       return;
     }
@@ -8651,6 +8788,300 @@ canvas{display:block;margin:0 auto 24px}
     };
     window._rmHideTip = function(){
       if(_rmTipEl) _rmTipEl.style.display = 'none';
+    };
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // renderCycleOverview — v0.15.0 當期總覽 (L2 戰情室)
+  // Progress ring + smart headline + category pulse + focus cards
+  // ═════════════════════════════════════════════════════════════
+  function renderCycleOverview() {
+    var content = document.getElementById('content');
+    var mainEl = document.getElementById('main');
+    if (mainEl) { mainEl.style.overflow = ''; mainEl.style.height = ''; }
+    var appEl = document.getElementById('app');
+    if (appEl) appEl.style.overflow = '';
+
+    var T = _taskShared;
+    var CATS = T.TASK_CATEGORIES;
+    var cards = T.getCards().map(T.migrateCard);
+    var currentCycle = T.ensureCurrentCycle();
+
+    // ── Empty state: no cycle at all (shouldn't happen, but defensive) ──
+    if(!currentCycle){
+      content.innerHTML = '<div class="cyc-wrap"><div class="cyc-empty">' +
+        '<div class="cyc-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>' +
+        '<h3>目前沒有進行中的週期</h3>' +
+        '<p>到「需求規劃」建立第一個週期，就能開始追蹤進度</p>' +
+        '<button class="cyc-action-btn primary" onclick="navigate(\'biz-planning\')">前往需求規劃</button>' +
+        '</div></div>';
+      return;
+    }
+
+    // ── Dates & basic cycle metrics ──
+    var today = new Date(); today.setHours(0,0,0,0);
+    var cStart = new Date(currentCycle.startDate + 'T00:00:00');
+    var cEnd = new Date(currentCycle.endDate + 'T00:00:00');
+    cEnd.setHours(23,59,59,999);
+    var MS = 86400000;
+    var totalDays = Math.max(1, Math.round((cEnd - cStart) / MS) + 1);
+    var elapsedDays = Math.max(0, Math.min(totalDays, Math.round((today - cStart) / MS) + 1));
+    var daysLeft = Math.max(0, Math.round((cEnd - today) / MS));
+    var timeProgress = Math.min(1, Math.max(0, elapsedDays / totalDays));
+
+    // ── Cards in this cycle ──
+    var cyCards = cards.filter(function(c){
+      return c.cycleId === currentCycle.id && !c.archived;
+    });
+    var total = cyCards.length;
+
+    // ── Status buckets ──
+    var doneCards = cyCards.filter(function(c){ return c.columnId === 'done'; });
+    var doingCards = cyCards.filter(function(c){ return c.columnId === 'doing'; });
+    var reviewCards = cyCards.filter(function(c){ return c.columnId === 'review'; });
+    var todoCards = cyCards.filter(function(c){ return c.columnId === 'todo'; });
+    var inboxCards = cyCards.filter(function(c){ return c.columnId === 'inbox'; });
+
+    var doneCount = doneCards.length;
+    var workProgress = total > 0 ? (doneCount / total) : 0;
+
+    // ── Overdue / due-today / stale ──
+    function parseDate(s){ return s ? new Date(s + 'T00:00:00') : null; }
+    var overdueCards = cyCards.filter(function(c){
+      if(c.columnId === 'done') return false;
+      var d = parseDate(c.dueDate);
+      return d && d < today;
+    });
+    var dueTodayCards = cyCards.filter(function(c){
+      if(c.columnId === 'done') return false;
+      var d = parseDate(c.dueDate);
+      if(!d) return false;
+      return d.getTime() === today.getTime();
+    });
+    var staleDoingCards = doingCards.filter(function(c){
+      var u = c.updatedAt || c.createdAt || 0;
+      if(!u) return false;
+      var days = (Date.now() - u) / MS;
+      return days >= 3;
+    });
+
+    // ── Smart headline generation ──
+    var state, tag, tagClass, headline, sub;
+    if(total === 0){
+      state = 'empty';
+      tagClass = 'warn';
+      tag = '待排程';
+      headline = '這個週期還沒有任務';
+      sub = '到「需求規劃」或「任務看板」把本週要做的事放進來，戰情室才會開始運作。';
+    } else if(overdueCards.length >= 3 || (daysLeft === 0 && workProgress < 0.7)){
+      state = 'danger';
+      tagClass = 'danger';
+      tag = '進度告急';
+      if(overdueCards.length >= 3){
+        headline = '有 ' + overdueCards.length + ' 張任務已逾期，需要立刻介入';
+      } else {
+        headline = '今天就結束了，還有 ' + (total - doneCount) + ' 張沒完成';
+      }
+      sub = '建議先處理下方的關注卡，判斷是要延期、換人接手、還是直接砍掉。';
+    } else if(workProgress >= timeProgress + 0.15){
+      state = 'ahead';
+      tagClass = 'ahead';
+      tag = '進度超前';
+      headline = '節奏很穩，比預期多推進了 ' + Math.round((workProgress - timeProgress) * 100) + '%';
+      sub = '可以考慮把下個週期的卡提前拉進來，或是花時間做技術債清理。';
+    } else if(workProgress < timeProgress - 0.15){
+      state = 'warn';
+      tagClass = 'warn';
+      tag = '進度落後';
+      headline = '稍微落後，剩 ' + daysLeft + ' 天要趕上 ' + Math.round((timeProgress - workProgress) * 100) + '%';
+      sub = '看一下下面哪些卡卡住，是不是有 scope 要砍、或是某張卡太大要拆。';
+    } else {
+      state = 'healthy';
+      tagClass = 'healthy';
+      tag = '進度穩健';
+      if(daysLeft === 0){
+        headline = '今天是最後一天，收尾階段';
+      } else if(daysLeft === 1){
+        headline = '剩最後 1 天，穩穩收尾';
+      } else {
+        headline = '進度跟上節奏，剩 ' + daysLeft + ' 天';
+      }
+      sub = '維持現在的節奏就好，下方關注卡是今天可以優先處理的項目。';
+    }
+
+    // ── Ring progress (shows work progress, colored by state) ──
+    var ringPct = Math.round(workProgress * 100);
+    var R = 92, C = 2 * Math.PI * R;
+    var ringOffset = C * (1 - workProgress);
+    var ringCls = state === 'danger' ? 'danger' : (state === 'warn' ? 'warn' : (state === 'ahead' ? 'healthy' : 'healthy'));
+
+    // ── Category pulse data ──
+    var catOrder = ['product','dev','qa','marketing','sales','admin'];
+    var catData = {};
+    catOrder.forEach(function(k){
+      var catCards = cyCards.filter(function(c){ return (c.category || 'product') === k; });
+      var catDone = catCards.filter(function(c){ return c.columnId === 'done'; });
+      catData[k] = {
+        total: catCards.length,
+        done: catDone.length,
+        pct: catCards.length > 0 ? (catDone.length / catCards.length) : 0,
+        cat: CATS[k]
+      };
+    });
+
+    // ── Build HTML ──
+    function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function fmtMD(d){ return (d.getMonth()+1) + '/' + d.getDate(); }
+    function fmtCycleLabel(){ return fmtMD(cStart) + ' — ' + fmtMD(cEnd); }
+
+    var html = '<div class="cyc-wrap">';
+
+    // Top bar
+    html += '<div class="cyc-topbar">';
+    html += '<div class="cyc-topbar-left">';
+    html += '<h2><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>當期總覽</h2>';
+    html += '<div class="cyc-cycle-meta"><span class="cyc-dot"></span>' + esc(currentCycle.label || fmtCycleLabel()) + '</div>';
+    if(daysLeft > 0){
+      html += '<div class="cyc-days-left">剩 <strong>' + daysLeft + '</strong> 天 · 已過 ' + elapsedDays + '/' + totalDays + '</div>';
+    } else {
+      html += '<div class="cyc-days-left">今日收尾 · 已過 ' + elapsedDays + '/' + totalDays + '</div>';
+    }
+    html += '</div>';
+    html += '</div>';
+
+    // Hero
+    html += '<div class="cyc-hero">';
+    // Ring
+    html += '<div class="cyc-ring-wrap">';
+    html += '<svg class="cyc-ring-svg" viewBox="0 0 220 220">';
+    html += '<circle class="cyc-ring-track" cx="110" cy="110" r="' + R + '"/>';
+    html += '<circle class="cyc-ring-fill ' + ringCls + '" cx="110" cy="110" r="' + R + '" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="' + ringOffset.toFixed(2) + '"/>';
+    html += '</svg>';
+    html += '<div class="cyc-ring-center">';
+    html += '<div class="cyc-ring-pct">' + ringPct + '<small>%</small></div>';
+    html += '<div class="cyc-ring-caption">完成進度</div>';
+    html += '</div>';
+    html += '</div>';
+    // Text
+    html += '<div class="cyc-hero-text">';
+    html += '<div class="cyc-headline"><span class="cyc-headline-tag ' + tagClass + '">' + tag + '</span>' + esc(headline) + '</div>';
+    html += '<p class="cyc-subheadline">' + esc(sub) + '</p>';
+    html += '<div class="cyc-hero-stats">';
+    html += '<div class="cyc-stat"><div class="cyc-stat-num">' + doneCount + '<small style="font-size:14px;color:var(--ink-dim);font-weight:500;margin-left:3px">/' + total + '</small></div><div class="cyc-stat-label">已完成</div></div>';
+    html += '<div class="cyc-stat"><div class="cyc-stat-num">' + doingCards.length + '</div><div class="cyc-stat-label">進行中</div></div>';
+    html += '<div class="cyc-stat"><div class="cyc-stat-num">' + reviewCards.length + '</div><div class="cyc-stat-label">待驗收</div></div>';
+    html += '<div class="cyc-stat"><div class="cyc-stat-num ' + (overdueCards.length > 0 ? 'danger' : '') + '">' + overdueCards.length + '</div><div class="cyc-stat-label">已逾期</div></div>';
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Category pulse
+    if(total > 0){
+      html += '<div class="cyc-section-head">';
+      html += '<div class="cyc-section-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/></svg>類別脈動</div>';
+      html += '<div class="cyc-section-sub">各工作類別的完成比例</div>';
+      html += '</div>';
+      html += '<div class="cyc-pulse-grid">';
+      catOrder.forEach(function(k){
+        var d = catData[k];
+        if(d.total === 0) return;
+        var pct = Math.round(d.pct * 100);
+        html += '<div class="cyc-pulse-row" style="--cat-color:' + d.cat.color + '">';
+        html += '<div class="cyc-pulse-label">' + esc(d.cat.label) + '</div>';
+        html += '<div class="cyc-pulse-track"><div class="cyc-pulse-fill" style="width:' + pct + '%"></div></div>';
+        html += '<div class="cyc-pulse-count"><strong>' + d.done + '</strong>/' + d.total + '</div>';
+        html += '</div>';
+      });
+      // Check if we rendered nothing
+      var hasAnyCat = false;
+      catOrder.forEach(function(k){ if(catData[k].total > 0) hasAnyCat = true; });
+      if(!hasAnyCat){
+        html += '<div style="grid-column:1/-1;text-align:center;padding:8px 0;font-size:12px;color:var(--ink-dim)">（暫無類別分布）</div>';
+      }
+      html += '</div>';
+    }
+
+    // Focus section — today's attention
+    html += '<div class="cyc-section-head">';
+    html += '<div class="cyc-section-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>今天關心這些</div>';
+    html += '<div class="cyc-section-sub">依照緊急程度排序</div>';
+    html += '</div>';
+
+    // Collect focus cards: overdue > dueToday > review > stale doing
+    var seen = {};
+    var focusList = [];
+    function pushFocus(c, kind){
+      if(seen[c.id]) return;
+      seen[c.id] = true;
+      focusList.push({ card: c, kind: kind });
+    }
+    overdueCards.forEach(function(c){ pushFocus(c, 'overdue'); });
+    dueTodayCards.forEach(function(c){ pushFocus(c, 'duetoday'); });
+    reviewCards.forEach(function(c){ pushFocus(c, 'review'); });
+    staleDoingCards.forEach(function(c){ pushFocus(c, 'stale'); });
+    focusList = focusList.slice(0, 8);
+
+    if(focusList.length === 0){
+      html += '<div class="cyc-focus-empty">';
+      html += '<div class="cyc-focus-empty-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>';
+      html += '<h4 class="cyc-focus-empty-title">沒有需要立刻處理的卡</h4>';
+      html += '<p class="cyc-focus-empty-sub">所有任務進度正常，可以專注推進手上的工作。</p>';
+      html += '</div>';
+    } else {
+      var badgeLabel = { overdue:'已逾期', duetoday:'今日到期', review:'等待驗收', stale:'停滯 3 天+' };
+      var cardCls = { overdue:'danger', duetoday:'warn', review:'', stale:'' };
+      html += '<div class="cyc-focus-grid">';
+      focusList.forEach(function(f){
+        var c = f.card;
+        var cat = CATS[c.category || 'product'] || CATS.product;
+        var cls = 'cyc-focus-card' + (cardCls[f.kind] ? ' ' + cardCls[f.kind] : '');
+        html += '<div class="' + cls + '" style="--cat-color:' + cat.color + '" onclick="window._cycOpenCard(\'' + c.id + '\')">';
+        html += '<div class="cyc-focus-head">';
+        html += '<span class="cyc-focus-badge ' + f.kind + '">' + badgeLabel[f.kind] + '</span>';
+        html += '<span class="cyc-focus-cat">' + esc(cat.label) + '</span>';
+        html += '</div>';
+        html += '<div class="cyc-focus-title">' + esc(c.title || '(未命名)') + '</div>';
+        html += '<div class="cyc-focus-meta">';
+        if(c.dueDate){
+          var dd = parseDate(c.dueDate);
+          html += '<span>截止 ' + fmtMD(dd) + '</span>';
+        }
+        if(c.assignee){
+          html += '<span class="sep"></span><span>' + esc(c.assignee) + '</span>';
+        }
+        html += '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Action bar — jump to other layers
+    html += '<div class="cyc-actions">';
+    html += '<button class="cyc-action-btn primary" onclick="navigate(\'biz-tasks\')">';
+    html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>';
+    html += '開啟任務看板</button>';
+    html += '<button class="cyc-action-btn" onclick="navigate(\'biz-roadmap\')">';
+    html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l-6 2v14l6-2 6 2 6-2V5l-6 2-6-2z"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="7" x2="15" y2="21"/></svg>';
+    html += '回到進程藍圖</button>';
+    html += '<button class="cyc-action-btn" onclick="navigate(\'biz-planning\')">';
+    html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
+    html += '進入需求規劃</button>';
+    html += '</div>';
+
+    html += '</div>'; // .cyc-wrap
+
+    content.innerHTML = html;
+
+    // ── Card click handler — navigate to board and open detail ──
+    window._cycOpenCard = function(cardId){
+      navigate('biz-tasks');
+      setTimeout(function(){
+        if(typeof window._kbOpenDetail === 'function'){
+          window._kbOpenDetail(cardId);
+        } else if(typeof window._kbEditCard === 'function'){
+          window._kbEditCard(cardId);
+        }
+      }, 180);
     };
   }
 
@@ -24778,4 +25209,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.14.0 · 進程藍圖 Roadmap · 任務中心 L1 視圖 -->
+</html><!-- v0.15.0 · 當期總覽 Cycle Overview · 任務中心 L2 戰情室 -->
