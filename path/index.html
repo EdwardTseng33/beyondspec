@@ -8813,7 +8813,7 @@ canvas{display:block;margin:0 auto 24px}
         '<div class="cyc-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>' +
         '<h3>目前沒有進行中的週期</h3>' +
         '<p>到「需求規劃」建立第一個週期，就能開始追蹤進度</p>' +
-        '<button class="cyc-action-btn primary" onclick="navigate(\'biz-planning\')">前往需求規劃</button>' +
+        '<button class="cyc-action-btn primary" onclick="app.navigate(\'biz-planning\')">前往需求規劃</button>' +
         '</div></div>';
       return;
     }
@@ -9057,13 +9057,13 @@ canvas{display:block;margin:0 auto 24px}
 
     // Action bar — jump to other layers
     html += '<div class="cyc-actions">';
-    html += '<button class="cyc-action-btn primary" onclick="navigate(\'biz-tasks\')">';
+    html += '<button class="cyc-action-btn primary" onclick="app.navigate(\'biz-tasks\')">';
     html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>';
     html += '開啟任務看板</button>';
-    html += '<button class="cyc-action-btn" onclick="navigate(\'biz-roadmap\')">';
+    html += '<button class="cyc-action-btn" onclick="app.navigate(\'biz-roadmap\')">';
     html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l-6 2v14l6-2 6 2 6-2V5l-6 2-6-2z"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="7" x2="15" y2="21"/></svg>';
     html += '回到進程藍圖</button>';
-    html += '<button class="cyc-action-btn" onclick="navigate(\'biz-planning\')">';
+    html += '<button class="cyc-action-btn" onclick="app.navigate(\'biz-planning\')">';
     html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
     html += '進入需求規劃</button>';
     html += '</div>';
