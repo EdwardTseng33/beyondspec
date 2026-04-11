@@ -3355,16 +3355,28 @@ canvas{display:block;margin:0 auto 24px}
 .rm-header-minor.today{color:#fff;background:var(--primary);font-weight:800}
 .rm-header-minor.weekend{background:rgba(0,0,0,.025)}
 [data-theme="dark"] .rm-header-minor.weekend{background:rgba(255,255,255,.03)}
+/* v0.16.0: atom-specific header variants */
+.rm-header-minor.halfmonth{font-size:11px;font-weight:var(--fw-title,700);letter-spacing:.04em;color:var(--ink-sec);padding:0 8px;white-space:nowrap}
+.rm-header-minor.halfmonth.today{color:#fff;background:var(--primary)}
+.rm-header-minor.cycle-week{font-size:11px;font-weight:var(--fw-title,700);letter-spacing:.02em;color:var(--ink-sec);padding:0 6px;white-space:nowrap}
+.rm-header-minor.cycle-week.today{color:#fff;background:var(--primary)}
+.rm-header-minor.day{font-size:11px;font-weight:var(--fw-label,600);padding:0 4px;white-space:nowrap}
 
 /* Gantt canvas */
 .rm-canvas{position:relative;min-height:100%}
-.rm-grid-lines{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0}
-.rm-grid-vline{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.04)}
-[data-theme="dark"] .rm-grid-vline{background:rgba(255,255,255,.04)}
-.rm-grid-vline.major{background:rgba(0,0,0,.08)}
-[data-theme="dark"] .rm-grid-vline.major{background:rgba(255,255,255,.08)}
+.rm-grid-lines{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1}
+.rm-grid-vline{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.05)}
+[data-theme="dark"] .rm-grid-vline{background:rgba(255,255,255,.05)}
+.rm-grid-vline.major{background:rgba(0,0,0,.1)}
+[data-theme="dark"] .rm-grid-vline.major{background:rgba(255,255,255,.09)}
 .rm-grid-vline.weekend{background:rgba(0,0,0,.02);width:var(--w,1px)}
 [data-theme="dark"] .rm-grid-vline.weekend{background:rgba(255,255,255,.015)}
+/* v0.16.0: atom stripe 背景層 — 奇偶交替深淺讓眼睛數出節拍 */
+.rm-atom-stripes{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0}
+.rm-atom-stripe{position:absolute;top:0;bottom:0;background:rgba(124,92,252,.028)}
+[data-theme="dark"] .rm-atom-stripe{background:rgba(124,92,252,.055)}
+.rm-atom-stripe.weekend{background:rgba(0,0,0,.028)}
+[data-theme="dark"] .rm-atom-stripe.weekend{background:rgba(255,255,255,.028)}
 
 /* v0.15.2 Today line — thin 1px with top diamond marker */
 .rm-today-line{position:absolute;top:0;bottom:0;width:1px;background:var(--primary);z-index:5;pointer-events:none;opacity:.7}
@@ -3955,7 +3967,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.15.4</div>
+        <div class="sidebar-version">v0.16.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -8777,20 +8789,37 @@ canvas{display:block;margin:0 auto 24px}
     var STATUS_LABELS   = { inbox: '待分類', todo: '待處理', doing: '進行中', review: '驗收中', done: '已完成' };
     var PRI_BAR_COLOR   = { high: '#D94462', medium: '#E08A3A', low: '#3B82F6', none: '#94A3B8' };
 
-    // ── Zoom config ──
-    // pxPerDay controls horizontal density; unit defines minor column granularity
+    // ── Zoom config (v0.16.0: semantic atoms per zoom level) ──
+    // 城堡憲法：Roadmap 時間軸用標準單位，不跟 user 的 cycle 長度連動
+    //   季 zoom → atom = 上/下半月（6 條/季，每條 ~15 天，CEO 看大方向）
+    //   月 zoom → atom = 週（4-5 條/月，每條 7 天，leadership 看本月在忙什麼）
+    //   週 zoom → atom = 天（7 條，執行者看今明後做什麼）
+    // pxPerDay 調整為讓每一個 atom 寬度落在 96-266px，CJK label 可完整顯示
     var ZOOM_CFG = {
-      quarter: { label: '季', pxPerDay: 11, minorUnit: 'week', minorCellDays: 7, majorUnit: 'month' },
-      month:   { label: '月', pxPerDay: 30, minorUnit: 'day',  minorCellDays: 1, majorUnit: 'month' },
-      week:    { label: '週', pxPerDay: 72, minorUnit: 'day',  minorCellDays: 1, majorUnit: 'week' }
+      quarter: { label: '季', pxPerDay: 14, atomUnit: 'halfMonth', majorUnit: 'month', padBefore: 30, padAfter: 60 },
+      month:   { label: '月', pxPerDay: 38, atomUnit: 'week',      majorUnit: 'month', padBefore: 14, padAfter: 28 },
+      week:    { label: '週', pxPerDay: 96, atomUnit: 'day',       majorUnit: 'week',  padBefore: 7,  padAfter: 14 }
     };
     var zoom = ZOOM_CFG[RM.zoom] || ZOOM_CFG.month;
 
-    // ── Compute date range ──
-    // Anchor around today, include all cycles + cards, pad 14 days each side
+    // ── Compute date range (v0.16.0: zoom-aware padding + atom snapping) ──
+    // 理由：三級 zoom 需要不同的時間窗（季看 3 個月、月看 6 週、週看 3 週），
+    // 並把 minDate 對齊到 atom 邊界（1/16、週一），避免首尾半截 atom 破壞視覺節拍。
     var today = new Date(); today.setHours(0,0,0,0);
-    var minDate = new Date(today); minDate.setDate(minDate.getDate() - 21);
-    var maxDate = new Date(today); maxDate.setDate(maxDate.getDate() + 49);
+    var minDate = new Date(today); minDate.setDate(minDate.getDate() - zoom.padBefore);
+    var maxDate = new Date(today); maxDate.setDate(maxDate.getDate() + zoom.padAfter);
+    // Snap minDate to atom boundary per zoom
+    if(zoom.atomUnit === 'halfMonth'){
+      // 對齊到 1 號或 16 號（取離 minDate 最近且不超過的那個）
+      var dHm = minDate.getDate();
+      if(dHm >= 16) minDate.setDate(16);
+      else minDate.setDate(1);
+    } else if(zoom.atomUnit === 'week' || zoom.atomUnit === 'day'){
+      // 對齊到週一（ISO week 起點）。getDay: 0=日, 1=一, ..., 6=六
+      var dow = minDate.getDay();
+      var shift = (dow === 0 ? 6 : dow - 1);
+      minDate.setDate(minDate.getDate() - shift);
+    }
     cycles.forEach(function(cy){
       if(cy.startDate){ var sd = new Date(cy.startDate); sd.setHours(0,0,0,0); if(sd < minDate) minDate = new Date(sd.getTime() - 7*86400000); }
       if(cy.endDate){   var ed = new Date(cy.endDate);   ed.setHours(0,0,0,0); if(ed > maxDate) maxDate = new Date(ed.getTime() + 14*86400000); }
@@ -8805,6 +8834,16 @@ canvas{display:block;margin:0 auto 24px}
     function fmtMD(d){ return (d.getMonth()+1) + '/' + d.getDate(); }
     function fmtYMD(s){ return s ? s.slice(5).replace('-','/') : ''; }
     function pxForDays(n){ return n * zoom.pxPerDay; }
+    // v0.16.0: ISO 8601 week number (週一為週首, 第一週包含該年第一個週四)
+    function isoWeekNum(d){
+      var t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      var dayNr = (t.getDay() + 6) % 7; // 週一=0, 週日=6
+      t.setDate(t.getDate() - dayNr + 3);
+      var firstThu = new Date(t.getFullYear(), 0, 4);
+      var firstThuDayNr = (firstThu.getDay() + 6) % 7;
+      firstThu.setDate(firstThu.getDate() - firstThuDayNr + 3);
+      return 1 + Math.round((t.getTime() - firstThu.getTime()) / (7 * 86400000));
+    }
 
     var totalDays = daysBetween(minDate, maxDate) + 1;
     var canvasW = totalDays * zoom.pxPerDay;
@@ -8968,76 +9007,150 @@ canvas{display:block;margin:0 auto 24px}
     leftH += '</div></div>';
 
     // ── Build right panel (Gantt) ──
-    // Time header — 2 rows: major (month/week) + minor (day/week)
+    // Time header (v0.16.0: 三級 atom 獨立渲染 — quarter=halfMonth / month=week / week=day)
     var headerRow1 = '', headerRow2 = '';
+    var todayIdx = daysBetween(minDate, today);
+    var WEEKDAY_CN = ['日','一','二','三','四','五','六'];
 
-    if(zoom.minorUnit === 'day'){
-      // Row 1: month grouping; Row 2: day cells
-      var monthGroups = {};
-      for(var i=0; i<totalDays; i++){
-        var d = addDays(minDate, i);
-        var mk = d.getFullYear() + '-' + (d.getMonth()+1);
-        if(!monthGroups[mk]) monthGroups[mk] = { start: i, count: 0, label: (d.getMonth()+1) + '月' + (d.getMonth()===0?' ' + d.getFullYear():''), dayLabel: d.getDate() };
-        monthGroups[mk].count++;
+    if(zoom.atomUnit === 'halfMonth'){
+      // ── 季 zoom: Row1=月份, Row2=上/下半月 ──
+      var mgQ = {}, moQ = [];
+      for(var iq=0; iq<totalDays; iq++){
+        var dq = addDays(minDate, iq);
+        var mkq = dq.getFullYear() + '-' + (dq.getMonth()+1);
+        if(!mgQ[mkq]){
+          mgQ[mkq] = { count: 0, label: (dq.getMonth()+1) + '月' + (dq.getMonth()===0 ? ' ' + dq.getFullYear() : '') };
+          moQ.push(mkq);
+        }
+        mgQ[mkq].count++;
       }
-      Object.keys(monthGroups).forEach(function(mk){
-        var g = monthGroups[mk];
+      moQ.forEach(function(mk){
+        var g = mgQ[mk];
         headerRow1 += '<div class="rm-header-major" style="width:' + pxForDays(g.count) + 'px">' + g.label + '</div>';
       });
-      for(var di=0; di<totalDays; di++){
-        var dd = addDays(minDate, di);
-        var cls = 'rm-header-minor';
-        if(daysBetween(minDate, dd) === daysBetween(minDate, today)) cls += ' today';
-        if(dd.getDay() === 0 || dd.getDay() === 6) cls += ' weekend';
-        headerRow2 += '<div class="' + cls + '" style="width:' + zoom.pxPerDay + 'px">' + dd.getDate() + '</div>';
+      // Row 2: 上/下半月 atoms (掃過 totalDays 遇到 1 號 / 16 號就切一塊)
+      var hmStart = 0;
+      while(hmStart < totalDays){
+        var hmd = addDays(minDate, hmStart);
+        var domHm = hmd.getDate();
+        var nextBoundary;
+        if(domHm < 16){
+          nextBoundary = new Date(hmd.getFullYear(), hmd.getMonth(), 16);
+        } else {
+          nextBoundary = new Date(hmd.getFullYear(), hmd.getMonth() + 1, 1);
+        }
+        var hmDays = Math.min(totalDays - hmStart, daysBetween(hmd, nextBoundary));
+        if(hmDays <= 0) break;
+        var hmEnd = hmStart + hmDays;
+        var hmLabel = (domHm < 16 ? '上半月' : '下半月');
+        var hmIsCurrent = (todayIdx >= hmStart && todayIdx < hmEnd);
+        var hmCls = 'rm-header-minor halfmonth' + (hmIsCurrent ? ' today' : '');
+        headerRow2 += '<div class="' + hmCls + '" style="width:' + pxForDays(hmDays) + 'px">' + hmLabel + '</div>';
+        hmStart = hmEnd;
+      }
+    } else if(zoom.atomUnit === 'week'){
+      // ── 月 zoom: Row1=月份, Row2=Wxx 週 atoms ──
+      var mgM = {}, moM = [];
+      for(var im=0; im<totalDays; im++){
+        var dm2 = addDays(minDate, im);
+        var mkm = dm2.getFullYear() + '-' + (dm2.getMonth()+1);
+        if(!mgM[mkm]){
+          mgM[mkm] = { count: 0, label: (dm2.getMonth()+1) + '月' + (dm2.getMonth()===0 ? ' ' + dm2.getFullYear() : '') };
+          moM.push(mkm);
+        }
+        mgM[mkm].count++;
+      }
+      moM.forEach(function(mk){
+        var g = mgM[mk];
+        headerRow1 += '<div class="rm-header-major" style="width:' + pxForDays(g.count) + 'px">' + g.label + '</div>';
+      });
+      // Row 2: 週 atoms（minDate 已 snap 到週一）
+      var wStart = 0;
+      while(wStart < totalDays){
+        var wsd = addDays(minDate, wStart);
+        var wDays = Math.min(7, totalDays - wStart);
+        var wEnd = wStart + wDays;
+        var wIsCurrent = (todayIdx >= wStart && todayIdx < wEnd);
+        var wCls = 'rm-header-minor cycle-week' + (wIsCurrent ? ' today' : '');
+        var wLabel = 'W' + isoWeekNum(wsd) + ' · ' + fmtMD(wsd);
+        headerRow2 += '<div class="' + wCls + '" style="width:' + pxForDays(wDays) + 'px">' + wLabel + '</div>';
+        wStart += 7;
       }
     } else {
-      // quarter zoom: row1 = month, row2 = week cells
-      var monthGroups2 = {};
-      for(var i2=0; i2<totalDays; i2++){
-        var d2 = addDays(minDate, i2);
-        var mk2 = d2.getFullYear() + '-' + (d2.getMonth()+1);
-        if(!monthGroups2[mk2]) monthGroups2[mk2] = { start: i2, count: 0, label: (d2.getMonth()+1) + '月' };
-        monthGroups2[mk2].count++;
+      // ── 週 zoom: Row1=週範圍 "Wxx · MM/DD–MM/DD", Row2=星期 + 日 ──
+      var wStartK = 0;
+      while(wStartK < totalDays){
+        var wsdK = addDays(minDate, wStartK);
+        var wDaysK = Math.min(7, totalDays - wStartK);
+        var weEndK = addDays(minDate, wStartK + wDaysK - 1);
+        var wLabelK = 'W' + isoWeekNum(wsdK) + ' · ' + fmtMD(wsdK) + '–' + fmtMD(weEndK);
+        headerRow1 += '<div class="rm-header-major" style="width:' + pxForDays(wDaysK) + 'px">' + wLabelK + '</div>';
+        wStartK += 7;
       }
-      Object.keys(monthGroups2).forEach(function(mk){
-        var g = monthGroups2[mk];
-        headerRow1 += '<div class="rm-header-major" style="width:' + pxForDays(g.count) + 'px">' + g.label + '</div>';
-      });
-      // Weekly cells
-      var weekStart = 0;
-      while(weekStart < totalDays){
-        var wd = addDays(minDate, weekStart);
-        var count = Math.min(7, totalDays - weekStart);
-        var isCurrent = (daysBetween(minDate, today) >= weekStart && daysBetween(minDate, today) < weekStart + count);
-        var cls2 = 'rm-header-minor' + (isCurrent ? ' today' : '');
-        var wkLabel = fmtMD(wd);
-        headerRow2 += '<div class="' + cls2 + '" style="width:' + pxForDays(count) + 'px">' + wkLabel + '</div>';
-        weekStart += 7;
+      // Row 2: day cells 「週X · D」
+      for(var di=0; di<totalDays; di++){
+        var dd = addDays(minDate, di);
+        var ddCls = 'rm-header-minor day';
+        if(di === todayIdx) ddCls += ' today';
+        if(dd.getDay() === 0 || dd.getDay() === 6) ddCls += ' weekend';
+        var ddLabel = WEEKDAY_CN[dd.getDay()] + ' ' + dd.getDate();
+        headerRow2 += '<div class="' + ddCls + '" style="width:' + zoom.pxPerDay + 'px">' + ddLabel + '</div>';
       }
     }
 
-    // Grid vertical lines
+    // Grid vertical lines (v0.16.0: atom-aligned boundaries + alternating atom stripes)
+    // 理由：每一級 zoom 只在 atom 邊界畫分隔線，避開密密麻麻的 day grid 視覺噪音；
+    //       同時在背景加入 atom stripe（奇偶交替深淺），讓眼睛能數出節拍而不需 label。
     var gridLinesH = '';
-    if(zoom.minorUnit === 'day'){
-      for(var gi=0; gi<totalDays; gi++){
-        var gd = addDays(minDate, gi);
-        var x = gi * zoom.pxPerDay;
-        var klass = 'rm-grid-vline';
-        if(gd.getDate() === 1) klass += ' major';
-        gridLinesH += '<div class="' + klass + '" style="left:' + x + 'px"></div>';
-        // weekend shading
-        if(gd.getDay() === 0 || gd.getDay() === 6){
-          gridLinesH += '<div class="rm-grid-vline weekend" style="left:' + x + 'px;--w:' + zoom.pxPerDay + 'px;width:' + zoom.pxPerDay + 'px;background:rgba(0,0,0,.02)"></div>';
+    var atomStripesH = '';
+
+    if(zoom.atomUnit === 'halfMonth'){
+      // 季 zoom: 在 1 號 / 16 號畫線；背景以半月為單位交替深淺
+      var hmIdx = 0, hmCursor = 0;
+      while(hmCursor < totalDays){
+        var hmD = addDays(minDate, hmCursor);
+        var domG = hmD.getDate();
+        var nextB;
+        if(domG < 16) nextB = new Date(hmD.getFullYear(), hmD.getMonth(), 16);
+        else          nextB = new Date(hmD.getFullYear(), hmD.getMonth() + 1, 1);
+        var spanDays = Math.min(totalDays - hmCursor, daysBetween(hmD, nextB));
+        if(spanDays <= 0) break;
+        // stripe background (alt row color for rhythm)
+        if(hmIdx % 2 === 1){
+          atomStripesH += '<div class="rm-atom-stripe" style="left:' + (hmCursor * zoom.pxPerDay) + 'px;width:' + (spanDays * zoom.pxPerDay) + 'px"></div>';
         }
+        // vertical line at atom start
+        var isMonthStart = (domG === 1);
+        var kQ = 'rm-grid-vline' + (isMonthStart ? ' major' : '');
+        gridLinesH += '<div class="' + kQ + '" style="left:' + (hmCursor * zoom.pxPerDay) + 'px"></div>';
+        hmCursor += spanDays;
+        hmIdx++;
+      }
+    } else if(zoom.atomUnit === 'week'){
+      // 月 zoom: 每週一畫線；背景每週奇偶交替
+      var wIdx = 0;
+      for(var gw=0; gw<totalDays; gw+=7){
+        var spanW = Math.min(7, totalDays - gw);
+        if(wIdx % 2 === 1){
+          atomStripesH += '<div class="rm-atom-stripe" style="left:' + (gw * zoom.pxPerDay) + 'px;width:' + (spanW * zoom.pxPerDay) + 'px"></div>';
+        }
+        var gwd = addDays(minDate, gw);
+        var isMonthFirstWk = (gwd.getDate() <= 7);
+        var kW = 'rm-grid-vline' + (isMonthFirstWk ? ' major' : '');
+        gridLinesH += '<div class="' + kW + '" style="left:' + (gw * zoom.pxPerDay) + 'px"></div>';
+        wIdx++;
       }
     } else {
-      for(var gi2=0; gi2<=totalDays; gi2+=7){
-        var gd2 = addDays(minDate, gi2);
-        var x2 = gi2 * zoom.pxPerDay;
-        var klass2 = 'rm-grid-vline';
-        if(gd2.getDate() <= 7) klass2 += ' major';
-        gridLinesH += '<div class="' + klass2 + '" style="left:' + x2 + 'px"></div>';
+      // 週 zoom: 每日畫線；週末做淺色背景帶（不是 stripe）
+      for(var gi=0; gi<totalDays; gi++){
+        var gdD = addDays(minDate, gi);
+        var xD = gi * zoom.pxPerDay;
+        var kD = 'rm-grid-vline';
+        if(gdD.getDay() === 1) kD += ' major'; // 週一加粗
+        gridLinesH += '<div class="' + kD + '" style="left:' + xD + 'px"></div>';
+        if(gdD.getDay() === 0 || gdD.getDay() === 6){
+          atomStripesH += '<div class="rm-atom-stripe weekend" style="left:' + xD + 'px;width:' + zoom.pxPerDay + 'px"></div>';
+        }
       }
     }
 
@@ -9176,6 +9289,7 @@ canvas{display:block;margin:0 auto 24px}
         '<div class="rm-cycle-strip-row">' + cycleStripH + '</div>' +
       '</div>' +
       '<div class="rm-canvas" style="width:' + canvasW + 'px">' +
+        '<div class="rm-atom-stripes">' + atomStripesH + '</div>' +
         '<div class="rm-grid-lines">' + gridLinesH + '</div>' +
         '<div class="rm-today-line" style="left:' + todayOffsetPx + 'px"><div class="rm-today-diamond"></div></div>' +
         rowsH +
@@ -25786,4 +25900,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.15.4 · UIUX 真實修正：L1/L2 backlog 定義統一 (!cycleId)、rollup/strip label 寬度分級、L2 空值引導、L3 幽靈欄隱藏、AI PM summary 具體化 -->
+</html><!-- v0.16.0 · Time IA Refactor：Roadmap 三級 zoom 語意原子重構 — 季=上/下半月 6條、月=週 4-5條、週=天 7條；atom 邊界對齊、背景條紋節拍、header 三級變體、ISO 週數、zoom-aware date range -->
