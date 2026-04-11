@@ -148,7 +148,7 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 .comparison-table tr:hover{background:rgba(124,92,252,.08)}
 .comparison-table .check{color:#2DBDA8;font-weight:800}
 .comparison-table .cross{color:rgba(17,17,34,.2);font-weight:600}
-.comparison-table .highlight{color:rgba(17,17,34,.7);font-weight:600;border-left:2px solid var(--primary);padding-left:1.2rem;background:rgba(124,92,252,.10)}
+.comparison-table .highlight{color:rgba(17,17,34,.7);font-weight:600;padding-left:1.2rem;background:rgba(124,92,252,.08);box-shadow:inset 0 0 0 1px rgba(124,92,252,.12)}
 
 /* — FEATURES GRID (tool chain) — */
 .features{padding:7rem 3rem;position:relative;z-index:2}
@@ -689,7 +689,7 @@ h3{font-size:16px;font-weight:600;color:var(--ink)}
 /* ===== CARDS ===== */
 .card{background:var(--bg-card);border:none;border-radius:var(--r-xl);padding:24px;margin-bottom:16px;transition:all .25s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow-card)}
 .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
-.card-with-border.teal{border-left-color:var(--teal)}
+/* v0.16.1: .card-with-border 已淘汰 (border-left 禁令)，保留 class 鉤但不染色 */
 
 /* ===== STATS ===== */
 .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:28px}
@@ -1495,14 +1495,15 @@ canvas{display:block;margin:0 auto 24px}
 #labContainer .log-chat{ padding: 4px 0; }
 #labContainer .log-chat-q{
   font-size:13px; color: var(--primary); font-weight: 600;
-  margin-bottom: 3px; padding-left: 12px;
-  border-left: 2px solid var(--primary-light);
+  margin-bottom: 3px; padding-left: 16px; position: relative;
 }
+#labContainer .log-chat-q::before{ content: 'Q'; position: absolute; left: 0; top: 0; font-size: 10px; font-weight: 700; letter-spacing: .04em; color: var(--primary-light); opacity: .7; }
 #labContainer .log-chat-a{
   font-size:13px; color: var(--ink-soft); line-height: 1.7;
   padding-left: 12px; margin-bottom: 6px;
 }
-#labContainer .log-chat-followup .log-chat-q{ border-left-color: var(--violet); }
+#labContainer .log-chat-followup .log-chat-q{ color: var(--violet); }
+#labContainer .log-chat-followup .log-chat-q::before{ color: var(--violet); opacity: .65; }
 #labContainer .log-chat-followup .log-chat-a{ color: var(--ink-dim); font-style: italic; }
 #labContainer .log-q{ font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 4px; display:flex; align-items:center; gap:7px; }
 #labContainer .log-q-icon{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:4px; background:rgba(124,92,252,.22); color:var(--primary); font-size:13px; font-weight:800; letter-spacing:.3px; flex-shrink:0; }
@@ -1841,14 +1842,16 @@ canvas{display:block;margin:0 auto 24px}
 #labContainer .tc-turn{ padding: 8px 0; }
 #labContainer .tc-q{
   font-size:13px; color: var(--primary); font-weight: 600;
-  margin-bottom: 3px; padding-left: 10px;
-  border-left: 2px solid var(--primary-light);
+  margin-bottom: 3px; padding-left: 14px; position: relative;
 }
+#labContainer .tc-q::before{ content: 'Q'; position: absolute; left: 0; top: 0; font-size: 10px; font-weight: 700; color: var(--primary-light); opacity: .7; }
 #labContainer .tc-a{
   font-size:13px; color: var(--ink-soft); line-height: 1.7;
-  padding-left: 10px;
+  padding-left: 14px; position: relative;
 }
-#labContainer .tc-followup .tc-q{ color: var(--violet); border-left-color: rgba(108,75,219,.3); font-size:13px; }
+#labContainer .tc-a::before{ content: 'A'; position: absolute; left: 0; top: 0; font-size: 10px; font-weight: 700; color: var(--ink-dim); opacity: .55; }
+#labContainer .tc-followup .tc-q{ color: var(--violet); font-size:13px; }
+#labContainer .tc-followup .tc-q::before{ color: var(--violet); opacity: .65; }
 #labContainer .tc-followup .tc-a{ font-style: italic; color: var(--ink-dim); font-size:13px; }
 
 /* ── Verdict ── */
@@ -2490,7 +2493,10 @@ canvas{display:block;margin:0 auto 24px}
 .kanban-card.dragging{opacity:.35;transform:rotate(2deg) scale(.97)}
 .kanban-card.drop-celebrate{animation:kbCelebrate .6s cubic-bezier(.34,.1,.64,1)}
 .kanban-card.archived-card{opacity:.45;background:var(--bg-hover)}
-.kanban-card.wf-card{border-left:3px solid var(--primary)}
+/* v0.16.1: wf-card 識別改用 title 前小 icon dot，不用 border-left 染色 */
+.kanban-card.wf-card{position:relative}
+.kanban-card.wf-card::before{content:'';position:absolute;top:12px;left:12px;width:5px;height:5px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 2px var(--bg-card)}
+.kanban-card.wf-card>*:first-child{padding-left:14px}
 .kanban-card-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .kb-state-badge{font-size:10px;padding:2px 8px;border-radius:8px;white-space:nowrap;font-weight:600}
 .kb-state-draft{background:rgba(102,102,122,.12);color:var(--ink-muted)}
@@ -3317,7 +3323,7 @@ canvas{display:block;margin:0 auto 24px}
 .rm-gpr-num{position:absolute;top:-16px;right:0;font-size:10px;font-weight:var(--fw-title,700);color:var(--ink-sec);font-variant-numeric:tabular-nums;letter-spacing:.02em}
 
 /* Task row in left table */
-.rm-row{display:grid;grid-template-columns:1fr 90px 70px;gap:0;align-items:center;height:44px;padding:0 14px 0 36px;font-size:var(--text-body,14px);color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
+.rm-row{display:grid;grid-template-columns:1fr 92px 76px;gap:0;align-items:center;height:48px;padding:0 18px 0 40px;font-size:var(--text-body,14px);color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
 [data-theme="dark"] .rm-row{border-bottom-color:rgba(255,255,255,.04)}
 .rm-row:hover{background:var(--bg-hover)}
 .rm-row:focus-visible{outline:none;background:var(--bg-hover);box-shadow:inset 3px 0 0 var(--primary)}
@@ -3346,21 +3352,23 @@ canvas{display:block;margin:0 auto 24px}
 .rm-right::-webkit-scrollbar-corner{background:transparent}
 
 /* Time axis header (sticky top) — row1 month / row2 day / strip row for cycle labels */
-.rm-header{position:sticky;top:0;left:0;z-index:6;background:var(--bg-card);border-bottom:1px solid var(--border);height:72px;display:flex;flex-direction:column}
-.rm-header-row1{display:flex;height:22px;border-bottom:1px solid var(--border)}
-.rm-header-row2{display:flex;height:22px}
-.rm-header-major{display:flex;align-items:center;justify-content:center;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:var(--ink-sec);border-right:1px solid var(--border);letter-spacing:.06em;flex-shrink:0;background:var(--bg-card)}
+/* v0.16.1: 增高 header 讓上下文更從容；月份行 row1 26px，原子行 row2 26px，cycle strip 保持 28px → total 80px */
+.rm-header{position:sticky;top:0;left:0;z-index:6;background:var(--bg-card);border-bottom:1px solid var(--border);height:80px;display:flex;flex-direction:column}
+.rm-header-row1{display:flex;height:26px;border-bottom:1px solid var(--border)}
+.rm-header-row2{display:flex;height:26px}
+.rm-header-major{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink-sec);border-right:1px solid var(--border);letter-spacing:.04em;flex-shrink:0;background:var(--bg-card);font-variant-numeric:tabular-nums}
 .rm-header-minor{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:var(--fw-label,600);color:var(--ink-dim);border-right:1px solid rgba(0,0,0,.04);flex-shrink:0;font-variant-numeric:tabular-nums}
 [data-theme="dark"] .rm-header-minor{border-right-color:rgba(255,255,255,.04)}
 .rm-header-minor.today{color:#fff;background:var(--primary);font-weight:800}
 .rm-header-minor.weekend{background:rgba(0,0,0,.025)}
 [data-theme="dark"] .rm-header-minor.weekend{background:rgba(255,255,255,.03)}
 /* v0.16.0: atom-specific header variants */
-.rm-header-minor.halfmonth{font-size:11px;font-weight:var(--fw-title,700);letter-spacing:.04em;color:var(--ink-sec);padding:0 8px;white-space:nowrap}
-.rm-header-minor.halfmonth.today{color:#fff;background:var(--primary)}
-.rm-header-minor.cycle-week{font-size:11px;font-weight:var(--fw-title,700);letter-spacing:.02em;color:var(--ink-sec);padding:0 6px;white-space:nowrap}
-.rm-header-minor.cycle-week.today{color:#fff;background:var(--primary)}
-.rm-header-minor.day{font-size:11px;font-weight:var(--fw-label,600);padding:0 4px;white-space:nowrap}
+/* v0.16.1 calm-interface tune: font-weight 降到 600、色階改 tertiary，避免 sprint-tracker 感 */
+.rm-header-minor.halfmonth{font-size:11px;font-weight:600;letter-spacing:.03em;color:var(--ink-tertiary,#9a9aa8);padding:0 10px;white-space:nowrap}
+.rm-header-minor.halfmonth.today{color:#fff;background:var(--primary);font-weight:700}
+.rm-header-minor.cycle-week{font-size:11px;font-weight:600;letter-spacing:.01em;color:var(--ink-tertiary,#9a9aa8);padding:0 8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rm-header-minor.cycle-week.today{color:#fff;background:var(--primary);font-weight:700}
+.rm-header-minor.day{font-size:11px;font-weight:600;padding:0 4px;white-space:nowrap}
 
 /* Gantt canvas */
 .rm-canvas{position:relative;min-height:100%}
@@ -3378,9 +3386,9 @@ canvas{display:block;margin:0 auto 24px}
 .rm-atom-stripe.weekend{background:rgba(0,0,0,.028)}
 [data-theme="dark"] .rm-atom-stripe.weekend{background:rgba(255,255,255,.028)}
 
-/* v0.15.2 Today line — thin 1px with top diamond marker */
-.rm-today-line{position:absolute;top:0;bottom:0;width:1px;background:var(--primary);z-index:5;pointer-events:none;opacity:.7}
-.rm-today-diamond{position:absolute;top:-6px;left:-5px;width:11px;height:11px;background:var(--primary);transform:rotate(45deg);border:2px solid var(--bg-card);box-shadow:0 2px 8px rgba(124,92,252,.45);z-index:6}
+/* v0.16.1 Today line — 2px 但 opacity .82 維持 calm；頂端 dot 取代 diamond 更現代 */
+.rm-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--primary);z-index:5;pointer-events:none;opacity:.82;border-radius:2px}
+.rm-today-diamond{position:absolute;top:-5px;left:-4px;width:10px;height:10px;background:var(--primary);border-radius:50%;border:2px solid var(--bg-card);box-shadow:0 2px 10px rgba(124,92,252,.4);z-index:6}
 
 /* v0.15.2 Cycle strip row — fixed label strip above bars (no collision) */
 .rm-cycle-strip-row{position:relative;height:28px;background:var(--bg-subtle,rgba(124,92,252,.03));border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
@@ -3407,7 +3415,7 @@ canvas{display:block;margin:0 auto 24px}
 .rm-backlog-rollup:hover{background:rgba(124,92,252,.08);color:var(--primary);border-color:rgba(124,92,252,.28)}
 
 /* Task row background (matches .rm-row in left, must align) */
-.rm-bar-row{height:44px;position:relative;border-bottom:1px solid rgba(0,0,0,.03);animation:rm-rowIn var(--motion-smooth,280ms) var(--ease-smooth) both}
+.rm-bar-row{height:48px;position:relative;border-bottom:1px solid rgba(0,0,0,.03);animation:rm-rowIn var(--motion-smooth,280ms) var(--ease-smooth) both}
 .rm-bar-row:nth-child(1){animation-delay:0ms}
 .rm-bar-row:nth-child(2){animation-delay:30ms}
 .rm-bar-row:nth-child(3){animation-delay:60ms}
@@ -3420,8 +3428,9 @@ canvas{display:block;margin:0 auto 24px}
 .rm-bar-row:hover{background:rgba(124,92,252,.02)}
 
 /* Task bar */
-.rm-bar{position:absolute;top:9px;height:26px;border-radius:6px;cursor:pointer;display:flex;align-items:center;padding:0 10px;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:#fff;white-space:nowrap;overflow:hidden;z-index:2;transition:transform var(--motion-normal,180ms) var(--ease-out),box-shadow var(--motion-normal,180ms) var(--ease-out),filter var(--motion-normal,180ms) var(--ease-out);min-width:24px;box-shadow:0 1px 2px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.25);user-select:none;animation:rm-barIn var(--motion-smooth,280ms) var(--ease-smooth) both}
-.rm-bar:hover{transform:translateY(-1px) scale(1.015);box-shadow:0 6px 18px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.4);z-index:5;filter:brightness(1.08)}
+/* v0.16.1: bar 高度 26→28，r-md 圓角更柔和，hover 動效 scale 收斂 1.015→1.008 減少跳動感 */
+.rm-bar{position:absolute;top:10px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;padding:0 12px;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:#fff;white-space:nowrap;overflow:hidden;z-index:2;transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s cubic-bezier(.22,1,.36,1),filter .22s cubic-bezier(.22,1,.36,1);min-width:24px;box-shadow:0 1px 2px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.22);user-select:none;animation:rm-barIn var(--motion-smooth,280ms) var(--ease-smooth) both}
+.rm-bar:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.32);z-index:5;filter:brightness(1.05)}
 .rm-bar:active{transform:translateY(0) scale(.99)}
 .rm-bar:focus-visible{outline:none;box-shadow:0 0 0 3px var(--bg-card),0 0 0 5px var(--primary);z-index:6}
 .rm-bar-fill{position:absolute;top:0;left:0;bottom:0;background:rgba(255,255,255,.25);border-radius:6px 0 0 6px;pointer-events:none}
@@ -3456,7 +3465,36 @@ canvas{display:block;margin:0 auto 24px}
 @keyframes rm-fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @keyframes rm-barIn{from{opacity:0;transform:translateY(-2px) scaleX(.96);transform-origin:left center}to{opacity:1;transform:translateY(0) scaleX(1)}}
 @keyframes rm-rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
-@media (prefers-reduced-motion:reduce){.rm-bar,.rm-row,.cyc-focus-card,.cyc-pulse-fill,.cyc-ring-fill{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){.rm-bar,.rm-row,.cyc-focus-card,.cyc-pulse-fill,.cyc-ring-fill,.rmdrw,.rmdrw-mask{animation:none!important;transition:none!important}}
+
+/* ═══════════════════════════════════════════
+   v0.16.1 — Roadmap Inline Drawer (calm pattern)
+   ═══════════════════════════════════════════ */
+.rmdrw-mask{position:fixed;inset:0;background:rgba(12,14,22,.32);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);z-index:9400;opacity:0;transition:opacity .24s cubic-bezier(.22,1,.36,1)}
+.rmdrw-mask.open{opacity:1}
+.rmdrw{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:100vw;background:var(--bg-card);box-shadow:-12px 0 48px rgba(12,14,22,.16);z-index:9401;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .26s cubic-bezier(.22,1,.36,1);overflow:hidden}
+[data-theme="dark"] .rmdrw{box-shadow:-12px 0 48px rgba(0,0,0,.55)}
+.rmdrw.open{transform:translateX(0)}
+.rmdrw-head{padding:20px 22px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.rmdrw-head-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.rmdrw-status{font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 10px;border-radius:999px;background:var(--bg-hover);color:var(--ink-sec)}
+.rmdrw-close{width:32px;height:32px;border-radius:8px;background:transparent;border:none;color:var(--ink-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .18s,color .18s}
+.rmdrw-close:hover{background:var(--bg-hover);color:var(--ink)}
+.rmdrw-title{font-size:19px;font-weight:700;color:var(--ink);line-height:1.35;margin:0;display:flex;align-items:center;gap:10px}
+.rmdrw-pri-dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rmdrw-body{padding:20px 22px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px}
+.rmdrw-row{display:flex;align-items:center;gap:12px;font-size:13px;line-height:1.5}
+.rmdrw-label{font-size:11px;font-weight:600;color:var(--ink-dim);letter-spacing:.04em;text-transform:uppercase;min-width:56px;flex-shrink:0}
+.rmdrw-val{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+.rmdrw-cat-chip{font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;white-space:nowrap}
+.rmdrw-desc{display:flex;flex-direction:column;gap:6px;padding-top:6px;border-top:1px dashed var(--border)}
+.rmdrw-desc-body{font-size:13px;color:var(--ink-sec);line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.rmdrw-tags{display:flex;flex-wrap:wrap;gap:6px;padding-top:4px}
+.rmdrw-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:6px;color:var(--ink-muted);background:var(--bg-hover)}
+.rmdrw-foot{padding:16px 22px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0}
+.rmdrw-btn-sec{padding:9px 18px;font-size:13px;font-weight:600;border-radius:8px}
+.rmdrw-btn-pri{padding:9px 18px;font-size:13px;font-weight:600;border-radius:8px}
+@media (max-width:600px){.rmdrw{width:100vw}}
 
 /* Keyboard shortcut help overlay */
 .rm-help-overlay{position:fixed;inset:0;background:rgba(10,12,20,.48);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;animation:rm-fadeIn var(--motion-fast,120ms) var(--ease-out) both;padding:20px}
@@ -3864,27 +3902,31 @@ canvas{display:block;margin:0 auto 24px}
 /* ═══════════════════════════════════════════
    KANBAN CARD V2 — Simplified (v0.10.0)
    ═══════════════════════════════════════════ */
+/* v0.16.1 calm-interface refactor: 移除 border-left 染色，改用 priority dot + shadow elevation
+   憲法級規則：禁止 border-left colored stripe cards。優先級用 6px dot 放在 title 前。 */
 .kb-card-v2{
   background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);
-  padding:10px 14px 10px 14px;cursor:grab;user-select:none;
-  transition:all .18s cubic-bezier(.4,0,.2,1);
+  padding:12px 14px;cursor:grab;user-select:none;
+  transition:box-shadow .22s cubic-bezier(.22,1,.36,1),transform .22s cubic-bezier(.22,1,.36,1),background .22s;
   animation:tc-fadeUp .28s cubic-bezier(.22,1,.36,1) both;
   display:flex;flex-direction:column;gap:6px;
-  border-left:3px solid transparent;
+  box-shadow:0 1px 2px rgba(17,17,17,.03);
 }
-.kb-card-v2.pri-high{border-left-color:var(--rose)}
-.kb-card-v2.pri-medium{border-left-color:var(--gold)}
-.kb-card-v2.pri-low{border-left-color:var(--teal)}
-.kb-card-v2:hover{border-color:rgba(124,92,252,.3);border-left-color:rgba(124,92,252,.6);box-shadow:0 4px 16px rgba(124,92,252,.06);transform:translateY(-2px)}
-.kb-card-v2.pri-high:hover{border-left-color:var(--rose)}
-.kb-card-v2.pri-medium:hover{border-left-color:var(--gold)}
-.kb-card-v2.pri-low:hover{border-left-color:var(--teal)}
-.kb-card-v2:active{cursor:grabbing;transform:scale(.98)}
+.kb-card-v2:hover{box-shadow:0 4px 18px rgba(17,17,17,.08);transform:translateY(-1px);background:var(--bg-card)}
+[data-theme="dark"] .kb-card-v2{box-shadow:0 1px 2px rgba(0,0,0,.25)}
+[data-theme="dark"] .kb-card-v2:hover{box-shadow:0 6px 22px rgba(0,0,0,.38)}
+.kb-card-v2:active{cursor:grabbing;transform:scale(.985)}
 .kb-card-v2.dragging{opacity:.35;transform:rotate(2deg) scale(.97);box-shadow:0 8px 32px rgba(0,0,0,.12)}
 .kb-card-v2.archived-card{opacity:.45}
 .kb-card-v2.drop-celebrate{animation:tc-celebrate .5s cubic-bezier(.34,1.56,.64,1)}
 @keyframes tc-celebrate{0%{transform:scale(.95)}40%{transform:scale(1.03)}100%{transform:scale(1)}}
-.kb-card-v2 .kb-v2-title{font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Title 行：dot + text，flex gap 8px */
+.kb-card-v2 .kb-v2-title{font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:8px;min-width:0}
+.kb-card-v2 .kb-v2-title-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.kb-v2-pri-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px var(--bg-card)}
+.kb-v2-pri-dot.pri-high{background:var(--rose)}
+.kb-v2-pri-dot.pri-medium{background:var(--gold)}
+.kb-v2-pri-dot.pri-low{background:var(--teal)}
 .kb-card-v2 .kb-v2-desc{font-size:12px;color:var(--ink-muted);line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:-2px 0}
 .kb-card-v2 .kb-v2-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .kb-card-v2 .kb-v2-cat{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;white-space:nowrap}
@@ -3967,7 +4009,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.16.0</div>
+        <div class="sidebar-version">v0.16.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7615,7 +7657,9 @@ canvas{display:block;margin:0 auto 24px}
         card.discussion.slice(-5).reverse().forEach(function(d){
           var cls = d.by === 'Claude' ? 'agent' : 'user';
           var t = d.at ? new Date(d.at).toLocaleDateString('zh-TW',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-          m += '<div style="padding:8px 10px;background:var(--bg-hover);border-radius:var(--r-sm);margin-bottom:4px' + (cls==='agent'?';border-left:2px solid var(--primary)':'') + '"><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:11px;font-weight:600;color:var(--ink-sec)">' + (d.by||'') + '</span><span style="font-size:10px;color:var(--ink-dim)">' + t + '</span></div><div style="font-size:13px;line-height:1.5;color:var(--ink)">' + (d.text||'') + '</div></div>';
+          // v0.16.1: 移除 border-left，改用 avatar dot 在 byline 前標示 agent
+          var agentDot = cls==='agent'?'<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);margin-right:6px;vertical-align:middle"></span>':'';
+          m += '<div style="padding:10px 12px;background:var(--bg-hover);border-radius:var(--r-sm);margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:11px;font-weight:600;color:var(--ink-sec)">' + agentDot + (d.by||'') + '</span><span style="font-size:10px;color:var(--ink-dim)">' + t + '</span></div><div style="font-size:13px;line-height:1.55;color:var(--ink)">' + (d.text||'') + '</div></div>';
         });
         if(card.discussion.length > 5) m += '<div style="font-size:12px;color:var(--primary);margin:4px 0;cursor:pointer" onclick="this.closest(\'.kb-modal-overlay\').remove();setTimeout(function(){if(window._kbShowCardEdit) window._kbShowCardEdit(\'' + card.id + '\');},100)">查看全部 (' + card.discussion.length + ')</div>';
       } else {
@@ -9049,7 +9093,10 @@ canvas{display:block;margin:0 auto 24px}
         hmStart = hmEnd;
       }
     } else if(zoom.atomUnit === 'week'){
-      // ── 月 zoom: Row1=月份, Row2=Wxx 週 atoms ──
+      // ── 月 zoom: Row1=月份, Row2=線性日期區間 atoms (v0.16.1 移除 W15 sprint 計數) ──
+      // 城堡裁決：Roadmap 是線性時間河流，不走 Scrum/Sprint。ISO 週次會讓用戶產生
+      //   「現在是第幾週了？」的換算負擔，違反 calm interface「可預測 > 驚喜」原則。
+      //   改用「4/6–4/12」區間顯示，零認知負擔（對標 Asana 的寫法）。
       var mgM = {}, moM = [];
       for(var im=0; im<totalDays; im++){
         var dm2 = addDays(minDate, im);
@@ -9064,26 +9111,28 @@ canvas{display:block;margin:0 auto 24px}
         var g = mgM[mk];
         headerRow1 += '<div class="rm-header-major" style="width:' + pxForDays(g.count) + 'px">' + g.label + '</div>';
       });
-      // Row 2: 週 atoms（minDate 已 snap 到週一）
+      // Row 2: 週原子（minDate 已 snap 到週一），顯示線性區間 4/6–4/12
       var wStart = 0;
       while(wStart < totalDays){
         var wsd = addDays(minDate, wStart);
         var wDays = Math.min(7, totalDays - wStart);
         var wEnd = wStart + wDays;
+        var wEndDate = addDays(minDate, wStart + wDays - 1);
         var wIsCurrent = (todayIdx >= wStart && todayIdx < wEnd);
         var wCls = 'rm-header-minor cycle-week' + (wIsCurrent ? ' today' : '');
-        var wLabel = 'W' + isoWeekNum(wsd) + ' · ' + fmtMD(wsd);
+        // en dash (–) 較精緻，強調「這是一段時間」
+        var wLabel = fmtMD(wsd) + '\u2013' + fmtMD(wEndDate);
         headerRow2 += '<div class="' + wCls + '" style="width:' + pxForDays(wDays) + 'px">' + wLabel + '</div>';
         wStart += 7;
       }
     } else {
-      // ── 週 zoom: Row1=週範圍 "Wxx · MM/DD–MM/DD", Row2=星期 + 日 ──
+      // ── 週 zoom: Row1=線性週區間 "M/D–M/D", Row2=星期 + 日 (v0.16.1 移除 W15) ──
       var wStartK = 0;
       while(wStartK < totalDays){
         var wsdK = addDays(minDate, wStartK);
         var wDaysK = Math.min(7, totalDays - wStartK);
         var weEndK = addDays(minDate, wStartK + wDaysK - 1);
-        var wLabelK = 'W' + isoWeekNum(wsdK) + ' · ' + fmtMD(wsdK) + '–' + fmtMD(weEndK);
+        var wLabelK = fmtMD(wsdK) + '\u2013' + fmtMD(weEndK);
         headerRow1 += '<div class="rm-header-major" style="width:' + pxForDays(wDaysK) + 'px">' + wLabelK + '</div>';
         wStartK += 7;
       }
@@ -9387,18 +9436,139 @@ canvas{display:block;margin:0 auto 24px}
       renderRoadmap();
     };
 
-    // ── Open card in kanban drawer ──
+    // ── Open card as Roadmap inline drawer (v0.16.1: 不跳轉，頁內 drawer) ──
+    // 城堡裁決：Roadmap 點擊任何項目都應該在「當前頁面」就能閱讀詳情，
+    //   跳到任務看板會打斷「我正在瀏覽時間河流」的心流。參考需求池管理 pattern。
     window._rmOpenCard = function(cardId){
       var evt = window.event;
       if(evt){ evt.stopPropagation(); }
-      navigate('biz-tasks');
-      setTimeout(function(){
-        if(typeof window._kbOpenDetail === 'function') {
-          window._kbOpenDetail(cardId);
-        } else if(typeof window._kbEditCard === 'function') {
-          window._kbEditCard(cardId);
+      var allCards = T.getCards().map(T.migrateCard);
+      var card = allCards.find(function(c){ return c.id === cardId; });
+      if(!card){ return; }
+      // Remove existing drawer if any
+      var old = document.getElementById('rmInlineDrawer');
+      if(old){ old.remove(); }
+      var oldMask = document.getElementById('rmInlineDrawerMask');
+      if(oldMask){ oldMask.remove(); }
+
+      // Priority label & colors
+      var priMap = { high: { label: '高', color: 'var(--rose)' }, medium: { label: '中', color: 'var(--gold)' }, low: { label: '低', color: 'var(--teal)' } };
+      var pri = priMap[card.priority] || null;
+      var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
+
+      // Date formatting
+      var dateStr = '';
+      if(card.startDate || card.dueDate){
+        var ds = card.startDate ? new Date(card.startDate).toLocaleDateString('zh-TW',{month:'numeric',day:'numeric'}) : '';
+        var de = card.dueDate ? new Date(card.dueDate).toLocaleDateString('zh-TW',{month:'numeric',day:'numeric'}) : '';
+        dateStr = ds && de ? (ds + ' – ' + de) : (ds || de);
+      }
+
+      // Description preview (strip HTML)
+      var descText = (card.description || '').replace(/<[^>]*>/g, '').trim();
+
+      // Checklist progress
+      var cl = card.checklist || [];
+      var clDone = cl.filter(function(x){ return x.done; }).length;
+
+      // Tags
+      var tagsH = '';
+      if(card.tags && card.tags.length > 0){
+        tagsH = '<div class="rmdrw-tags">' + card.tags.map(function(t){
+          return '<span class="rmdrw-tag">#' + t + '</span>';
+        }).join('') + '</div>';
+      }
+
+      // Status label
+      var columnId = card.columnId || 'todo';
+      var statusLabels = { todo: '待辦', doing: '進行中', review: '審核', done: '完成' };
+      var statusLabel = statusLabels[columnId] || columnId;
+
+      // Build drawer HTML
+      var drawerH = '' +
+        '<div id="rmInlineDrawerMask" class="rmdrw-mask" aria-hidden="true"></div>' +
+        '<aside id="rmInlineDrawer" class="rmdrw" role="dialog" aria-modal="true" aria-label="任務詳情">' +
+          '<header class="rmdrw-head">' +
+            '<div class="rmdrw-head-top">' +
+              '<span class="rmdrw-status">' + statusLabel + '</span>' +
+              '<button type="button" class="rmdrw-close" aria-label="關閉" onclick="window._rmCloseInlineDrawer()">' +
+                '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>' +
+              '</button>' +
+            '</div>' +
+            '<h3 class="rmdrw-title">' +
+              (pri ? '<span class="rmdrw-pri-dot" style="background:' + pri.color + '"></span>' : '') +
+              (card.title || '未命名') +
+            '</h3>' +
+          '</header>' +
+          '<div class="rmdrw-body">' +
+            (dateStr ? '<div class="rmdrw-row"><span class="rmdrw-label">時間</span><span class="rmdrw-val">' + dateStr + '</span></div>' : '') +
+            '<div class="rmdrw-row"><span class="rmdrw-label">分類</span><span class="rmdrw-val"><span class="rmdrw-cat-chip" style="background:' + cat.color + '14;color:' + cat.color + '">' + cat.label + '</span></span></div>' +
+            (pri ? '<div class="rmdrw-row"><span class="rmdrw-label">優先級</span><span class="rmdrw-val">' + pri.label + '</span></div>' : '') +
+            (cl.length > 0 ? '<div class="rmdrw-row"><span class="rmdrw-label">清單</span><span class="rmdrw-val">' + clDone + ' / ' + cl.length + ' 完成</span></div>' : '') +
+            (descText ? '<div class="rmdrw-desc"><div class="rmdrw-label">描述</div><div class="rmdrw-desc-body">' + descText + '</div></div>' : '') +
+            tagsH +
+          '</div>' +
+          '<footer class="rmdrw-foot">' +
+            '<button type="button" class="btn-ghost rmdrw-btn-sec" onclick="window._rmCloseInlineDrawer()">關閉</button>' +
+            '<button type="button" class="btn-accent rmdrw-btn-pri" onclick="window._rmOpenFullCard(\'' + cardId + '\')">前往完整編輯</button>' +
+          '</footer>' +
+        '</aside>';
+
+      var wrap = document.createElement('div');
+      wrap.innerHTML = drawerH;
+      while(wrap.firstChild){ document.body.appendChild(wrap.firstChild); }
+
+      // Animate in
+      var maskEl = document.getElementById('rmInlineDrawerMask');
+      var drawerEl = document.getElementById('rmInlineDrawer');
+      requestAnimationFrame(function(){
+        if(maskEl){ maskEl.classList.add('open'); }
+        if(drawerEl){ drawerEl.classList.add('open'); }
+      });
+
+      // Mask click closes
+      if(maskEl){
+        maskEl.addEventListener('click', window._rmCloseInlineDrawer);
+      }
+      // ESC closes
+      var escHandler = function(e){
+        if(e.key === 'Escape'){
+          window._rmCloseInlineDrawer();
+          document.removeEventListener('keydown', escHandler);
         }
-      }, 180);
+      };
+      document.addEventListener('keydown', escHandler);
+      window._rmDrawerEscHandler = escHandler;
+    };
+
+    window._rmCloseInlineDrawer = function(){
+      var maskEl = document.getElementById('rmInlineDrawerMask');
+      var drawerEl = document.getElementById('rmInlineDrawer');
+      if(drawerEl){ drawerEl.classList.remove('open'); }
+      if(maskEl){ maskEl.classList.remove('open'); }
+      setTimeout(function(){
+        if(maskEl && maskEl.parentNode){ maskEl.parentNode.removeChild(maskEl); }
+        if(drawerEl && drawerEl.parentNode){ drawerEl.parentNode.removeChild(drawerEl); }
+      }, 260);
+      if(window._rmDrawerEscHandler){
+        document.removeEventListener('keydown', window._rmDrawerEscHandler);
+        window._rmDrawerEscHandler = null;
+      }
+    };
+
+    // 保留舊跳轉路徑：只在使用者點「前往完整編輯」按鈕時才跳到任務看板
+    window._rmOpenFullCard = function(cardId){
+      window._rmCloseInlineDrawer();
+      setTimeout(function(){
+        navigate('biz-tasks');
+        setTimeout(function(){
+          if(typeof window._kbOpenDetail === 'function') {
+            window._kbOpenDetail(cardId);
+          } else if(typeof window._kbEditCard === 'function') {
+            window._kbEditCard(cardId);
+          }
+        }, 180);
+      }, 200);
     };
 
     // ── Tooltip ──
@@ -10533,12 +10703,13 @@ canvas{display:block;margin:0 auto 24px}
           var clTotal=(card.checklist||[]).length;
           var cat = TASK_CATEGORIES[card.category] || TASK_CATEGORIES.product;
 
-          // v3 card — priority border + title + description + meta
-          var priClass = card.priority === 'high' ? ' pri-high' : card.priority === 'medium' ? ' pri-medium' : card.priority === 'low' ? ' pri-low' : '';
-          html += '<div class="kb-card-v2' + priClass + (card.archived?' archived-card':'') + '" draggable="true" data-card="' + card.id + '">';
+          // v0.16.1: priority 改用 6px dot + shadow elevation（移除 border-left 違規）
+          var priKey = card.priority === 'high' ? 'high' : card.priority === 'medium' ? 'medium' : card.priority === 'low' ? 'low' : '';
+          html += '<div class="kb-card-v2' + (card.archived?' archived-card':'') + '" draggable="true" data-card="' + card.id + '">';
 
-          // Row 1: Title
-          html += '<div class="kb-v2-title">' + (card.title||'未命名') + '</div>';
+          // Row 1: Title (priority dot + title text)
+          var dotH = priKey ? '<span class="kb-v2-pri-dot pri-' + priKey + '" aria-label="優先級 ' + priKey + '"></span>' : '';
+          html += '<div class="kb-v2-title">' + dotH + '<span class="kb-v2-title-text">' + (card.title||'未命名') + '</span></div>';
 
           // Row 2: Description preview (1 line)
           if(card.description){
@@ -20220,9 +20391,9 @@ function renderResults(){
     if(realQualSamples.length>0){
       rvHTML+=`<div style="margin-top:16px"><div style="font-size:12px;font-weight:700;color:var(--ink-dim);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">真人聲音抽樣</div>`;
       rvHTML+=realQualSamples.map(s=>`
-        <div style="background:var(--bg-alt);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:6px;border-left:3px solid var(--teal)">
-          <div style="font-size:12px;color:var(--teal);font-weight:600;margin-bottom:3px"><span style="background:rgba(27,168,145,.18);padding:1px 6px;border-radius:3px;font-size:10px;margin-right:4px">真人</span>${s.person}</div>
-          <div style="font-size:13px;color:var(--ink-sec);line-height:1.5">${s.text}</div>
+        <div style="background:var(--bg-alt);border-radius:var(--r-md);padding:12px 14px;margin-bottom:8px;box-shadow:inset 0 0 0 1px rgba(27,168,145,.18)">
+          <div style="font-size:12px;color:var(--teal);font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0"></span><span style="background:rgba(27,168,145,.14);padding:1px 6px;border-radius:3px;font-size:10px">真人</span>${s.person}</div>
+          <div style="font-size:13px;color:var(--ink-sec);line-height:1.55">${s.text}</div>
         </div>
       `).join('');
       rvHTML+=`</div>`;
@@ -25900,4 +26071,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.16.0 · Time IA Refactor：Roadmap 三級 zoom 語意原子重構 — 季=上/下半月 6條、月=週 4-5條、週=天 7條；atom 邊界對齊、背景條紋節拍、header 三級變體、ISO 週數、zoom-aware date range -->
+</html><!-- v0.16.1 · Calm Interface 舒緩式界面 — (1) Roadmap 週原子改線性區間 4/6–4/12、去除 W15 sprint 計數；(2) 全站 border-left colored stripe 憲法級清除（kb-card-v2/wf-card/line 20237/lab transcripts）；(3) _rmOpenCard 改成 Roadmap 頁內 inline drawer，不再跳轉任務看板；(4) Roadmap 留白/字階/卡片圓角 calm tuning；(5) Today line 2px opacity .82 + dot marker 取代 diamond -->
