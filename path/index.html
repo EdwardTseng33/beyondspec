@@ -2665,50 +2665,7 @@ canvas{display:block;margin:0 auto 24px}
   .inbox-triage-card{padding:10px 12px}
 }
 
-/* ══════════ AI PM BAR (v0.9.0) ══════════ */
-.ai-pm-bar{background:linear-gradient(135deg,rgba(124,92,252,.04) 0%,rgba(124,92,252,.01) 100%);border-bottom:1px solid var(--border);overflow:hidden;transition:max-height .3s cubic-bezier(.22,1,.36,1);position:relative}
-.ai-pm-bar.collapsed{max-height:52px}
-.ai-pm-bar.expanded{max-height:600px}
-.ai-pm-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(124,92,252,.3),transparent);animation:aiShimmer 2.5s ease-in-out infinite;opacity:.6}
-@keyframes aiShimmer{0%{transform:translateX(-100%)}50%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
-.ai-pm-header{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer}
-.ai-pm-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7C5CFC,#A78BFA);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px rgba(124,92,252,.18);flex-shrink:0}
-.ai-pm-avatar svg{width:16px;height:16px;color:#fff}
-.ai-pm-summary{flex:1;font-size:13px;color:var(--ink-sec)}
-.ai-pm-summary strong{color:var(--ink);font-weight:600}
-.ai-pm-badge{background:var(--primary);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
-.ai-pm-toggle{width:28px;height:28px;border-radius:6px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-dim);transition:all .15s}
-.ai-pm-toggle:hover{background:var(--bg-hover);color:var(--ink)}
-.ai-pm-cards{padding:4px 20px 14px;display:flex;flex-direction:column;gap:6px}
-.ai-card{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);transition:all .2s;cursor:pointer}
-.ai-card:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.06)}
-.ai-card-icon{width:30px;height:30px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
-.ai-card-icon.warn{background:var(--gold-bg);color:var(--gold)}
-.ai-card-icon.info{background:var(--primary-light);color:var(--primary)}
-.ai-card-icon.risk{background:var(--rose-bg);color:var(--rose)}
-.ai-card-icon.success{background:var(--teal-bg);color:var(--teal)}
-.ai-card-body{flex:1;min-width:0}
-.ai-card-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
-.ai-card-desc{font-size:12px;color:var(--ink-muted);line-height:1.4}
-.ai-card-reason{font-size:11px;color:var(--primary);margin-top:4px;line-height:1.4;background:var(--primary-light);padding:0 8px;border-radius:6px;max-height:0;overflow:hidden;opacity:0;transition:max-height .28s cubic-bezier(.22,1,.36,1),opacity .18s ease,padding .28s ease}
-.ai-card.show-reason .ai-card-reason{max-height:80px;opacity:1;padding:6px 8px}
-.ai-card-actions{display:flex;gap:4px;flex-shrink:0;align-self:center}
-.ai-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
-.ai-btn.accept{color:var(--teal);border-color:rgba(27,168,145,.3)}
-.ai-btn.accept:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
-.ai-btn.later{color:var(--ink-dim)}
-.ai-btn.later:hover{background:var(--bg-hover);color:var(--ink-sec)}
-.ai-btn.why{color:var(--primary);border:none;padding:4px 6px;background:transparent}
-.ai-btn.why:hover{background:var(--primary-light)}
-.ai-btn:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(124,92,252,.3)}
-.ai-pm-toggle:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(124,92,252,.3)}
-@media(max-width:768px){
-  .ai-pm-cards{padding:4px 12px 12px}
-  .ai-card{padding:8px 10px;gap:8px}
-  .ai-card-actions{flex-direction:column;gap:2px}
-  .ai-pm-summary{font-size:12px}
-  .ai-pm-badge{font-size:9px;padding:2px 6px}
-}
+/* ══════════ AI PM BAR — REMOVED in v0.17.0 ══════════ */
 
 /* ══════════ LIST VIEW V2 (v0.9.0) ══════════ */
 .lv2-header{display:grid;grid-template-columns:32px 1fr 80px 80px 90px 70px;gap:0;padding:6px 14px;font-size:11px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg-app);z-index:5}
@@ -2718,7 +2675,8 @@ canvas{display:block;margin:0 auto 24px}
 .lv2-row:hover .lv2-check{border-color:var(--ink-dim)}
 .lv2-check.done{background:var(--teal);border-color:var(--teal)}
 .lv2-title-area{display:flex;align-items:center;gap:6px;min-width:0}
-.lv2-pri{width:3px;height:18px;border-radius:2px;flex-shrink:0}
+/* v0.17.0 Calm Interface: lv2-pri 3px 立條改為 6px 圓點，跟 kb-v2-pri-dot 統一語彙 */
+.lv2-pri{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .lv2-pri.p4{background:var(--rose)}.lv2-pri.p3{background:var(--gold)}.lv2-pri.p2{background:#3B82F6}.lv2-pri.p1{background:var(--border)}
 .lv2-title{font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lv2-row.completed .lv2-title{text-decoration:line-through;color:var(--ink-dim)}
@@ -3140,27 +3098,23 @@ canvas{display:block;margin:0 auto 24px}
 }
 .tc-btn-unschedule:hover{color:var(--rose);border-color:rgba(217,68,98,.3)}
 
-/* — Planning v2: drag rows — */
+/* — Planning v2: drag rows (v0.17.0 Calm Interface: 不再用 priority 做整行背景染色，
+     顏色只透過 6px priority dot + category chip 表達，卡片本身靜音) — */
 .tp-row{
-  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
   border-radius:var(--r-md);cursor:grab;user-select:none;
   transition:all .15s cubic-bezier(.4,0,.2,1);
   animation:tc-fadeUp .22s cubic-bezier(.22,1,.36,1) both;
-  border:1px solid transparent;background:var(--bg-hover);
+  border:1px solid var(--border);background:var(--bg-card);
   margin-bottom:6px;
 }
-.tp-row:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.08)}
+.tp-row:hover{border-color:rgba(124,92,252,.2);box-shadow:0 4px 14px rgba(17,17,17,.06);transform:translateY(-1px)}
 .tp-row:active{cursor:grabbing}
 .tp-row.dragging{opacity:.4;border:1px dashed var(--primary)}
-.tp-row.tp-pri-high{background:rgba(217,68,98,.08);border-color:rgba(217,68,98,.15)}
-.tp-row.tp-pri-medium{background:rgba(224,138,58,.08);border-color:rgba(224,138,58,.15)}
-.tp-row.tp-pri-low{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.12)}
-.tp-row.tp-overdue{background:rgba(217,68,98,.1);border-color:rgba(217,68,98,.2)}
-[data-theme="dark"] .tp-row{background:rgba(255,255,255,.04)}
-[data-theme="dark"] .tp-row.tp-pri-high{background:rgba(217,68,98,.12);border-color:rgba(217,68,98,.2)}
-[data-theme="dark"] .tp-row.tp-pri-medium{background:rgba(224,138,58,.12);border-color:rgba(224,138,58,.2)}
-[data-theme="dark"] .tp-row.tp-pri-low{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.18)}
-[data-theme="dark"] .tp-row.tp-overdue{background:rgba(217,68,98,.15);border-color:rgba(217,68,98,.25)}
+/* 逾期：極淡玫瑰底 + 微妙邊框，不吼叫 */
+.tp-row.tp-overdue{background:color-mix(in srgb,var(--bg-card) 96%,var(--rose));border-color:rgba(217,68,98,.18)}
+[data-theme="dark"] .tp-row{background:var(--bg-card)}
+[data-theme="dark"] .tp-row.tp-overdue{background:rgba(217,68,98,.08);border-color:rgba(217,68,98,.22)}
 .tp-row .tp-grip{
   width:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;
   opacity:.25;transition:opacity .15s;cursor:grab;
@@ -3183,10 +3137,11 @@ canvas{display:block;margin:0 auto 24px}
 }
 .tp-dropzone.drag-over{border-color:var(--primary);background:rgba(124,92,252,.04)}
 
-/* — Planning v2: pane card — */
+/* — Planning v2: pane card (v0.17.0: 精簡 padding + 更穩的 shadow 取代厚重邊框感) — */
 .tp-pane-card{
   background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);
-  padding:16px;
+  padding:14px 16px;
+  box-shadow:var(--shadow-xs);
 }
 /* — Planning v2: cycle card — */
 .tp-cycle-card{
@@ -3261,13 +3216,14 @@ canvas{display:block;margin:0 auto 24px}
 .tl-tooltip{position:fixed;z-index:99;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;box-shadow:var(--shadow-card);font-size:12px;color:var(--ink);pointer-events:none;max-width:240px}
 .tl-tooltip strong{display:block;font-size:13px;margin-bottom:4px}
 
-/* ═══ 進程藍圖 Roadmap (v0.14.0) ═══ */
+/* ═══ 時間軸 Timeline (v0.17.0, renamed from 進程藍圖 / Roadmap) ═══ */
 .rm-wrap{position:relative;display:flex;flex-direction:column;height:calc(100vh - 60px);overflow:hidden;background:var(--bg-card);border-radius:var(--r-xl);border:1px solid var(--border);margin:-12px -8px 0}
-.rm-toolbar{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg-card);z-index:5}
-.rm-title-block{display:flex;flex-direction:column;gap:2px;margin-right:auto}
-.rm-title{display:flex;align-items:center;gap:10px;font-size:var(--text-page-title,22px);font-weight:var(--fw-title,700);color:var(--ink);letter-spacing:-.02em;line-height:1.3}
-.rm-title svg{color:var(--primary)}
-.rm-sub{font-size:var(--text-micro,11px);color:var(--ink-dim);font-weight:600;letter-spacing:.12em}
+.rm-toolbar{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg-card);z-index:5;flex-wrap:wrap}
+/* v0.17.0: 標題 block 固定不壓縮，避免工具群搶空間造成壓扁 */
+.rm-title-block{display:flex;flex-direction:column;gap:2px;margin-right:auto;flex-shrink:0;min-width:120px}
+.rm-title{display:flex;align-items:center;gap:10px;font-size:var(--text-page-title,22px);font-weight:var(--fw-title,700);color:var(--ink);letter-spacing:-.02em;line-height:1.3;white-space:nowrap}
+.rm-title svg{color:var(--primary);flex-shrink:0}
+.rm-sub{font-size:var(--text-micro,11px);color:var(--ink-dim);font-weight:600;letter-spacing:.12em;white-space:nowrap}
 .rm-tool-group{display:flex;align-items:center;gap:4px;background:var(--bg-hover);border-radius:var(--r-md);padding:3px}
 .rm-tool-btn{padding:6px 14px;border:none;background:transparent;font-size:var(--text-label,12px);font-weight:var(--fw-label,600);color:var(--ink-dim);border-radius:var(--r-sm);cursor:pointer;transition:all var(--motion-normal,180ms) var(--ease-out);font-family:inherit;display:flex;align-items:center;gap:6px}
 .rm-tool-btn:hover{color:var(--ink)}
@@ -3288,9 +3244,9 @@ canvas{display:block;margin:0 auto 24px}
 .rm-stat-dot{width:8px;height:8px;border-radius:50%}
 .rm-body{display:flex;flex:1;overflow:hidden;position:relative;min-height:0}
 
-/* Left panel — Excel table */
-.rm-left{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-card);position:relative;z-index:2}
-.rm-left-header{display:grid;grid-template-columns:1fr 90px 70px;gap:0;height:72px;align-items:flex-end;padding:0 14px 10px 20px;font-size:var(--text-micro,11px);font-weight:var(--fw-label,600);color:var(--ink-dim);letter-spacing:.15em;border-bottom:1px solid var(--border);background:var(--bg-card);flex-shrink:0}
+/* Left panel — Excel table (v0.17.0: 移除到期獨立欄位，改為行內輕量顯示) */
+.rm-left{width:320px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-card);position:relative;z-index:2}
+.rm-left-header{display:grid;grid-template-columns:1fr 80px;gap:0;height:72px;align-items:flex-end;padding:0 16px 10px 20px;font-size:var(--text-micro,11px);font-weight:var(--fw-label,600);color:var(--ink-dim);letter-spacing:.15em;border-bottom:1px solid var(--border);background:var(--bg-card);flex-shrink:0}
 .rm-left-body{flex:1;overflow-y:auto;overflow-x:hidden}
 .rm-left-body::-webkit-scrollbar{width:8px}
 .rm-left-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
@@ -3300,7 +3256,8 @@ canvas{display:block;margin:0 auto 24px}
 .rm-group-header{display:flex;align-items:center;gap:10px;padding:10px 14px 10px 12px;height:52px;cursor:pointer;user-select:none;background:var(--bg-card);border-bottom:1px solid var(--border);position:relative;transition:background var(--motion-fast,120ms) var(--ease-out);box-sizing:border-box}
 .rm-group-header:hover{background:var(--bg-hover)}
 .rm-group-header:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--primary)}
-.rm-group-header.current{background:linear-gradient(90deg,rgba(27,168,145,.06) 0%,rgba(27,168,145,.015) 60%,transparent 100%);box-shadow:inset 3px 0 0 var(--teal)}
+/* v0.17.0: 移除 border-left inset shadow, 改用純漸層底色 + 極淡 glow 表達 current */
+.rm-group-header.current{background:linear-gradient(90deg,rgba(27,168,145,.08) 0%,rgba(27,168,145,.02) 60%,transparent 100%)}
 .rm-group-header.past{opacity:.78}
 .rm-group-chev{width:14px;height:14px;color:var(--ink-dim);transition:transform .2s;flex-shrink:0}
 .rm-group-header.collapsed .rm-group-chev{transform:rotate(-90deg)}
@@ -3322,18 +3279,23 @@ canvas{display:block;margin:0 auto 24px}
 .rm-gpr-fill{position:absolute;top:0;left:0;bottom:0;border-radius:3px;transition:width var(--motion-smooth,280ms) var(--ease-smooth)}
 .rm-gpr-num{position:absolute;top:-16px;right:0;font-size:10px;font-weight:var(--fw-title,700);color:var(--ink-sec);font-variant-numeric:tabular-nums;letter-spacing:.02em}
 
-/* Task row in left table */
-.rm-row{display:grid;grid-template-columns:1fr 92px 76px;gap:0;align-items:center;height:48px;padding:0 18px 0 40px;font-size:var(--text-body,14px);color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
+/* Task row in left table (v0.17.0: 兩欄制——標題+行內到期 / 狀態) */
+.rm-row{display:grid;grid-template-columns:1fr 80px;gap:0;align-items:center;height:48px;padding:0 16px 0 40px;font-size:var(--text-body,14px);color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
 [data-theme="dark"] .rm-row{border-bottom-color:rgba(255,255,255,.04)}
 .rm-row:hover{background:var(--bg-hover)}
-.rm-row:focus-visible{outline:none;background:var(--bg-hover);box-shadow:inset 3px 0 0 var(--primary)}
+/* v0.17.0: focus-visible 移除 border-left inset shadow, 改用 box-shadow glow */
+.rm-row:focus-visible{outline:none;background:var(--bg-hover);box-shadow:0 0 0 1px rgba(124,92,252,.35)}
 .rm-row:active{background:var(--primary-light,rgba(124,92,252,.1))}
-.rm-row-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--text-caption,13px);font-weight:var(--fw-body-strong,600);padding-right:12px;display:flex;align-items:center;gap:8px}
+.rm-row-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--text-caption,13px);font-weight:var(--fw-body-strong,600);padding-right:10px;display:flex;align-items:center;gap:8px;min-width:0}
 .rm-row-title .rm-pri-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .rm-row-title .rm-pri-dot.high{background:var(--rose)}
 .rm-row-title .rm-pri-dot.medium{background:var(--gold)}
 .rm-row-title .rm-pri-dot.low{background:var(--primary)}
 .rm-row-title .rm-pri-dot.none{background:var(--ink-dim);opacity:.4}
+.rm-row-title-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+/* 行內到期 chip — 小而不搶戲 */
+.rm-row-due-inline{font-size:10px;color:var(--ink-dim);font-variant-numeric:tabular-nums;font-weight:var(--fw-label,600);flex-shrink:0;padding:1px 6px;background:var(--bg-hover);border-radius:6px;letter-spacing:.02em;opacity:.82}
+.rm-row-due-inline.overdue{color:var(--rose);background:rgba(217,68,98,.09);opacity:1}
 .rm-row-status{font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);padding:3px 10px;border-radius:10px;text-align:center;white-space:nowrap;justify-self:start;letter-spacing:.04em}
 .rm-row-status.inbox{background:rgba(148,163,184,.15);color:#64748b}
 .rm-row-status.todo{background:rgba(124,92,252,.12);color:var(--primary)}
@@ -3341,8 +3303,6 @@ canvas{display:block;margin:0 auto 24px}
 .rm-row-status.review{background:rgba(59,130,246,.14);color:#3B82F6}
 .rm-row-status.done{background:rgba(27,168,145,.15);color:var(--teal)}
 [data-theme="dark"] .rm-row-status.inbox{background:rgba(148,163,184,.2);color:#94A3B8}
-.rm-row-date{font-size:var(--text-micro,11px);color:var(--ink-dim);font-variant-numeric:tabular-nums;text-align:right;font-weight:var(--fw-body-strong,600)}
-.rm-row-date.overdue{color:var(--rose)}
 
 /* Right panel — Gantt */
 .rm-right{flex:1;overflow:auto;position:relative;background:var(--bg)}
@@ -3516,18 +3476,19 @@ canvas{display:block;margin:0 auto 24px}
 
 /* Responsive */
 @media (max-width:900px){
-  .rm-left{width:280px}
+  .rm-left{width:260px}
   .rm-left-header{grid-template-columns:1fr 70px;padding:0 10px 10px 14px}
   .rm-row{grid-template-columns:1fr 70px;padding:0 10px 0 28px}
-  .rm-row-date{display:none}
+  .rm-row-due-inline{display:none}
   .rm-group-progress-ring{width:48px}
 }
 @media (max-width:640px){
   .rm-wrap{margin:-8px -4px 0;height:calc(100vh - 50px)}
-  .rm-left{width:220px}
+  .rm-left{width:210px}
   .rm-left-header{grid-template-columns:1fr;padding:0 10px 10px}
   .rm-row{grid-template-columns:1fr;padding:0 10px 0 22px}
-  .rm-row-status,.rm-row-date{display:none}
+  .rm-row-status{display:none}
+  .rm-row-due-inline{display:none}
   .rm-group-progress-ring{display:none}
   .rm-sub{display:none}
   .rm-title{font-size:15px}
@@ -3635,18 +3596,16 @@ canvas{display:block;margin:0 auto 24px}
 
 /* Focus cards — things that need attention today */
 .cyc-focus-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:var(--space-3,14px)}
+/* v0.17.0 Calm Interface: cyc-focus-card 移除 ::before 左側色條，純 shadow/border 表達狀態 */
 .cyc-focus-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg,14px);padding:var(--space-4,18px) var(--space-4,20px);cursor:pointer;transition:transform var(--motion-normal,180ms) var(--ease-smooth),box-shadow var(--motion-normal,180ms) var(--ease-smooth),border-color var(--motion-normal,180ms) var(--ease-smooth);position:relative;overflow:hidden;animation:rm-rowIn var(--motion-smooth,280ms) var(--ease-smooth) both;box-shadow:var(--shadow-xs)}
-.cyc-focus-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cat-color,var(--primary));opacity:0;transition:opacity var(--motion-normal,180ms) var(--ease-out)}
-.cyc-focus-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--primary)}
-.cyc-focus-card:hover::before{opacity:.9}
+.cyc-focus-card:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(17,17,17,.08);background:color-mix(in srgb,var(--bg-card) 97%,var(--primary))}
 .cyc-focus-card:active{transform:translateY(-1px) scale(.995)}
-.cyc-focus-card:focus-visible{outline:none;box-shadow:var(--shadow-glow),var(--shadow-md);border-color:var(--primary);transform:translateY(-2px)}
-.cyc-focus-card.danger{border-color:rgba(217,68,98,.32)}
-.cyc-focus-card.danger::before{background:var(--rose)}
-.cyc-focus-card.danger:hover{border-color:var(--rose);box-shadow:0 10px 28px rgba(217,68,98,.16)}
-.cyc-focus-card.warn{border-color:rgba(224,138,58,.32)}
-.cyc-focus-card.warn::before{background:var(--gold)}
-.cyc-focus-card.warn:hover{border-color:var(--gold);box-shadow:0 10px 28px rgba(224,138,58,.16)}
+.cyc-focus-card:focus-visible{outline:none;box-shadow:0 0 0 1px rgba(124,92,252,.35),var(--shadow-md);transform:translateY(-2px)}
+/* danger/warn — 狀態用 badge 表達, 卡片本身只用極淡背景 tinting */
+.cyc-focus-card.danger{background:color-mix(in srgb,var(--bg-card) 96%,var(--rose))}
+.cyc-focus-card.danger:hover{box-shadow:0 8px 26px rgba(217,68,98,.12)}
+.cyc-focus-card.warn{background:color-mix(in srgb,var(--bg-card) 96%,var(--gold))}
+.cyc-focus-card.warn:hover{box-shadow:0 8px 26px rgba(224,138,58,.12)}
 .cyc-focus-card:nth-child(1){animation-delay:50ms}
 .cyc-focus-card:nth-child(2){animation-delay:90ms}
 .cyc-focus-card:nth-child(3){animation-delay:130ms}
@@ -3826,13 +3785,13 @@ canvas{display:block;margin:0 auto 24px}
 .tc-capacity-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;min-width:60px}
 .tc-capacity-fill{height:100%;border-radius:3px;transition:width .4s cubic-bezier(.22,1,.36,1)}
 
-/* v0.15.2 AI judgement card for 週期管理 */
-.cp-ai-card{display:flex;align-items:stretch;gap:20px;padding:18px 22px;margin:16px 0 0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);position:relative;overflow:hidden}
-.cp-ai-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px;background:var(--primary)}
-.cp-ai-card.cp-ai-healthy::before{background:var(--teal)}
-.cp-ai-card.cp-ai-ahead::before{background:linear-gradient(180deg,#1BA891,#10B981)}
-.cp-ai-card.cp-ai-warn::before{background:var(--gold)}
-.cp-ai-card.cp-ai-danger::before{background:var(--rose)}
+/* v0.17.0 Calm Interface: cp-ai-card 移除 ::before 4px 左側色條，改用極淡背景 tinting 表達狀態
+   v0.17.0: 也降低 padding / gap, 不讓進度提示欄位和下方需求池對衝壅擠 */
+.cp-ai-card{display:flex;align-items:stretch;gap:16px;padding:14px 18px;margin:12px 0 0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);position:relative;overflow:hidden;box-shadow:var(--shadow-xs)}
+.cp-ai-card.cp-ai-healthy{background:color-mix(in srgb,var(--bg-card) 96%,var(--teal))}
+.cp-ai-card.cp-ai-ahead{background:color-mix(in srgb,var(--bg-card) 95%,var(--teal))}
+.cp-ai-card.cp-ai-warn{background:color-mix(in srgb,var(--bg-card) 95%,var(--gold))}
+.cp-ai-card.cp-ai-danger{background:color-mix(in srgb,var(--bg-card) 94%,var(--rose))}
 .cp-ai-left{flex:1;min-width:0}
 .cp-ai-tag{display:inline-flex;align-items:center;height:22px;padding:0 10px;font-size:11px;font-weight:700;border-radius:6px;letter-spacing:.06em;margin-bottom:10px}
 .cp-ai-tag-healthy{background:rgba(27,168,145,.14);color:var(--teal)}
@@ -3847,9 +3806,9 @@ canvas{display:block;margin:0 auto 24px}
 .cp-ai-stat-lbl{font-size:10px;color:var(--ink-dim);margin-top:2px;letter-spacing:.04em}
 .cp-ai-danger .cp-ai-stat:first-child .cp-ai-stat-num{color:var(--rose)}
 
-/* Focus card strip */
-.cp-focus-row{margin:14px 0 20px;padding:14px 18px;background:linear-gradient(135deg,rgba(124,92,252,.04),rgba(27,168,145,.03));border:1px solid var(--border);border-radius:var(--r-lg)}
-.cp-focus-label{font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.1em;margin-bottom:10px}
+/* Focus card strip (v0.17.0: 精簡 padding 避免與下方需求池對衝) */
+.cp-focus-row{margin:10px 0 14px;padding:10px 14px;background:color-mix(in srgb,var(--bg-card) 97%,var(--primary));border:1px solid var(--border);border-radius:var(--r-lg)}
+.cp-focus-label{font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.1em;margin-bottom:8px}
 .cp-focus-list{display:flex;gap:10px;overflow-x:auto;padding-bottom:2px}
 .cp-focus-card{flex:1;min-width:220px;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:transform var(--motion-normal,180ms) var(--ease-out),box-shadow var(--motion-normal,180ms) var(--ease-out)}
 .cp-focus-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
@@ -4009,7 +3968,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.16.1</div>
+        <div class="sidebar-version">v0.17.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4072,7 +4031,7 @@ canvas{display:block;margin:0 auto 24px}
     toggleOff: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="8" cy="12" r="3"/></svg>',
     handshake: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5l-1 1-4-4-1.5 1.5 4 4-1 1-4-4-1.5 1.5 2.5 2.5"/><path d="M3.5 11.5l1 1 4-4 1.5 1.5-4 4 1 1 4-4 1.5 1.5-2.5 2.5"/><path d="M2 6.5l4-3 4 2.5 4-2.5 4 2.5 4-2.5v5"/><path d="M2 6.5v5"/></svg>',
     ganttChart: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="3" y2="20"/><line x1="3" y1="6" x2="21" y2="6"/><rect x="5" y="9" width="10" height="3" rx="1.5"/><rect x="8" y="14" width="8" height="3" rx="1.5"/><rect x="6" y="19" width="12" height="3" rx="1.5"/></svg>',
-    // v0.14.0: 進程藍圖 Roadmap — rolled blueprint with route waypoints
+    // v0.17.0: 時間軸 Timeline — linear time axis (renamed from 進程藍圖 / Roadmap)
     roadmap: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l-6 2v14l6-2 6 2 6-2V5l-6 2-6-2z"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="7" x2="15" y2="21"/></svg>'
   };
 
@@ -4685,11 +4644,11 @@ canvas{display:block;margin:0 auto 24px}
     // 商業模組 — Pipeline: 定義→蒐集→排程→執行
     const bizItems = [
       // v0.15.2: IA 時間漏斗 Far → Near → Now
-      //   L1 biz-roadmap (進程藍圖) · 3-6 月週期節奏
+      //   L1 biz-roadmap (時間軸 / Timeline) · 3-6 月週期節奏
       //   L2 biz-planning (週期管理) · 當期 + 下期 + 需求池 — 預設每日首頁
       //   L3 biz-tasks (任務看板) · 當期卡狀態執行
       //   biz-cycle 已從 sidebar 下架，render 函式保留供 biz-planning 內嵌使用
-      { id: 'biz-roadmap', label: '進程藍圖', icon: 'roadmap', modKey: 'mod-tasks', layer: 1, q: '未來幾個月的節奏？', parent: 'tasks' },
+      { id: 'biz-roadmap', label: '時間軸', icon: 'roadmap', modKey: 'mod-tasks', layer: 1, q: '未來幾個月的節奏？', parent: 'tasks' },
       { id: 'biz-planning', label: '週期管理', icon: 'target', modKey: 'mod-tasks', layer: 2, q: '當期跑得怎樣？下期要做什麼？', parent: 'tasks' },
       { id: 'biz-tasks', label: '任務看板', icon: 'listChecks', modKey: 'mod-tasks', layer: 3, q: '今天要做什麼？', parent: 'tasks' },
       { id: 'biz-contacts', label: '客戶管理', icon: 'users', modKey: 'mod-contacts', layer: 1, q: '這個人跟我們什麼關係？' },
@@ -5015,7 +4974,7 @@ canvas{display:block;margin:0 auto 24px}
       return;
     }
 
-    // biz-roadmap → 進程藍圖 vanilla JS (v0.14.0, replaces legacy timeline)
+    // biz-roadmap → 時間軸 Timeline vanilla JS (v0.17.0, renamed from 進程藍圖)
     if (moduleId === 'biz-roadmap' || moduleId === 'biz-timeline') {
       if (window._bizReactRoot) {
         try { window._bizReactRoot.unmount(); } catch(e) {}
@@ -5766,7 +5725,27 @@ canvas{display:block;margin:0 auto 24px}
     function saveCols(c){localStorage.setItem(KB_COLS_KEY,JSON.stringify(c));}
     function getCards(){try{var s=localStorage.getItem(KB_CARDS_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
     function saveCards(c){localStorage.setItem(KB_CARDS_KEY,JSON.stringify(c));_scheduleFirestoreSync();}
-    function getCycles(){try{var s=localStorage.getItem(KB_CYCLES_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
+    // v0.16.2: 線性時間軸 label migration — 移除舊資料的 W15 sprint 前綴
+    function _stripSprintPrefix(lb){
+      if(!lb) return lb;
+      // 匹配 "W15（4/6-4/12）..." or "W15-16（4/6-4/19）..." → 抽出括號內的日期區間
+      var m = lb.match(/^W\d+(?:-\d+)?（([^）]+)）/);
+      if(m) return m[1].replace(/-/g, '\u2013');
+      return lb;
+    }
+    function getCycles(){
+      try{
+        var s=localStorage.getItem(KB_CYCLES_KEY);
+        var arr = s?JSON.parse(s):[];
+        var dirty = false;
+        for(var i=0;i<arr.length;i++){
+          var newLb = _stripSprintPrefix(arr[i].label);
+          if(newLb !== arr[i].label){ arr[i].label = newLb; dirty = true; }
+        }
+        if(dirty){ try{ localStorage.setItem(KB_CYCLES_KEY, JSON.stringify(arr)); }catch(e){} }
+        return arr;
+      }catch(e){return[];}
+    }
     function saveCycles(c){localStorage.setItem(KB_CYCLES_KEY,JSON.stringify(c));}
     function getMembers(){try{var s=localStorage.getItem(KB_MEMBERS_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
     function saveMembers(m){localStorage.setItem(KB_MEMBERS_KEY,JSON.stringify(m));}
@@ -6011,7 +5990,7 @@ canvas{display:block;margin:0 auto 24px}
 
       var startStr = cycleStart.toISOString().slice(0,10);
       var endStr = cycleEnd.toISOString().slice(0,10);
-      var weekNum = getISOWeek(cycleStart);
+      // v0.17.0: weekNum unused (W15 sprint labels removed), but keep getISOWeek import callable
 
       var existing = cycles.find(function(c){ return c.startDate === startStr; });
       if(existing) return existing;
@@ -6074,73 +6053,12 @@ canvas{display:block;margin:0 auto 24px}
     };
   })();
 
-  // ==================== AI PM BAR — Global Component (v0.9.0) ====================
-  function renderAiPmBar() {
-    // v0.10.0: AI PM bar re-enabled with gradient badge
-    var T = _taskShared;
-    var cards = T.getCards().map(T.migrateCard);
-    var members = T.ensureDefaultMember();
-    var cycle = T.ensureCurrentCycle();
-    var insights = T.generatePmInsights(cards, members, cycle);
-
-    if(insights.length === 0) return '';
-
-    var isCollapsed = window._aiPmCollapsed !== undefined ? window._aiPmCollapsed : true;
-    var html = '<div class="ai-pm-bar ' + (isCollapsed ? 'collapsed' : 'expanded') + '" id="aiPmBar">';
-
-    // Header
-    html += '<div class="ai-pm-header" onclick="window._aiPmToggle()">';
-    html += '<div class="ai-pm-avatar" style="background:linear-gradient(135deg,#7C5CFC,#A78BFA)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M7 10l2 2 4-4"/></svg></div>';
-    // v0.15.4: summary 具體化 — 直接把第一條 insight 的標題秀出來，使用者不必展開就知道是什麼事
-    var _aiFirst = insights[0];
-    var _aiMore = insights.length - 1;
-    html += '<div class="ai-pm-summary"><strong>AI PM</strong> · ' + _aiFirst.title + (_aiMore > 0 ? '，另有 ' + _aiMore + ' 項提醒' : '') + '</div>';
-    html += '<div class="ai-pm-badge">' + insights.length + '</div>';
-    html += '<button class="ai-pm-toggle"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 ' + (isCollapsed ? '5l4 4 4-4' : '9l4-4 4 4') + '"/></svg></button>';
-    html += '</div>';
-
-    // Cards
-    html += '<div class="ai-pm-cards">';
-    insights.forEach(function(ins, idx) {
-      html += '<div class="ai-card" id="aiCard' + idx + '">';
-      html += '<div class="ai-card-icon ' + ins.type + '">' + ins.icon + '</div>';
-      html += '<div class="ai-card-body">';
-      html += '<div class="ai-card-title">' + ins.title + '</div>';
-      html += '<div class="ai-card-desc">' + ins.desc + '</div>';
-      html += '<div class="ai-card-reason">' + ins.reason + '</div>';
-      html += '</div>';
-      html += '<div class="ai-card-actions">';
-      if(ins.action === 'inbox') {
-        html += '<button class="ai-btn accept" onclick="event.stopPropagation();navigate(\'biz-inbox\')">' + ins.actionLabel + '</button>';
-      } else {
-        html += '<button class="ai-btn accept" onclick="event.stopPropagation();window._aiPmDismiss(' + idx + ')">' + ins.actionLabel + '</button>';
-      }
-      html += '<button class="ai-btn later" onclick="event.stopPropagation();window._aiPmDismiss(' + idx + ')">稍後</button>';
-      html += '<button class="ai-btn why" onclick="event.stopPropagation();var el=document.getElementById(\'aiCard' + idx + '\');el.classList.toggle(\'show-reason\')">為什麼</button>';
-      html += '</div>';
-      html += '</div>';
-    });
-    html += '</div>';
-    html += '</div>';
-    return html;
-  }
-
-  window._aiPmToggle = function() {
-    window._aiPmCollapsed = !window._aiPmCollapsed;
-    var bar = document.getElementById('aiPmBar');
-    if(bar) {
-      bar.className = 'ai-pm-bar ' + (window._aiPmCollapsed ? 'collapsed' : 'expanded');
-    }
-  };
-  window._aiPmDismiss = function(idx) {
-    var card = document.getElementById('aiCard' + idx);
-    if(card) {
-      card.style.opacity = '0';
-      card.style.transform = 'translateX(20px)';
-      card.style.transition = 'all .25s ease';
-      setTimeout(function(){ card.style.display = 'none'; }, 250);
-    }
-  };
+  // ==================== AI PM BAR — REMOVED (v0.17.0) ====================
+  // v0.17.0: AI PM 功能移除（愛德華裁決：很雞肋，實際上不知道有什麼作用）
+  // renderAiPmBar / _aiPmToggle / _aiPmDismiss 保留為 no-op 以保護舊呼叫點
+  function renderAiPmBar() { return ''; }
+  window._aiPmToggle = function() {};
+  window._aiPmDismiss = function() {};
 
   // ==================== MODULE: SPEC WORKSHOP / 需求工坊 (v0.9.5) ====================
   //
@@ -6999,18 +6917,19 @@ canvas{display:block;margin:0 auto 24px}
           : '今天是最後一天，還有 ' + (totalCount - doneCount) + ' 張沒完成';
         _sub = '先處理下方關注卡，決定要延期、換人接手、還是直接砍掉。';
       } else if(_workProgress >= _timeProgressRatio + 0.15){
-        _tagClass = 'ahead'; _tag = '進度超前';
-        _headline = '節奏很穩，比預期多推進了 ' + Math.round((_workProgress - _timeProgressRatio) * 100) + '%';
+        _tagClass = 'ahead'; _tag = '週期進度超前';
+        _headline = '本週期任務節奏很穩，比預期多推進了 ' + Math.round((_workProgress - _timeProgressRatio) * 100) + '%';
         _sub = '可以考慮把下個週期的卡提前拉進來，或花時間做技術債清理。';
       } else if(_workProgress < _timeProgressRatio - 0.15){
-        _tagClass = 'warn'; _tag = '進度落後';
-        _headline = '稍微落後，剩 ' + _daysLeft + ' 天要趕上 ' + Math.round((_timeProgressRatio - _workProgress) * 100) + '%';
-        _sub = '看一下哪些卡卡住，是不是有 scope 要砍、或某張卡太大要拆。';
+        // v0.17.0: 明確標示此處指的是「本週期任務進度」, 不是需求池堆積
+        _tagClass = 'warn'; _tag = '週期進度落後';
+        _headline = '本週期任務稍微落後，剩 ' + _daysLeft + ' 天要趕上 ' + Math.round((_timeProgressRatio - _workProgress) * 100) + '%';
+        _sub = '看一下週期內哪些卡卡住，是不是有 scope 要砍、或某張卡太大要拆。（此進度只看週期內的任務，不含需求池）';
       } else {
-        _tagClass = 'healthy'; _tag = '進度穩健';
-        if(_daysLeft === 0) _headline = '今天是最後一天，收尾階段';
-        else if(_daysLeft === 1) _headline = '剩最後 1 天，穩穩收尾';
-        else _headline = '進度跟上節奏，剩 ' + _daysLeft + ' 天';
+        _tagClass = 'healthy'; _tag = '週期進度穩健';
+        if(_daysLeft === 0) _headline = '今天是週期最後一天，收尾階段';
+        else if(_daysLeft === 1) _headline = '週期剩最後 1 天，穩穩收尾';
+        else _headline = '本週期任務跟上節奏，剩 ' + _daysLeft + ' 天';
         _sub = '維持現在的節奏就好，下方關注卡是今天可以優先處理的項目。';
       }
 
@@ -8232,18 +8151,19 @@ canvas{display:block;margin:0 auto 24px}
           : '今天就結束了，還有 ' + (totalCount - doneCount) + ' 張沒完成';
         _sub = '建議先處理下方關注卡，判斷要延期、換人接手、還是直接砍掉。';
       } else if(_workProgress >= _timeProgress + 0.15){
-        _state = 'ahead'; _tagClass = 'ahead'; _tag = '進度超前';
-        _headline = '節奏很穩，比預期多推進了 ' + Math.round((_workProgress - _timeProgress) * 100) + '%';
+        _state = 'ahead'; _tagClass = 'ahead'; _tag = '週期進度超前';
+        _headline = '本週期任務節奏很穩，比預期多推進了 ' + Math.round((_workProgress - _timeProgress) * 100) + '%';
         _sub = '可以考慮把下個週期的卡提前拉進來，或花時間做技術債清理。';
       } else if(_workProgress < _timeProgress - 0.15){
-        _state = 'warn'; _tagClass = 'warn'; _tag = '進度落後';
-        _headline = '稍微落後，剩 ' + _daysLeft + ' 天要趕上 ' + Math.round((_timeProgress - _workProgress) * 100) + '%';
-        _sub = '看一下哪些卡卡住，是不是有 scope 要砍、或某張卡太大要拆。';
+        // v0.17.0: 明確標示此處指的是「本週期任務進度」, 不是需求池堆積
+        _state = 'warn'; _tagClass = 'warn'; _tag = '週期進度落後';
+        _headline = '本週期任務稍微落後，剩 ' + _daysLeft + ' 天要趕上 ' + Math.round((_timeProgress - _workProgress) * 100) + '%';
+        _sub = '看一下週期內哪些卡卡住，是不是有 scope 要砍、或某張卡太大要拆。（此進度只看週期內的任務，不含需求池）';
       } else {
-        _state = 'healthy'; _tagClass = 'healthy'; _tag = '進度穩健';
-        if(_daysLeft === 0) _headline = '今天是最後一天，收尾階段';
-        else if(_daysLeft === 1) _headline = '剩最後 1 天，穩穩收尾';
-        else _headline = '進度跟上節奏，剩 ' + _daysLeft + ' 天';
+        _state = 'healthy'; _tagClass = 'healthy'; _tag = '週期進度穩健';
+        if(_daysLeft === 0) _headline = '今天是週期最後一天，收尾階段';
+        else if(_daysLeft === 1) _headline = '週期剩最後 1 天，穩穩收尾';
+        else _headline = '本週期任務跟上節奏，剩 ' + _daysLeft + ' 天';
         _sub = '維持現在的節奏就好，下方關注卡是今天可以優先處理的項目。';
       }
 
@@ -8583,8 +8503,7 @@ canvas{display:block;margin:0 auto 24px}
       var cycIdx = allCycles.findIndex(function(c){ return c.id === currentCycle.id; });
 
       var html = '';
-      // AI PM Bar
-      html += renderAiPmBar();
+      // v0.17.0: AI PM Bar 已移除
       // Header
       html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px">';
       html += '<div style="display:flex;align-items:center;gap:12px">';
@@ -8756,14 +8675,14 @@ canvas{display:block;margin:0 auto 24px}
       if(!nextCycle){
         var nextEnd = new Date(nextStart);
         nextEnd.setDate(nextStart.getDate() + duration - 1);
-        var wk = T.getISOWeek(nextStart);
+        // v0.16.2: 線性時間軸 label, 不使用 sprint 週次（W15）計數
         var label;
         if(duration === 7){
-          label = 'W' + wk + '（' + T.fmtMD(nextStart) + '-' + T.fmtMD(nextEnd) + '）';
+          label = T.fmtMD(nextStart) + '\u2013' + T.fmtMD(nextEnd);
         } else if(duration === 14){
-          label = 'W' + wk + '-' + T.getISOWeek(nextEnd) + '（' + T.fmtMD(nextStart) + '-' + T.fmtMD(nextEnd) + '）';
+          label = T.fmtMD(nextStart) + '\u2013' + T.fmtMD(nextEnd);
         } else {
-          label = T.fmtMD(nextStart) + '-' + T.fmtMD(nextEnd) + '（' + duration + '天）';
+          label = T.fmtMD(nextStart) + '\u2013' + T.fmtMD(nextEnd);
         }
         nextCycle = {
           id: 'cycle_' + T.genId(),
@@ -8804,7 +8723,7 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   // ==================== MODULE: SWIMLANE TIMELINE (v0.13.0) ====================
-  // ==================== 進程藍圖 Roadmap (v0.14.0) ====================
+  // ==================== 時間軸 Timeline (v0.17.0, renamed from 進程藍圖) ====================
   // L1 視圖：Excel 式左表 + Gantt 式右圖
   // 週期背景帶、分類分組、狀態進度填充、三段 zoom（季/月/週）
   // 點擊任務條開 kanban detail drawer
@@ -8965,8 +8884,8 @@ canvas{display:block;margin:0 auto 24px}
     // ── Build toolbar ──
     var toolbarH = '<div class="rm-toolbar">' +
       '<div class="rm-title-block">' +
-        '<div class="rm-title">' + ICONS.roadmap + '進程藍圖</div>' +
-        '<div class="rm-sub">Roadmap · 週期進程總覽</div>' +
+        '<div class="rm-title">' + ICONS.roadmap + '時間軸</div>' +
+        '<div class="rm-sub">Timeline · 週期進程總覽</div>' +
       '</div>' +
       '<div class="rm-stat"><span class="rm-stat-dot" style="background:var(--teal)"></span>' + totalDone + ' / ' + totalCards + ' · ' + overallProgress + '%</div>' +
       '<div class="rm-stat"><span class="rm-stat-dot" style="background:var(--primary)"></span>' + cycles.length + ' 個週期</div>' +
@@ -8986,11 +8905,11 @@ canvas{display:block;margin:0 auto 24px}
     '</div>';
 
     // ── Build left panel (cycle-first table) ──
+    // v0.17.0: 兩欄制（週期 / 任務 | 狀態）, 到期改為行內 chip
     var leftH = '<div class="rm-left">' +
       '<div class="rm-left-header">' +
         '<div>週期 / 任務</div>' +
         '<div>狀態</div>' +
-        '<div style="text-align:right">到期</div>' +
       '</div>' +
       '<div class="rm-left-body" id="rmLeftBody">';
 
@@ -9032,13 +8951,16 @@ canvas{display:block;margin:0 auto 24px}
         g.cards.forEach(function(c){
           var pri = c.priority || 'none';
           var status = c.columnId || 'todo';
-          var dueStr = c.dueDate ? fmtYMD(c.dueDate) : '—';
           var isOverdue = c.dueDate && c.columnId !== 'done' && new Date(c.dueDate) < today;
+          // v0.17.0: 到期改為行內輕量 chip, 只顯示 M/D（短格式）, 無到期不顯示
+          var dueChip = '';
+          if(c.dueDate){
+            dueChip = '<span class="rm-row-due-inline' + (isOverdue?' overdue':'') + '">' + fmtMD(c.dueDate) + '</span>';
+          }
           var title = (c.title || '(未命名)').replace(/</g,'&lt;');
           leftH += '<div class="rm-row" data-card="' + c.id + '" tabindex="0" role="button" onclick="window._rmOpenCard(\'' + c.id + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window._rmOpenCard(\'' + c.id + '\')}">' +
-            '<div class="rm-row-title"><span class="rm-pri-dot ' + pri + '"></span>' + title + '</div>' +
+            '<div class="rm-row-title"><span class="rm-pri-dot ' + pri + '"></span><span class="rm-row-title-text">' + title + '</span>' + dueChip + '</div>' +
             '<div class="rm-row-status ' + status + '">' + (STATUS_LABELS[status] || status) + '</div>' +
-            '<div class="rm-row-date' + (isOverdue?' overdue':'') + '">' + dueStr + '</div>' +
           '</div>';
         });
       }
@@ -9305,8 +9227,9 @@ canvas{display:block;margin:0 auto 24px}
             // v0.15.2 bug fix: only show title text when bar is wide enough (>= 80px)
             var showTitle = bWidth >= 80;
             var barCls = 'rm-bar' + (isDone?' done':'') + (isOverdue?' overdue':'') + (showTitle?'':' slim');
-            rowH += '<div class="' + barCls + '" style="left:' + bLeft + 'px;width:' + bWidth + 'px;background:' + bColor + '" ' +
+            rowH += '<div class="' + barCls + '" style="left:' + bLeft + 'px;width:' + bWidth + 'px;background:' + bColor + ';cursor:grab" ' +
               'data-card="' + c.id + '" tabindex="0" role="button" aria-label="' + titleEsc + ' — ' + (STATUS_LABELS[status] || status) + '" ' +
+              'onmousedown="window._rmBarDragStart(event,\'' + c.id + '\')" ' +
               'onclick="window._rmOpenCard(\'' + c.id + '\')" ' +
               'onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window._rmOpenCard(\'' + c.id + '\')}" ' +
               'onmouseenter="window._rmShowTip(event,\'' + c.id + '\')" onmouseleave="window._rmHideTip()" ' +
@@ -9326,7 +9249,7 @@ canvas{display:block;margin:0 auto 24px}
       emptyH = '<div class="rm-empty">' +
         '<div class="rm-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l-6 2v14l6-2 6 2 6-2V5l-6 2-6-2z"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="7" x2="15" y2="21"/></svg></div>' +
         '<div class="rm-empty-title">還沒有任務可以顯示</div>' +
-        '<div class="rm-empty-desc">進程藍圖會自動把任務依分類與時程展開。先到任務看板建立幾張卡片，再回來這裡看 Roadmap。</div>' +
+        '<div class="rm-empty-desc">時間軸會自動把任務依分類與時程展開。先到任務看板建立幾張卡片，再回來這裡看 Timeline。</div>' +
         '<button class="rm-empty-btn" onclick="app.navigate(\'biz-tasks\')">前往任務看板 →</button>' +
       '</div>';
     }
@@ -9436,10 +9359,89 @@ canvas{display:block;margin:0 auto 24px}
       renderRoadmap();
     };
 
+    // ── v0.17.0: Bar horizontal drag-to-reschedule ──
+    // 愛德華裁決：活躍中的卡拖移應該是「左右」而不是上下——線性時間軸的本質是時間平移，
+    //   不是垂直分類切換。4px 閾值區分 click vs drag，小於閾值走 onclick 開 drawer。
+    window._rmBarDragStart = function(ev, cardId){
+      if(ev.button !== 0) return; // left button only
+      var bar = ev.currentTarget;
+      if(!bar) return;
+      var zoomKey = (window._rmState && window._rmState.zoom) || 'month';
+      var ppd = ZOOM_CFG[zoomKey] ? ZOOM_CFG[zoomKey].pxPerDay : 38;
+      var startX = ev.clientX;
+      var origLeft = parseFloat(bar.style.left) || 0;
+      var dragged = false;
+      var THRESHOLD = 4;
+      bar.style.cursor = 'grabbing';
+      bar.style.transition = 'none';
+      // 禁止 drag 期間選字
+      document.body.style.userSelect = 'none';
+      function onMove(mv){
+        var dx = mv.clientX - startX;
+        if(!dragged && Math.abs(dx) < THRESHOLD) return;
+        dragged = true;
+        // snap to day unit during drag for visual clarity
+        var snappedDx = Math.round(dx / ppd) * ppd;
+        bar.style.left = (origLeft + snappedDx) + 'px';
+        bar.style.opacity = '.85';
+        bar.style.boxShadow = '0 8px 24px rgba(17,17,17,.18)';
+      }
+      function onUp(mu){
+        document.removeEventListener('mousemove', onMove, true);
+        document.removeEventListener('mouseup', onUp, true);
+        document.body.style.userSelect = '';
+        bar.style.cursor = '';
+        bar.style.opacity = '';
+        bar.style.boxShadow = '';
+        bar.style.transition = '';
+        if(!dragged) return; // let onclick handle it
+        // Prevent the onclick from firing after drag — use a window flag
+        // because onclick attribute handler runs regardless of preventDefault here
+        window._rmDragJustEnded = true;
+        setTimeout(function(){ window._rmDragJustEnded = false; }, 0);
+        var dx = mu.clientX - startX;
+        var daysShift = Math.round(dx / ppd);
+        if(daysShift === 0){
+          bar.style.left = origLeft + 'px';
+          return;
+        }
+        // Commit to card data
+        var allCards = T.getCards();
+        var idx = -1;
+        for(var i=0;i<allCards.length;i++){ if(allCards[i].id === cardId){ idx = i; break; } }
+        if(idx < 0) return;
+        var card = allCards[idx];
+        var MS_DAY = 86400000;
+        function shiftDate(d, days){
+          if(!d) return d;
+          var dt = new Date(d);
+          dt.setTime(dt.getTime() + days * MS_DAY);
+          // Return YYYY-MM-DD
+          var y = dt.getFullYear();
+          var m = String(dt.getMonth()+1).padStart(2,'0');
+          var dd = String(dt.getDate()).padStart(2,'0');
+          return y + '-' + m + '-' + dd;
+        }
+        if(card.startDate) card.startDate = shiftDate(card.startDate, daysShift);
+        if(card.dueDate)   card.dueDate   = shiftDate(card.dueDate, daysShift);
+        card.updatedAt = new Date().toISOString();
+        T.saveCards(allCards);
+        // Re-render to resnap and refresh left table
+        renderRoadmap();
+      }
+      // Use capture so we catch events even over overlays
+      document.addEventListener('mousemove', onMove, true);
+      document.addEventListener('mouseup', onUp, true);
+      // Prevent default image-drag behavior
+      if(ev.preventDefault) ev.preventDefault();
+    };
+
     // ── Open card as Roadmap inline drawer (v0.16.1: 不跳轉，頁內 drawer) ──
     // 城堡裁決：Roadmap 點擊任何項目都應該在「當前頁面」就能閱讀詳情，
     //   跳到任務看板會打斷「我正在瀏覽時間河流」的心流。參考需求池管理 pattern。
     window._rmOpenCard = function(cardId){
+      // v0.17.0: 如果剛剛完成 drag reschedule, 吞掉接下來的 click, 不開 drawer
+      if(window._rmDragJustEnded){ return; }
       var evt = window.event;
       if(evt){ evt.stopPropagation(); }
       var allCards = T.getCards().map(T.migrateCard);
@@ -9705,25 +9707,26 @@ canvas{display:block;margin:0 auto 24px}
     } else if(workProgress >= timeProgress + 0.15){
       state = 'ahead';
       tagClass = 'ahead';
-      tag = '進度超前';
-      headline = '節奏很穩，比預期多推進了 ' + Math.round((workProgress - timeProgress) * 100) + '%';
+      tag = '週期進度超前';
+      headline = '本週期任務節奏很穩，比預期多推進了 ' + Math.round((workProgress - timeProgress) * 100) + '%';
       sub = '可以考慮把下個週期的卡提前拉進來，或是花時間做技術債清理。';
     } else if(workProgress < timeProgress - 0.15){
+      // v0.17.0: 明確標示此處指的是「本週期任務進度」, 不是需求池堆積
       state = 'warn';
       tagClass = 'warn';
-      tag = '進度落後';
-      headline = '稍微落後，剩 ' + daysLeft + ' 天要趕上 ' + Math.round((timeProgress - workProgress) * 100) + '%';
-      sub = '看一下下面哪些卡卡住，是不是有 scope 要砍、或是某張卡太大要拆。';
+      tag = '週期進度落後';
+      headline = '本週期任務稍微落後，剩 ' + daysLeft + ' 天要趕上 ' + Math.round((timeProgress - workProgress) * 100) + '%';
+      sub = '看一下週期內哪些卡卡住，是不是有 scope 要砍、或是某張卡太大要拆。（此進度只看週期內的任務，不含需求池）';
     } else {
       state = 'healthy';
       tagClass = 'healthy';
-      tag = '進度穩健';
+      tag = '週期進度穩健';
       if(daysLeft === 0){
-        headline = '今天是最後一天，收尾階段';
+        headline = '今天是週期最後一天，收尾階段';
       } else if(daysLeft === 1){
-        headline = '剩最後 1 天，穩穩收尾';
+        headline = '週期剩最後 1 天，穩穩收尾';
       } else {
-        headline = '進度跟上節奏，剩 ' + daysLeft + ' 天';
+        headline = '本週期任務跟上節奏，剩 ' + daysLeft + ' 天';
       }
       sub = '維持現在的節奏就好，下方關注卡是今天可以優先處理的項目。';
     }
@@ -9798,11 +9801,11 @@ canvas{display:block;margin:0 auto 24px}
       aiReasons.push('<li>有 <strong>' + staleDoingCards.length + '</strong> 張進行中超過 3 天未更新</li>');
     }
     var aiConclusion = {
-      healthy: '綜合判斷：節奏穩健，維持現狀即可。',
-      warn: '綜合判斷：工作進度落後時程 15% 以上，需要檢視卡片 scope。',
-      danger: '綜合判斷：逾期卡過多或時間已盡，必須立即介入。',
-      ahead: '綜合判斷：工作進度領先時程 15% 以上，可以加碼。',
-      empty: '綜合判斷：本期無任務，等待排程。'
+      healthy: '綜合判斷：本週期任務節奏穩健，維持現狀即可。',
+      warn: '綜合判斷：本週期任務工作進度落後時程 15% 以上，需要檢視卡片 scope。（不包含需求池待排程項目）',
+      danger: '綜合判斷：本週期逾期卡過多或時間已盡，必須立即介入。',
+      ahead: '綜合判斷：本週期任務工作進度領先時程 15% 以上，可以加碼。',
+      empty: '綜合判斷：本週期無任務，等待排程。'
     };
 
     html += '<div class="cyc-headline">';
@@ -9919,7 +9922,7 @@ canvas{display:block;margin:0 auto 24px}
     html += '開啟任務看板</button>';
     html += '<button class="cyc-action-btn" onclick="app.navigate(\'biz-roadmap\')">';
     html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l-6 2v14l6-2 6 2 6-2V5l-6 2-6-2z"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="7" x2="15" y2="21"/></svg>';
-    html += '回到進程藍圖</button>';
+    html += '回到時間軸</button>';
     html += '<button class="cyc-action-btn" onclick="app.navigate(\'biz-planning\')">';
     html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>';
     html += '進入週期管理</button>';
@@ -10368,7 +10371,26 @@ canvas{display:block;margin:0 auto 24px}
     var KB_MEMBERS_KEY = 'bp_team_members';
     var KB_ACTIVE_CYCLE_KEY = 'bp_active_cycle';
 
-    function getCycles(){try{var s=localStorage.getItem(KB_CYCLES_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
+    // v0.16.2: 與 T.getCycles 一致 — 線性 label 遷移
+    function _stripSprintPrefix2(lb){
+      if(!lb) return lb;
+      var m = lb.match(/^W\d+(?:-\d+)?（([^）]+)）/);
+      if(m) return m[1].replace(/-/g, '\u2013');
+      return lb;
+    }
+    function getCycles(){
+      try{
+        var s=localStorage.getItem(KB_CYCLES_KEY);
+        var arr = s?JSON.parse(s):[];
+        var dirty = false;
+        for(var i=0;i<arr.length;i++){
+          var nl = _stripSprintPrefix2(arr[i].label);
+          if(nl !== arr[i].label){ arr[i].label = nl; dirty = true; }
+        }
+        if(dirty){ try{ localStorage.setItem(KB_CYCLES_KEY, JSON.stringify(arr)); }catch(e){} }
+        return arr;
+      }catch(e){return[];}
+    }
     function saveCycles(c){localStorage.setItem(KB_CYCLES_KEY,JSON.stringify(c));}
     function getActiveCycleId(){return localStorage.getItem(KB_ACTIVE_CYCLE_KEY)||'';}
     function setActiveCycleId(id){localStorage.setItem(KB_ACTIVE_CYCLE_KEY,id);}
@@ -10466,8 +10488,7 @@ canvas{display:block;margin:0 auto 24px}
       var sq = (window._kbSearch||'').toLowerCase();
       var html = '';
 
-      // AI PM Bar (v0.9.0)
-      html += renderAiPmBar();
+      // v0.17.0: AI PM Bar 已移除
 
       // Header: Title + Cycle Switcher
       var _cyc = ensureCurrentCycle();
@@ -12130,13 +12151,12 @@ canvas{display:block;margin:0 auto 24px}
       nextMon.setHours(0,0,0,0);
       var nextSun = new Date(nextMon);
       nextSun.setDate(nextMon.getDate() + 6);
-      var nextWeek = getISOWeek(nextMon);
       var cycles = getCycles();
       var nextCyc = cycles.find(function(c){ return c.startDate === nextMon.toISOString().slice(0,10); });
       if(!nextCyc){
         nextCyc = {
           id: 'cycle_' + genId(),
-          label: 'W' + nextWeek + '（' + fmtMD(nextMon) + '-' + fmtMD(nextSun) + '）',
+          label: fmtMD(nextMon) + '\u2013' + fmtMD(nextSun),
           startDate: nextMon.toISOString().slice(0,10),
           endDate: nextSun.toISOString().slice(0,10),
           status: 'upcoming',
@@ -12194,7 +12214,7 @@ canvas{display:block;margin:0 auto 24px}
     var CMD_NAV = [
       {id:'nav-planning',label:'任務規劃',hint:'需求與排程',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="16 10 12 10 10 13 8 13 6 10 2 10"/><path d="M4.2 4.5L2 10v5a2 2 0 002 2h12a2 2 0 002-2v-5l-2.2-5.5A2 2 0 0013.9 3H6.1a2 2 0 00-1.9 1.5z"/></svg>',action:function(){navigate('biz-planning')}},
       {id:'nav-tasks',label:'任務看板',hint:'看板與列表',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="14" rx="2"/><rect x="12" y="3" width="6" height="10" rx="2"/></svg>',action:function(){navigate('biz-tasks')}},
-      {id:'nav-roadmap',label:'進程藍圖',hint:'Roadmap · 週期與專案時程',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l-5 1.6V16.4L7 15l6 1.6L18 15V4.6L13 6 7 4z"/><line x1="7" y1="4" x2="7" y2="15"/><line x1="13" y1="6" x2="13" y2="16.4"/></svg>',action:function(){navigate('biz-roadmap')}},
+      {id:'nav-roadmap',label:'時間軸',hint:'Timeline · 週期與專案時程',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l-5 1.6V16.4L7 15l6 1.6L18 15V4.6L13 6 7 4z"/><line x1="7" y1="4" x2="7" y2="15"/><line x1="13" y1="6" x2="13" y2="16.4"/></svg>',action:function(){navigate('biz-roadmap')}},
       {id:'nav-contacts',label:'客戶管理',hint:'聯絡人',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-3 3-5.5 7-5.5s7 2.5 7 5.5"/></svg>',action:function(){navigate('biz-contacts')}},
       {id:'nav-quotes',label:'報價提案',hint:'報價單',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg>',action:function(){navigate('biz-quotes')}}
     ];
@@ -26071,4 +26091,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.16.1 · Calm Interface 舒緩式界面 — (1) Roadmap 週原子改線性區間 4/6–4/12、去除 W15 sprint 計數；(2) 全站 border-left colored stripe 憲法級清除（kb-card-v2/wf-card/line 20237/lab transcripts）；(3) _rmOpenCard 改成 Roadmap 頁內 inline drawer，不再跳轉任務看板；(4) Roadmap 留白/字階/卡片圓角 calm tuning；(5) Today line 2px opacity .82 + dot marker 取代 diamond -->
+</html><!-- v0.17.0 · Calm Interface Bundle — (1) AI PM Bar 全面移除（CSS+JS+呼叫點）；(2) Roadmap → 時間軸 / Timeline 全站重命名；(3) 時間軸標題壓縮修正（flex-shrink:0 + white-space:nowrap）；(4) 到期欄位瘦身為行內 chip，兩欄制 grid；(5) 活躍 bar 水平拖移改期（4px click 閾值 + 1 日 snap）；(6) Cycle 頁 cp-ai-card / cp-focus-row / tp-pane-card padding 瘦身解擁擠；(7) cyc-focus-card / cp-ai-card::before 色條移除，改 color-mix tinting；(8) tp-row 彩虹染色移除，priority 僅以 dot + chip 表達；(9) lv2-pri 3px 立條改為 6px 圓點統一語彙；(10) 進度落後語義修正（週期進度落後 ≠ 需求池堆積）；(11) W15 殘留清除（migration + 生成器 + dead var）；全體對齊 Calm Interface 四公理 -->
