@@ -3955,7 +3955,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.15.3</div>
+        <div class="sidebar-version">v0.15.4</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6037,7 +6037,10 @@ canvas{display:block;margin:0 auto 24px}
     // Header
     html += '<div class="ai-pm-header" onclick="window._aiPmToggle()">';
     html += '<div class="ai-pm-avatar" style="background:linear-gradient(135deg,#7C5CFC,#A78BFA)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M7 10l2 2 4-4"/></svg></div>';
-    html += '<div class="ai-pm-summary"><strong>AI PM</strong> — ' + insights.length + ' 件事需要你注意</div>';
+    // v0.15.4: summary 具體化 — 直接把第一條 insight 的標題秀出來，使用者不必展開就知道是什麼事
+    var _aiFirst = insights[0];
+    var _aiMore = insights.length - 1;
+    html += '<div class="ai-pm-summary"><strong>AI PM</strong> · ' + _aiFirst.title + (_aiMore > 0 ? '，另有 ' + _aiMore + ' 項提醒' : '') + '</div>';
     html += '<div class="ai-pm-badge">' + insights.length + '</div>';
     html += '<button class="ai-pm-toggle"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 ' + (isCollapsed ? '5l4 4 4-4' : '9l4-4 4 4') + '"/></svg></button>';
     html += '</div>';
@@ -6749,8 +6752,11 @@ canvas{display:block;margin:0 auto 24px}
     // Tab state: 'backlog' or 'cycle'
     if(!window._tpActiveTab) window._tpActiveTab = 'backlog';
 
+    // v0.15.4 IA fix: 統一 L1/L2 backlog 定義 — cycleId-based，不是 columnId-based
+    // 理由：之前 L1 Roadmap 用 !cycleId 抓到 8 張，L2 卻用 columnId==='inbox' 只抓 1 張，
+    // 導致 7 張「沒週期但已經在做/已驗收」的卡在 L2 找不到。canonical IA：週期是 L1 的原子。
     function getBacklogCards(){
-      return cards.filter(function(c){ return c.columnId === 'inbox' && !c.archived; })
+      return cards.filter(function(c){ return !c.cycleId && !c.archived && c.columnId !== 'done'; })
         .sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
     }
     var backlogCards = getBacklogCards();
@@ -6884,13 +6890,19 @@ canvas{display:block;margin:0 auto 24px}
       html += '<button onclick="window._cpCycleNext()" style="width:26px;height:26px;border:none;background:var(--bg-hover);cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
       html += '</div>';
       html += '<div style="display:flex;align-items:center;gap:12px">';
+      // v0.15.4: stats 空值處理 — 沒任務時不顯示 0/0，改為引導文案（每個數字都要有意義）
       html += '<div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ink-muted)">';
       html += '<span>剩餘 <strong style="color:' + daysLeftColor + '">' + _daysLeft + '</strong> 天</span>';
-      html += '<span style="opacity:.3">|</span>';
-      html += '<span>已排 <strong style="color:var(--ink)">' + totalCount + '</strong> 筆</span>';
-      html += '<span style="opacity:.3">|</span>';
-      html += '<span>完成 <strong style="color:var(--teal)">' + doneCount + '</strong></span>';
-      if(completionPct > 0){ html += '<span style="color:var(--teal);font-weight:600;margin-left:2px">' + completionPct + '%</span>'; }
+      if(totalCount > 0){
+        html += '<span style="opacity:.3">|</span>';
+        html += '<span>已排 <strong style="color:var(--ink)">' + totalCount + '</strong> 筆</span>';
+        html += '<span style="opacity:.3">|</span>';
+        html += '<span>完成 <strong style="color:var(--teal)">' + doneCount + '</strong></span>';
+        if(completionPct > 0){ html += '<span style="color:var(--teal);font-weight:600;margin-left:2px">' + completionPct + '%</span>'; }
+      } else {
+        html += '<span style="opacity:.3">|</span>';
+        html += '<span style="color:var(--ink-dim)">尚未排入任務 · 從需求池拖一張進來</span>';
+      }
       html += '</div>';
       html += '<button onclick="window._cpShowSettings()" style="padding:4px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:transparent;cursor:pointer;color:var(--ink-muted);font-size:11px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>週期設定</button>';
       html += '</div></div>';
@@ -8841,8 +8853,9 @@ canvas{display:block;margin:0 auto 24px}
       });
       if(RM.expanded[cy.id] === undefined) RM.expanded[cy.id] = isCurrent; // default expand current
     });
-    // Backlog: cards with no cycleId
-    var backlog = cards.filter(function(c){ return !c.cycleId; });
+    // Backlog: cards with no cycleId AND not done AND not archived (v0.15.4: canonical definition)
+    // 理由：需求池 = 尚未排程 × 尚未完成 × 未封存。done 卡不該再佔據「待排程」位置。
+    var backlog = cards.filter(function(c){ return !c.cycleId && !c.archived && c.columnId !== 'done'; });
     if(backlog.length){
       sortCards(backlog);
       var blDone = backlog.filter(function(c){ return c.columnId === 'done'; }).length;
@@ -9049,9 +9062,17 @@ canvas{display:block;margin:0 auto 24px}
         var dl = daysBetween(today, ed);
         daysLeft = ' · 剩 ' + (dl + 1) + ' 天';
       }
-      var cyLabel = (cy.label || fmtMD(sd) + '–' + fmtMD(ed)) + (cyCards.length ? ' · ' + cyDone + '/' + cyCards.length : '') + daysLeft;
-      cycleStripH += '<div class="' + stripCls + '" style="left:' + left + 'px;width:' + width + 'px" title="' + cyLabel.replace(/"/g,'&quot;') + '">' +
-        '<span class="rm-cycle-strip-label">' + cyLabel + '</span>' +
+      // v0.15.4: strip label 分級 — 配合 strip width 避免 CJK label 被 ellipsis 砍掉關鍵訊息
+      // 完整版（含剩餘天數）保留在 tooltip；顯示層依 width 給三種精細度
+      var cyBase = cy.label || (fmtMD(sd) + '–' + fmtMD(ed));
+      var cyStats = cyCards.length ? ' · ' + cyDone + '/' + cyCards.length : '';
+      var cyFull = cyBase + cyStats + daysLeft;
+      var cyDisplay;
+      if(width >= 180) cyDisplay = cyFull;
+      else if(width >= 92) cyDisplay = cyBase + cyStats;
+      else cyDisplay = cyBase;
+      cycleStripH += '<div class="' + stripCls + '" style="left:' + left + 'px;width:' + width + 'px" title="' + cyFull.replace(/"/g,'&quot;') + '">' +
+        '<span class="rm-cycle-strip-label">' + cyDisplay + '</span>' +
       '</div>';
     });
 
@@ -9068,11 +9089,18 @@ canvas{display:block;margin:0 auto 24px}
         var gWidth = Math.max(40, (geOff - gsOff) * zoom.pxPerDay - 4);
         var rollCls = 'rm-cycle-rollup' + (g.isCurrent?' current':'') + (g.isPast?' past':'');
         var rollLabel = g.label + ' · ' + g.done + '/' + g.total;
+        // v0.15.4: 三級 label 顯示策略（理由：CJK label 約需 90-110px，之前 80px 單閾值會讓「下週期 · 0/3」消失）
+        // >= 110: 完整 label（"下週期 · 0/3"）
+        // 56-110: 精簡版（僅數字 "0/3"）確保使用者至少能看到完成比
+        // < 56: 無 label，靠 title tooltip
+        var rollupInner = '';
+        if(gWidth >= 110) rollupInner = '<span class="rm-cycle-rollup-label">' + rollLabel + '</span>';
+        else if(gWidth >= 56) rollupInner = '<span class="rm-cycle-rollup-label">' + g.done + '/' + g.total + '</span>';
         rollupH = '<div class="' + rollCls + '" style="left:' + gLeft + 'px;width:' + gWidth + 'px;--cy-color:' + g.color + '" ' +
           'onclick="window._rmToggleGroup(\'' + g.key + '\')" ' +
           'title="' + rollLabel.replace(/"/g,'&quot;') + '">' +
           '<div class="rm-cycle-rollup-fill" style="width:' + g.progress + '%"></div>' +
-          (gWidth >= 80 ? '<span class="rm-cycle-rollup-label">' + rollLabel + '</span>' : '') +
+          rollupInner +
         '</div>';
       } else if(g.kind === 'backlog'){
         // Backlog header row is time-free; show a pill-style marker anchored near left edge
@@ -10478,9 +10506,13 @@ canvas{display:block;margin:0 auto 24px}
         html += '</div>';
       }
 
-      html += '<div class="kanban-col-add" onclick="window._kbAddCol()">';
-      html += '<div style="display:flex;align-items:center;gap:8px;color:var(--ink-muted);font-size:14px">' + IC.plus + ' 新增欄位</div>';
-      html += '</div></div></div>'; // close kanban-board + kanban-board-wrap
+      // v0.15.4: 空看板時隱藏「新增欄位」幽靈欄——empty state 已有 CTA，無需再塞一個 260px 佔位
+      if(_totalBoardCards > 0){
+        html += '<div class="kanban-col-add" onclick="window._kbAddCol()">';
+        html += '<div style="display:flex;align-items:center;gap:8px;color:var(--ink-muted);font-size:14px">' + IC.plus + ' 新增欄位</div>';
+        html += '</div>';
+      }
+      html += '</div></div>'; // close kanban-board + kanban-board-wrap
 
       content.innerHTML = html;
       _kbBindSearch();
@@ -25754,4 +25786,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.15.3 · hotfix：把 v0.15.2 的 AI 判斷卡 + 關注卡注入到實際被呼叫的 renderTaskPlanning/renderBacklog（原先誤寫在已廢棄的 renderPlanning() 導致不渲染） -->
+</html><!-- v0.15.4 · UIUX 真實修正：L1/L2 backlog 定義統一 (!cycleId)、rollup/strip label 寬度分級、L2 空值引導、L3 幽靈欄隱藏、AI PM summary 具體化 -->
