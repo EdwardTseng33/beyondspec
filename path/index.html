@@ -3220,10 +3220,11 @@ canvas{display:block;margin:0 auto 24px}
 .rm-wrap{position:relative;display:flex;flex-direction:column;height:calc(100vh - 60px);overflow:hidden;background:var(--bg-card);border-radius:var(--r-xl);border:1px solid var(--border);margin:-12px -8px 0}
 .rm-toolbar{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg-card);z-index:5;flex-wrap:wrap}
 /* v0.17.0: 標題 block 固定不壓縮，避免工具群搶空間造成壓扁 */
-.rm-title-block{display:flex;flex-direction:column;gap:2px;margin-right:auto;flex-shrink:0;min-width:120px}
-.rm-title{display:flex;align-items:center;gap:10px;font-size:var(--text-page-title,22px);font-weight:var(--fw-title,700);color:var(--ink);letter-spacing:-.02em;line-height:1.3;white-space:nowrap}
-.rm-title svg{color:var(--primary);flex-shrink:0}
-.rm-sub{font-size:var(--text-micro,11px);color:var(--ink-dim);font-weight:600;letter-spacing:.12em;white-space:nowrap}
+/* v0.18.0 PATH Header Spec 對齊 — rm-title 套用 .page-title-area h1 規格 */
+.rm-title-block{display:flex;align-items:baseline;gap:12px;margin-right:auto;flex-shrink:0;min-width:120px;flex-wrap:wrap}
+.rm-title{display:flex;align-items:center;gap:8px;font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.3px;line-height:1.3;white-space:nowrap;margin:0}
+.rm-title svg{color:var(--primary);flex-shrink:0;width:20px;height:20px}
+.rm-sub{font-size:13px;color:var(--ink-muted);font-weight:450;line-height:1.5;white-space:nowrap;letter-spacing:0}
 .rm-tool-group{display:flex;align-items:center;gap:4px;background:var(--bg-hover);border-radius:var(--r-md);padding:3px}
 .rm-tool-btn{padding:6px 14px;border:none;background:transparent;font-size:var(--text-label,12px);font-weight:var(--fw-label,600);color:var(--ink-dim);border-radius:var(--r-sm);cursor:pointer;transition:all var(--motion-normal,180ms) var(--ease-out);font-family:inherit;display:flex;align-items:center;gap:6px}
 .rm-tool-btn:hover{color:var(--ink)}
@@ -3242,11 +3243,40 @@ canvas{display:block;margin:0 auto 24px}
 .rm-divider{width:1px;height:24px;background:var(--border)}
 .rm-stat{display:flex;align-items:center;gap:6px;font-size:var(--text-label,12px);color:var(--ink-sec);font-weight:var(--fw-label,600);font-variant-numeric:tabular-nums}
 .rm-stat-dot{width:8px;height:8px;border-radius:50%}
+/* v0.18.0 Hero stat — 大數字完成度（Linear 風格）*/
+.rm-hero{display:flex;flex-direction:column;align-items:flex-start;gap:0;line-height:1;font-variant-numeric:tabular-nums;margin-right:8px}
+.rm-hero-num{font-size:20px;font-weight:800;letter-spacing:-.5px;color:var(--primary)}
+.rm-hero-num.warn{color:var(--gold)}
+.rm-hero-num.ok{color:var(--teal)}
+.rm-hero-num.dim{color:var(--ink-dim)}
+.rm-hero-sub{font-size:11px;font-weight:600;color:var(--ink-muted);margin-top:2px;letter-spacing:.02em}
+/* v0.18.0 Legend button — toolbar 項目圖例 */
+.rm-legend-btn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border:1px solid var(--border);background:var(--bg-card);color:var(--ink-sec);border-radius:var(--r-md);cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all var(--motion-normal,180ms) var(--ease-out);white-space:nowrap}
+.rm-legend-btn:hover{color:var(--primary);border-color:rgba(124,92,252,.4);background:rgba(124,92,252,.05)}
+.rm-legend-btn:active{transform:scale(.97)}
+.rm-legend-btn svg{width:14px;height:14px;flex-shrink:0}
+.rm-legend-btn.active{color:var(--primary);border-color:var(--primary);background:rgba(124,92,252,.08)}
+/* Legend popover — 項目顏色說明 */
+.rm-legend-pop{position:absolute;top:calc(100% + 8px);right:0;width:340px;max-width:90vw;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:0 12px 40px rgba(0,0,0,.15),0 2px 8px rgba(0,0,0,.06);z-index:50;padding:14px 16px 12px;animation:rm-legend-in var(--motion-normal,180ms) var(--ease-out) both;max-height:70vh;overflow-y:auto}
+[data-theme="dark"] .rm-legend-pop{box-shadow:0 16px 48px rgba(0,0,0,.5)}
+@keyframes rm-legend-in{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+.rm-legend-pop-wrap{position:relative}
+.rm-legend-section-title{font-size:11px;font-weight:700;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase;margin:0 0 8px;display:flex;align-items:center;gap:6px}
+.rm-legend-section-title:not(:first-child){margin-top:14px;padding-top:12px;border-top:1px dashed var(--border)}
+.rm-legend-item{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:var(--r-sm);transition:background var(--motion-fast,120ms) var(--ease-out);cursor:default}
+.rm-legend-item.clickable{cursor:pointer}
+.rm-legend-item.clickable:hover{background:var(--bg-hover)}
+.rm-legend-item-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.rm-legend-item-label{flex:1;min-width:0;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rm-legend-item-meta{font-size:11px;color:var(--ink-dim);font-variant-numeric:tabular-nums;flex-shrink:0}
+.rm-legend-item-edit{opacity:0;width:22px;height:22px;border-radius:4px;border:none;background:transparent;color:var(--ink-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--motion-fast,120ms) var(--ease-out);flex-shrink:0}
+.rm-legend-item.clickable:hover .rm-legend-item-edit{opacity:1}
+.rm-legend-item-edit:hover{background:rgba(124,92,252,.12);color:var(--primary)}
 .rm-body{display:flex;flex:1;overflow:hidden;position:relative;min-height:0}
 
-/* Left panel — Excel table (v0.17.0: 移除到期獨立欄位，改為行內輕量顯示) */
-.rm-left{width:320px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-card);position:relative;z-index:2}
-.rm-left-header{display:grid;grid-template-columns:1fr 80px;gap:0;height:72px;align-items:flex-end;padding:0 16px 10px 20px;font-size:var(--text-micro,11px);font-weight:var(--fw-label,600);color:var(--ink-dim);letter-spacing:.15em;border-bottom:1px solid var(--border);background:var(--bg-card);flex-shrink:0}
+/* Left panel — v0.18.0: 單欄兩行式 row，對齊 kb-card-v2 視覺語彙 */
+.rm-left{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-card);position:relative;z-index:2}
+.rm-left-header{display:flex;align-items:flex-end;height:80px;padding:0 16px 12px 20px;font-size:11px;font-weight:700;color:var(--ink-dim);letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-card);flex-shrink:0}
 .rm-left-body{flex:1;overflow-y:auto;overflow-x:hidden}
 .rm-left-body::-webkit-scrollbar{width:8px}
 .rm-left-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
@@ -3279,30 +3309,47 @@ canvas{display:block;margin:0 auto 24px}
 .rm-gpr-fill{position:absolute;top:0;left:0;bottom:0;border-radius:3px;transition:width var(--motion-smooth,280ms) var(--ease-smooth)}
 .rm-gpr-num{position:absolute;top:-16px;right:0;font-size:10px;font-weight:var(--fw-title,700);color:var(--ink-sec);font-variant-numeric:tabular-nums;letter-spacing:.02em}
 
-/* Task row in left table (v0.17.0: 兩欄制——標題+行內到期 / 狀態) */
-.rm-row{display:grid;grid-template-columns:1fr 80px;gap:0;align-items:center;height:48px;padding:0 16px 0 40px;font-size:var(--text-body,14px);color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
+/* Task row in left table — v0.18.0: 兩行式 row，對齊 kb-card-v2 視覺語彙
+   - 主行：pri-dot + 任務標題 (14px/600)
+   - 副行：status badge + category dot · category label + due chip + avatar
+   - Height 56px，padding 左 40px（避開 group chev 縮排）*/
+.rm-row{display:flex;flex-direction:column;justify-content:center;gap:4px;height:56px;padding:0 14px 0 40px;color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
 [data-theme="dark"] .rm-row{border-bottom-color:rgba(255,255,255,.04)}
 .rm-row:hover{background:var(--bg-hover)}
-/* v0.17.0: focus-visible 移除 border-left inset shadow, 改用 box-shadow glow */
 .rm-row:focus-visible{outline:none;background:var(--bg-hover);box-shadow:0 0 0 1px rgba(124,92,252,.35)}
 .rm-row:active{background:var(--primary-light,rgba(124,92,252,.1))}
-.rm-row-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:var(--text-caption,13px);font-weight:var(--fw-body-strong,600);padding-right:10px;display:flex;align-items:center;gap:8px;min-width:0}
-.rm-row-title .rm-pri-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.rm-row.dragging{opacity:.45;background:var(--bg-hover)}
+.rm-row.drop-before::before{content:'';position:absolute;top:0;left:40px;right:14px;height:2px;background:var(--primary);border-radius:1px;box-shadow:0 0 8px rgba(124,92,252,.4)}
+.rm-row.drop-after::after{content:'';position:absolute;bottom:0;left:40px;right:14px;height:2px;background:var(--primary);border-radius:1px;box-shadow:0 0 8px rgba(124,92,252,.4)}
+
+/* Main row: pri-dot + title */
+.rm-row-title{display:flex;align-items:center;gap:8px;min-width:0;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;letter-spacing:-.01em}
+.rm-row-title .rm-pri-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px var(--bg-card)}
 .rm-row-title .rm-pri-dot.high{background:var(--rose)}
 .rm-row-title .rm-pri-dot.medium{background:var(--gold)}
-.rm-row-title .rm-pri-dot.low{background:var(--primary)}
-.rm-row-title .rm-pri-dot.none{background:var(--ink-dim);opacity:.4}
-.rm-row-title-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
-/* 行內到期 chip — 小而不搶戲 */
-.rm-row-due-inline{font-size:10px;color:var(--ink-dim);font-variant-numeric:tabular-nums;font-weight:var(--fw-label,600);flex-shrink:0;padding:1px 6px;background:var(--bg-hover);border-radius:6px;letter-spacing:.02em;opacity:.82}
-.rm-row-due-inline.overdue{color:var(--rose);background:rgba(217,68,98,.09);opacity:1}
-.rm-row-status{font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);padding:3px 10px;border-radius:10px;text-align:center;white-space:nowrap;justify-self:start;letter-spacing:.04em}
+.rm-row-title .rm-pri-dot.low{background:var(--teal)}
+.rm-row-title .rm-pri-dot.none{background:var(--ink-dim);opacity:.3;box-shadow:none}
+.rm-row-title-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Meta row: status + category + due + avatar */
+.rm-row-meta{display:flex;align-items:center;gap:8px;min-width:0;padding-left:14px;flex-wrap:nowrap;overflow:hidden}
+.rm-row-status{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-align:center;white-space:nowrap;letter-spacing:.04em;flex-shrink:0;line-height:1.4}
 .rm-row-status.inbox{background:rgba(148,163,184,.15);color:#64748b}
 .rm-row-status.todo{background:rgba(124,92,252,.12);color:var(--primary)}
 .rm-row-status.doing{background:rgba(224,138,58,.15);color:var(--gold)}
 .rm-row-status.review{background:rgba(59,130,246,.14);color:#3B82F6}
 .rm-row-status.done{background:rgba(27,168,145,.15);color:var(--teal)}
 [data-theme="dark"] .rm-row-status.inbox{background:rgba(148,163,184,.2);color:#94A3B8}
+.rm-row-cat{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--ink-muted);min-width:0;flex-shrink:1;overflow:hidden}
+.rm-row-cat-dot{width:6px;height:6px;border-radius:2px;flex-shrink:0}
+.rm-row-cat-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-row-meta-spacer{flex:1;min-width:0}
+.rm-row-due-inline{font-size:10px;color:var(--ink-dim);font-variant-numeric:tabular-nums;font-weight:600;flex-shrink:0;padding:1px 6px;background:var(--bg-hover);border-radius:6px;letter-spacing:.02em;display:inline-flex;align-items:center;gap:3px}
+.rm-row-due-inline.overdue{color:var(--rose);background:rgba(217,68,98,.11);font-weight:700}
+.rm-row-due-inline svg{width:10px;height:10px;flex-shrink:0}
+.rm-row-avatar{width:18px;height:18px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.rm-row-avatar.agent{background:linear-gradient(135deg,#7C5CFC,#A78BFA)}
+.rm-row-avatar.human{background:var(--ink-dim)}
 
 /* Right panel — Gantt */
 .rm-right{flex:1;overflow:auto;position:relative;background:var(--bg)}
@@ -3375,7 +3422,7 @@ canvas{display:block;margin:0 auto 24px}
 .rm-backlog-rollup:hover{background:rgba(124,92,252,.08);color:var(--primary);border-color:rgba(124,92,252,.28)}
 
 /* Task row background (matches .rm-row in left, must align) */
-.rm-bar-row{height:48px;position:relative;border-bottom:1px solid rgba(0,0,0,.03);animation:rm-rowIn var(--motion-smooth,280ms) var(--ease-smooth) both}
+.rm-bar-row{height:56px;position:relative;border-bottom:1px solid rgba(0,0,0,.03);animation:rm-rowIn var(--motion-smooth,280ms) var(--ease-smooth) both}
 .rm-bar-row:nth-child(1){animation-delay:0ms}
 .rm-bar-row:nth-child(2){animation-delay:30ms}
 .rm-bar-row:nth-child(3){animation-delay:60ms}
@@ -3389,7 +3436,7 @@ canvas{display:block;margin:0 auto 24px}
 
 /* Task bar */
 /* v0.16.1: bar 高度 26→28，r-md 圓角更柔和，hover 動效 scale 收斂 1.015→1.008 減少跳動感 */
-.rm-bar{position:absolute;top:10px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;padding:0 12px;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:#fff;white-space:nowrap;overflow:hidden;z-index:2;transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s cubic-bezier(.22,1,.36,1),filter .22s cubic-bezier(.22,1,.36,1);min-width:24px;box-shadow:0 1px 2px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.22);user-select:none;animation:rm-barIn var(--motion-smooth,280ms) var(--ease-smooth) both}
+.rm-bar{position:absolute;top:14px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;padding:0 12px;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:#fff;white-space:nowrap;overflow:hidden;z-index:2;transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s cubic-bezier(.22,1,.36,1),filter .22s cubic-bezier(.22,1,.36,1);min-width:24px;box-shadow:0 1px 2px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.22);user-select:none;animation:rm-barIn var(--motion-smooth,280ms) var(--ease-smooth) both}
 .rm-bar:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.32);z-index:5;filter:brightness(1.05)}
 .rm-bar:active{transform:translateY(0) scale(.99)}
 .rm-bar:focus-visible{outline:none;box-shadow:0 0 0 3px var(--bg-card),0 0 0 5px var(--primary);z-index:6}
@@ -3432,29 +3479,86 @@ canvas{display:block;margin:0 auto 24px}
    ═══════════════════════════════════════════ */
 .rmdrw-mask{position:fixed;inset:0;background:rgba(12,14,22,.32);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);z-index:9400;opacity:0;transition:opacity .24s cubic-bezier(.22,1,.36,1)}
 .rmdrw-mask.open{opacity:1}
-.rmdrw{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:100vw;background:var(--bg-card);box-shadow:-12px 0 48px rgba(12,14,22,.16);z-index:9401;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .26s cubic-bezier(.22,1,.36,1);overflow:hidden}
+.rmdrw{position:fixed;top:0;right:0;bottom:0;width:480px;max-width:100vw;background:var(--bg-card);box-shadow:-12px 0 48px rgba(12,14,22,.16);z-index:9401;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .26s cubic-bezier(.22,1,.36,1);overflow:hidden}
 [data-theme="dark"] .rmdrw{box-shadow:-12px 0 48px rgba(0,0,0,.55)}
 .rmdrw.open{transform:translateX(0)}
-.rmdrw-head{padding:20px 22px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
-.rmdrw-head-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.rmdrw-status{font-size:11px;font-weight:600;letter-spacing:.04em;padding:3px 10px;border-radius:999px;background:var(--bg-hover);color:var(--ink-sec)}
+.rmdrw-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rmdrw-head-label{font-size:11px;font-weight:700;color:var(--ink-dim);letter-spacing:.1em;text-transform:uppercase}
+.rmdrw-head-actions{display:flex;align-items:center;gap:4px}
+.rmdrw-icon-btn{width:32px;height:32px;border-radius:8px;background:transparent;border:none;color:var(--ink-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;padding:0}
+.rmdrw-icon-btn:hover{background:var(--bg-hover);color:var(--ink)}
+.rmdrw-icon-btn.danger:hover{background:rgba(217,68,98,.1);color:var(--rose)}
 .rmdrw-close{width:32px;height:32px;border-radius:8px;background:transparent;border:none;color:var(--ink-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .18s,color .18s}
 .rmdrw-close:hover{background:var(--bg-hover);color:var(--ink)}
-.rmdrw-title{font-size:19px;font-weight:700;color:var(--ink);line-height:1.35;margin:0;display:flex;align-items:center;gap:10px}
-.rmdrw-pri-dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.rmdrw-body{padding:20px 22px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px}
-.rmdrw-row{display:flex;align-items:center;gap:12px;font-size:13px;line-height:1.5}
-.rmdrw-label{font-size:11px;font-weight:600;color:var(--ink-dim);letter-spacing:.04em;text-transform:uppercase;min-width:56px;flex-shrink:0}
-.rmdrw-val{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
-.rmdrw-cat-chip{font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;white-space:nowrap}
-.rmdrw-desc{display:flex;flex-direction:column;gap:6px;padding-top:6px;border-top:1px dashed var(--border)}
-.rmdrw-desc-body{font-size:13px;color:var(--ink-sec);line-height:1.65;white-space:pre-wrap;word-break:break-word}
-.rmdrw-tags{display:flex;flex-wrap:wrap;gap:6px;padding-top:4px}
+.rmdrw-body{padding:16px 22px 24px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:18px}
+
+/* v0.18.0 kb-card preview — drawer 頂部的任務卡預覽（與任務看板 kb-card-v2 視覺一致）*/
+.rmdrw-kb-preview{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 2px rgba(17,17,17,.03)}
+[data-theme="dark"] .rmdrw-kb-preview{box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.rmdrw-kb-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:var(--ink);line-height:1.4;min-width:0}
+.rmdrw-kb-title-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px var(--bg-card)}
+.rmdrw-kb-title-dot.high{background:var(--rose)}
+.rmdrw-kb-title-dot.medium{background:var(--gold)}
+.rmdrw-kb-title-dot.low{background:var(--teal)}
+.rmdrw-kb-title-dot.none{background:var(--ink-dim);opacity:.3;box-shadow:none}
+.rmdrw-kb-title-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rmdrw-kb-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.rmdrw-kb-cat{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;white-space:nowrap;letter-spacing:.02em}
+.rmdrw-kb-tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;color:var(--ink-muted);background:var(--bg-hover)}
+.rmdrw-kb-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;letter-spacing:.04em}
+.rmdrw-kb-status.inbox{background:rgba(148,163,184,.15);color:#64748b}
+.rmdrw-kb-status.todo{background:rgba(124,92,252,.12);color:var(--primary)}
+.rmdrw-kb-status.doing{background:rgba(224,138,58,.15);color:var(--gold)}
+.rmdrw-kb-status.review{background:rgba(59,130,246,.14);color:#3B82F6}
+.rmdrw-kb-status.done{background:rgba(27,168,145,.15);color:var(--teal)}
+
+/* v0.18.0 Section-based body */
+.rmdrw-sec{display:flex;flex-direction:column;gap:8px}
+.rmdrw-sec-title{font-size:11px;font-weight:700;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase;margin:0;display:flex;align-items:center;gap:6px}
+.rmdrw-sec-title svg{width:12px;height:12px;opacity:.8}
+.rmdrw-sec-body{font-size:13px;color:var(--ink-sec);line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.rmdrw-sec-empty{font-size:12px;color:var(--ink-dim);font-style:italic}
+
+/* Project row — cycle/project pill */
+.rmdrw-proj{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg-hover);border-radius:8px;font-size:13px;font-weight:600;color:var(--ink);align-self:flex-start}
+.rmdrw-proj-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* Meta grid — date / priority / assignee */
+.rmdrw-meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 14px}
+.rmdrw-meta-item{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rmdrw-meta-key{font-size:10px;font-weight:700;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase}
+.rmdrw-meta-val{font-size:13px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rmdrw-meta-val.overdue{color:var(--rose)}
+
+/* Checklist */
+.rmdrw-cl{display:flex;flex-direction:column;gap:6px}
+.rmdrw-cl-item{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5;color:var(--ink)}
+.rmdrw-cl-item.done{color:var(--ink-muted);text-decoration:line-through}
+.rmdrw-cl-check{width:14px;height:14px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center}
+.rmdrw-cl-item.done .rmdrw-cl-check{background:var(--teal);border-color:var(--teal)}
+.rmdrw-cl-item.done .rmdrw-cl-check svg{color:#fff;width:10px;height:10px}
+.rmdrw-cl-progress{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-muted);font-weight:600;font-variant-numeric:tabular-nums}
+.rmdrw-cl-progress-bar{flex:1;height:3px;background:var(--bg-hover);border-radius:2px;overflow:hidden}
+.rmdrw-cl-progress-fill{height:100%;background:var(--teal);border-radius:2px;transition:width .3s}
+
+/* Tags */
+.rmdrw-tags{display:flex;flex-wrap:wrap;gap:6px}
 .rmdrw-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:6px;color:var(--ink-muted);background:var(--bg-hover)}
-.rmdrw-foot{padding:16px 22px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0}
+
+/* Attachments placeholder */
+.rmdrw-empty-block{padding:14px 16px;background:var(--bg-hover);border-radius:var(--r-md);font-size:12px;color:var(--ink-dim);text-align:center;font-style:italic}
+
+/* v0.18.0 drawer helpers */
+.rmdrw-meta-val-dim{color:var(--ink-dim);font-weight:500}
+.rmdrw-cl-progress-num{min-width:32px;text-align:right;color:var(--ink-muted)}
+.rmdrw-cl-text{flex:1;min-width:0}
+.rmdrw-proj{transition:background .18s,transform .18s;cursor:pointer}
+.rmdrw-proj:hover{background:rgba(124,92,252,.1);transform:translateY(-1px)}
+
+.rmdrw-foot{padding:14px 22px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;background:var(--bg-card)}
 .rmdrw-btn-sec{padding:9px 18px;font-size:13px;font-weight:600;border-radius:8px}
 .rmdrw-btn-pri{padding:9px 18px;font-size:13px;font-weight:600;border-radius:8px}
-@media (max-width:600px){.rmdrw{width:100vw}}
+@media (max-width:600px){.rmdrw{width:100vw}.rmdrw-meta-grid{grid-template-columns:1fr}}
 
 /* Keyboard shortcut help overlay */
 .rm-help-overlay{position:fixed;inset:0;background:rgba(10,12,20,.48);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;animation:rm-fadeIn var(--motion-fast,120ms) var(--ease-out) both;padding:20px}
@@ -3474,29 +3578,30 @@ canvas{display:block;margin:0 auto 24px}
 [data-theme="dark"] .rm-help-card{box-shadow:0 28px 70px rgba(0,0,0,.6),0 2px 10px rgba(0,0,0,.4)}
 [data-theme="dark"] .rm-help-row kbd{background:rgba(255,255,255,.06);box-shadow:0 1px 2px rgba(0,0,0,.4),inset 0 -1px 0 rgba(255,255,255,.08)}
 
-/* Responsive */
+/* Responsive — v0.18.0 */
 @media (max-width:900px){
-  .rm-left{width:260px}
-  .rm-left-header{grid-template-columns:1fr 70px;padding:0 10px 10px 14px}
-  .rm-row{grid-template-columns:1fr 70px;padding:0 10px 0 28px}
-  .rm-row-due-inline{display:none}
+  .rm-left{width:280px}
+  .rm-left-header{padding:0 10px 10px 14px}
+  .rm-row{padding:0 10px 0 28px}
+  .rm-row-cat-label{display:none}
   .rm-group-progress-ring{width:48px}
 }
 @media (max-width:640px){
   .rm-wrap{margin:-8px -4px 0;height:calc(100vh - 50px)}
-  .rm-left{width:210px}
-  .rm-left-header{grid-template-columns:1fr;padding:0 10px 10px}
-  .rm-row{grid-template-columns:1fr;padding:0 10px 0 22px}
+  .rm-left{width:220px}
+  .rm-left-header{padding:0 10px 10px}
+  .rm-row{padding:0 10px 0 22px;height:52px}
   .rm-row-status{display:none}
-  .rm-row-due-inline{display:none}
+  .rm-row-meta-spacer{min-width:4px}
   .rm-group-progress-ring{display:none}
   .rm-sub{display:none}
-  .rm-title{font-size:15px}
+  .rm-title{font-size:18px}
   .rm-toolbar{padding:10px 12px;gap:8px;flex-wrap:wrap}
-  .rm-toolbar .rm-stat,.rm-toolbar .rm-divider{display:none}
+  .rm-toolbar .rm-stat,.rm-toolbar .rm-divider,.rm-hero{display:none}
   .rm-help-btn{display:none}
   .rm-today-btn{padding:6px 12px}
   .rm-tool-btn{padding:5px 10px}
+  .rm-legend-btn{padding:0 8px}
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -3968,7 +4073,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.17.0</div>
+        <div class="sidebar-version">v0.18.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -8815,7 +8920,34 @@ canvas{display:block;margin:0 auto 24px}
     // ── Group cards by CYCLE (v0.15.2 canonical IA: cycles are the L1 atoms) ──
     var groups = [];
     var statusOrder = { doing:0, review:1, todo:2, inbox:3, done:4 };
-    function sortCards(list){
+    // v0.18.0: 自訂排序支援（DnD 後儲存於 localStorage）
+    var CUSTOM_ORDER_KEY = 'bp_rm_custom_order';
+    var customOrderMap = {};
+    try{
+      var _coRaw = localStorage.getItem(CUSTOM_ORDER_KEY);
+      if(_coRaw) customOrderMap = JSON.parse(_coRaw) || {};
+    }catch(e){ customOrderMap = {}; }
+
+    function sortCards(list, groupKey){
+      // 如果該 group 有自訂 order，優先套用
+      if(groupKey && customOrderMap[groupKey] && customOrderMap[groupKey].length){
+        var order = customOrderMap[groupKey];
+        var idx = {};
+        order.forEach(function(id, i){ idx[id] = i; });
+        list.sort(function(a, b){
+          var ia = idx[a.id] !== undefined ? idx[a.id] : 999;
+          var ib = idx[b.id] !== undefined ? idx[b.id] : 999;
+          if(ia !== ib) return ia - ib;
+          // fallback 到狀態+日期
+          var sa = statusOrder[a.columnId] !== undefined ? statusOrder[a.columnId] : 9;
+          var sb = statusOrder[b.columnId] !== undefined ? statusOrder[b.columnId] : 9;
+          if(sa !== sb) return sa - sb;
+          var da = a.startDate || a.dueDate || '9999';
+          var db = b.startDate || b.dueDate || '9999';
+          return da.localeCompare(db);
+        });
+        return;
+      }
       list.sort(function(a, b){
         var sa = statusOrder[a.columnId] !== undefined ? statusOrder[a.columnId] : 9;
         var sb = statusOrder[b.columnId] !== undefined ? statusOrder[b.columnId] : 9;
@@ -8825,9 +8957,14 @@ canvas{display:block;margin:0 auto 24px}
         return da.localeCompare(db);
       });
     }
+    // 暴露 customOrderMap 給 DnD handlers 使用
+    window._rmCustomOrderMap = customOrderMap;
+    window._rmSaveCustomOrder = function(){
+      try{ localStorage.setItem(CUSTOM_ORDER_KEY, JSON.stringify(window._rmCustomOrderMap)); }catch(e){}
+    };
     cycles.forEach(function(cy){
       var list = cards.filter(function(c){ return c.cycleId === cy.id; });
-      sortCards(list);
+      sortCards(list, cy.id);
       var doneCount = list.filter(function(c){ return c.columnId === 'done'; }).length;
       var sd = cy.startDate ? new Date(cy.startDate) : null;
       var ed = cy.endDate ? new Date(cy.endDate) : null;
@@ -8859,7 +8996,7 @@ canvas{display:block;margin:0 auto 24px}
     // 理由：需求池 = 尚未排程 × 尚未完成 × 未封存。done 卡不該再佔據「待排程」位置。
     var backlog = cards.filter(function(c){ return !c.cycleId && !c.archived && c.columnId !== 'done'; });
     if(backlog.length){
-      sortCards(backlog);
+      sortCards(backlog, '_backlog');
       var blDone = backlog.filter(function(c){ return c.columnId === 'done'; }).length;
       groups.push({
         key: '_backlog',
@@ -8881,14 +9018,33 @@ canvas{display:block;margin:0 auto 24px}
     var totalDone = cards.filter(function(c){ return c.columnId === 'done'; }).length;
     var overallProgress = totalCards ? Math.round(totalDone / totalCards * 100) : 0;
 
-    // ── Build toolbar ──
+    // ── Build toolbar (v0.18.0: PATH Header + Hero % + Legend) ──
+    // Hero color 依完成度：<=30% dim / 31-70% warn / >=71% ok / 0% dim
+    var heroCls = 'rm-hero-num';
+    if(overallProgress >= 71) heroCls += ' ok';
+    else if(overallProgress >= 31) heroCls += ' warn';
+    else heroCls += ' dim';
+
+    // Cycle color map — 用於圖例（每個 cycle 一個 slot）
+    var cycleLegendData = cycles.map(function(cy){
+      var cyCards = cards.filter(function(c){ return c.cycleId === cy.id; });
+      return { id: cy.id, name: cy.name || '未命名週期', color: cy.color || '#7C5CFC', count: cyCards.length };
+    });
+    // Category legend data（固定 6 個，顯示實際使用的）
+    var catLegendData = Object.keys(CATS).map(function(k){
+      var kCount = cards.filter(function(c){ return c.category === k; }).length;
+      return { key: k, label: CATS[k].label, color: CATS[k].color, count: kCount };
+    }).filter(function(x){ return x.count > 0; });
+
     var toolbarH = '<div class="rm-toolbar">' +
       '<div class="rm-title-block">' +
-        '<div class="rm-title">' + ICONS.roadmap + '時間軸</div>' +
-        '<div class="rm-sub">Timeline · 週期進程總覽</div>' +
+        '<h1 class="rm-title">' + ICONS.roadmap + '<span>時間軸</span></h1>' +
+        '<p class="rm-sub">Timeline · 週期進程總覽</p>' +
       '</div>' +
-      '<div class="rm-stat"><span class="rm-stat-dot" style="background:var(--teal)"></span>' + totalDone + ' / ' + totalCards + ' · ' + overallProgress + '%</div>' +
-      '<div class="rm-stat"><span class="rm-stat-dot" style="background:var(--primary)"></span>' + cycles.length + ' 個週期</div>' +
+      '<div class="rm-hero" title="完成度 ' + overallProgress + '%">' +
+        '<div class="' + heroCls + '">' + overallProgress + '%</div>' +
+        '<div class="rm-hero-sub">' + totalDone + ' / ' + totalCards + ' tasks</div>' +
+      '</div>' +
       '<div class="rm-divider"></div>' +
       '<div class="rm-tool-group">' +
         '<button class="rm-tool-btn' + (RM.zoom==='quarter'?' active':'') + '" onclick="window._rmSetZoom(\'quarter\')">季</button>' +
@@ -8899,18 +9055,24 @@ canvas{display:block;margin:0 auto 24px}
         '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="10" y1="16" x2="10" y2="18"/><line x1="2" y1="10" x2="4" y2="10"/><line x1="16" y1="10" x2="18" y2="10"/></svg>' +
         '今天' +
       '</button>' +
+      '<div class="rm-legend-pop-wrap">' +
+        '<button class="rm-legend-btn" id="rmLegendBtn" onclick="window._rmToggleLegend(event)" aria-label="項目顏色圖例" title="顏色說明">' +
+          '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="14" cy="6" r="2.5"/><circle cx="6" cy="14" r="2.5"/><circle cx="14" cy="14" r="2.5"/></svg>' +
+          '圖例' +
+        '</button>' +
+      '</div>' +
       '<button class="rm-help-btn" onclick="window._rmShowHelp()" title="鍵盤快捷鍵（按 ? 開啟）" aria-label="顯示鍵盤快捷鍵">' +
         '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M7.5 7.5a2.5 2.5 0 115 0c0 1.5-2.5 2-2.5 3.5"/><line x1="10" y1="14.5" x2="10.01" y2="14.5"/></svg>' +
       '</button>' +
     '</div>';
 
+    // 把圖例資料存在 window._rmLegendData 供 popover render 使用
+    window._rmLegendData = { cats: catLegendData, cycles: cycleLegendData };
+
     // ── Build left panel (cycle-first table) ──
-    // v0.17.0: 兩欄制（週期 / 任務 | 狀態）, 到期改為行內 chip
+    // v0.18.0: 單欄兩行式 row（標題主行 / meta 副行），對齊 kb-card-v2 視覺語彙
     var leftH = '<div class="rm-left">' +
-      '<div class="rm-left-header">' +
-        '<div>週期 / 任務</div>' +
-        '<div>狀態</div>' +
-      '</div>' +
+      '<div class="rm-left-header">項目任務</div>' +
       '<div class="rm-left-body" id="rmLeftBody">';
 
     groups.forEach(function(g){
@@ -8948,19 +9110,46 @@ canvas{display:block;margin:0 auto 24px}
         '</div>' +
       '</div>';
       if(expanded){
-        g.cards.forEach(function(c){
+        g.cards.forEach(function(c, rowIdx){
           var pri = c.priority || 'none';
           var status = c.columnId || 'todo';
           var isOverdue = c.dueDate && c.columnId !== 'done' && new Date(c.dueDate) < today;
-          // v0.17.0: 到期改為行內輕量 chip, 只顯示 M/D（短格式）, 無到期不顯示
+          var title = (c.title || '(未命名)').replace(/</g,'&lt;');
+          // v0.18.0: 兩行式 row
+          // 主行：pri-dot + title
+          // 副行：status badge + category dot/label + (spacer) + due chip + avatar
+          var catObj = CATS[c.category] || null;
+          var catH = '';
+          if(catObj){
+            catH = '<span class="rm-row-cat" title="' + catObj.label + '">' +
+                     '<span class="rm-row-cat-dot" style="background:' + catObj.color + '"></span>' +
+                     '<span class="rm-row-cat-label">' + catObj.label + '</span>' +
+                   '</span>';
+          }
           var dueChip = '';
           if(c.dueDate){
-            dueChip = '<span class="rm-row-due-inline' + (isOverdue?' overdue':'') + '">' + fmtMD(new Date(c.dueDate)) + '</span>';
+            dueChip = '<span class="rm-row-due-inline' + (isOverdue?' overdue':'') + '" title="到期 ' + fmtMD(new Date(c.dueDate)) + '">' +
+                        '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="3" width="10" height="9" rx="1.5"/><line x1="5" y1="1.5" x2="5" y2="3.5"/><line x1="9" y1="1.5" x2="9" y2="3.5"/></svg>' +
+                        fmtMD(new Date(c.dueDate)) +
+                      '</span>';
           }
-          var title = (c.title || '(未命名)').replace(/</g,'&lt;');
-          leftH += '<div class="rm-row" data-card="' + c.id + '" tabindex="0" role="button" onclick="window._rmOpenCard(\'' + c.id + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window._rmOpenCard(\'' + c.id + '\')}">' +
-            '<div class="rm-row-title"><span class="rm-pri-dot ' + pri + '"></span><span class="rm-row-title-text">' + title + '</span>' + dueChip + '</div>' +
-            '<div class="rm-row-status ' + status + '">' + (STATUS_LABELS[status] || status) + '</div>' +
+          // Avatar — agent (AI) 用漸層, human 用 dim grey
+          var avaH = '';
+          if(c.assignee === 'agent' || c.assignee === 'ai'){
+            avaH = '<span class="rm-row-avatar agent" title="AI agent">AI</span>';
+          } else if(c.assignee){
+            var initial = String(c.assignee).charAt(0).toUpperCase();
+            avaH = '<span class="rm-row-avatar human" title="' + c.assignee + '">' + initial + '</span>';
+          }
+          leftH += '<div class="rm-row" data-card="' + c.id + '" data-row-idx="' + rowIdx + '" data-group="' + g.key + '" tabindex="0" role="button" draggable="true" onclick="window._rmOpenCard(\'' + c.id + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window._rmOpenCard(\'' + c.id + '\')}" ondragstart="window._rmRowDragStart(event,\'' + c.id + '\')" ondragover="window._rmRowDragOver(event)" ondragleave="window._rmRowDragLeave(event)" ondrop="window._rmRowDrop(event,\'' + c.id + '\')" ondragend="window._rmRowDragEnd(event)">' +
+            '<div class="rm-row-title"><span class="rm-pri-dot ' + pri + '"></span><span class="rm-row-title-text">' + title + '</span></div>' +
+            '<div class="rm-row-meta">' +
+              '<span class="rm-row-status ' + status + '">' + (STATUS_LABELS[status] || status) + '</span>' +
+              catH +
+              '<span class="rm-row-meta-spacer"></span>' +
+              dueChip +
+              avaH +
+            '</div>' +
           '</div>';
         });
       }
@@ -9293,6 +9482,21 @@ canvas{display:block;margin:0 auto 24px}
       });
     }
 
+    // ── v0.18.0: Gantt wheel 水平化 ──
+    // 理由：時間軸主敘事是「時間向右流」，滾輪預設觸發垂直 scroll 會跟視覺主軸脫鉤。
+    // 翻轉 deltaY → scrollLeft；Shift+wheel 保留垂直 row scroll 作為進階快捷。
+    // 若 ctrl/meta 同時按著則不攔截（避免破壞瀏覽器 zoom）。
+    if(rmRight){
+      rmRight.addEventListener('wheel', function(e){
+        if(e.ctrlKey || e.metaKey) return;
+        if(e.shiftKey) return; // Shift → 原生垂直 scroll
+        if(e.deltaY === 0) return;
+        // 攔截垂直滾輪，轉為水平
+        e.preventDefault();
+        rmRight.scrollLeft += e.deltaY;
+      }, { passive: false });
+    }
+
     // ── Scroll to today ──
     window._rmGoToday = function(){
       var rr = document.getElementById('rmRight');
@@ -9357,6 +9561,169 @@ canvas{display:block;margin:0 auto 24px}
     window._rmToggleGroup = function(key){
       RM.expanded[key] = !RM.expanded[key];
       renderRoadmap();
+    };
+
+    // ── v0.18.0: Legend popover（項目顏色圖例）──
+    window._rmToggleLegend = function(ev){
+      if(ev){ ev.stopPropagation(); }
+      var btn = document.getElementById('rmLegendBtn');
+      var wrap = btn ? btn.parentNode : null;
+      if(!wrap) return;
+      var existing = wrap.querySelector('.rm-legend-pop');
+      if(existing){
+        existing.remove();
+        btn.classList.remove('active');
+        document.removeEventListener('click', window._rmLegendOutsideHandler);
+        return;
+      }
+      var data = window._rmLegendData || { cats: [], cycles: [] };
+      var popH = '<div class="rm-legend-pop" onclick="event.stopPropagation()">';
+      // Section 1: 任務分類（顏色 = gantt bar 顏色）
+      if(data.cats && data.cats.length){
+        popH += '<div class="rm-legend-section-title">' +
+                  '<svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="2" width="4" height="4" rx="1"/><rect x="8" y="2" width="4" height="4" rx="1"/><rect x="2" y="8" width="4" height="4" rx="1"/><rect x="8" y="8" width="4" height="4" rx="1"/></svg>' +
+                  '任務分類 · 甘特條顏色' +
+                '</div>';
+        data.cats.forEach(function(it){
+          popH += '<div class="rm-legend-item">' +
+                    '<span class="rm-legend-item-dot" style="background:' + it.color + '"></span>' +
+                    '<span class="rm-legend-item-label">' + it.label + '</span>' +
+                    '<span class="rm-legend-item-meta">' + it.count + '</span>' +
+                  '</div>';
+        });
+      }
+      // Section 2: 週期（可點擊編輯 → 前往週期管理）
+      if(data.cycles && data.cycles.length){
+        popH += '<div class="rm-legend-section-title">' +
+                  '<svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="7" r="5"/><path d="M7 4v3l2 2"/></svg>' +
+                  '週期 · 點擊編輯' +
+                '</div>';
+        data.cycles.forEach(function(it){
+          popH += '<div class="rm-legend-item clickable" onclick="window._rmLegendEditCycle(\'' + it.id + '\')">' +
+                    '<span class="rm-legend-item-dot" style="background:' + it.color + '"></span>' +
+                    '<span class="rm-legend-item-label">' + (it.name || '').replace(/</g,'&lt;') + '</span>' +
+                    '<span class="rm-legend-item-meta">' + it.count + '</span>' +
+                    '<button class="rm-legend-item-edit" aria-label="編輯"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2l3 3-7 7H2V9l7-7z"/></svg></button>' +
+                  '</div>';
+        });
+      }
+      if((!data.cats || !data.cats.length) && (!data.cycles || !data.cycles.length)){
+        popH += '<div class="rm-legend-item"><span class="rm-legend-item-label" style="color:var(--ink-dim)">尚無資料</span></div>';
+      }
+      popH += '</div>';
+      wrap.insertAdjacentHTML('beforeend', popH);
+      btn.classList.add('active');
+      // Outside click dismisses
+      window._rmLegendOutsideHandler = function(e){
+        var pop = wrap.querySelector('.rm-legend-pop');
+        if(pop && !pop.contains(e.target) && e.target !== btn && !btn.contains(e.target)){
+          pop.remove();
+          btn.classList.remove('active');
+          document.removeEventListener('click', window._rmLegendOutsideHandler);
+        }
+      };
+      setTimeout(function(){ document.addEventListener('click', window._rmLegendOutsideHandler); }, 10);
+    };
+
+    window._rmLegendEditCycle = function(cycleId){
+      // 關閉 popover 後導向週期管理頁
+      var btn = document.getElementById('rmLegendBtn');
+      if(btn){ btn.classList.remove('active'); }
+      var pop = document.querySelector('.rm-legend-pop');
+      if(pop){ pop.remove(); }
+      if(window._rmLegendOutsideHandler){
+        document.removeEventListener('click', window._rmLegendOutsideHandler);
+      }
+      if(typeof _taskShared !== 'undefined' && _taskShared.setActiveCycleId){
+        try{ _taskShared.setActiveCycleId(cycleId); }catch(e){}
+      }
+      navigate('biz-cycles');
+    };
+
+    // ── v0.18.0: Row 垂直 DnD 排序 ──
+    // 左欄 row 可以拖動重新排序；儲存於 localStorage 的 _rmCustomOrderMap
+    window._rmRowDragState = null;
+    window._rmRowDragStart = function(ev, cardId){
+      // 只處理「從 row 本體」發起的 drag，避免與 bar horizontal drag 衝突
+      var row = ev.currentTarget;
+      if(!row) return;
+      var groupKey = row.getAttribute('data-group');
+      window._rmRowDragState = { cardId: cardId, groupKey: groupKey, srcRow: row };
+      try{
+        ev.dataTransfer.effectAllowed = 'move';
+        ev.dataTransfer.setData('text/plain', cardId);
+      }catch(e){}
+      row.classList.add('dragging');
+    };
+    window._rmRowDragOver = function(ev){
+      if(!window._rmRowDragState) return;
+      var row = ev.currentTarget;
+      if(!row) return;
+      var targetGroup = row.getAttribute('data-group');
+      if(targetGroup !== window._rmRowDragState.groupKey) return; // 跨 group 不允許
+      var targetId = row.getAttribute('data-card');
+      if(targetId === window._rmRowDragState.cardId) return;
+      ev.preventDefault();
+      try{ ev.dataTransfer.dropEffect = 'move'; }catch(e){}
+      // 判斷 drop 在 row 的上半或下半
+      var rect = row.getBoundingClientRect();
+      var isBefore = (ev.clientY - rect.top) < rect.height / 2;
+      row.classList.toggle('drop-before', isBefore);
+      row.classList.toggle('drop-after', !isBefore);
+    };
+    window._rmRowDragLeave = function(ev){
+      var row = ev.currentTarget;
+      if(row){
+        row.classList.remove('drop-before');
+        row.classList.remove('drop-after');
+      }
+    };
+    window._rmRowDrop = function(ev, targetCardId){
+      ev.preventDefault();
+      ev.stopPropagation();
+      var state = window._rmRowDragState;
+      if(!state || state.cardId === targetCardId) return;
+      var row = ev.currentTarget;
+      if(!row) return;
+      var targetGroup = row.getAttribute('data-group');
+      if(targetGroup !== state.groupKey) return;
+      var rect = row.getBoundingClientRect();
+      var isBefore = (ev.clientY - rect.top) < rect.height / 2;
+      row.classList.remove('drop-before');
+      row.classList.remove('drop-after');
+
+      // 重建 group 的 order list
+      var groupKey = state.groupKey;
+      var groupRows = document.querySelectorAll('.rm-row[data-group="' + groupKey + '"]');
+      var ids = [];
+      for(var i = 0; i < groupRows.length; i++){
+        ids.push(groupRows[i].getAttribute('data-card'));
+      }
+      // 先移除 src
+      ids = ids.filter(function(x){ return x !== state.cardId; });
+      // 找 target idx（移除 src 之後）
+      var targetIdx = ids.indexOf(targetCardId);
+      if(targetIdx < 0) return;
+      var insertAt = isBefore ? targetIdx : targetIdx + 1;
+      ids.splice(insertAt, 0, state.cardId);
+
+      // 存回 localStorage
+      window._rmCustomOrderMap[groupKey] = ids;
+      window._rmSaveCustomOrder();
+
+      // 重新 render
+      renderRoadmap();
+    };
+    window._rmRowDragEnd = function(ev){
+      var row = ev.currentTarget;
+      if(row){ row.classList.remove('dragging'); }
+      // 清除所有 drop indicator
+      var allDrops = document.querySelectorAll('.rm-row.drop-before, .rm-row.drop-after');
+      for(var i = 0; i < allDrops.length; i++){
+        allDrops[i].classList.remove('drop-before');
+        allDrops[i].classList.remove('drop-after');
+      }
+      window._rmRowDragState = null;
     };
 
     // ── v0.17.0: Bar horizontal drag-to-reschedule ──
@@ -9454,61 +9821,162 @@ canvas{display:block;margin:0 auto 24px}
       if(oldMask){ oldMask.remove(); }
 
       // Priority label & colors
-      var priMap = { high: { label: '高', color: 'var(--rose)' }, medium: { label: '中', color: 'var(--gold)' }, low: { label: '低', color: 'var(--teal)' } };
+      var priMap = {
+        high:   { label: '高', key: 'high' },
+        medium: { label: '中', key: 'medium' },
+        low:    { label: '低', key: 'low' }
+      };
       var pri = priMap[card.priority] || null;
+      var priKey = card.priority || 'none';
       var cat = T.TASK_CATEGORIES[card.category] || T.TASK_CATEGORIES.product;
 
-      // Date formatting
-      var dateStr = '';
-      if(card.startDate || card.dueDate){
-        var ds = card.startDate ? new Date(card.startDate).toLocaleDateString('zh-TW',{month:'numeric',day:'numeric'}) : '';
-        var de = card.dueDate ? new Date(card.dueDate).toLocaleDateString('zh-TW',{month:'numeric',day:'numeric'}) : '';
-        dateStr = ds && de ? (ds + ' – ' + de) : (ds || de);
+      // Dates
+      function _fmtDate(d){
+        if(!d) return '';
+        try {
+          return new Date(d).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' });
+        } catch(e){ return String(d); }
       }
+      var startStr = _fmtDate(card.startDate);
+      var dueStr   = _fmtDate(card.dueDate);
+      var isOverdue = card.dueDate && card.columnId !== 'done' && new Date(card.dueDate) < new Date();
 
-      // Description preview (strip HTML)
+      // Description (strip HTML)
       var descText = (card.description || '').replace(/<[^>]*>/g, '').trim();
 
-      // Checklist progress
+      // Checklist
       var cl = card.checklist || [];
       var clDone = cl.filter(function(x){ return x.done; }).length;
+      var clPct = cl.length > 0 ? Math.round(clDone / cl.length * 100) : 0;
 
-      // Tags
-      var tagsH = '';
-      if(card.tags && card.tags.length > 0){
-        tagsH = '<div class="rmdrw-tags">' + card.tags.map(function(t){
-          return '<span class="rmdrw-tag">#' + t + '</span>';
-        }).join('') + '</div>';
+      // Cycle lookup
+      var cycleObj = null;
+      if(card.cycleId){
+        try {
+          var _allCyc = T.getCycles();
+          for(var _ci = 0; _ci < _allCyc.length; _ci++){
+            if(_allCyc[_ci].id === card.cycleId){ cycleObj = _allCyc[_ci]; break; }
+          }
+        } catch(e){}
       }
 
-      // Status label
-      var columnId = card.columnId || 'todo';
-      var statusLabels = { todo: '待辦', doing: '進行中', review: '審核', done: '完成' };
-      var statusLabel = statusLabels[columnId] || columnId;
+      // Assignee
+      var assigneeH = '';
+      if(card.assignee === 'agent' || card.assignee === 'ai'){
+        assigneeH = '<span class="rm-row-avatar agent" style="width:16px;height:16px;font-size:8px">AI</span> AI agent';
+      } else if(card.assignee){
+        var _ini = String(card.assignee).charAt(0).toUpperCase();
+        assigneeH = '<span class="rm-row-avatar human" style="width:16px;height:16px;font-size:8px">' + _ini + '</span> ' + card.assignee;
+      } else {
+        assigneeH = '<span class="rmdrw-meta-val-dim">未指派</span>';
+      }
 
-      // Build drawer HTML
+      // Status
+      var columnId = card.columnId || 'todo';
+      var statusLabel = STATUS_LABELS[columnId] || columnId;
+
+      // Escape helper
+      function _esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+      // ---- kb-preview block ----
+      var previewMetaH = '<span class="rmdrw-kb-status ' + columnId + '">' + statusLabel + '</span>';
+      previewMetaH += '<span class="rmdrw-kb-cat" style="background:' + cat.color + '1A;color:' + cat.color + '">' + _esc(cat.label) + '</span>';
+      if(card.tags && card.tags.length > 0){
+        card.tags.slice(0, 6).forEach(function(t){
+          previewMetaH += '<span class="rmdrw-kb-tag">#' + _esc(t) + '</span>';
+        });
+      }
+
+      var kbPreviewH = '<div class="rmdrw-kb-preview">' +
+        '<div class="rmdrw-kb-title">' +
+          '<span class="rmdrw-kb-title-dot ' + priKey + '"></span>' +
+          '<span class="rmdrw-kb-title-text">' + _esc(card.title || '未命名') + '</span>' +
+        '</div>' +
+        '<div class="rmdrw-kb-meta">' + previewMetaH + '</div>' +
+      '</div>';
+
+      // ---- Meta grid (start / due / priority / assignee) ----
+      var metaGridH = '<div class="rmdrw-meta-grid">' +
+        '<div class="rmdrw-meta-item"><div class="rmdrw-meta-key">開始</div><div class="rmdrw-meta-val">' + (startStr || '<span class="rmdrw-meta-val-dim">—</span>') + '</div></div>' +
+        '<div class="rmdrw-meta-item"><div class="rmdrw-meta-key">到期</div><div class="rmdrw-meta-val' + (isOverdue ? ' overdue' : '') + '">' + (dueStr || '<span class="rmdrw-meta-val-dim">—</span>') + (isOverdue ? ' · 逾期' : '') + '</div></div>' +
+        '<div class="rmdrw-meta-item"><div class="rmdrw-meta-key">優先級</div><div class="rmdrw-meta-val">' + (pri ? pri.label : '<span class="rmdrw-meta-val-dim">未設</span>') + '</div></div>' +
+        '<div class="rmdrw-meta-item"><div class="rmdrw-meta-key">負責人</div><div class="rmdrw-meta-val">' + assigneeH + '</div></div>' +
+      '</div>';
+
+      // ---- Project / cycle pill ----
+      var projH = '';
+      if(cycleObj){
+        projH = '<div class="rmdrw-sec">' +
+          '<div class="rmdrw-sec-title">所屬項目</div>' +
+          '<div class="rmdrw-proj" onclick="window._rmCloseInlineDrawer();window._rmLegendEditCycle(\'' + cycleObj.id + '\')" title="點擊編輯週期">' +
+            '<span class="rmdrw-proj-dot" style="background:' + (cycleObj.color || '#7C5CFC') + '"></span>' +
+            '<span>' + _esc(cycleObj.name || '未命名週期') + '</span>' +
+          '</div>' +
+        '</div>';
+      }
+
+      // ---- Description ----
+      var descH = '<div class="rmdrw-sec">' +
+        '<div class="rmdrw-sec-title">描述</div>' +
+        (descText
+          ? '<div class="rmdrw-sec-body">' + _esc(descText) + '</div>'
+          : '<div class="rmdrw-empty-block">此任務尚無描述</div>'
+        ) +
+      '</div>';
+
+      // ---- Checklist ----
+      var checklistH = '';
+      if(cl.length > 0){
+        var clItemsH = '';
+        cl.forEach(function(item){
+          var done = !!item.done;
+          clItemsH += '<div class="rmdrw-cl-item' + (done ? ' done' : '') + '">' +
+            '<span class="rmdrw-cl-check">' +
+              (done ? '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7l3 3 5-6"/></svg>' : '') +
+            '</span>' +
+            '<span class="rmdrw-cl-text">' + _esc(item.text || '') + '</span>' +
+          '</div>';
+        });
+        checklistH = '<div class="rmdrw-sec">' +
+          '<div class="rmdrw-sec-title">子任務 · ' + clDone + ' / ' + cl.length + '</div>' +
+          '<div class="rmdrw-cl-progress">' +
+            '<div class="rmdrw-cl-progress-bar"><div class="rmdrw-cl-progress-fill" style="width:' + clPct + '%"></div></div>' +
+            '<span class="rmdrw-cl-progress-num">' + clPct + '%</span>' +
+          '</div>' +
+          '<div class="rmdrw-cl">' + clItemsH + '</div>' +
+        '</div>';
+      }
+
+      // ---- Related meetings (placeholder, v0.19 feature) ----
+      var meetingH = '<div class="rmdrw-sec">' +
+        '<div class="rmdrw-sec-title">相關會議</div>' +
+        '<div class="rmdrw-empty-block">會議連結整合將於 v0.19 上線</div>' +
+      '</div>';
+
+      // ---- Header icon buttons ----
+      var headActionsH =
+        '<button type="button" class="rmdrw-icon-btn" aria-label="完整編輯" title="前往完整編輯" onclick="window._rmOpenFullCard(\'' + cardId + '\')">' +
+          '<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l2 2L7 15l-3 1 1-3 9.5-9.5z"/></svg>' +
+        '</button>' +
+        '<button type="button" class="rmdrw-icon-btn" aria-label="關閉" onclick="window._rmCloseInlineDrawer()">' +
+          '<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>' +
+        '</button>';
+
+      // ---- Assemble drawer ----
       var drawerH = '' +
         '<div id="rmInlineDrawerMask" class="rmdrw-mask" aria-hidden="true"></div>' +
         '<aside id="rmInlineDrawer" class="rmdrw" role="dialog" aria-modal="true" aria-label="任務詳情">' +
           '<header class="rmdrw-head">' +
-            '<div class="rmdrw-head-top">' +
-              '<span class="rmdrw-status">' + statusLabel + '</span>' +
-              '<button type="button" class="rmdrw-close" aria-label="關閉" onclick="window._rmCloseInlineDrawer()">' +
-                '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>' +
-              '</button>' +
-            '</div>' +
-            '<h3 class="rmdrw-title">' +
-              (pri ? '<span class="rmdrw-pri-dot" style="background:' + pri.color + '"></span>' : '') +
-              (card.title || '未命名') +
-            '</h3>' +
+            '<span class="rmdrw-head-label">任務詳情</span>' +
+            '<div class="rmdrw-head-actions">' + headActionsH + '</div>' +
           '</header>' +
           '<div class="rmdrw-body">' +
-            (dateStr ? '<div class="rmdrw-row"><span class="rmdrw-label">時間</span><span class="rmdrw-val">' + dateStr + '</span></div>' : '') +
-            '<div class="rmdrw-row"><span class="rmdrw-label">分類</span><span class="rmdrw-val"><span class="rmdrw-cat-chip" style="background:' + cat.color + '14;color:' + cat.color + '">' + cat.label + '</span></span></div>' +
-            (pri ? '<div class="rmdrw-row"><span class="rmdrw-label">優先級</span><span class="rmdrw-val">' + pri.label + '</span></div>' : '') +
-            (cl.length > 0 ? '<div class="rmdrw-row"><span class="rmdrw-label">清單</span><span class="rmdrw-val">' + clDone + ' / ' + cl.length + ' 完成</span></div>' : '') +
-            (descText ? '<div class="rmdrw-desc"><div class="rmdrw-label">描述</div><div class="rmdrw-desc-body">' + descText + '</div></div>' : '') +
-            tagsH +
+            kbPreviewH +
+            metaGridH +
+            projH +
+            descH +
+            checklistH +
+            meetingH +
           '</div>' +
           '<footer class="rmdrw-foot">' +
             '<button type="button" class="btn-ghost rmdrw-btn-sec" onclick="window._rmCloseInlineDrawer()">關閉</button>' +
@@ -26091,4 +26559,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.17.0 · Calm Interface Bundle — (1) AI PM Bar 全面移除（CSS+JS+呼叫點）；(2) Roadmap → 時間軸 / Timeline 全站重命名；(3) 時間軸標題壓縮修正（flex-shrink:0 + white-space:nowrap）；(4) 到期欄位瘦身為行內 chip，兩欄制 grid；(5) 活躍 bar 水平拖移改期（4px click 閾值 + 1 日 snap）；(6) Cycle 頁 cp-ai-card / cp-focus-row / tp-pane-card padding 瘦身解擁擠；(7) cyc-focus-card / cp-ai-card::before 色條移除，改 color-mix tinting；(8) tp-row 彩虹染色移除，priority 僅以 dot + chip 表達；(9) lv2-pri 3px 立條改為 6px 圓點統一語彙；(10) 進度落後語義修正（週期進度落後 ≠ 需求池堆積）；(11) W15 殘留清除（migration + 生成器 + dead var）；全體對齊 Calm Interface 四公理 -->
+</html><!-- v0.18.0 · Timeline UX Overhaul — (1) PATH Header Spec 憲法化（CLAUDE.md 永久記憶，.page-title-area canonical，.rm-title 對齊 22/700/-.3px）；(2) 左側 rm-row 改為兩行 flex 布局：上行 title（pri-dot + text，單行省略），下行 meta（status + category + due + avatar）；(3) 完成度從模糊進度條改為 Linear 風格大數字 %（hero-num 20px/800，色調隨進度切換 ok/warn/dim）；(4) 完整圖例系統：圖例 popover 含分類（固定語意）+ 週期（點擊編輯跳 cycle manager）；(5) 滾輪預設水平捲動（Gantt 是橫向的），Shift+wheel fallback 垂直；(6) 左側項目可垂直 DnD 排序，customOrderMap localStorage 持久化，sortCards 接 groupKey；(7) rm-bar-row / rm-row 高度對齊 56px 確保左右同步；(8) Drawer 完整重寫：kb-card preview 頂部 + meta-grid (開始/到期/優先/負責人) + project pill (可點擊編輯週期) + 描述 + 子任務含進度條 + 相關會議 placeholder；(9) 「週期/任務」左標題改為「項目任務」語義校正；(10) 任務 drawer 移除分裂 drawer head-top/title，header 統一為 label + icon actions 行 -->
