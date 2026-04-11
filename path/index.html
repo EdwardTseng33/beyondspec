@@ -8955,7 +8955,7 @@ canvas{display:block;margin:0 auto 24px}
           // v0.17.0: 到期改為行內輕量 chip, 只顯示 M/D（短格式）, 無到期不顯示
           var dueChip = '';
           if(c.dueDate){
-            dueChip = '<span class="rm-row-due-inline' + (isOverdue?' overdue':'') + '">' + fmtMD(c.dueDate) + '</span>';
+            dueChip = '<span class="rm-row-due-inline' + (isOverdue?' overdue':'') + '">' + fmtMD(new Date(c.dueDate)) + '</span>';
           }
           var title = (c.title || '(未命名)').replace(/</g,'&lt;');
           leftH += '<div class="rm-row" data-card="' + c.id + '" tabindex="0" role="button" onclick="window._rmOpenCard(\'' + c.id + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window._rmOpenCard(\'' + c.id + '\')}">' +
