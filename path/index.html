@@ -899,6 +899,34 @@ canvas{display:block;margin:0 auto 24px}
 .nav-item{transition:all var(--motion-fast) var(--ease-out)}
 .nav-item:hover{background:rgba(255,255,255,.12);border-radius:var(--r-sm)}
 
+/* ===== ACCESSIBILITY: REDUCED MOTION ===== */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important}}
+
+/* ===== MODAL CLOSE ANIMATION ===== */
+.kb-modal-overlay.closing{animation:modalFadeOut var(--motion-fast) var(--ease-out) forwards}
+.kb-modal-overlay.closing .kb-modal{animation:modalScaleOut var(--motion-fast) var(--ease-out) forwards}
+@keyframes modalFadeOut{to{opacity:0}}
+@keyframes modalScaleOut{to{opacity:0;transform:scale(.96) translateY(8px)}}
+
+/* ===== UNIFIED EMPTY STATE v2 ===== */
+.bp-empty{text-align:center;padding:64px 24px}
+.bp-empty-icon{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(124,92,252,.04));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--primary)}
+.bp-empty-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.bp-empty-desc{font-size:13px;color:var(--ink-muted);line-height:1.6;max-width:320px;margin:0 auto 20px}
+.bp-empty-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:var(--primary);color:#fff;border:none;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--motion-fast)}
+.bp-empty-btn:hover{opacity:.9;transform:translateY(-1px)}
+
+/* ===== MOBILE HAMBURGER MENU ===== */
+.mobile-hamburger{display:none;position:fixed;top:12px;left:12px;z-index:1100;width:40px;height:40px;border-radius:12px;background:var(--primary);color:#fff;border:none;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(124,92,252,.3)}
+@media(max-width:640px){.mobile-hamburger{display:flex}#sidebar{transform:translateX(-100%);transition:transform var(--motion-smooth) var(--ease-smooth);z-index:1200}#sidebar.mobile-open{transform:translateX(0)}.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1150}.sidebar-backdrop.active{display:block}#main{margin-left:0!important}#content{padding:16px!important;padding-top:60px!important}}
+
+/* ===== AI SHIMMER LOADING ===== */
+.ai-shimmer{background:linear-gradient(90deg,rgba(124,92,252,.06) 25%,rgba(124,92,252,.15) 50%,rgba(124,92,252,.06) 75%);background-size:200% 100%;animation:aiShimmer 1.5s ease-in-out infinite;border-radius:var(--r-md);min-height:40px}
+@keyframes aiShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.ai-tooltip-reason{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 12px;border-radius:var(--r-sm);font-size:11px;font-weight:500;line-height:1.5;max-width:240px;white-space:normal;opacity:0;pointer-events:none;transition:opacity var(--motion-fast);z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.ai-tooltip-reason::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+[data-ai-reason]:hover .ai-tooltip-reason{opacity:1}
+
 /* ===== MODAL OVERLAY (for paywall etc) ===== */
 #modalOverlay{display:none;position:fixed;inset:0;z-index:1000;background:var(--bg-overlay);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);justify-content:center;align-items:center}
 #modalOverlay.active{display:flex}
@@ -4103,6 +4131,10 @@ canvas{display:block;margin:0 auto 24px}
 <body>
   <div id="landingPage"></div>
   <div id="app" style="display:none;">
+    <button class="mobile-hamburger" id="mobileMenuBtn" onclick="toggleMobileMenu()" title="打開選單">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+    </button>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <aside id="sidebar">
       <nav class="sidebar-nav" id="nav"></nav>
       <div class="sidebar-bottom">
@@ -4111,7 +4143,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.19.0</div>
+        <div class="sidebar-version">v0.20.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11097,13 +11129,10 @@ canvas{display:block;margin:0 auto 24px}
       // View mode: board (default) or list
       var viewMode = window._kbViewMode || 'board';
 
-      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap;animation:tc-fadeUp .3s cubic-bezier(.22,1,.36,1) both">';
-      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="14" rx="2"/><rect x="12" y="3" width="6" height="10" rx="2"/></svg> 任務看板</h2>';
-      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">追蹤任務進度，拖曳卡片推進工作</span>';
-      html += '</div>';
-      // Right side: view toggle + cycle switcher
-      html += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
+      html += '<div class="page-title-area">';
+      html += '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="14" rx="2"/><rect x="12" y="3" width="6" height="10" rx="2"/></svg><span>任務看板</span></h1>';
+      html += '<p class="subtitle">追蹤任務進度，拖曳卡片推進工作</p>';
+      html += '<div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
       // Board/List toggle
       html += '<div style="display:flex;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden">';
       html += '<button onclick="window._kbSetView(\'list\')" style="padding:5px 10px;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;font-family:inherit;transition:all .15s;background:' + (viewMode==='list'?'var(--primary)':'transparent') + ';color:' + (viewMode==='list'?'#fff':'var(--ink-muted)') + '"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="3" x2="12" y2="3"/><line x1="2" y1="7" x2="12" y2="7"/><line x1="2" y1="11" x2="12" y2="11"/></svg>列表</button>';
@@ -11124,7 +11153,6 @@ canvas{display:block;margin:0 auto 24px}
       if(_cycTotalCount > 0) html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:1px">' + _cycDoneCount + '/' + _cycTotalCount + ' 完成</div>';
       html += '</div>';
       html += '<button onclick="window._kbCycleNext()" title="下一週期" style="width:26px;height:26px;border-radius:var(--r-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-muted)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
-      html += '</div>';
       html += '</div>';
       html += '</div>';
 
@@ -11383,8 +11411,8 @@ canvas{display:block;margin:0 auto 24px}
             html += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,' + hexToRgba(col.color,0.12) + ',' + hexToRgba(col.color,0.04) + ');display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:' + col.color + ';border:1px solid ' + hexToRgba(col.color,0.15) + '">';
             html += '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="8" y1="10" x2="12" y2="10"/><line x1="10" y1="8" x2="10" y2="12"/></svg>';
             html += '</div>';
-            html += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">尚無任務</div>';
-            html += '<div style="font-size:11px;color:var(--ink-dim);line-height:1.5">拖曳卡片至此<br>或點擊 + 新增</div>';
+            html += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">這裡還沒任務</div>';
+            html += '<div style="font-size:11px;color:var(--ink-dim);line-height:1.5">從左邊拖曳卡片過來<br>或按 <strong>+</strong> 建立新任務</div>';
           }
           html += '</div>';
         }
@@ -12916,19 +12944,60 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   // ═══════════════════════════════════════════
+  // GLOBAL: Mobile Menu Toggle
+  // ═══════════════════════════════════════════
+  function toggleMobileMenu() {
+    var sb = document.getElementById('sidebar');
+    var bd = document.getElementById('sidebarBackdrop');
+    if (!sb) return;
+    var isOpen = sb.classList.contains('mobile-open');
+    if (isOpen) {
+      sb.classList.remove('mobile-open');
+      if (bd) bd.classList.remove('active');
+    } else {
+      sb.classList.add('mobile-open');
+      if (bd) bd.classList.add('active');
+    }
+  }
+  // Close mobile menu on sidebar nav click
+  (function(){
+    document.addEventListener('click', function(e) {
+      var ni = e.target.closest && e.target.closest('.nav-item');
+      if (ni && window.innerWidth <= 640) {
+        var sb = document.getElementById('sidebar');
+        var bd = document.getElementById('sidebarBackdrop');
+        if (sb) sb.classList.remove('mobile-open');
+        if (bd) bd.classList.remove('active');
+      }
+    });
+    var bd = document.getElementById('sidebarBackdrop');
+    if (bd) bd.addEventListener('click', function(){ toggleMobileMenu(); });
+  })();
+
+  // ═══════════════════════════════════════════
   // GLOBAL: Command Palette (Cmd+K / Ctrl+K)
   // ═══════════════════════════════════════════
   (function(){
     var CMD_NAV = [
+      {id:'nav-home',label:'首頁',hint:'儀表板總覽',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 10l7-7 7 7"/><path d="M5 8v8a1 1 0 001 1h3v-4h2v4h3a1 1 0 001-1V8"/></svg>',action:function(){navigate('home')}},
       {id:'nav-planning',label:'任務規劃',hint:'需求與排程',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="16 10 12 10 10 13 8 13 6 10 2 10"/><path d="M4.2 4.5L2 10v5a2 2 0 002 2h12a2 2 0 002-2v-5l-2.2-5.5A2 2 0 0013.9 3H6.1a2 2 0 00-1.9 1.5z"/></svg>',action:function(){navigate('biz-planning')}},
       {id:'nav-tasks',label:'任務看板',hint:'看板與列表',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="14" rx="2"/><rect x="12" y="3" width="6" height="10" rx="2"/></svg>',action:function(){navigate('biz-tasks')}},
-      {id:'nav-roadmap',label:'時間軸',hint:'Timeline · 週期與專案時程',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l-5 1.6V16.4L7 15l6 1.6L18 15V4.6L13 6 7 4z"/><line x1="7" y1="4" x2="7" y2="15"/><line x1="13" y1="6" x2="13" y2="16.4"/></svg>',action:function(){navigate('biz-roadmap')}},
-      {id:'nav-contacts',label:'客戶管理',hint:'聯絡人',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-3 3-5.5 7-5.5s7 2.5 7 5.5"/></svg>',action:function(){navigate('biz-contacts')}},
-      {id:'nav-quotes',label:'報價提案',hint:'報價單',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg>',action:function(){navigate('biz-quotes')}}
+      {id:'nav-roadmap',label:'時間軸',hint:'Timeline · 專案時程',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l-5 1.6V16.4L7 15l6 1.6L18 15V4.6L13 6 7 4z"/><line x1="7" y1="4" x2="7" y2="15"/><line x1="13" y1="6" x2="13" y2="16.4"/></svg>',action:function(){navigate('biz-roadmap')}},
+      {id:'nav-cycle',label:'週期管理',hint:'Sprint 與衝刺',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><polyline points="10 6 10 10 13 13"/></svg>',action:function(){navigate('biz-cycle')}},
+      {id:'nav-contacts',label:'客戶管理',hint:'聯絡人與關係',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-3 3-5.5 7-5.5s7 2.5 7 5.5"/></svg>',action:function(){navigate('biz-contacts')}},
+      {id:'nav-quotes',label:'報價提案',hint:'報價單管理',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg>',action:function(){navigate('biz-quotes')}},
+      {id:'nav-billing',label:'收款管理',hint:'發票與付款追蹤',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="2" x2="10" y2="18"/><path d="M14 6c0-1.7-1.8-3-4-3S6 4.3 6 6s1.8 3 4 3 4 1.3 4 3-1.8 3-4 3-4-1.3-4-3"/></svg>',action:function(){navigate('biz-billing')}},
+      {id:'nav-meetings',label:'會議紀錄',hint:'會議與追蹤',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/></svg>',action:function(){navigate('biz-meetings')}},
+      {id:'nav-docs',label:'文件庫',hint:'商業文件管理',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><polyline points="11 2 11 7 16 7"/></svg>',action:function(){navigate('biz-docs')}},
+      {id:'nav-settings',label:'設定',hint:'應用程式設定',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="2"/><path d="M10 2v3m0 10v3M4.2 4.2l2.1 2.1m7.4 7.4l2.1 2.1M2 10h3m10 0h3M4.2 15.8l2.1-2.1m7.4-7.4l2.1-2.1"/></svg>',action:function(){navigate('biz-settings')}}
     ];
     var CMD_ACTIONS = [
       {id:'act-new-task',label:'建立新任務',hint:'N',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>',action:function(){navigate('biz-tasks');setTimeout(function(){if(window._kbAddCard)window._kbAddCard('todo');},200)}},
-      {id:'act-toggle-dark',label:'切換深色模式',hint:'',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 10a7 7 0 11-7-7 5 5 0 007 7z"/></svg>',action:function(){if(window.app&&window.app.toggleTheme)window.app.toggleTheme()}}
+      {id:'act-new-contact',label:'新增客戶',hint:'',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M3 18c0-3 3-5.5 7-5.5s7 2.5 7 5.5"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="14" y1="5" x2="18" y2="5"/></svg>',action:function(){navigate('biz-contacts')}},
+      {id:'act-new-quote',label:'建立報價',hint:'',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg>',action:function(){navigate('biz-quotes')}},
+      {id:'act-new-invoice',label:'新建發票',hint:'',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="2" x2="10" y2="18"/><path d="M14 6c0-1.7-1.8-3-4-3S6 4.3 6 6s1.8 3 4 3 4 1.3 4 3-1.8 3-4 3-4-1.3-4-3"/></svg>',action:function(){navigate('biz-billing')}},
+      {id:'act-toggle-dark',label:'切換深色模式',hint:'',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 10a7 7 0 11-7-7 5 5 0 007 7z"/></svg>',action:function(){if(window.app&&window.app.toggleTheme)window.app.toggleTheme()}},
+      {id:'act-help',label:'快捷鍵說明',hint:'?',icon:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M7.5 8a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5"/><circle cx="10" cy="14.5" r=".5" fill="currentColor"/></svg>',action:function(){if(window._kbShowHelp)window._kbShowHelp()}}
     ];
 
     var _cpOpen = false;
@@ -13098,12 +13167,11 @@ canvas{display:block;margin:0 auto 24px}
       var sq = (window._ctSearch||'').toLowerCase();
       var html = '';
 
-      // Header: page-title-area style
-      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
-      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M17 18v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="6" r="4"/></svg> 客戶管理</h2>';
-      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">管理客戶資訊、追蹤交易紀錄</span>';
-      html += '</div></div>';
+      // Header: page-title-area (canonical)
+      html += '<div class="page-title-area">';
+      html += '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 18v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="6" r="4"/></svg><span>客戶管理</span></h1>';
+      html += '<p class="subtitle">管理客戶資訊、追蹤交易紀錄</p>';
+      html += '</div>';
 
       // Action row: Type pills + Status dropdown + Search + Buttons
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">';
@@ -14028,12 +14096,11 @@ canvas{display:block;margin:0 auto 24px}
 
       var html = '';
 
-      // Header: page-title-area (h2 + subtitle ONLY — matches contacts/kanban pattern)
-      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
-      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2z"/><path d="M7 7h6M7 10h6M7 13h3"/></svg> 報價提案</h2>';
-      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">快速產一份專業報價</span>';
-      html += '</div></div>';
+      // Header: page-title-area (canonical)
+      html += '<div class="page-title-area">';
+      html += '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2z"/><path d="M7 7h6M7 10h6M7 13h3"/></svg><span>報價提案</span></h1>';
+      html += '<p class="subtitle">快速產一份專業報價</p>';
+      html += '</div>';
 
       // Action row: Filter pills LEFT + Search + Button RIGHT (matches contacts pattern)
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">';
@@ -16439,12 +16506,11 @@ canvas{display:block;margin:0 auto 24px}
       });
 
       var html = '';
-      // Header: page-title-area style
-      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
-      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M10 2v16M15 5H7.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H5"/></svg> 收款管理</h2>';
-      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">追蹤發票與收款進度，掌握應收帳款</span>';
-      html += '</div></div>';
+      // Header: page-title-area (canonical)
+      html += '<div class="page-title-area">';
+      html += '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2v16M15 5H7.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H5"/></svg><span>收款管理</span></h1>';
+      html += '<p class="subtitle">錢收到了嗎？追蹤發票與收款進度</p>';
+      html += '</div>';
 
       // Action row: Filter pills (left) + Search + Add button (right)
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">';
@@ -23365,11 +23431,10 @@ function loadHistory(){
       var sq = (window._mtSearch || '').toLowerCase();
       var html = '';
       // Header: page-title-area (h2 + subtitle ONLY)
-      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
-      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="5"/><line x1="13" y1="2" x2="13" y2="5"/></svg> 會議紀錄</h2>';
-      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">記錄每次溝通，不遺漏任何承諾</span>';
-      html += '</div></div>';
+      html += '<div class="page-title-area">';
+      html += '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="5"/><line x1="13" y1="2" x2="13" y2="5"/></svg><span>會議紀錄</span></h1>';
+      html += '<p class="subtitle">記錄每次溝通，不遺漏任何承諾</p>';
+      html += '</div>';
 
       // Action row: Search + Button (matches contacts/quotes/billing pattern)
       html += '<div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px">';
@@ -23604,11 +23669,10 @@ function loadHistory(){
       var sq = (window._dcSearch || '').toLowerCase();
       var html = '';
       // Header: page-title-area (h2 + subtitle ONLY)
-      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
-      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><polyline points="10,2 10,8 16,8"/></svg> 文件庫</h2>';
-      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">集中管理所有商業文件</span>';
-      html += '</div></div>';
+      html += '<div class="page-title-area">';
+      html += '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/><polyline points="10,2 10,8 16,8"/></svg><span>文件庫</span></h1>';
+      html += '<p class="subtitle">那份合約在哪裡？集中管理所有商業文件</p>';
+      html += '</div>';
 
       // Action row: Filter pills LEFT + Search + Button RIGHT (matches contacts/quotes pattern)
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px">';
@@ -26799,4 +26863,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.19.0 · UIUX Comfort Polish — (1) 全域頁面切換動畫：navigate() 增加 page-exit/page-enter 淡入淡出+位移；(2) 看板空欄位重設計：icon 圓圈+「尚無任務」+拖曳提示；(3) Toast 升級：進場彈性動畫+退場右滑淡出；(4) 按鈕 active 回饋：scale(.97) 壓感+focus-visible glow；(5) 列表行 hover 指示器：左側 3px primary 色條；(6) Stagger 動畫系統：子元素依序入場 30ms 間隔 -->
+</html><!-- v0.20.0 · UIUX Excellence Push — (1) 全域頁面切換動畫：navigate() 增加 page-exit/page-enter 淡入淡出+位移；(2) 看板空欄位重設計：icon 圓圈+「尚無任務」+拖曳提示；(3) Toast 升級：進場彈性動畫+退場右滑淡出；(4) 按鈕 active 回饋：scale(.97) 壓感+focus-visible glow；(5) 列表行 hover 指示器：左側 3px primary 色條；(6) Stagger 動畫系統：子元素依序入場 30ms 間隔 -->
