@@ -918,7 +918,7 @@ canvas{display:block;margin:0 auto 24px}
 
 /* ===== MOBILE HAMBURGER MENU ===== */
 .mobile-hamburger{display:none;position:fixed;top:12px;left:12px;z-index:1100;width:40px;height:40px;border-radius:12px;background:var(--primary);color:#fff;border:none;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(124,92,252,.3)}
-@media(max-width:640px){.mobile-hamburger{display:flex}#sidebar{transform:translateX(-100%);transition:transform var(--motion-smooth) var(--ease-smooth);z-index:1200}#sidebar.mobile-open{transform:translateX(0)}.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1150}.sidebar-backdrop.active{display:block}#main{margin-left:0!important}#content{padding:16px!important;padding-top:60px!important}}
+@media(max-width:640px){.mobile-hamburger{display:flex}#sidebar{transform:translateX(-100%);transition:transform var(--motion-smooth) var(--ease-smooth);z-index:1200}#sidebar.mobile-open{transform:translateX(0)}.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1150}.sidebar-backdrop.active{display:block}#main{margin-left:0!important}#content{padding:16px!important;padding-top:60px!important}.kb-v2-columns{flex-direction:column!important}.kb-v2-column{min-width:100%!important;max-width:100%!important}.page-title-area{flex-direction:column;gap:8px}.page-title-area h1{font-size:18px}}
 
 /* ===== TABLET BREAKPOINT (641-1024px) ===== */
 @media(min-width:641px) and (max-width:1024px){#sidebar{width:68px}#sidebar .nav-label,#sidebar .sidebar-version,#sidebar .nav-section-label{display:none}#sidebar .nav-item{justify-content:center;padding:10px 0}#sidebar .nav-icon{margin:0}#main{margin-left:68px!important}#content{padding:24px!important}.page-title-area{flex-direction:column;align-items:flex-start}}
@@ -4146,7 +4146,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.21.0</div>
+        <div class="sidebar-version">v0.22.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -5720,7 +5720,7 @@ canvas{display:block;margin:0 auto 24px}
                 const latest = activities.slice(0, 8);
 
                 if (latest.length === 0) {
-                  return '<div style="padding:20px 12px;text-align:center;color:var(--ink-dim);font-size:13px;line-height:1.6">尚未有活動紀錄<br><span style="font-size:12px">開始使用各模組後，動態將顯示於此</span></div>';
+                  return '<div class="bp-empty" style="padding:36px 16px"><div class="bp-empty-icon" style="width:48px;height:48px"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2v4M10 14v4M4.93 4.93l2.83 2.83M12.24 12.24l2.83 2.83M2 10h4M14 10h4M4.93 15.07l2.83-2.83M12.24 7.76l2.83-2.83"/></svg></div><div class="bp-empty-title" style="font-size:14px">還沒有動態紀錄</div><div class="bp-empty-desc" style="font-size:12px">開始使用任務、客戶、報價等模組<br>操作紀錄會自動出現在這裡</div></div>';
                 }
 
                 return latest.map(a =>
@@ -6948,11 +6948,10 @@ canvas{display:block;margin:0 auto 24px}
     // ── Render shared header (v2: no add button — moved to filter row) ──
     function renderHeader(){
       var html = '';
-      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap;animation:tc-fadeUp .3s cubic-bezier(.22,1,.36,1) both">';
-      html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
-      html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg> 任務規劃</h2>';
-      html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">管理需求、決定每一輪的工作內容</span>';
-      html += '</div></div>';
+      html += '<div class="page-title-area">';
+      html += '<h1><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg><span>任務規劃</span></h1>';
+      html += '<p class="subtitle">管理需求、決定每一輪的工作內容</p>';
+      html += '</div>';
       return html;
     }
 
@@ -10390,16 +10389,15 @@ canvas{display:block;margin:0 auto 24px}
     var html = '<div class="cyc-wrap">';
 
     // Top bar
-    html += '<div class="cyc-topbar">';
-    html += '<div class="cyc-topbar-left">';
-    html += '<h2><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>當期總覽</h2>';
-    html += '<div class="cyc-cycle-meta"><span class="cyc-dot"></span>' + esc(currentCycle.label || fmtCycleLabel()) + '</div>';
+    html += '<div class="page-title-area">';
+    html += '<h1><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>當期總覽</span></h1>';
+    html += '<p class="subtitle"><span class="cyc-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--teal);margin-right:6px"></span>' + esc(currentCycle.label || fmtCycleLabel());
     if(daysLeft > 0){
-      html += '<div class="cyc-days-left">剩 <strong>' + daysLeft + '</strong> 天 · 已過 ' + elapsedDays + '/' + totalDays + '</div>';
+      html += ' · 剩 <strong>' + daysLeft + '</strong> 天';
     } else {
-      html += '<div class="cyc-days-left">今日收尾 · 已過 ' + elapsedDays + '/' + totalDays + '</div>';
+      html += ' · 今日收尾';
     }
-    html += '</div>';
+    html += '</p>';
     html += '</div>';
 
     // Hero
@@ -13115,7 +13113,14 @@ canvas{display:block;margin:0 auto 24px}
         e.preventDefault();
         if(_cpOpen) closePalette(); else openPalette();
       }
-      if(e.key === 'Escape' && _cpOpen) closePalette();
+      if(e.key === 'Escape') {
+        if(_cpOpen) { closePalette(); return; }
+        // Global Esc: close topmost modal overlay
+        var overlays = document.querySelectorAll('.kb-modal-overlay, .kb-overlay');
+        if(overlays.length > 0) {
+          closeModalAnimated(overlays[overlays.length - 1]);
+        }
+      }
     });
   })();
 
@@ -13244,17 +13249,15 @@ canvas{display:block;margin:0 auto 24px}
       // Cards grid — wrapped in ctCardGrid for partial re-render
       html += '<div id="ctCardGrid">';
       if(filtered.length === 0){
-        html += '<div style="text-align:center;padding:72px 24px">';
-        html += '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(124,92,252,.04));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:1px solid rgba(124,92,252,.1);color:var(--primary)">';
-        html += '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>';
-        html += '</div>';
+        html += '<div class="bp-empty">';
+        html += '<div class="bp-empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>';
         if(sq||activeFilter!=='all'){
-          html += '<div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px">找不到符合條件的客戶</div>';
-          html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6">試試其他關鍵字，或清除篩選條件</div>';
+          html += '<div class="bp-empty-title">找不到符合條件的客戶</div>';
+          html += '<div class="bp-empty-desc">試試其他關鍵字，或清除篩選條件</div>';
         } else {
-          html += '<div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px">建立你的客戶名冊</div>';
-          html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6;max-width:320px;margin:0 auto 20px">管理客戶資訊、追蹤交易紀錄，一目瞭然</div>';
-          html += '<button class="btn btn-accent" style="padding:10px 24px;font-size:13px" onclick="window._ctAdd()">' + IC.plus + ' 新增客戶</button>';
+          html += '<div class="bp-empty-title">建立你的客戶名冊</div>';
+          html += '<div class="bp-empty-desc">客戶、廠商、合作夥伴⋯⋯<br>所有商業關係集中管理</div>';
+          html += '<button class="bp-empty-btn" onclick="window._ctAdd()">' + IC.plus + ' 新增客戶</button>';
         }
         html += '</div>';
       } else {
@@ -16384,6 +16387,20 @@ canvas{display:block;margin:0 auto 24px}
       });
       html += '</div></div>';
     }
+
+    // ═══ AI Transparency Footer ═══
+    var dataSources = [];
+    if (quotes.length > 0) dataSources.push('報價（' + quotes.length + '筆）');
+    if (contacts.length > 0) dataSources.push('客戶（' + contacts.length + '筆）');
+    if (billing.length > 0) dataSources.push('收款（' + billing.length + '筆）');
+    if (tasks.length > 0) dataSources.push('任務（' + tasks.length + '筆）');
+    if (meetings.length > 0) dataSources.push('會議（' + meetings.length + '筆）');
+    var timeStr = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate() + ' ' + String(now.getHours()).replace(/^(\d)$/, '0$1') + ':' + String(now.getMinutes()).replace(/^(\d)$/, '0$1');
+    html += '<div style="margin-top:12px;padding:16px 20px;background:var(--bg-hover);border-radius:var(--r-lg);display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
+    html += '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--ink-dim)" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>';
+    html += '<span style="font-size:11px;color:var(--ink-dim);font-weight:500">分析依據：' + (dataSources.length > 0 ? dataSources.join('、') : '尚無資料') + '</span>';
+    html += '<span style="font-size:11px;color:var(--ink-dim);margin-left:auto">更新於 ' + timeStr + '</span>';
+    html += '</div>';
 
     content.innerHTML = html;
   }
@@ -26875,4 +26892,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.21.0 · UIUX 95 Sprint — (1) Tablet 斷點 641-1024px sidebar icon-only；(2) AI 儀表板 header 遷移至 .page-title-area；(3) 會議/文件空狀態改用 .bp-empty 統一元件+CTA 按鈕；(4) closeModalAnimated() 全域函式，23 處 modal close 加入 fade-out+scale-down 動畫；(5) AI 任務 badge 加入 data-ai-reason tooltip 可見化；(6) .closing CSS 擴展至 .kb-overlay -->
+</html><!-- v0.22.0 · UIUX 95 Sprint Phase 2 — (1) Dashboard 近期動態/Contacts 空狀態→.bp-empty；(2) 任務規劃/當期總覽 header→.page-title-area；(3) Kanban 行動版單欄；(4) Global Esc 關閉任意 modal；(5) AI 儀表板分析依據 footer（資料來源+時間戳）-->
