@@ -3382,23 +3382,30 @@ canvas{display:block;margin:0 auto 24px}
    - 主行：pri-dot + 任務標題 (14px/600)
    - 副行：status badge + category dot · category label + due chip + avatar
    - Height 56px，padding 左 40px（避開 group chev 縮排）*/
-.rm-row{display:flex;flex-direction:column;justify-content:center;gap:4px;height:56px;padding:0 14px 0 40px;color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
+/* v0.25.0: 極簡單行 row — 狀態色點 + 標題 */
+.rm-row{display:flex;align-items:center;height:56px;padding:0 14px 0 40px;color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
 [data-theme="dark"] .rm-row{border-bottom-color:rgba(255,255,255,.04)}
 .rm-row:hover{background:var(--bg-hover)}
 .rm-row:focus-visible{outline:none;background:var(--bg-hover);box-shadow:0 0 0 1px rgba(124,92,252,.35)}
 .rm-row:active{background:var(--primary-light,rgba(124,92,252,.1))}
+.rm-row.done{opacity:.6}
+.rm-row.overdue .rm-row-title-text{color:var(--rose)}
 .rm-row.dragging{opacity:.45;background:var(--bg-hover)}
 .rm-row.drop-before::before{content:'';position:absolute;top:0;left:40px;right:14px;height:2px;background:var(--primary);border-radius:1px;box-shadow:0 0 8px rgba(124,92,252,.4)}
 .rm-row.drop-after::after{content:'';position:absolute;bottom:0;left:40px;right:14px;height:2px;background:var(--primary);border-radius:1px;box-shadow:0 0 8px rgba(124,92,252,.4)}
 
 /* Main row: pri-dot + title */
-.rm-row-title{display:flex;align-items:center;gap:8px;min-width:0;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;letter-spacing:-.01em}
-.rm-row-title .rm-pri-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px var(--bg-card)}
-.rm-row-title .rm-pri-dot.high{background:var(--rose)}
-.rm-row-title .rm-pri-dot.medium{background:var(--gold)}
-.rm-row-title .rm-pri-dot.low{background:var(--teal)}
-.rm-row-title .rm-pri-dot.none{background:var(--ink-dim);opacity:.3;box-shadow:none}
+/* v0.25.0: 單行 row — 狀態色點 + 標題 */
+.rm-row-title{display:flex;align-items:center;gap:10px;min-width:0;font-size:13px;font-weight:600;color:var(--ink);line-height:1.3;letter-spacing:-.01em}
+.rm-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .2s}
+.rm-status-dot.inbox{background:#94A3B8}
+.rm-status-dot.todo{background:var(--primary)}
+.rm-status-dot.doing{background:var(--gold)}
+.rm-status-dot.review{background:#3B82F6}
+.rm-status-dot.done{background:var(--teal)}
+.rm-status-dot.overdue{background:var(--rose);box-shadow:0 0 0 3px rgba(217,68,98,.18)}
 .rm-row-title-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-row-title-text.done{text-decoration:line-through;color:var(--ink-dim)}
 
 /* Meta row: status + category + due + avatar */
 .rm-row-meta{display:flex;align-items:center;gap:8px;min-width:0;padding-left:14px;flex-wrap:nowrap;overflow:hidden}
@@ -3462,33 +3469,19 @@ canvas{display:block;margin:0 auto 24px}
 .rm-atom-stripe.weekend{background:rgba(0,0,0,.028)}
 [data-theme="dark"] .rm-atom-stripe.weekend{background:rgba(255,255,255,.028)}
 
-/* v0.16.1 Today line — 2px 但 opacity .82 維持 calm；頂端 dot 取代 diamond 更現代 */
-.rm-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--primary);z-index:5;pointer-events:none;opacity:.82;border-radius:2px}
-.rm-today-diamond{position:absolute;top:-5px;left:-4px;width:10px;height:10px;background:var(--primary);border-radius:50%;border:2px solid var(--bg-card);box-shadow:0 2px 10px rgba(124,92,252,.4);z-index:6}
+/* v0.25.0: 今天線強化 — 視覺錨點，帶微光效果 */
+.rm-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--primary);z-index:5;pointer-events:none;opacity:1;border-radius:2px;box-shadow:0 0 8px rgba(124,92,252,.3),0 0 20px rgba(124,92,252,.12)}
+.rm-today-diamond{position:absolute;top:-6px;left:-5px;width:12px;height:12px;background:var(--primary);border-radius:50%;border:2px solid var(--bg-card);box-shadow:0 2px 12px rgba(124,92,252,.5);z-index:6}
 
-/* v0.15.2 Cycle strip row — fixed label strip above bars (no collision) */
-.rm-cycle-strip-row{position:relative;height:28px;background:var(--bg-subtle,rgba(124,92,252,.03));border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-[data-theme="dark"] .rm-cycle-strip-row{background:rgba(124,92,252,.04)}
-.rm-cycle-strip{position:absolute;top:4px;height:20px;display:flex;align-items:center;justify-content:flex-start;padding:0 10px;background:rgba(124,92,252,.1);border:1px solid rgba(124,92,252,.28);border-radius:10px;z-index:2;overflow:hidden;box-sizing:border-box}
-.rm-cycle-strip.current{background:rgba(27,168,145,.14);border-color:rgba(27,168,145,.45);box-shadow:0 1px 4px rgba(27,168,145,.2)}
-.rm-cycle-strip.past{background:rgba(148,163,184,.1);border-color:rgba(148,163,184,.28);opacity:.72}
-.rm-cycle-strip-label{font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em;font-variant-numeric:tabular-nums;line-height:1}
-.rm-cycle-strip.current .rm-cycle-strip-label{color:var(--teal)}
-.rm-cycle-strip.past .rm-cycle-strip-label{color:var(--ink-dim)}
-[data-theme="dark"] .rm-cycle-strip{background:rgba(124,92,252,.16)}
-[data-theme="dark"] .rm-cycle-strip.current{background:rgba(27,168,145,.2)}
+/* v0.25.0: cycle strip 已移除 */
+/* v0.25.0: group separator row (右側甘特區對齊左側 group header) */
+.rm-group-sep-row{height:52px;position:relative;border-bottom:1px solid var(--border);background:var(--bg-card)}
+.rm-group-sep-row.past{opacity:.78}
 
-/* v0.15.2 Cycle rollup row — cycle IS the atom, rendered as a thick colored bar */
-.rm-rollup-row{height:52px;position:relative;border-bottom:1px solid var(--border)}
-.rm-rollup-row.current{background:linear-gradient(90deg,rgba(27,168,145,.04) 0%,transparent 100%)}
-.rm-cycle-rollup{position:absolute;top:14px;height:24px;border-radius:6px;background:var(--cy-color,#7C5CFC);cursor:pointer;overflow:hidden;z-index:2;display:flex;align-items:center;padding:0 12px;box-shadow:0 2px 6px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.28);transition:transform var(--motion-normal,180ms) var(--ease-out),box-shadow var(--motion-normal,180ms) var(--ease-out),filter var(--motion-normal,180ms) var(--ease-out)}
-.rm-cycle-rollup:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.4);filter:brightness(1.08)}
-.rm-cycle-rollup.past{opacity:.68}
-.rm-cycle-rollup.current{box-shadow:0 4px 14px rgba(27,168,145,.36),inset 0 1px 0 rgba(255,255,255,.35),0 0 0 2px rgba(27,168,145,.22)}
-.rm-cycle-rollup-fill{position:absolute;top:0;left:0;bottom:0;background:rgba(255,255,255,.3);border-radius:6px 0 0 6px;pointer-events:none}
-.rm-cycle-rollup-label{position:relative;z-index:1;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.2);letter-spacing:.02em;font-variant-numeric:tabular-nums}
-.rm-backlog-rollup{position:absolute;top:14px;left:8px;height:24px;display:flex;align-items:center;gap:6px;padding:0 12px;background:var(--bg-hover);border:1px dashed var(--border);border-radius:12px;cursor:pointer;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:var(--ink-muted);transition:background var(--motion-fast,120ms) var(--ease-out)}
-.rm-backlog-rollup:hover{background:rgba(124,92,252,.08);color:var(--primary);border-color:rgba(124,92,252,.28)}
+/* v0.25.0: rollup row 已移除，保留空樣式以防殘留 DOM */
+.rm-rollup-row{display:none}
+.rm-cycle-rollup{display:none}
+.rm-backlog-rollup{display:none}
 
 /* Task row background (matches .rm-row in left, must align) */
 .rm-bar-row{height:56px;position:relative;border-bottom:1px solid rgba(0,0,0,.03);animation:rm-rowIn var(--motion-smooth,280ms) var(--ease-smooth) both}
@@ -3515,7 +3508,9 @@ canvas{display:block;margin:0 auto 24px}
 .rm-bar.slim::before{content:'';display:block;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.9);position:relative;z-index:2}
 .rm-bar.done{opacity:.78}
 .rm-bar.done .rm-bar-title{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.6)}
-.rm-bar.overdue::after{content:'';position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--rose);border:2px solid var(--bg-card);z-index:3}
+/* v0.25.0: 逾期強化 — bar 右端帶紅色溢出標記 + 微紅邊框 */
+.rm-bar.overdue{box-shadow:0 0 0 1.5px var(--rose),0 2px 8px rgba(217,68,98,.25);filter:saturate(1.1)}
+.rm-bar.overdue::after{content:'';position:absolute;top:-3px;right:-6px;width:12px;height:12px;border-radius:50%;background:var(--rose);border:2px solid var(--bg-card);z-index:3;box-shadow:0 0 6px rgba(217,68,98,.4)}
 .rm-bar.no-date{background:repeating-linear-gradient(45deg,var(--bg-hover),var(--bg-hover) 6px,rgba(0,0,0,.03) 6px,rgba(0,0,0,.03) 12px)!important;color:var(--ink-dim);border:1px dashed var(--border);box-shadow:none;text-shadow:none}
 [data-theme="dark"] .rm-bar.no-date{background:repeating-linear-gradient(45deg,var(--bg-hover),var(--bg-hover) 6px,rgba(255,255,255,.04) 6px,rgba(255,255,255,.04) 12px)!important}
 
@@ -3657,30 +3652,25 @@ canvas{display:block;margin:0 auto 24px}
 [data-theme="dark"] .rm-help-card{box-shadow:0 28px 70px rgba(0,0,0,.6),0 2px 10px rgba(0,0,0,.4)}
 [data-theme="dark"] .rm-help-row kbd{background:rgba(255,255,255,.06);box-shadow:0 1px 2px rgba(0,0,0,.4),inset 0 -1px 0 rgba(255,255,255,.08)}
 
-/* Responsive — v0.18.0 */
+/* Responsive — v0.25.0 simplified */
 @media (max-width:900px){
-  .rm-left{width:280px}
+  .rm-left{width:260px}
   .rm-left-header{padding:0 10px 10px 14px}
   .rm-row{padding:0 10px 0 28px}
-  .rm-row-cat-label{display:none}
   .rm-group-progress-ring{margin-left:2px}
 }
 @media (max-width:640px){
   .rm-wrap{margin:-8px -4px 0;height:calc(100vh - 50px)}
-  .rm-left{width:220px}
+  .rm-left{width:200px}
   .rm-left-header{padding:0 10px 10px}
-  .rm-row{padding:0 10px 0 22px;height:52px}
-  .rm-row-status{display:none}
-  .rm-row-meta-spacer{min-width:4px}
+  .rm-row{padding:0 10px 0 22px}
   .rm-group-progress-ring{display:none}
   .rm-sub{display:none}
   .rm-title{font-size:18px}
   .rm-toolbar{padding:10px 12px;gap:8px;flex-wrap:wrap}
-  .rm-toolbar .rm-stat,.rm-toolbar .rm-divider,.rm-hero{display:none}
-  .rm-help-btn{display:none}
+  .rm-toolbar .rm-stat,.rm-toolbar .rm-divider{display:none}
   .rm-today-btn{padding:6px 12px}
   .rm-tool-btn{padding:5px 10px}
-  .rm-legend-btn{padding:0 8px}
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -4156,7 +4146,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.24.0</div>
+        <div class="sidebar-version">v0.25.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -9195,15 +9185,12 @@ canvas{display:block;margin:0 auto 24px}
       return { key: k, label: CATS[k].label, color: CATS[k].color, count: kCount };
     }).filter(function(x){ return x.count > 0; });
 
+    // v0.25.0: 河流式時間軸 — toolbar 只留三件事：標題 / 縮放 / 今天
     var toolbarH = '<div class="rm-toolbar">' +
       '<div class="rm-title-block">' +
         '<h1 class="rm-title">' + ICONS.roadmap + '<span>時間軸</span></h1>' +
-        '<p class="rm-sub">Timeline · 週期進程總覽</p>' +
+        '<p class="rm-sub">用時間看全局</p>' +
       '</div>' +
-      '<div class="rm-hero">' +
-        '<div class="rm-hero-sub">完成 ' + totalDone + ' / ' + totalCards + ' 項</div>' +
-      '</div>' +
-      '<div class="rm-divider"></div>' +
       '<div class="rm-tool-group">' +
         '<button class="rm-tool-btn' + (RM.zoom==='quarter'?' active':'') + '" onclick="window._rmSetZoom(\'quarter\')">季</button>' +
         '<button class="rm-tool-btn' + (RM.zoom==='month'?' active':'') + '" onclick="window._rmSetZoom(\'month\')">月</button>' +
@@ -9213,19 +9200,9 @@ canvas{display:block;margin:0 auto 24px}
         '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="10" y1="16" x2="10" y2="18"/><line x1="2" y1="10" x2="4" y2="10"/><line x1="16" y1="10" x2="18" y2="10"/></svg>' +
         '今天' +
       '</button>' +
-      '<div class="rm-legend-pop-wrap">' +
-        '<button class="rm-legend-btn" id="rmLegendBtn" onclick="window._rmToggleLegend(event)" aria-label="項目顏色圖例" title="顏色說明">' +
-          '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="14" cy="6" r="2.5"/><circle cx="6" cy="14" r="2.5"/><circle cx="14" cy="14" r="2.5"/></svg>' +
-          '圖例' +
-        '</button>' +
-      '</div>' +
-      '<button class="rm-help-btn" onclick="window._rmShowHelp()" title="鍵盤快捷鍵（按 ? 開啟）" aria-label="顯示鍵盤快捷鍵">' +
-        '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><path d="M7.5 7.5a2.5 2.5 0 115 0c0 1.5-2.5 2-2.5 3.5"/><line x1="10" y1="14.5" x2="10.01" y2="14.5"/></svg>' +
-      '</button>' +
     '</div>';
 
-    // 把圖例資料存在 window._rmLegendData 供 popover render 使用
-    window._rmLegendData = { cats: catLegendData, cycles: cycleLegendData };
+    // v0.25.0: legend 已移除，不再需要 _rmLegendData
 
     // ── Build left panel (cycle-first table) ──
     // v0.18.0: 單欄兩行式 row（標題主行 / meta 副行），對齊 kb-card-v2 視覺語彙
@@ -9233,20 +9210,17 @@ canvas{display:block;margin:0 auto 24px}
       '<div class="rm-left-header">項目任務</div>' +
       '<div class="rm-left-body" id="rmLeftBody">';
 
+    // v0.25.0: 河流式左側面板 — 極簡模式
     groups.forEach(function(g){
       var expanded = RM.expanded[g.key];
       var stateTag = '';
       if(g.kind === 'cycle'){
         if(g.isPast) stateTag = '<span class="rm-cycle-tag past">已完結</span>';
-        else if(g.isFuture) stateTag = '<span class="rm-cycle-tag future">即將</span>';
       } else {
         stateTag = '<span class="rm-cycle-tag backlog">需求池</span>';
       }
-      var dateRangeStr = '';
-      if(g.startDate && g.endDate){
-        dateRangeStr = '<span class="rm-group-daterange">' + fmtMD(g.startDate) + ' – ' + fmtMD(g.endDate) + '</span>';
-      }
       var progressW = Math.max(0, Math.min(100, g.progress));
+      // v0.25.0: group header 只留：chevron + 色點 + 名稱 + 狀態tag + 百分比
       leftH += '<div class="rm-group-header' + (expanded?'':' collapsed') + (g.isPast?' past':'') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" data-group="' + g.key + '">' +
         '<svg class="rm-group-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 8 10 12 14 8"/></svg>' +
         '<span class="rm-group-dot" style="background:' + g.color + '"></span>' +
@@ -9255,57 +9229,24 @@ canvas{display:block;margin:0 auto 24px}
             '<span class="rm-group-label">' + g.label + '</span>' +
             stateTag +
           '</div>' +
-          '<div class="rm-group-subline">' +
-            dateRangeStr +
-            '<span class="rm-group-count">' + g.done + '/' + g.total + '</span>' +
-          '</div>' +
         '</div>' +
         '<div class="rm-group-progress-ring" aria-label="進度 ' + progressW + '%">' +
-          '<div class="rm-gpr-track"></div>' +
-          '<div class="rm-gpr-fill" style="width:' + progressW + '%;background:' + g.color + '"></div>' +
           '<div class="rm-gpr-num">' + progressW + '%</div>' +
         '</div>' +
       '</div>';
       if(expanded){
         g.cards.forEach(function(c, rowIdx){
-          var pri = c.priority || 'none';
           var status = c.columnId || 'todo';
           var isOverdue = c.dueDate && c.columnId !== 'done' && new Date(c.dueDate) < today;
+          var isDone = status === 'done';
           var title = (c.title || '(未命名)').replace(/</g,'&lt;');
-          // v0.18.0: 兩行式 row
-          // 主行：pri-dot + title
-          // 副行：status badge + category dot/label + (spacer) + due chip + avatar
-          var catObj = CATS[c.category] || null;
-          var catH = '';
-          if(catObj){
-            catH = '<span class="rm-row-cat" title="' + catObj.label + '">' +
-                     '<span class="rm-row-cat-dot" style="background:' + catObj.color + '"></span>' +
-                     '<span class="rm-row-cat-label">' + catObj.label + '</span>' +
-                   '</span>';
-          }
-          var dueChip = '';
-          if(c.dueDate){
-            dueChip = '<span class="rm-row-due-inline' + (isOverdue?' overdue':'') + '" title="到期 ' + fmtMD(new Date(c.dueDate)) + '">' +
-                        '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="3" width="10" height="9" rx="1.5"/><line x1="5" y1="1.5" x2="5" y2="3.5"/><line x1="9" y1="1.5" x2="9" y2="3.5"/></svg>' +
-                        fmtMD(new Date(c.dueDate)) +
-                      '</span>';
-          }
-          // Avatar — agent (AI) 用漸層, human 用 dim grey
-          var avaH = '';
-          if(c.assignee === 'agent' || c.assignee === 'ai'){
-            avaH = '<span class="rm-row-avatar agent" title="AI agent">AI</span>';
-          } else if(c.assignee){
-            var initial = String(c.assignee).charAt(0).toUpperCase();
-            avaH = '<span class="rm-row-avatar human" title="' + c.assignee + '">' + initial + '</span>';
-          }
-          leftH += '<div class="rm-row" data-card="' + c.id + '" data-row-idx="' + rowIdx + '" data-group="' + g.key + '" tabindex="0" role="button" draggable="true" onclick="window._rmOpenCard(\'' + c.id + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window._rmOpenCard(\'' + c.id + '\')}" ondragstart="window._rmRowDragStart(event,\'' + c.id + '\')" ondragover="window._rmRowDragOver(event)" ondragleave="window._rmRowDragLeave(event)" ondrop="window._rmRowDrop(event,\'' + c.id + '\')" ondragend="window._rmRowDragEnd(event)">' +
-            '<div class="rm-row-title"><span class="rm-pri-dot ' + pri + '"></span><span class="rm-row-title-text">' + title + '</span></div>' +
-            '<div class="rm-row-meta">' +
-              '<span class="rm-row-status ' + status + '">' + (STATUS_LABELS[status] || status) + '</span>' +
-              catH +
-              '<span class="rm-row-meta-spacer"></span>' +
-              dueChip +
-              avaH +
+          // v0.25.0: 單行極簡 row — 狀態色點 + 標題（hover 看詳情，click 開 drawer）
+          var statusDotCls = 'rm-status-dot ' + status;
+          if(isOverdue) statusDotCls += ' overdue';
+          leftH += '<div class="rm-row' + (isDone?' done':'') + (isOverdue?' overdue':'') + '" data-card="' + c.id + '" data-row-idx="' + rowIdx + '" data-group="' + g.key + '" tabindex="0" role="button" draggable="true" onclick="window._rmOpenCard(\'' + c.id + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window._rmOpenCard(\'' + c.id + '\')}" ondragstart="window._rmRowDragStart(event,\'' + c.id + '\')" ondragover="window._rmRowDragOver(event)" ondragleave="window._rmRowDragLeave(event)" ondrop="window._rmRowDrop(event,\'' + c.id + '\')" ondragend="window._rmRowDragEnd(event)">' +
+            '<div class="rm-row-title">' +
+              '<span class="' + statusDotCls + '" title="' + (STATUS_LABELS[status] || status) + '"></span>' +
+              '<span class="rm-row-title-text' + (isDone?' done':'') + '">' + title + '</span>' +
             '</div>' +
           '</div>';
         });
@@ -9469,75 +9410,15 @@ canvas{display:block;margin:0 auto 24px}
       }
     }
 
-    // v0.15.2: Cycle label strip (fixed row above bars, no collision)
+    // v0.25.0: cycle strip 移除 — 週期資訊已由左側分組 header 傳達
     var cycleStripH = '';
-    cycles.forEach(function(cy){
-      if(!cy.startDate || !cy.endDate) return;
-      var sd = new Date(cy.startDate); sd.setHours(0,0,0,0);
-      var ed = new Date(cy.endDate); ed.setHours(0,0,0,0);
-      if(ed < minDate || sd > maxDate) return;
-      var sOff = Math.max(0, daysBetween(minDate, sd));
-      var eOff = Math.min(totalDays, daysBetween(minDate, ed) + 1);
-      var left = sOff * zoom.pxPerDay;
-      var width = Math.max(40, (eOff - sOff) * zoom.pxPerDay);
-      var isCurrent = (today >= sd && today <= ed);
-      var isPast = ed < today;
-      var stripCls = 'rm-cycle-strip' + (isCurrent ? ' current' : '') + (isPast ? ' past' : '');
-      var cyCards = cards.filter(function(c){ return c.cycleId === cy.id; });
-      var cyDone = cyCards.filter(function(c){ return c.columnId === 'done'; }).length;
-      var daysLeft = '';
-      if(isCurrent){
-        var dl = daysBetween(today, ed);
-        daysLeft = ' · 剩 ' + (dl + 1) + ' 天';
-      }
-      // v0.15.4: strip label 分級 — 配合 strip width 避免 CJK label 被 ellipsis 砍掉關鍵訊息
-      // 完整版（含剩餘天數）保留在 tooltip；顯示層依 width 給三種精細度
-      var cyBase = cy.label || (fmtMD(sd) + '–' + fmtMD(ed));
-      var cyStats = cyCards.length ? ' · ' + cyDone + '/' + cyCards.length : '';
-      var cyFull = cyBase + cyStats + daysLeft;
-      var cyDisplay;
-      if(width >= 180) cyDisplay = cyFull;
-      else if(width >= 92) cyDisplay = cyBase + cyStats;
-      else cyDisplay = cyBase;
-      cycleStripH += '<div class="' + stripCls + '" style="left:' + left + 'px;width:' + width + 'px" title="' + cyFull.replace(/"/g,'&quot;') + '">' +
-        '<span class="rm-cycle-strip-label">' + cyDisplay + '</span>' +
-      '</div>';
-    });
 
-    // v0.15.2: Row atoms — cycle rollup bar + (when expanded) card sub-bars
+    // v0.25.0: 移除 rollup bar — 只保留 group 分隔行 + task bars
     var rowsH = '';
     groups.forEach(function(g){
       var expanded = RM.expanded[g.key];
-      // ── Cycle rollup row (atom = cycle) ──
-      var rollupH = '';
-      if(g.kind === 'cycle' && g.startDate && g.endDate){
-        var gsOff = Math.max(0, daysBetween(minDate, g.startDate));
-        var geOff = Math.min(totalDays, daysBetween(minDate, g.endDate) + 1);
-        var gLeft = gsOff * zoom.pxPerDay + 2;
-        var gWidth = Math.max(40, (geOff - gsOff) * zoom.pxPerDay - 4);
-        var rollCls = 'rm-cycle-rollup' + (g.isCurrent?' current':'') + (g.isPast?' past':'');
-        var rollLabel = g.label + ' · ' + g.done + '/' + g.total;
-        // v0.15.4: 三級 label 顯示策略（理由：CJK label 約需 90-110px，之前 80px 單閾值會讓「下週期 · 0/3」消失）
-        // >= 110: 完整 label（"下週期 · 0/3"）
-        // 56-110: 精簡版（僅數字 "0/3"）確保使用者至少能看到完成比
-        // < 56: 無 label，靠 title tooltip
-        var rollupInner = '';
-        if(gWidth >= 110) rollupInner = '<span class="rm-cycle-rollup-label">' + rollLabel + '</span>';
-        else if(gWidth >= 56) rollupInner = '<span class="rm-cycle-rollup-label">' + g.done + '/' + g.total + '</span>';
-        rollupH = '<div class="' + rollCls + '" style="left:' + gLeft + 'px;width:' + gWidth + 'px;--cy-color:' + g.color + '" ' +
-          'onclick="window._rmToggleGroup(\'' + g.key + '\')" ' +
-          'title="' + rollLabel.replace(/"/g,'&quot;') + '">' +
-          '<div class="rm-cycle-rollup-fill" style="width:' + g.progress + '%"></div>' +
-          rollupInner +
-        '</div>';
-      } else if(g.kind === 'backlog'){
-        // Backlog header row is time-free; show a pill-style marker anchored near left edge
-        rollupH = '<div class="rm-backlog-rollup" onclick="window._rmToggleGroup(\'_backlog\')" title="需求池 · 尚未排入週期">' +
-          '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h14M3 12h14M3 18h14"/></svg>' +
-          '<span>需求池 · ' + g.total + ' 張待排程</span>' +
-        '</div>';
-      }
-      rowsH += '<div class="rm-rollup-row' + (g.isCurrent?' current':'') + '">' + rollupH + '</div>';
+      // v0.25.0: group 分隔行（薄型，與左側 group header 對齊高度）
+      rowsH += '<div class="rm-group-sep-row' + (g.isPast?' past':'') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" style="cursor:pointer"></div>';
 
       if(expanded){
         g.cards.forEach(function(c){
@@ -9598,11 +9479,11 @@ canvas{display:block;margin:0 auto 24px}
       '</div>';
     }
 
+    // v0.25.0: 移除 cycle strip row — 時間 header 只留兩行（大/小刻度）
     var rightH = '<div class="rm-right" id="rmRight">' +
       '<div class="rm-header" style="width:' + canvasW + 'px">' +
         '<div class="rm-header-row1">' + headerRow1 + '</div>' +
         '<div class="rm-header-row2">' + headerRow2 + '</div>' +
-        '<div class="rm-cycle-strip-row">' + cycleStripH + '</div>' +
       '</div>' +
       '<div class="rm-canvas" style="width:' + canvasW + 'px">' +
         '<div class="rm-atom-stripes">' + atomStripesH + '</div>' +
@@ -26897,4 +26778,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.24.0 · Timeline UX — (1) 進度條→百分比；(2) Drawer UIUX 升級（priority 色帶、meta 卡片、描述框）；(3) 月 view 4 個月跨度；(4) 移除當期標籤與特效 -->
+</html><!-- v0.25.0 · 河流式時間軸 — toolbar 精簡（移除 hero/圖例/help）、左側極簡（狀態色點+標題）、移除 cycle strip+rollup、逾期+今天線強化 -->
