@@ -861,11 +861,43 @@ canvas{display:block;margin:0 auto 24px}
 
 /* ===== TOAST ===== */
 #toastContainer{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
-.toast{background:var(--bg-card);color:var(--ink);padding:12px 20px;border-radius:var(--r-sm);box-shadow:var(--shadow-xl);border:none;font-size:var(--text-sm);font-weight:500;animation:slideIn .2s ease}
+.toast{background:var(--ink);color:#fff;padding:12px 20px;border-radius:var(--r-lg);box-shadow:0 8px 32px rgba(0,0,0,.18);border:none;font-size:13px;font-weight:600;animation:toastIn .28s var(--ease-smooth) both;backdrop-filter:blur(8px)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-12px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes phaseIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
 .phase-enter{animation:phaseIn .3s ease both}
+
+/* ===== MOTION & TRANSITION POLISH ===== */
+/* Page transition */
+#content{transition:opacity var(--motion-normal) var(--ease-out),transform var(--motion-normal) var(--ease-out)}
+#content.page-exit{opacity:0;transform:translateY(6px)}
+@keyframes pageEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* List stagger entrance */
+.stagger-item{animation:staggerIn var(--motion-normal) var(--ease-smooth) both}
+.stagger-item:nth-child(1){animation-delay:0ms}
+.stagger-item:nth-child(2){animation-delay:30ms}
+.stagger-item:nth-child(3){animation-delay:60ms}
+.stagger-item:nth-child(4){animation-delay:90ms}
+.stagger-item:nth-child(5){animation-delay:120ms}
+.stagger-item:nth-child(6){animation-delay:150ms}
+.stagger-item:nth-child(7){animation-delay:180ms}
+.stagger-item:nth-child(8){animation-delay:210ms}
+@keyframes staggerIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Button interactions */
+.btn:active,.btn-accent:active,.btn-outline:active,.kb-view-toggle button:active{transform:scale(.97);transition-duration:60ms}
+.btn:focus-visible,.btn-accent:focus-visible{outline:none;box-shadow:var(--shadow-glow)}
+
+/* Card interactions */
+.kb-card-v2:focus-visible{outline:none;box-shadow:var(--shadow-glow),0 4px 18px rgba(17,17,17,.08)}
+.lv2-row:active{transform:scale(.995);transition-duration:60ms}
+.lv2-row:hover::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:3px;border-radius:2px;background:var(--primary);opacity:.6;transition:opacity var(--motion-fast)}
+
+/* Navigation polish */
+.nav-item{transition:all var(--motion-fast) var(--ease-out)}
+.nav-item:hover{background:rgba(255,255,255,.12);border-radius:var(--r-sm)}
 
 /* ===== MODAL OVERLAY (for paywall etc) ===== */
 #modalOverlay{display:none;position:fixed;inset:0;z-index:1000;background:var(--bg-overlay);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);justify-content:center;align-items:center}
@@ -4373,7 +4405,12 @@ canvas{display:block;margin:0 auto 24px}
       toast.className = 'toast';
       toast.textContent = message;
       container.appendChild(toast);
-      setTimeout(function() { toast.remove(); }, duration);
+      setTimeout(function() {
+        toast.style.transition = 'opacity .2s, transform .2s';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(20px)';
+        setTimeout(function() { toast.remove(); }, 220);
+      }, duration);
     }
   }
 
@@ -4838,9 +4875,19 @@ canvas{display:block;margin:0 auto 24px}
     if(window._soulTimer) { clearInterval(window._soulTimer); window._soulTimer = null; }
     state.currentModule = moduleId;
     renderSidebar();
-    renderModule(moduleId);
-    // 切換頁面時捲到頂部
-    const main = document.getElementById('main');
+    var ct = document.getElementById('content');
+    if (ct) {
+      ct.classList.add('page-exit');
+      setTimeout(function() {
+        renderModule(moduleId);
+        ct.classList.remove('page-exit');
+        ct.classList.add('page-enter');
+        setTimeout(function() { ct.classList.remove('page-enter'); }, 300);
+      }, 80);
+    } else {
+      renderModule(moduleId);
+    }
+    var main = document.getElementById('main');
     if (main) main.scrollTo({top:0, behavior:'smooth'});
   }
 
@@ -9221,7 +9268,11 @@ canvas{display:block;margin:0 auto 24px}
     });
 
     if(groups.length === 0){
-      leftH += '<div style="padding:40px 20px;text-align:center;color:var(--ink-dim);font-size:12px">尚無任務</div>';
+      leftH += '<div style="text-align:center;padding:48px 20px 40px">' +
+        '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(124,92,252,.04));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--primary)">' +
+        '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="8" y1="10" x2="12" y2="10"/><line x1="10" y1="8" x2="10" y2="12"/></svg></div>' +
+        '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">尚無任務</div>' +
+        '<div style="font-size:11px;color:var(--ink-dim);line-height:1.5">暫無期限任務</div></div>';
     }
 
     leftH += '</div></div>';
@@ -11329,11 +11380,11 @@ canvas{display:block;margin:0 auto 24px}
             html += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">收件匣空空</div>';
             html += '<div style="font-size:12px;color:var(--ink-dim);line-height:1.5">AI 拆解、會議紀錄、Email<br>會自動匯入這裡</div>';
           } else {
-            html += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,' + hexToRgba(col.color,0.12) + ',' + hexToRgba(col.color,0.04) + ');display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:1px solid ' + hexToRgba(col.color,0.15) + '">';
-            html += '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="' + col.color + '" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg>';
+            html += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,' + hexToRgba(col.color,0.12) + ',' + hexToRgba(col.color,0.04) + ');display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:' + col.color + ';border:1px solid ' + hexToRgba(col.color,0.15) + '">';
+            html += '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="8" y1="10" x2="12" y2="10"/><line x1="10" y1="8" x2="10" y2="12"/></svg>';
             html += '</div>';
             html += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">尚無任務</div>';
-            html += '<div style="font-size:12px;color:var(--ink-dim);line-height:1.5">拖曳卡片至此<br>或點擊 + 新增</div>';
+            html += '<div style="font-size:11px;color:var(--ink-dim);line-height:1.5">拖曳卡片至此<br>或點擊 + 新增</div>';
           }
           html += '</div>';
         }
