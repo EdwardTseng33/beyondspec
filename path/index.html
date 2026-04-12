@@ -3356,7 +3356,7 @@ canvas{display:block;margin:0 auto 24px}
 .rm-group-header:hover{background:var(--bg-hover)}
 .rm-group-header:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--primary)}
 /* v0.17.0: 移除 border-left inset shadow, 改用純漸層底色 + 極淡 glow 表達 current */
-.rm-group-header.current{background:linear-gradient(90deg,rgba(27,168,145,.08) 0%,rgba(27,168,145,.02) 60%,transparent 100%)}
+/* v0.24.0: 當期特效已移除 */
 .rm-group-header.past{opacity:.78}
 .rm-group-chev{width:14px;height:14px;color:var(--ink-dim);transition:transform .2s;flex-shrink:0}
 .rm-group-header.collapsed .rm-group-chev{transform:rotate(-90deg)}
@@ -3368,15 +3368,15 @@ canvas{display:block;margin:0 auto 24px}
 .rm-group-daterange{letter-spacing:.02em}
 .rm-group-count{font-size:var(--text-micro,11px);font-weight:var(--fw-label,600);color:var(--ink-muted);background:var(--bg-hover);padding:1px 6px;border-radius:8px;flex-shrink:0;font-variant-numeric:tabular-nums}
 .rm-cycle-tag{display:inline-flex;align-items:center;height:16px;padding:0 6px;font-size:9px;font-weight:var(--fw-title,700);border-radius:4px;letter-spacing:.08em;flex-shrink:0;text-transform:uppercase}
-.rm-cycle-tag.current{background:var(--teal);color:#fff;box-shadow:0 1px 4px rgba(27,168,145,.3)}
+/* .rm-cycle-tag.current removed in v0.24.0 */
 .rm-cycle-tag.past{background:rgba(148,163,184,.2);color:var(--ink-dim)}
 .rm-cycle-tag.future{background:rgba(124,92,252,.14);color:var(--primary)}
 .rm-cycle-tag.backlog{background:rgba(148,163,184,.18);color:var(--ink-muted)}
 /* Progress pill bar in left col (replaces duplicate roll-up in right) */
-.rm-group-progress-ring{position:relative;width:64px;height:6px;flex-shrink:0;border-radius:3px;background:var(--bg-hover);overflow:hidden;margin-left:4px}
-.rm-gpr-track{position:absolute;inset:0;background:var(--bg-hover)}
-.rm-gpr-fill{position:absolute;top:0;left:0;bottom:0;border-radius:3px;transition:width var(--motion-smooth,280ms) var(--ease-smooth)}
-.rm-gpr-num{position:absolute;top:-16px;right:0;font-size:10px;font-weight:var(--fw-title,700);color:var(--ink-sec);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.rm-group-progress-ring{display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;margin-left:4px}
+.rm-gpr-track{display:none}
+.rm-gpr-fill{display:none}
+.rm-gpr-num{font-size:12px;font-weight:var(--fw-title,700);color:var(--ink-muted);font-variant-numeric:tabular-nums;letter-spacing:.02em}
 
 /* Task row in left table — v0.18.0: 兩行式 row，對齊 kb-card-v2 視覺語彙
    - 主行：pri-dot + 任務標題 (14px/600)
@@ -3559,44 +3559,54 @@ canvas{display:block;margin:0 auto 24px}
 .rmdrw-icon-btn.danger:hover{background:rgba(217,68,98,.1);color:var(--rose)}
 .rmdrw-close{width:32px;height:32px;border-radius:8px;background:transparent;border:none;color:var(--ink-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .18s,color .18s}
 .rmdrw-close:hover{background:var(--bg-hover);color:var(--ink)}
-.rmdrw-body{padding:16px 22px 24px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:18px}
+.rmdrw-body{padding:20px 24px 28px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:20px}
 
-/* v0.18.0 kb-card preview — drawer 頂部的任務卡預覽（與任務看板 kb-card-v2 視覺一致）*/
-.rmdrw-kb-preview{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 2px rgba(17,17,17,.03)}
-[data-theme="dark"] .rmdrw-kb-preview{box-shadow:0 1px 2px rgba(0,0,0,.25)}
-.rmdrw-kb-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:var(--ink);line-height:1.4;min-width:0}
-.rmdrw-kb-title-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px var(--bg-card)}
+/* v0.24.0 kb-card preview — drawer 頂部任務卡：priority 色帶頂部 + 加深陰影 */
+.rmdrw-kb-preview{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 8px rgba(17,17,17,.06);position:relative;overflow:hidden}
+.rmdrw-kb-preview::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.rmdrw-kb-preview.pri-high::before{background:var(--rose)}
+.rmdrw-kb-preview.pri-medium::before{background:var(--gold)}
+.rmdrw-kb-preview.pri-low::before{background:var(--teal)}
+.rmdrw-kb-preview.pri-none::before{background:var(--primary)}
+[data-theme="dark"] .rmdrw-kb-preview{box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.rmdrw-kb-title{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700;color:var(--ink);line-height:1.4;min-width:0;padding-top:2px}
+.rmdrw-kb-title-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px var(--bg-card)}
 .rmdrw-kb-title-dot.high{background:var(--rose)}
 .rmdrw-kb-title-dot.medium{background:var(--gold)}
 .rmdrw-kb-title-dot.low{background:var(--teal)}
 .rmdrw-kb-title-dot.none{background:var(--ink-dim);opacity:.3;box-shadow:none}
 .rmdrw-kb-title-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rmdrw-kb-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.rmdrw-kb-cat{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;white-space:nowrap;letter-spacing:.02em}
-.rmdrw-kb-tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;color:var(--ink-muted);background:var(--bg-hover)}
-.rmdrw-kb-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;letter-spacing:.04em}
+.rmdrw-kb-cat{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap;letter-spacing:.02em}
+.rmdrw-kb-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;color:var(--ink-muted);background:var(--bg-hover);border:1px solid rgba(0,0,0,.04)}
+[data-theme="dark"] .rmdrw-kb-tag{border-color:rgba(255,255,255,.06)}
+.rmdrw-kb-status{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.04em}
 .rmdrw-kb-status.inbox{background:rgba(148,163,184,.15);color:#64748b}
 .rmdrw-kb-status.todo{background:rgba(124,92,252,.12);color:var(--primary)}
 .rmdrw-kb-status.doing{background:rgba(224,138,58,.15);color:var(--gold)}
 .rmdrw-kb-status.review{background:rgba(59,130,246,.14);color:#3B82F6}
 .rmdrw-kb-status.done{background:rgba(27,168,145,.15);color:var(--teal)}
 
-/* v0.18.0 Section-based body */
-.rmdrw-sec{display:flex;flex-direction:column;gap:8px}
+/* v0.24.0 Section-based body — 更強視覺分隔 */
+.rmdrw-sec{display:flex;flex-direction:column;gap:8px;padding-top:4px}
 .rmdrw-sec-title{font-size:11px;font-weight:700;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase;margin:0;display:flex;align-items:center;gap:6px}
 .rmdrw-sec-title svg{width:12px;height:12px;opacity:.8}
-.rmdrw-sec-body{font-size:13px;color:var(--ink-sec);line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.rmdrw-sec-body{font-size:13px;color:var(--ink-sec);line-height:1.7;white-space:pre-wrap;word-break:break-word;padding:10px 14px;background:var(--bg-hover);border-radius:var(--r-lg);border:1px solid rgba(0,0,0,.03)}
+[data-theme="dark"] .rmdrw-sec-body{border-color:rgba(255,255,255,.04)}
 .rmdrw-sec-empty{font-size:12px;color:var(--ink-dim);font-style:italic}
 
 /* Project row — cycle/project pill */
-.rmdrw-proj{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg-hover);border-radius:8px;font-size:13px;font-weight:600;color:var(--ink);align-self:flex-start}
+.rmdrw-proj{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;background:var(--bg-hover);border-radius:8px;font-size:13px;font-weight:600;color:var(--ink);align-self:flex-start;border:1px solid rgba(0,0,0,.04);transition:background var(--motion-fast,120ms)}
+[data-theme="dark"] .rmdrw-proj{border-color:rgba(255,255,255,.06)}
+.rmdrw-proj:hover{background:rgba(124,92,252,.08)}
 .rmdrw-proj-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 
-/* Meta grid — date / priority / assignee */
-.rmdrw-meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 14px}
-.rmdrw-meta-item{display:flex;flex-direction:column;gap:2px;min-width:0}
+/* Meta grid — date / priority / assignee — v0.24.0 升級為卡片式 */
+.rmdrw-meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.rmdrw-meta-item{display:flex;flex-direction:column;gap:3px;min-width:0;padding:10px 12px;background:var(--bg-hover);border-radius:var(--r-md,8px);border:1px solid rgba(0,0,0,.03)}
+[data-theme="dark"] .rmdrw-meta-item{border-color:rgba(255,255,255,.04)}
 .rmdrw-meta-key{font-size:10px;font-weight:700;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase}
-.rmdrw-meta-val{font-size:13px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rmdrw-meta-val{font-size:14px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rmdrw-meta-val.overdue{color:var(--rose)}
 
 /* Checklist */
@@ -3607,15 +3617,15 @@ canvas{display:block;margin:0 auto 24px}
 .rmdrw-cl-item.done .rmdrw-cl-check{background:var(--teal);border-color:var(--teal)}
 .rmdrw-cl-item.done .rmdrw-cl-check svg{color:#fff;width:10px;height:10px}
 .rmdrw-cl-progress{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-muted);font-weight:600;font-variant-numeric:tabular-nums}
-.rmdrw-cl-progress-bar{flex:1;height:3px;background:var(--bg-hover);border-radius:2px;overflow:hidden}
-.rmdrw-cl-progress-fill{height:100%;background:var(--teal);border-radius:2px;transition:width .3s}
+.rmdrw-cl-progress-bar{flex:1;height:4px;background:rgba(124,92,252,.1);border-radius:2px;overflow:hidden}
+.rmdrw-cl-progress-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .3s}
 
 /* Tags */
 .rmdrw-tags{display:flex;flex-wrap:wrap;gap:6px}
 .rmdrw-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:6px;color:var(--ink-muted);background:var(--bg-hover)}
 
 /* Attachments placeholder */
-.rmdrw-empty-block{padding:14px 16px;background:var(--bg-hover);border-radius:var(--r-md);font-size:12px;color:var(--ink-dim);text-align:center;font-style:italic}
+.rmdrw-empty-block{padding:14px 16px;background:var(--bg-hover);border-radius:var(--r-md,8px);font-size:12px;color:var(--ink-dim);text-align:center;font-style:italic;border:1px dashed var(--border)}
 
 /* v0.18.0 drawer helpers */
 .rmdrw-meta-val-dim{color:var(--ink-dim);font-weight:500}
@@ -3624,9 +3634,9 @@ canvas{display:block;margin:0 auto 24px}
 .rmdrw-proj{transition:background .18s,transform .18s;cursor:pointer}
 .rmdrw-proj:hover{background:rgba(124,92,252,.1);transform:translateY(-1px)}
 
-.rmdrw-foot{padding:14px 22px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;background:var(--bg-card)}
-.rmdrw-btn-sec{padding:9px 18px;font-size:13px;font-weight:600;border-radius:8px}
-.rmdrw-btn-pri{padding:9px 18px;font-size:13px;font-weight:600;border-radius:8px}
+.rmdrw-foot{padding:16px 24px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;background:var(--bg-card)}
+.rmdrw-btn-sec{padding:9px 20px;font-size:13px;font-weight:600;border-radius:8px}
+.rmdrw-btn-pri{padding:9px 20px;font-size:13px;font-weight:600;border-radius:8px}
 @media (max-width:600px){.rmdrw{width:100vw}.rmdrw-meta-grid{grid-template-columns:1fr}}
 
 /* Keyboard shortcut help overlay */
@@ -3653,7 +3663,7 @@ canvas{display:block;margin:0 auto 24px}
   .rm-left-header{padding:0 10px 10px 14px}
   .rm-row{padding:0 10px 0 28px}
   .rm-row-cat-label{display:none}
-  .rm-group-progress-ring{width:48px}
+  .rm-group-progress-ring{margin-left:2px}
 }
 @media (max-width:640px){
   .rm-wrap{margin:-8px -4px 0;height:calc(100vh - 50px)}
@@ -4146,7 +4156,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.23.0</div>
+        <div class="sidebar-version">v0.24.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -9011,7 +9021,7 @@ canvas{display:block;margin:0 auto 24px}
     // pxPerDay 調整為讓每一個 atom 寬度落在 96-266px，CJK label 可完整顯示
     var ZOOM_CFG = {
       quarter: { label: '季', pxPerDay: 6, atomUnit: 'month', majorUnit: 'year', padBefore: 90, padAfter: 120 },
-      month:   { label: '月', pxPerDay: 38, atomUnit: 'week',      majorUnit: 'month', padBefore: 14, padAfter: 28 },
+      month:   { label: '月', pxPerDay: 9, atomUnit: 'week',      majorUnit: 'month', padBefore: 45, padAfter: 75 },
       week:    { label: '週', pxPerDay: 96, atomUnit: 'day',       majorUnit: 'week',  padBefore: 7,  padAfter: 14 }
     };
     var zoom = ZOOM_CFG[RM.zoom] || ZOOM_CFG.month;
@@ -9227,8 +9237,7 @@ canvas{display:block;margin:0 auto 24px}
       var expanded = RM.expanded[g.key];
       var stateTag = '';
       if(g.kind === 'cycle'){
-        if(g.isCurrent) stateTag = '<span class="rm-cycle-tag current">當期</span>';
-        else if(g.isPast) stateTag = '<span class="rm-cycle-tag past">已完結</span>';
+        if(g.isPast) stateTag = '<span class="rm-cycle-tag past">已完結</span>';
         else if(g.isFuture) stateTag = '<span class="rm-cycle-tag future">即將</span>';
       } else {
         stateTag = '<span class="rm-cycle-tag backlog">需求池</span>';
@@ -9238,7 +9247,7 @@ canvas{display:block;margin:0 auto 24px}
         dateRangeStr = '<span class="rm-group-daterange">' + fmtMD(g.startDate) + ' – ' + fmtMD(g.endDate) + '</span>';
       }
       var progressW = Math.max(0, Math.min(100, g.progress));
-      leftH += '<div class="rm-group-header' + (expanded?'':' collapsed') + (g.isCurrent?' current':'') + (g.isPast?' past':'') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" data-group="' + g.key + '">' +
+      leftH += '<div class="rm-group-header' + (expanded?'':' collapsed') + (g.isPast?' past':'') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" data-group="' + g.key + '">' +
         '<svg class="rm-group-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 8 10 12 14 8"/></svg>' +
         '<span class="rm-group-dot" style="background:' + g.color + '"></span>' +
         '<div class="rm-group-main">' +
@@ -10033,7 +10042,7 @@ canvas{display:block;margin:0 auto 24px}
         });
       }
 
-      var kbPreviewH = '<div class="rmdrw-kb-preview">' +
+      var kbPreviewH = '<div class="rmdrw-kb-preview pri-' + priKey + '">' +
         '<div class="rmdrw-kb-title">' +
           '<span class="rmdrw-kb-title-dot ' + priKey + '"></span>' +
           '<span class="rmdrw-kb-title-text">' + _esc(card.title || '未命名') + '</span>' +
@@ -26888,4 +26897,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.23.0 · UI Fix — (1) 季 Timeline: 年→Q→月 header 重構；(2) Hero 30% 移除，改顯示完成項數；(3) Kanban 等寬 flex 欄位 -->
+</html><!-- v0.24.0 · Timeline UX — (1) 進度條→百分比；(2) Drawer UIUX 升級（priority 色帶、meta 卡片、描述框）；(3) 月 view 4 個月跨度；(4) 移除當期標籤與特效 -->
