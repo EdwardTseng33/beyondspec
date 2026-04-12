@@ -2669,8 +2669,12 @@ canvas{display:block;margin:0 auto 24px}
 
 /* ══════════ LIST VIEW V2 (v0.9.0) ══════════ */
 .lv2-header{display:grid;grid-template-columns:32px 1fr 80px 80px 90px 70px;gap:0;padding:6px 14px;font-size:11px;font-weight:700;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg-app);z-index:5}
-.lv2-row{display:grid;grid-template-columns:32px 1fr 80px 80px 90px 70px;gap:0;padding:7px 14px;align-items:center;border-radius:var(--r-sm);cursor:pointer;transition:all .12s;border:1px solid transparent}
+.lv2-row{display:grid;grid-template-columns:32px 1fr 80px 80px 90px 70px;gap:0;padding:7px 14px;align-items:center;border-radius:var(--r-sm);cursor:pointer;transition:all .12s;border:1px solid transparent;position:relative}
 .lv2-row:hover{background:var(--bg-card);border-color:var(--border);box-shadow:var(--shadow-sm)}
+.lv2-row:hover .lv2-hover-actions{opacity:1;pointer-events:auto}
+.lv2-hover-actions{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;gap:3px;opacity:0;pointer-events:none;transition:opacity .12s;background:var(--bg-card);padding:2px 4px;border-radius:var(--r-sm);box-shadow:var(--shadow-sm);z-index:3}
+.lv2-hover-actions button{width:26px;height:26px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .12s;padding:0}
+.lv2-hover-actions button:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
 .lv2-check{width:16px;height:16px;border:2px solid var(--border);border-radius:4px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
 .lv2-row:hover .lv2-check{border-color:var(--ink-dim)}
 .lv2-check.done{background:var(--teal);border-color:var(--teal)}
@@ -3112,7 +3116,8 @@ canvas{display:block;margin:0 auto 24px}
 .tp-row:active{cursor:grabbing}
 .tp-row.dragging{opacity:.4;border:1px dashed var(--primary)}
 /* 逾期：極淡玫瑰底 + 微妙邊框，不吼叫 */
-.tp-row.tp-overdue{background:color-mix(in srgb,var(--bg-card) 96%,var(--rose));border-color:rgba(217,68,98,.18)}
+.tp-row.tp-overdue{background:color-mix(in srgb,var(--bg-card) 93%,var(--rose));border-color:rgba(217,68,98,.25);animation:tp-overdue-pulse 3s ease-in-out infinite}
+@keyframes tp-overdue-pulse{0%,100%{border-color:rgba(217,68,98,.25)}50%{border-color:rgba(217,68,98,.45)}}
 [data-theme="dark"] .tp-row{background:var(--bg-card)}
 [data-theme="dark"] .tp-row.tp-overdue{background:rgba(217,68,98,.08);border-color:rgba(217,68,98,.22)}
 .tp-row .tp-grip{
@@ -3129,6 +3134,7 @@ canvas{display:block;margin:0 auto 24px}
 .tp-row .tp-avatar{width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .tp-row .tp-due{font-size:11px;color:var(--ink-dim);white-space:nowrap;flex-shrink:0}
 .tp-row .tp-due.overdue{color:var(--rose);font-weight:600}
+.tp-row.tp-batch-selected{background:rgba(124,92,252,.06);border-color:rgba(124,92,252,.25)}
 
 /* — Planning v2: drop zones — */
 .tp-dropzone{
@@ -4073,7 +4079,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.18.0</div>
+        <div class="sidebar-version">v0.18.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6899,9 +6905,18 @@ canvas{display:block;margin:0 auto 24px}
       else if(pri === 'low') rowCls += ' tp-pri-low';
       if(isOverdue) rowCls += ' tp-overdue';
 
-      var h = '<div class="' + rowCls + '" draggable="true" data-card-id="' + card.id + '" data-drag-source="' + dragSource + '" onclick="window._tpOpenCard(\'' + card.id + '\')">';
-      // Grip handle
-      h += '<div class="tp-grip"><span></span><span></span><span></span></div>';
+      var _isBatch = window._tpBatchMode && dragSource === 'backlog';
+      var _isChecked = _isBatch && (window._tpBatchSelected||[]).indexOf(card.id) !== -1;
+      var _rowClick = _isBatch
+        ? 'window._tpToggleBatchCard(&quot;' + card.id + '&quot;)'
+        : 'window._tpOpenCard(&quot;' + card.id + '&quot;)';
+      var h = '<div class="' + rowCls + (_isChecked ? ' tp-batch-selected' : '') + '" draggable="true" data-card-id="' + card.id + '" data-drag-source="' + dragSource + '" onclick="' + _rowClick + '">';
+      // Batch checkbox or grip handle
+      if(_isBatch){
+        h += '<div style="display:flex;align-items:center;justify-content:center;width:20px;flex-shrink:0"><input type="checkbox" ' + (_isChecked ? 'checked' : '') + ' onclick="event.stopPropagation();window._tpToggleBatchCard(\'' + card.id + '\')" style="width:14px;height:14px;accent-color:var(--primary);cursor:pointer"></div>';
+      } else {
+        h += '<div class="tp-grip"><span></span><span></span><span></span></div>';
+      }
       // Priority dot
       h += '<div class="tp-pri" style="background:' + priColor + '"></div>';
       // Title
@@ -6917,7 +6932,15 @@ canvas{display:block;margin:0 auto 24px}
       // Assignee
       if(initial) h += '<div class="tp-avatar">' + initial + '</div>';
       // Due date
-      if(dueStr) h += '<span class="tp-due' + (isOverdue ? ' overdue' : '') + '">' + dueStr + '</span>';
+      if(dueStr){
+        var overdueDays = 0;
+        if(isOverdue){
+          var dd2 = new Date(card.dueDate + 'T00:00:00');
+          var now2 = new Date(); now2.setHours(0,0,0,0);
+          overdueDays = Math.floor((now2.getTime() - dd2.getTime()) / 86400000);
+        }
+        h += '<span class="tp-due' + (isOverdue ? ' overdue' : '') + '">' + (isOverdue ? '逾期 ' + overdueDays + ' 天' : dueStr) + '</span>';
+      }
       h += '</div>';
       return h;
     }
@@ -7104,6 +7127,13 @@ canvas{display:block;margin:0 auto 24px}
         html += '<button style="background:none;border:none;color:var(--ink-dim);font-size:11px;cursor:pointer;font-family:inherit;padding:2px 6px;text-decoration:underline" onclick="window._tpClearAllFilters()">清除</button>';
       }
       html += '<div style="flex:1"></div>';
+      // Batch select toggle (v0.18.1)
+      var _batchMode = window._tpBatchMode || false;
+      var _batchSelected = window._tpBatchSelected || [];
+      if(_batchMode && _batchSelected.length > 0){
+        html += '<button class="btn btn-accent" onclick="window._tpBatchSchedule()" style="padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:4px;flex-shrink:0;animation:tc-fadeUp .2s ease both"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8h10M10 5l3 3-3 3"/></svg>排入本期 (' + _batchSelected.length + ')</button>';
+      }
+      html += '<button class="btn ' + (_batchMode ? 'btn-outline' : 'btn-ghost') + '" onclick="window._tpToggleBatch()" style="padding:6px 12px;font-size:12px;flex-shrink:0" title="批次選取"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></button>';
       // Add button (RIGHT side, matching contacts/quotes pattern)
       html += '<button class="btn btn-accent" onclick="window._tpOpenCard(null,\'inbox\')" style="padding:6px 16px;font-size:12px;display:flex;align-items:center;gap:4px;flex-shrink:0"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>新增需求</button>';
       html += '</div>';
@@ -7228,6 +7258,41 @@ canvas{display:block;margin:0 auto 24px}
       window._tpFilterCat = '';
       window._tpFilterTag = '';
       renderBacklog();
+    };
+
+    // ── Batch mode (v0.18.1) ──
+    window._tpToggleBatch = function(){
+      window._tpBatchMode = !window._tpBatchMode;
+      window._tpBatchSelected = [];
+      renderBacklog();
+    };
+    window._tpToggleBatchCard = function(cardId){
+      var sel = window._tpBatchSelected || [];
+      var idx = sel.indexOf(cardId);
+      if(idx === -1) sel.push(cardId);
+      else sel.splice(idx, 1);
+      window._tpBatchSelected = sel;
+      renderBacklog();
+    };
+    window._tpBatchSchedule = function(){
+      var sel = window._tpBatchSelected || [];
+      if(sel.length === 0) return;
+      var T = _taskShared;
+      var cyc = T.ensureCurrentCycle();
+      var allCards = T.getCards();
+      sel.forEach(function(id){
+        var c = allCards.find(function(x){ return x.id === id; });
+        if(c){
+          c.cycleId = cyc.id;
+          if(c.columnId === 'inbox') c.columnId = 'todo';
+          c.updatedAt = Date.now();
+        }
+      });
+      T.saveCards(allCards);
+      showToast(sel.length + ' 筆需求已排入本期');
+      window._tpBatchMode = false;
+      window._tpBatchSelected = [];
+      renderTaskPlanning();
     };
 
     // ═══════════════════════════════════════════════════
@@ -10062,11 +10127,23 @@ canvas{display:block;margin:0 auto 24px}
       } else if(card.startDate){
         dateStr = '起始 ' + fmtYMD(card.startDate);
       }
-      _rmTipEl.innerHTML = '<strong>' + (card.title || '(未命名)').replace(/</g,'&lt;') + '</strong>' +
-        '<div class="rm-tt-row"><span class="rm-stat-dot" style="background:' + cat.color + ';width:8px;height:8px;border-radius:50%"></span>' + cat.label + '</div>' +
-        '<div class="rm-tt-row">狀態 · ' + (STATUS_LABELS[status] || status) + '</div>' +
-        '<div class="rm-tt-row">優先級 · ' + priLabel + '</div>' +
-        '<div class="rm-tt-row">' + dateStr + '</div>';
+      var assigneeStr = card.assignee || '';
+      var clTotal = (card.checklist||[]).length;
+      var clDone = (card.checklist||[]).filter(function(x){return x.done;}).length;
+      var isOverdue = card.dueDate && status !== 'done' && new Date(card.dueDate) < new Date();
+      var tipHtml = '<strong style="font-size:13px">' + (card.title || '(未命名)').replace(/</g,'&lt;') + '</strong>';
+      tipHtml += '<div class="rm-tt-row"><span class="rm-stat-dot" style="background:' + cat.color + ';width:8px;height:8px;border-radius:50%"></span>' + cat.label + '</div>';
+      tipHtml += '<div class="rm-tt-row">狀態 · ' + (STATUS_LABELS[status] || status) + '</div>';
+      tipHtml += '<div class="rm-tt-row">優先級 · ' + priLabel + '</div>';
+      if(assigneeStr) tipHtml += '<div class="rm-tt-row">負責人 · ' + assigneeStr + '</div>';
+      tipHtml += '<div class="rm-tt-row">' + dateStr + '</div>';
+      if(isOverdue) tipHtml += '<div class="rm-tt-row" style="color:var(--rose);font-weight:600">⚠ 已逾期</div>';
+      if(clTotal > 0) tipHtml += '<div class="rm-tt-row" style="display:flex;align-items:center;gap:6px">清單 ' + clDone + '/' + clTotal + '<div style="flex:1;height:3px;background:rgba(0,0,0,.08);border-radius:2px;min-width:40px"><div style="height:100%;border-radius:2px;background:var(--teal);width:' + (clDone/clTotal*100) + '%"></div></div></div>';
+      if(card.description){
+        var descPreview = card.description.replace(/<[^>]*>/g,'').substring(0,80);
+        if(descPreview) tipHtml += '<div style="font-size:11px;color:var(--ink-dim);margin-top:4px;line-height:1.4;border-top:1px solid var(--border);padding-top:6px">' + descPreview + (card.description.length>80?'…':'') + '</div>';
+      }
+      _rmTipEl.innerHTML = tipHtml;
       _rmTipEl.style.display = 'block';
       var x = e.clientX + 14;
       var y = e.clientY + 14;
@@ -11000,11 +11077,26 @@ canvas{display:block;margin:0 auto 24px}
       html += '</div>';
       html += '</div>';
 
-      // Action row: Archive toggle (left) + Search (right)
+      // Action row: Archive toggle + GroupBy (left) + Search (right)
       var archivedCount = cards.filter(function(c){return c.archived;}).length;
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap">';
-      html += '<div style="flex:1">';
+      html += '<div style="display:flex;align-items:center;gap:8px;flex:1">';
       if(archivedCount > 0) html += '<button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="window._kbToggleArchived()">' + IC.archive + ' ' + (showArchived ? '隱藏封存' : '封存 ' + archivedCount) + '</button>';
+      // Group-by selector (list view only)
+      if(viewMode === 'list'){
+        var _gbVal = window._kbListGroupBy || 'status';
+        var _gbOpts = [
+          {v:'status',l:'狀態'},{v:'priority',l:'優先級'},{v:'category',l:'分類'},{v:'assignee',l:'負責人'}
+        ];
+        html += '<div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-muted)">';
+        html += '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M4 8h8M6 12h4"/></svg>';
+        html += '<span style="white-space:nowrap">分組</span>';
+        html += '<select id="kbGroupBySelect" onchange="window._kbSetGroupBy(this.value)" style="border:1px solid var(--border);border-radius:var(--r-md);padding:4px 8px;font-size:12px;font-weight:600;color:var(--ink);background:var(--bg-card);cursor:pointer;font-family:inherit;outline:none">';
+        _gbOpts.forEach(function(o){
+          html += '<option value="' + o.v + '"' + (_gbVal === o.v ? ' selected' : '') + '>' + o.l + '</option>';
+        });
+        html += '</select></div>';
+      }
       html += '</div>';
       html += bpSearchBar('kbSearchInput', window._kbSearch||'', '搜尋任務…');
       html += '</div>';
@@ -11025,25 +11117,79 @@ canvas{display:block;margin:0 auto 24px}
         // Header
         html += '<div class="lv2-header"><span></span><span>任務</span><span>分類</span><span>狀態</span><span>指派</span><span>到期</span></div>';
 
-        boardCols.forEach(function(col){
-          var colCards = allActiveCards.filter(function(c){ return c.columnId === col.id; })
-            .sort(function(a,b){ return (a.order||0)-(b.order||0); });
-          if(colCards.length === 0) return;
+        // ── Dynamic grouping (v0.18.1) ──
+        var _gbMode = window._kbListGroupBy || 'status';
+        var _groups = [];
 
+        if(_gbMode === 'priority'){
+          var _priDefs = [
+            {key:'high',label:'高優先',color:'#D94462'},
+            {key:'medium',label:'中優先',color:'#E08A3A'},
+            {key:'low',label:'低優先',color:'#3B82F6'},
+            {key:'none',label:'一般',color:'#9CA3AF'}
+          ];
+          _priDefs.forEach(function(p){
+            var gc = allActiveCards.filter(function(c){ return (c.priority||'none') === p.key; })
+              .sort(function(a,b){ return (a.order||0)-(b.order||0); });
+            if(gc.length > 0) _groups.push({label:p.label, color:p.color, cards:gc});
+          });
+        } else if(_gbMode === 'category'){
+          var _catSeen = {};
+          allActiveCards.forEach(function(c){
+            var ck = c.category || 'product';
+            if(!_catSeen[ck]) _catSeen[ck] = [];
+            _catSeen[ck].push(c);
+          });
+          var _catKeys = Object.keys(_catSeen);
+          _catKeys.sort();
+          _catKeys.forEach(function(ck){
+            var catDef = TASK_CATEGORIES[ck] || TASK_CATEGORIES.product;
+            _groups.push({label:catDef.label, color:catDef.color, cards:_catSeen[ck].sort(function(a,b){ return (a.order||0)-(b.order||0); })});
+          });
+        } else if(_gbMode === 'assignee'){
+          var _assMap = {};
+          allActiveCards.forEach(function(c){
+            var aName = c.assignee || '未指派';
+            if(!_assMap[aName]) _assMap[aName] = [];
+            _assMap[aName].push(c);
+          });
+          var _assKeys = Object.keys(_assMap).sort(function(a,b){
+            if(a === '未指派') return 1;
+            if(b === '未指派') return -1;
+            return a.localeCompare(b);
+          });
+          _assKeys.forEach(function(ak){
+            var initial = ak !== '未指派' ? ak.charAt(0).toUpperCase() : '?';
+            _groups.push({label:ak, color:'var(--primary)', isAssignee:true, initial:initial, cards:_assMap[ak].sort(function(a,b){ return (a.order||0)-(b.order||0); })});
+          });
+        } else {
+          // Default: group by status (original behavior)
+          boardCols.forEach(function(col){
+            var gc = allActiveCards.filter(function(c){ return c.columnId === col.id; })
+              .sort(function(a,b){ return (a.order||0)-(b.order||0); });
+            if(gc.length > 0) _groups.push({label:col.label, color:col.color, cards:gc});
+          });
+        }
+
+        _groups.forEach(function(grp){
           // Group header
           html += '<div class="lv2-group">';
-          html += '<div class="g-dot" style="background:' + col.color + '"></div>';
-          html += '<span class="g-label">' + col.label + '</span>';
-          html += '<span class="g-count">' + colCards.length + '</span>';
+          if(grp.isAssignee){
+            html += '<div class="lv2-avatar human" style="width:18px;height:18px;font-size:9px;line-height:18px">' + grp.initial + '</div>';
+          } else {
+            html += '<div class="g-dot" style="background:' + grp.color + '"></div>';
+          }
+          html += '<span class="g-label">' + grp.label + '</span>';
+          html += '<span class="g-count">' + grp.cards.length + '</span>';
           html += '</div>';
 
-          colCards.forEach(function(card){
+          grp.cards.forEach(function(card){
             var cat = TASK_CATEGORIES[card.category] || TASK_CATEGORIES.product;
             var _mem = (card.assigneeId) ? members.find(function(m){ return m.id === card.assigneeId; }) : null;
             var _assigneeName = card.assignee || (_mem ? _mem.name : '');
             var _assigneeType = card.assigneeType || 'human';
             var _assigneeInitial = _assigneeName ? _assigneeName.charAt(0).toUpperCase() : '';
-            var isDone = col.id === 'done';
+            var isDone = card.columnId === 'done';
             var dueStr='', dueClass='';
             if(card.dueDate){
               var d=new Date(card.dueDate);
@@ -11075,8 +11221,9 @@ canvas{display:block;margin:0 auto 24px}
             html += '</div>';
             // Category
             html += '<span class="lv2-cat" style="background:' + cat.color + '14;color:' + cat.color + '">' + cat.label + '</span>';
-            // Status
-            html += '<span class="lv2-status"><span class="dot" style="background:' + col.color + '"></span>' + col.label + '</span>';
+            // Status (resolve from card's columnId, not group)
+            var _statusCol = boardCols.find(function(bc){ return bc.id === card.columnId; }) || {color:'#9CA3AF',label:'—'};
+            html += '<span class="lv2-status"><span class="dot" style="background:' + _statusCol.color + '"></span>' + _statusCol.label + '</span>';
             // Assignee
             if(_assigneeName) {
               html += '<span class="lv2-assignee"><span class="lv2-avatar ' + _assigneeType + '">' + (_assigneeType === 'agent' ? 'AI' : _assigneeInitial) + '</span>' + _assigneeName + '</span>';
@@ -11092,6 +11239,11 @@ canvas{display:block;margin:0 auto 24px}
             } else {
               html += '<span class="lv2-due">—</span>';
             }
+            // Hover quick-actions (v0.18.1)
+            html += '<div class="lv2-hover-actions">';
+            html += '<button onclick="event.stopPropagation();window._kbCyclePriority(\'' + card.id + '\')" title="切換優先級"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 2v8M3 5l3-3 3 3"/></svg></button>';
+            html += '<button onclick="event.stopPropagation();window._kbShowCardView(\'' + card.id + '\')" title="編輯"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8.5 1.5l2 2M1 11l.5-2L9 1.5l2 2L3.5 11z"/></svg></button>';
+            html += '</div>';
             html += '</div>';
           });
         });
@@ -11726,11 +11878,32 @@ canvas{display:block;margin:0 auto 24px}
       m += '</div>';
 
 
-      // Attachments
-      if(attachHtml) m += '<div class="kb-section"><label class="kb-label">附件</label><div>' + attachHtml + '</div></div>';
+      // Sub-tasks (v0.18.1: was built but never rendered — fix)
+      var stCount = (card.subTasks||[]).length;
+      var stDone = (card.subTasks||[]).filter(function(st){ return st.done; }).length;
+      if(stHtml){
+        m += '<div class="kb-section"><label class="kb-label">子任務';
+        if(stCount > 0) m += ' <span style="font-size:11px;color:var(--ink-dim);font-weight:400">' + stDone + '/' + stCount + '</span>';
+        m += '</label>';
+        if(stCount > 0){
+          m += '<div style="background:var(--bg-hover);border-radius:var(--r-sm);overflow:hidden;margin-bottom:4px">';
+          m += '<div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;background:var(--teal);width:' + (stCount>0?(stDone/stCount*100):0) + '%;border-radius:2px;transition:width .3s"></div></div>';
+          m += '</div>';
+        }
+        m += stHtml + '</div>';
+      }
 
       // Checklist
-      if(clHtml) m += '<div class="kb-section"><label class="kb-label">檢查清單</label><div>' + clHtml + '</div></div>';
+      var clCount = (card.checklist||[]).length;
+      var clDoneCount = (card.checklist||[]).filter(function(it){ return it.done; }).length;
+      if(clHtml){
+        m += '<div class="kb-section"><label class="kb-label">檢查清單';
+        if(clCount > 0) m += ' <span style="font-size:11px;color:var(--ink-dim);font-weight:400">' + clDoneCount + '/' + clCount + '</span>';
+        m += '</label><div>' + clHtml + '</div></div>';
+      }
+
+      // Attachments
+      if(attachHtml) m += '<div class="kb-section"><label class="kb-label">附件</label><div>' + attachHtml + '</div></div>';
 
       // Custom fields
       var cfHtml = '';
@@ -12272,6 +12445,21 @@ canvas{display:block;margin:0 auto 24px}
       });
     }
 
+    // ── Priority Cycle (v0.18.1) ──
+    window._kbCyclePriority = function(cardId){
+      var card = cards.find(function(c){return c.id===cardId;});
+      if(!card) return;
+      var cycle = ['none','low','medium','high'];
+      var idx = cycle.indexOf(card.priority || 'none');
+      var next = cycle[(idx + 1) % cycle.length];
+      card.priority = next;
+      card.updatedAt = Date.now();
+      saveCards(cards);
+      var priLabels = {none:'一般',low:'低',medium:'中',high:'高'};
+      showToast('優先級 → ' + priLabels[next]);
+      renderBoard();
+    };
+
     // ── Expose to Window ──
     window._kbAddCard = function(colId){window._kbShowCardEdit(null,colId);};
     window._kbEditCard = function(cardId){_kbShowCardView(cardId);};
@@ -12298,6 +12486,7 @@ canvas{display:block;margin:0 auto 24px}
     window._kbDeleteCol = _kbDeleteCol;
     window._kbAddCol = _kbAddCol;
     window._kbSetView = function(mode){ window._kbViewMode = mode; renderBoard(); };
+    window._kbSetGroupBy = function(val){ window._kbListGroupBy = val; renderBoard(); };
     window._kbToggleArchived = function(){window._kbShowArchived=!window._kbShowArchived;showArchived=window._kbShowArchived;renderBoard();};
 
     // ── Detail Panel (v0.9.0) ──
@@ -26559,4 +26748,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.18.0 · Timeline UX Overhaul — (1) PATH Header Spec 憲法化（CLAUDE.md 永久記憶，.page-title-area canonical，.rm-title 對齊 22/700/-.3px）；(2) 左側 rm-row 改為兩行 flex 布局：上行 title（pri-dot + text，單行省略），下行 meta（status + category + due + avatar）；(3) 完成度從模糊進度條改為 Linear 風格大數字 %（hero-num 20px/800，色調隨進度切換 ok/warn/dim）；(4) 完整圖例系統：圖例 popover 含分類（固定語意）+ 週期（點擊編輯跳 cycle manager）；(5) 滾輪預設水平捲動（Gantt 是橫向的），Shift+wheel fallback 垂直；(6) 左側項目可垂直 DnD 排序，customOrderMap localStorage 持久化，sortCards 接 groupKey；(7) rm-bar-row / rm-row 高度對齊 56px 確保左右同步；(8) Drawer 完整重寫：kb-card preview 頂部 + meta-grid (開始/到期/優先/負責人) + project pill (可點擊編輯週期) + 描述 + 子任務含進度條 + 相關會議 placeholder；(9) 「週期/任務」左標題改為「項目任務」語義校正；(10) 任務 drawer 移除分裂 drawer head-top/title，header 統一為 label + icon actions 行 -->
+</html><!-- v0.18.1 · Task Center UIUX Polish — (1) 列表視圖動態分組：group-by 下拉支援狀態/優先級/分類/負責人四種模式；(2) 卡片詳情 modal 子任務渲染修復：stHtml 正確插入 modal 中顯示子任務進度條；(3) 列表視圖 hover 快捷操作：懸停顯示優先級切換+排入週期+編輯按鈕；(4) 逾期任務視覺強化：紅底背景+脈衝動畫+警示圖標；(5) 需求池批次排程：勾選模式+一鍵排入本期；(6) 時間軸 tooltip 增強：負責人+逾期警示+checklist 進度條+描述預覽 -->
