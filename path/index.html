@@ -903,8 +903,8 @@ canvas{display:block;margin:0 auto 24px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important}}
 
 /* ===== MODAL CLOSE ANIMATION ===== */
-.kb-modal-overlay.closing{animation:modalFadeOut var(--motion-fast) var(--ease-out) forwards}
-.kb-modal-overlay.closing .kb-modal{animation:modalScaleOut var(--motion-fast) var(--ease-out) forwards}
+.kb-modal-overlay.closing,.kb-overlay.closing{animation:modalFadeOut var(--motion-fast) var(--ease-out) forwards}
+.kb-modal-overlay.closing .kb-modal,.kb-overlay.closing .kb-modal{animation:modalScaleOut var(--motion-fast) var(--ease-out) forwards}
 @keyframes modalFadeOut{to{opacity:0}}
 @keyframes modalScaleOut{to{opacity:0;transform:scale(.96) translateY(8px)}}
 
@@ -919,6 +919,9 @@ canvas{display:block;margin:0 auto 24px}
 /* ===== MOBILE HAMBURGER MENU ===== */
 .mobile-hamburger{display:none;position:fixed;top:12px;left:12px;z-index:1100;width:40px;height:40px;border-radius:12px;background:var(--primary);color:#fff;border:none;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(124,92,252,.3)}
 @media(max-width:640px){.mobile-hamburger{display:flex}#sidebar{transform:translateX(-100%);transition:transform var(--motion-smooth) var(--ease-smooth);z-index:1200}#sidebar.mobile-open{transform:translateX(0)}.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1150}.sidebar-backdrop.active{display:block}#main{margin-left:0!important}#content{padding:16px!important;padding-top:60px!important}}
+
+/* ===== TABLET BREAKPOINT (641-1024px) ===== */
+@media(min-width:641px) and (max-width:1024px){#sidebar{width:68px}#sidebar .nav-label,#sidebar .sidebar-version,#sidebar .nav-section-label{display:none}#sidebar .nav-item{justify-content:center;padding:10px 0}#sidebar .nav-icon{margin:0}#main{margin-left:68px!important}#content{padding:24px!important}.page-title-area{flex-direction:column;align-items:flex-start}}
 
 /* ===== AI SHIMMER LOADING ===== */
 .ai-shimmer{background:linear-gradient(90deg,rgba(124,92,252,.06) 25%,rgba(124,92,252,.15) 50%,rgba(124,92,252,.06) 75%);background-size:200% 100%;animation:aiShimmer 1.5s ease-in-out infinite;border-radius:var(--r-md);min-height:40px}
@@ -4143,7 +4146,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.20.0</div>
+        <div class="sidebar-version">v0.21.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6426,7 +6429,7 @@ canvas{display:block;margin:0 auto 24px}
       var ov = document.createElement('div');
       ov.className = 'kb-overlay';
       ov.innerHTML = '<div class="kb-modal" style="max-width:480px">' +
-        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">快速新增需求</h3><button class="kb-modal-close" onclick="this.closest(\'.kb-overlay\').remove()"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
+        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">快速新增需求</h3><button class="kb-modal-close" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
         '<div class="kb-modal-body" style="padding:16px 20px">' +
         '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:6px;display:block">一句話描述你想做的事</label>' +
         '<input type="text" id="specQuickTitle" placeholder="例如：新增客戶匯入功能" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;background:var(--bg);color:var(--ink);box-sizing:border-box" autofocus>' +
@@ -6434,11 +6437,11 @@ canvas{display:block;margin:0 auto 24px}
         '<textarea id="specQuickDesc" placeholder="簡單描述背景或目的…" rows="3" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:13px;background:var(--bg);color:var(--ink);resize:vertical;box-sizing:border-box"></textarea>' +
         '</div>' +
         '<div class="kb-modal-footer" style="justify-content:flex-end">' +
-        '<button class="btn btn-ghost" onclick="this.closest(\'.kb-overlay\').remove()">取消</button>' +
+        '<button class="btn btn-ghost" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))">取消</button>' +
         '<button class="btn btn-accent" id="specQuickSave">新增至需求池</button>' +
         '</div></div>';
       document.body.appendChild(ov);
-      ov.addEventListener('click', function(e){ if(e.target === ov) ov.remove(); });
+      ov.addEventListener('click', function(e){ if(e.target === ov) closeModalAnimated(ov); });
       document.getElementById('specQuickSave').addEventListener('click', function(){
         var title = (document.getElementById('specQuickTitle').value || '').trim();
         if(!title){ showToast('請輸入標題'); return; }
@@ -6475,14 +6478,14 @@ canvas{display:block;margin:0 auto 24px}
       var ov = document.createElement('div');
       ov.className = 'kb-overlay';
       var modalHtml = '<div class="kb-modal" style="max-width:520px">';
-      modalHtml += '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">從 PATH 匯入</h3><button class="kb-modal-close" onclick="this.closest(\'.kb-overlay\').remove()"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>';
+      modalHtml += '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">從 PATH 匯入</h3><button class="kb-modal-close" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>';
       modalHtml += '<div class="kb-modal-body" style="padding:20px">';
 
       if(!pathData || (!pathData.suggestions && !pathData.actions && !pathData.recommendations)){
         modalHtml += '<div style="text-align:center;padding:32px 16px">';
         modalHtml += '<div style="font-size:14px;color:var(--ink-muted);margin-bottom:8px">尚未有 PATH 診斷結果</div>';
         modalHtml += '<div style="font-size:13px;color:var(--ink-dim);line-height:1.6">請先完成 PATH 診斷，診斷結論中的<br>建議事項可以一鍵匯入為需求卡</div>';
-        modalHtml += '<button class="btn btn-outline" onclick="this.closest(\'.kb-overlay\').remove();navigate(\'diagnose\')" style="margin-top:16px">前往 PATH 診斷</button>';
+        modalHtml += '<button class="btn btn-outline" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'));navigate(\'diagnose\')" style="margin-top:16px">前往 PATH 診斷</button>';
         modalHtml += '</div>';
       } else {
         var items = pathData.suggestions || pathData.actions || pathData.recommendations || [];
@@ -6499,14 +6502,14 @@ canvas{display:block;margin:0 auto 24px}
       modalHtml += '</div>';
       if(pathData && (pathData.suggestions || pathData.actions || pathData.recommendations)){
         modalHtml += '<div class="kb-modal-footer" style="justify-content:flex-end">';
-        modalHtml += '<button class="btn btn-ghost" onclick="this.closest(\'.kb-overlay\').remove()">取消</button>';
+        modalHtml += '<button class="btn btn-ghost" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))">取消</button>';
         modalHtml += '<button class="btn btn-accent" id="specImportSave">匯入選取項目</button>';
         modalHtml += '</div>';
       }
       modalHtml += '</div>';
       ov.innerHTML = modalHtml;
       document.body.appendChild(ov);
-      ov.addEventListener('click', function(e){ if(e.target === ov) ov.remove(); });
+      ov.addEventListener('click', function(e){ if(e.target === ov) closeModalAnimated(ov); });
 
       var saveBtn = document.getElementById('specImportSave');
       if(saveBtn){
@@ -7754,7 +7757,7 @@ canvas{display:block;margin:0 auto 24px}
 
       var ov = document.createElement('div');
       ov.className = 'kb-modal-overlay';
-      ov.onclick = function(e){ if(e.target === ov) ov.remove(); };
+      ov.onclick = function(e){ if(e.target === ov) closeModalAnimated(ov); };
 
       var m = '';
       m += '<div class="kb-modal" style="width:960px" onclick="event.stopPropagation()">';
@@ -7765,7 +7768,7 @@ canvas{display:block;margin:0 auto 24px}
       m += '<h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (card.title||'未命名') + '</h3></div>';
       m += '<div style="display:flex;gap:6px;align-items:center;flex-shrink:0">';
       m += '<button id="tpPreviewEditBtn" style="background:none;border:none;color:var(--primary);cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;transition:background .12s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 17.5V15l10-10 2.5 2.5L6.5 17.5H4z"/></svg> 編輯</button>';
-      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="this.closest(\'.kb-modal-overlay\').remove()"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div></div>';
+      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div></div>';
 
       // Body: Two columns
       m += '<div class="kb-modal-body"><div class="kb-modal-2col" style="grid-template-columns:3fr 2fr">';
@@ -7829,7 +7832,7 @@ canvas{display:block;margin:0 auto 24px}
           var agentDot = cls==='agent'?'<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);margin-right:6px;vertical-align:middle"></span>':'';
           m += '<div style="padding:10px 12px;background:var(--bg-hover);border-radius:var(--r-sm);margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:11px;font-weight:600;color:var(--ink-sec)">' + agentDot + (d.by||'') + '</span><span style="font-size:10px;color:var(--ink-dim)">' + t + '</span></div><div style="font-size:13px;line-height:1.55;color:var(--ink)">' + (d.text||'') + '</div></div>';
         });
-        if(card.discussion.length > 5) m += '<div style="font-size:12px;color:var(--primary);margin:4px 0;cursor:pointer" onclick="this.closest(\'.kb-modal-overlay\').remove();setTimeout(function(){if(window._kbShowCardEdit) window._kbShowCardEdit(\'' + card.id + '\');},100)">查看全部 (' + card.discussion.length + ')</div>';
+        if(card.discussion.length > 5) m += '<div style="font-size:12px;color:var(--primary);margin:4px 0;cursor:pointer" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'));setTimeout(function(){if(window._kbShowCardEdit) window._kbShowCardEdit(\'' + card.id + '\');},100)">查看全部 (' + card.discussion.length + ')</div>';
       } else {
         m += '<div style="font-size:13px;color:var(--ink-dim)">尚無討論</div>';
       }
@@ -7910,7 +7913,7 @@ canvas{display:block;margin:0 auto 24px}
       var ov = document.createElement('div');
       ov.className = 'kb-overlay';
       ov.innerHTML = '<div class="kb-modal" style="max-width:520px">' +
-        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">新增需求</h3><button class="kb-modal-close" onclick="this.closest(\'.kb-overlay\').remove()"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
+        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">新增需求</h3><button class="kb-modal-close" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
         '<div class="kb-modal-body" style="padding:16px 20px">' +
         // 標題
         '<label style="' + _fStyle + '">需求標題 <span style="color:var(--rose)">*</span></label>' +
@@ -7942,11 +7945,11 @@ canvas{display:block;margin:0 auto 24px}
         '</div></div>' +
         '</div>' +
         '<div class="kb-modal-footer" style="justify-content:flex-end">' +
-        '<button class="btn btn-ghost" onclick="this.closest(\'.kb-overlay\').remove()">取消</button>' +
+        '<button class="btn btn-ghost" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))">取消</button>' +
         '<button class="btn btn-accent" id="blQuickSave">新增需求</button>' +
         '</div></div>';
       document.body.appendChild(ov);
-      ov.addEventListener('click', function(e){ if(e.target === ov) ov.remove(); });
+      ov.addEventListener('click', function(e){ if(e.target === ov) closeModalAnimated(ov); });
       var saveBtn = document.getElementById('blQuickSave');
       if(saveBtn) saveBtn.addEventListener('click', function(){
         var title = (document.getElementById('blQuickTitle').value || '').trim();
@@ -8069,7 +8072,7 @@ canvas{display:block;margin:0 auto 24px}
       var ov = document.createElement('div');
       ov.className = 'kb-overlay';
       ov.innerHTML = '<div class="kb-modal" style="max-width:400px">' +
-        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">週期設定</h3><button class="kb-modal-close" onclick="this.closest(\'.kb-overlay\').remove()"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
+        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">週期設定</h3><button class="kb-modal-close" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
         '<div class="kb-modal-body" style="padding:20px">' +
         '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px;display:block">週期長度</label>' +
         '<div style="display:flex;gap:8px;margin-bottom:20px">' +
@@ -8087,11 +8090,11 @@ canvas{display:block;margin:0 auto 24px}
         '<div style="font-size:11px;color:var(--ink-dim);margin-bottom:20px">每個週期的建議任務數量上限</div>' +
         '</div>' +
         '<div class="kb-modal-footer" style="justify-content:flex-end">' +
-        '<button class="btn btn-ghost" onclick="this.closest(\'.kb-overlay\').remove()">取消</button>' +
+        '<button class="btn btn-ghost" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))">取消</button>' +
         '<button class="btn btn-accent" id="cpSettingsSave">儲存</button>' +
         '</div></div>';
       document.body.appendChild(ov);
-      ov.addEventListener('click', function(e){ if(e.target === ov) ov.remove(); });
+      ov.addEventListener('click', function(e){ if(e.target === ov) closeModalAnimated(ov); });
       document.getElementById('cpSettingsSave').addEventListener('click', function(){
         var newDuration = parseInt(document.getElementById('cpDurVal').value) || 7;
         var newStartDay = parseInt(document.getElementById('cpStartDay').value);
@@ -8664,7 +8667,7 @@ canvas{display:block;margin:0 auto 24px}
       var ov = document.createElement('div');
       ov.className = 'kb-overlay';
       ov.innerHTML = '<div class="kb-modal" style="max-width:400px">' +
-        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">週期設定</h3><button class="kb-modal-close" onclick="this.closest(\'.kb-overlay\').remove()"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
+        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">週期設定</h3><button class="kb-modal-close" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
         '<div class="kb-modal-body" style="padding:20px">' +
         '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px;display:block">週期長度</label>' +
         '<div style="display:flex;gap:8px;margin-bottom:20px">' +
@@ -8683,11 +8686,11 @@ canvas{display:block;margin:0 auto 24px}
         '<div style="font-size:12px;color:var(--ink-dim);margin-bottom:12px;line-height:1.5">更改設定後，下一個新週期會套用新的長度與起始日。當前週期不受影響。</div>' +
         '</div>' +
         '<div class="kb-modal-footer" style="justify-content:flex-end">' +
-        '<button class="btn btn-ghost" onclick="this.closest(\'.kb-overlay\').remove()">取消</button>' +
+        '<button class="btn btn-ghost" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))">取消</button>' +
         '<button class="btn btn-accent" id="cpSettingsSave">儲存</button>' +
         '</div></div>';
       document.body.appendChild(ov);
-      ov.addEventListener('click', function(e){ if(e.target === ov) ov.remove(); });
+      ov.addEventListener('click', function(e){ if(e.target === ov) closeModalAnimated(ov); });
 
       document.getElementById('cpSettingsSave').addEventListener('click', function(){
         var newDuration = parseInt(document.getElementById('cpDurVal').value) || 7;
@@ -9694,7 +9697,7 @@ canvas{display:block;margin:0 auto 24px}
         '<button class="rm-help-close" onclick="document.getElementById(\'rmHelpOverlay\').remove()">關閉</button>' +
         '</div>';
       document.body.appendChild(ov);
-      ov.addEventListener('click', function(e){ if(e.target === ov) ov.remove(); });
+      ov.addEventListener('click', function(e){ if(e.target === ov) closeModalAnimated(ov); });
       var esc = function(e){ if(e.key === 'Escape'){ var el = document.getElementById('rmHelpOverlay'); if(el) el.remove(); document.removeEventListener('keydown', esc); } };
       document.addEventListener('keydown', esc);
     };
@@ -11447,7 +11450,7 @@ canvas{display:block;margin:0 auto 24px}
             if(card.tags.length > 2) html += '<span style="font-size:10px;color:var(--ink-dim)">+' + (card.tags.length - 2) + '</span>';
           }
           if(card.source && (card.source === 'ai' || card.source === 'claude-mcp')) {
-            html += '<span class="kb-v2-ai-badge">AI</span>';
+            html += '<span class="kb-v2-ai-badge" data-ai-reason style="position:relative">AI<span class="ai-tooltip-reason">此任務由 AI 根據 PATH 診斷或市場研究自動建議</span></span>';
           }
           html += '</div>';
 
@@ -11700,7 +11703,7 @@ canvas{display:block;margin:0 auto 24px}
       ov.onclick = function(e){if(e.target===ov)ov.remove();};
       var m = '<div class="kb-modal" style="width:380px" onclick="event.stopPropagation()">';
       m += '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">鍵盤快捷鍵</h3>';
-      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button></div>';
+      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))">' + IC.close + '</button></div>';
       m += '<div class="kb-modal-body" style="padding:16px 24px">';
       var shortcuts = [
         {key:'N',desc:'新增任務到待辦'},
@@ -11942,7 +11945,7 @@ canvas{display:block;margin:0 auto 24px}
       m += '<div style="display:flex;gap:6px;align-items:center;flex-shrink:0">';
       m += '<button style="background:none;border:none;color:var(--primary);cursor:pointer;padding:6px 12px;border-radius:var(--r-sm);font-family:inherit;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;transition:background .12s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="document.querySelector(\'.kb-modal-overlay\').remove();window._kbShowCardEdit(\'' + card.id + '\')">' + IC.edit + ' 編輯</button>';
       m += '<button class="btn btn-ghost" style="font-size:12px;padding:6px 14px;color:var(--ink-muted);border-radius:8px" id="kbArchiveBtn">' + IC.archive + (card.archived?' 復原':' 封存') + '</button>';
-      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button></div></div>';
+      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))">' + IC.close + '</button></div></div>';
 
       // ── Body: Two columns ──
       m += '<div class="kb-modal-body"><div class="kb-modal-2col" style="grid-template-columns:3fr 2fr">';
@@ -12207,7 +12210,7 @@ canvas{display:block;margin:0 auto 24px}
       m += '<div class="kb-modal-header"><h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink)">' + (isEdit?'編輯任務':'新增任務') + '</h3>';
       m += '<div style="display:flex;gap:8px;align-items:center">';
       if(isEdit) m += '<button class="btn btn-ghost" style="font-size:12px;padding:6px 14px;color:var(--ink-muted);border-radius:8px" id="kbArchiveBtn">' + IC.archive + (card && card.archived?' 復原':' 封存') + '</button>';
-      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button>';
+      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))">' + IC.close + '</button>';
       m += '</div></div>';
       // Scrollable body
       m += '<div class="kb-modal-body">';
@@ -12742,7 +12745,7 @@ canvas{display:block;margin:0 auto 24px}
       var m = '';
       m += '<div class="kb-modal" style="width:640px" onclick="event.stopPropagation()">';
       m += '<div class="kb-modal-header"><h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M10 3v5M10 12v5M3 10h5M12 10h5"/><circle cx="10" cy="10" r="2.5"/></svg>AI 需求拆解</h3>';
-      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button></div>';
+      m += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))">' + IC.close + '</button></div>';
 
       m += '<div class="kb-modal-body" style="padding:20px 24px">';
       m += '<p style="font-size:13px;color:var(--ink-muted);margin:0 0 16px;line-height:1.6">描述你的需求或目標，系統會自動拆解成多張任務卡放入收件匣。<br>你也可以手動新增拆解項目。</p>';
@@ -12770,7 +12773,7 @@ canvas{display:block;margin:0 auto 24px}
       m += '<div style="display:flex;gap:10px;padding:16px 0 0;border-top:1px solid var(--border);margin-top:12px">';
       m += '<button class="btn btn-ghost" style="padding:8px 16px" id="kbDecompTemplate">套用範本</button>';
       m += '<div style="flex:1"></div>';
-      m += '<button class="btn btn-ghost" style="padding:8px 20px" onclick="this.closest(\'.kb-modal-overlay\').remove()">取消</button>';
+      m += '<button class="btn btn-ghost" style="padding:8px 20px" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))">取消</button>';
       m += '<button class="btn btn-accent" style="padding:8px 24px" id="kbDecompCreate">建立任務卡</button>';
       m += '</div></div></div>';
 
@@ -12973,6 +12976,18 @@ canvas{display:block;margin:0 auto 24px}
     var bd = document.getElementById('sidebarBackdrop');
     if (bd) bd.addEventListener('click', function(){ toggleMobileMenu(); });
   })();
+
+  // ═══════════════════════════════════════════
+  // GLOBAL: Close Modal with Animation
+  // ═══════════════════════════════════════════
+  function closeModalAnimated(overlay) {
+    if (!overlay) return;
+    if (overlay.classList.contains('closing')) return;
+    overlay.classList.add('closing');
+    setTimeout(function() {
+      overlay.remove();
+    }, 150);
+  }
 
   // ═══════════════════════════════════════════
   // GLOBAL: Command Palette (Cmd+K / Ctrl+K)
@@ -13586,7 +13601,7 @@ canvas{display:block;margin:0 auto 24px}
           '<div style="flex:1"><label class="kb-label">狀態</label>' + bpSelect({id:'txnF_status', options: [{value:'pending',label:'待收',selected:true},{value:'paid',label:'已收款',selected:false},{value:'overdue',label:'逾期',selected:false}]}) + '</div></div>' +
         '</div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">' +
-          '<button class="btn btn-ghost" style="padding:8px 16px" onclick="this.closest(\'.kb-modal-overlay\').remove()">取消</button>' +
+          '<button class="btn btn-ghost" style="padding:8px 16px" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))">取消</button>' +
           '<button class="btn btn-accent" style="padding:8px 20px" id="txnSaveBtn">新增</button>' +
         '</div></div>';
 
@@ -13668,7 +13683,7 @@ canvas{display:block;margin:0 auto 24px}
       var html = '<div class="kb-modal" style="width:700px" onclick="event.stopPropagation()">';
       html += '<div class="kb-modal-header">';
       html += '<h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ink)">即將匯入 ' + mapped.length + ' 筆客戶資料</h3>';
-      html += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button>';
+      html += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))">' + IC.close + '</button>';
       html += '</div>';
       html += '<div style="padding:20px;border-bottom:1px solid var(--border);max-height:400px;overflow-y:auto">';
       html += '<table style="width:100%;font-size:13px;border-collapse:collapse">';
@@ -13699,7 +13714,7 @@ canvas{display:block;margin:0 auto 24px}
       html += '<div class="kb-modal-footer">';
       html += '<div></div>';
       html += '<div style="display:flex;gap:10px;align-items:center">';
-      html += '<button class="btn btn-ghost" style="padding:8px 20px" onclick="this.closest(\'.kb-modal-overlay\').remove()">取消</button>';
+      html += '<button class="btn btn-ghost" style="padding:8px 20px" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))">取消</button>';
       html += '<button class="btn btn-accent" style="padding:8px 24px" id="ctConfirmImportBtn">確認</button>';
       html += '</div>';
       html += '</div>';
@@ -16199,11 +16214,10 @@ canvas{display:block;margin:0 auto 24px}
     var html = '';
 
     // Header
-    html += '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap">';
-    html += '<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;flex:1;min-width:0">';
-    html += '<h2 style="font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><polyline points="2 16 6 10 10 13 14 6 18 2"/><circle cx="18" cy="2" r="1.5" fill="var(--primary)"/></svg> AI 儀表板</h2>';
-    html += '<span style="font-size:13px;color:var(--ink-muted);font-weight:450">' + thisYear + '年' + (thisMonth + 1) + '月營運快照</span>';
-    html += '</div></div>';
+    html += '<div class="page-title-area">';
+    html += '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="2 16 6 10 10 13 14 6 18 2"/><circle cx="18" cy="2" r="1.5" fill="var(--primary)"/></svg><span>AI 儀表板</span></h1>';
+    html += '<p class="subtitle">公司現在狀況怎樣？' + thisYear + '年' + (thisMonth + 1) + '月營運快照</p>';
+    html += '</div>';
 
     // ═══ Layer 1: Revenue Health (營收健康度) ═══
     html += '<div style="margin-bottom:28px">';
@@ -16632,7 +16646,7 @@ canvas{display:block;margin:0 auto 24px}
 
       var ov = document.createElement('div');
       ov.className = 'kb-modal-overlay';
-      ov.onclick = function(e) { if(e.target === ov) ov.remove(); };
+      ov.onclick = function(e) { if(e.target === ov) closeModalAnimated(ov); };
 
       function buildPaymentsHTML() {
         if (payments.length === 0) return '<div style="font-size:13px;color:var(--ink-dim);padding:8px 0">尚無收款紀錄</div>';
@@ -16655,7 +16669,7 @@ canvas{display:block;margin:0 auto 24px}
       mHTML += '<h3 style="margin:0;font-size:18px;font-weight:800;color:var(--ink)">' + (isEdit ? '編輯發票' : '新增發票') + '</h3>';
       mHTML += '<div style="display:flex;gap:8px;align-items:center">';
       if (isEdit) mHTML += '<button class="btn btn-ghost" style="font-size:12px;padding:6px 14px;color:var(--ink-muted);border-radius:8px" onclick="window._blArchive(\'' + inv.id + '\')">' + IC.archive + ' 封存</button>';
-      mHTML += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="this.closest(\'.kb-modal-overlay\').remove()">' + IC.close + '</button>';
+      mHTML += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:6px;display:flex;border-radius:8px;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'none\'" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))">' + IC.close + '</button>';
       mHTML += '</div></div>';
 
       // ── SCROLLABLE BODY ──
@@ -16728,7 +16742,7 @@ canvas{display:block;margin:0 auto 24px}
       // ── FOOTER ──
       mHTML += '<div class="kb-modal-footer" style="justify-content:flex-end">';
       mHTML += '<div style="display:flex;gap:10px;align-items:center">';
-      mHTML += '<button class="btn btn-ghost" style="padding:8px 20px" onclick="this.closest(\'.kb-modal-overlay\').remove()">取消</button>';
+      mHTML += '<button class="btn btn-ghost" style="padding:8px 20px" onclick="closeModalAnimated(this.closest(\'.kb-modal-overlay\'))">取消</button>';
       mHTML += '<button class="btn btn-accent" style="padding:8px 24px" id="blSaveBtn">' + (isEdit ? '儲存' : '新增') + '</button>';
       mHTML += '</div></div>';
 
@@ -23453,12 +23467,11 @@ function loadHistory(){
       filtered.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
 
       if(filtered.length === 0){
-        html += '<div style="text-align:center;padding:80px 20px">';
-        html += '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(124,92,252,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid rgba(124,92,252,.15)">';
-        html += '<svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/></svg>';
-        html += '</div>';
-        html += '<div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px">' + (sq ? '找不到符合條件的會議' : '尚無會議紀錄') + '</div>';
-        html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6">' + (sq ? '試試其他關鍵字' : '點擊「新增會議」開始記錄<br>每一筆溝通的重要細節') + '</div>';
+        html += '<div class="bp-empty">';
+        html += '<div class="bp-empty-icon"><svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/></svg></div>';
+        html += '<div class="bp-empty-title">' + (sq ? '找不到符合條件的會議' : '還沒有會議紀錄') + '</div>';
+        html += '<div class="bp-empty-desc">' + (sq ? '試試其他關鍵字' : '每一筆溝通都值得被記住<br>點擊下方開始記錄') + '</div>';
+        if(!sq) html += '<button class="bp-empty-btn" onclick="window._mtShowModal()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增會議</button>';
         html += '</div>';
       } else {
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px">';
@@ -23698,12 +23711,11 @@ function loadHistory(){
       filtered.sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
 
       if(filtered.length === 0){
-        html += '<div style="text-align:center;padding:80px 20px">';
-        html += '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(124,92,252,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid rgba(124,92,252,.15)">';
-        html += '<svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.3" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>';
-        html += '</div>';
-        html += '<div style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px">' + (sq ? '找不到符合條件的文件' : '尚無文件') + '</div>';
-        html += '<div style="font-size:13px;color:var(--ink-muted);line-height:1.6">' + (sq ? '試試其他關鍵字' : '點擊「新增文件」開始建立<br>你的商業文件庫') + '</div>';
+        html += '<div class="bp-empty">';
+        html += '<div class="bp-empty-icon"><svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg></div>';
+        html += '<div class="bp-empty-title">' + (sq ? '找不到符合條件的文件' : '文件庫是空的') + '</div>';
+        html += '<div class="bp-empty-desc">' + (sq ? '試試其他關鍵字' : '合約、提案、發票⋯⋯<br>所有商業文件集中管理') + '</div>';
+        if(!sq) html += '<button class="bp-empty-btn" onclick="window._dcShowModal()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增文件</button>';
         html += '</div>';
       } else {
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">';
@@ -26863,4 +26875,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.20.0 · UIUX Excellence Push — (1) 全域頁面切換動畫：navigate() 增加 page-exit/page-enter 淡入淡出+位移；(2) 看板空欄位重設計：icon 圓圈+「尚無任務」+拖曳提示；(3) Toast 升級：進場彈性動畫+退場右滑淡出；(4) 按鈕 active 回饋：scale(.97) 壓感+focus-visible glow；(5) 列表行 hover 指示器：左側 3px primary 色條；(6) Stagger 動畫系統：子元素依序入場 30ms 間隔 -->
+</html><!-- v0.21.0 · UIUX 95 Sprint — (1) Tablet 斷點 641-1024px sidebar icon-only；(2) AI 儀表板 header 遷移至 .page-title-area；(3) 會議/文件空狀態改用 .bp-empty 統一元件+CTA 按鈕；(4) closeModalAnimated() 全域函式，23 處 modal close 加入 fade-out+scale-down 動畫；(5) AI 任務 badge 加入 data-ai-reason tooltip 可見化；(6) .closing CSS 擴展至 .kb-overlay -->
