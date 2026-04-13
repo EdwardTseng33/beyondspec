@@ -3345,7 +3345,8 @@ canvas{display:block;margin:0 auto 24px}
 
 /* Left panel — v0.18.0: 單欄兩行式 row，對齊 kb-card-v2 視覺語彙 */
 .rm-left{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-card);position:relative;z-index:2}
-.rm-left-header{display:flex;align-items:flex-end;height:80px;padding:0 16px 12px 20px;font-size:11px;font-weight:700;color:var(--ink-dim);letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-card);flex-shrink:0}
+/* v0.28.0: 左側 header 同步瘦身 80→56px */
+.rm-left-header{display:flex;align-items:flex-end;height:56px;padding:0 16px 10px 20px;font-size:11px;font-weight:700;color:var(--ink-dim);letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-card);flex-shrink:0}
 .rm-left-body{flex:1;overflow-y:auto;overflow-x:hidden}
 .rm-left-body::-webkit-scrollbar{width:8px}
 .rm-left-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
@@ -3374,8 +3375,11 @@ canvas{display:block;margin:0 auto 24px}
 .rm-cycle-tag.backlog{background:rgba(148,163,184,.18);color:var(--ink-muted)}
 /* Progress pill bar in left col (replaces duplicate roll-up in right) */
 .rm-group-progress-ring{display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;margin-left:4px}
-.rm-gpr-track{display:none}
-.rm-gpr-fill{display:none}
+/* v0.28.0: 進度微型條恢復顯示 — 百分比旁的 mini progress bar */
+.rm-gpr-track{width:36px;height:4px;background:var(--bg-hover);border-radius:2px;overflow:hidden;flex-shrink:0}
+[data-theme="dark"] .rm-gpr-track{background:rgba(255,255,255,.08)}
+.rm-gpr-fill{height:100%;border-radius:2px;transition:width .4s cubic-bezier(.22,1,.36,1);background:var(--primary)}
+.rm-gpr-fill.complete{background:var(--teal)}
 .rm-gpr-num{font-size:12px;font-weight:var(--fw-title,700);color:var(--ink-muted);font-variant-numeric:tabular-nums;letter-spacing:.02em}
 
 /* Task row in left table — v0.18.0: 兩行式 row，對齊 kb-card-v2 視覺語彙
@@ -3435,10 +3439,10 @@ canvas{display:block;margin:0 auto 24px}
 .rm-right::-webkit-scrollbar-corner{background:transparent}
 
 /* Time axis header (sticky top) — row1 month / row2 day / strip row for cycle labels */
-/* v0.16.1: 增高 header 讓上下文更從容；月份行 row1 26px，原子行 row2 26px，cycle strip 保持 28px → total 80px */
-.rm-header{position:sticky;top:0;left:0;z-index:6;background:var(--bg-card);border-bottom:1px solid var(--border);height:80px;display:flex;flex-direction:column}
-.rm-header-row1{display:flex;height:26px;border-bottom:1px solid var(--border)}
-.rm-header-row2{display:flex;height:26px}
+/* v0.28.0: header 瘦身 — cycle strip 已移除，80→56px；row 各 28px 更從容 */
+.rm-header{position:sticky;top:0;left:0;z-index:6;background:var(--bg-card);border-bottom:1px solid var(--border);height:56px;display:flex;flex-direction:column}
+.rm-header-row1{display:flex;height:28px;border-bottom:1px solid var(--border)}
+.rm-header-row2{display:flex;height:28px}
 .rm-header-major{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink-sec);border-right:1px solid var(--border);letter-spacing:.04em;flex-shrink:0;background:var(--bg-card);font-variant-numeric:tabular-nums}
 .rm-header-minor{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:var(--fw-label,600);color:var(--ink-dim);border-right:1px solid rgba(0,0,0,.04);flex-shrink:0;font-variant-numeric:tabular-nums}
 [data-theme="dark"] .rm-header-minor{border-right-color:rgba(255,255,255,.04)}
@@ -3454,8 +3458,9 @@ canvas{display:block;margin:0 auto 24px}
 .rm-header-minor.day{font-size:11px;font-weight:600;padding:0 4px;white-space:nowrap}
 
 /* Gantt canvas */
-/* v0.27.0: 移除 min-height:100% — 消除底部空白區，canvas 高度跟隨內容 */
+/* v0.28.0: canvas 高度跟隨內容 + 底部收邊漸層 */
 .rm-canvas{position:relative}
+.rm-canvas::after{content:'';position:absolute;bottom:-24px;left:0;right:0;height:24px;background:linear-gradient(to bottom,var(--border) 0px,transparent 1px);pointer-events:none;z-index:3}
 .rm-grid-lines{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1}
 .rm-grid-vline{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.05)}
 [data-theme="dark"] .rm-grid-vline{background:rgba(255,255,255,.05)}
@@ -3503,7 +3508,8 @@ canvas{display:block;margin:0 auto 24px}
 .rm-bar:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.32);z-index:5;filter:brightness(1.05)}
 .rm-bar:active{transform:translateY(0) scale(.99)}
 .rm-bar:focus-visible{outline:none;box-shadow:0 0 0 3px var(--bg-card),0 0 0 5px var(--primary);z-index:6}
-.rm-bar-fill{position:absolute;top:0;left:0;bottom:0;background:rgba(255,255,255,.25);border-radius:6px 0 0 6px;pointer-events:none}
+/* v0.28.0: bar fill 改進 — 漸層透明度 + 動畫過渡 */
+.rm-bar-fill{position:absolute;top:0;left:0;bottom:0;background:linear-gradient(90deg,rgba(255,255,255,.3),rgba(255,255,255,.12));border-radius:6px 0 0 6px;pointer-events:none;transition:width .5s cubic-bezier(.22,1,.36,1)}
 .rm-bar-title{position:relative;z-index:1;text-overflow:ellipsis;overflow:hidden;flex:1;text-shadow:0 1px 2px rgba(0,0,0,.15)}
 .rm-bar.slim{padding:0;justify-content:center}
 .rm-bar.slim::before{content:'';display:block;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.9);position:relative;z-index:2}
@@ -4147,7 +4153,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.27.0</div>
+        <div class="sidebar-version">v0.28.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -9241,6 +9247,7 @@ canvas{display:block;margin:0 auto 24px}
           '</div>' +
         '</div>' +
         '<div class="rm-group-progress-ring" aria-label="進度 ' + progressW + '%">' +
+          '<div class="rm-gpr-track"><div class="rm-gpr-fill' + (progressW >= 100 ? ' complete' : '') + '" style="width:' + progressW + '%"></div></div>' +
           '<div class="rm-gpr-num">' + progressW + '%</div>' +
         '</div>' +
       '</div>';
@@ -26783,4 +26790,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.27.0 · 時間軸優化 — 月視圖2個月可視、季視圖Q1/Q2主標籤、底部空白移除 -->
+</html><!-- v0.28.0 · 時間軸視覺優化 — header瘦身56px、進度微型條、bar質感升級、底部收邊 -->
