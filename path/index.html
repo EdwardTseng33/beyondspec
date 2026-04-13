@@ -3454,7 +3454,8 @@ canvas{display:block;margin:0 auto 24px}
 .rm-header-minor.day{font-size:11px;font-weight:600;padding:0 4px;white-space:nowrap}
 
 /* Gantt canvas */
-.rm-canvas{position:relative;min-height:100%}
+/* v0.27.0: 移除 min-height:100% — 消除底部空白區，canvas 高度跟隨內容 */
+.rm-canvas{position:relative}
 .rm-grid-lines{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1}
 .rm-grid-vline{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.05)}
 [data-theme="dark"] .rm-grid-vline{background:rgba(255,255,255,.05)}
@@ -4146,7 +4147,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.26.0</div>
+        <div class="sidebar-version">v0.27.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -9017,9 +9018,10 @@ canvas{display:block;margin:0 auto 24px}
     //   月 zoom → atom = 週（4-5 條/月，每條 7 天，leadership 看本月在忙什麼）
     //   週 zoom → atom = 天（7 條，執行者看今明後做什麼）
     // pxPerDay 調整為讓每一個 atom 寬度落在 96-266px，CJK label 可完整顯示
+    // v0.27.0: 月 pxPerDay 9→18（2 個月填滿可視區）, padBefore/After 收窄
     var ZOOM_CFG = {
-      quarter: { label: '季', pxPerDay: 6, atomUnit: 'month', majorUnit: 'year', padBefore: 90, padAfter: 120 },
-      month:   { label: '月', pxPerDay: 9, atomUnit: 'week',      majorUnit: 'month', padBefore: 45, padAfter: 75 },
+      quarter: { label: '季', pxPerDay: 6, atomUnit: 'month', majorUnit: 'quarter', padBefore: 90, padAfter: 120 },
+      month:   { label: '月', pxPerDay: 18, atomUnit: 'week',      majorUnit: 'month', padBefore: 30, padAfter: 45 },
       week:    { label: '週', pxPerDay: 96, atomUnit: 'day',       majorUnit: 'week',  padBefore: 7,  padAfter: 14 }
     };
     var zoom = ZOOM_CFG[RM.zoom] || ZOOM_CFG.month;
@@ -9278,21 +9280,26 @@ canvas{display:block;margin:0 auto 24px}
     var WEEKDAY_CN = ['日','一','二','三','四','五','六'];
 
     if(zoom.atomUnit === 'month'){
-      // ── 季 zoom: Row1=年份, Row2=季度 + 月份 atoms ──
-      var mgY = {}, moY = [];
-      for(var iy=0; iy<totalDays; iy++){
-        var dy = addDays(minDate, iy);
-        var mky = dy.getFullYear().toString();
-        if(!mgY[mky]){
-          mgY[mky] = { count: 0, label: dy.getFullYear().toString() };
-          moY.push(mky);
+      // ── v0.27.0 季 zoom: Row1=季度(Q1/Q2)為主 + 年份次要, Row2=月份 ──
+      var qGroups = {}, qOrder = [];
+      for(var iq=0; iq<totalDays; iq++){
+        var dq = addDays(minDate, iq);
+        var qNum = Math.floor(dq.getMonth() / 3) + 1;
+        var qKey = dq.getFullYear() + '-Q' + qNum;
+        if(!qGroups[qKey]){
+          qGroups[qKey] = { count: 0, quarter: qNum, year: dq.getFullYear() };
+          qOrder.push(qKey);
         }
-        mgY[mky].count++;
+        qGroups[qKey].count++;
       }
-      moY.forEach(function(mk){
-        var g = mgY[mk];
-        headerRow1 += '<div class="rm-header-major" style="width:' + pxForDays(g.count) + 'px">' + g.label + '</div>';
+      qOrder.forEach(function(qk){
+        var g = qGroups[qk];
+        headerRow1 += '<div class="rm-header-major" style="width:' + pxForDays(g.count) + 'px">' +
+          'Q' + g.quarter +
+          '<span style="font-size:9px;font-weight:400;color:var(--ink-dim);margin-left:6px">' + g.year + '</span>' +
+        '</div>';
       });
+      // Row2: 月份
       var mStart = 0;
       while(mStart < totalDays){
         var md = addDays(minDate, mStart);
@@ -9302,14 +9309,9 @@ canvas{display:block;margin:0 auto 24px}
         if(mDays <= 0) break;
         var mEnd = mStart + mDays;
         var monthName = (monthVal + 1) + '月';
-        var qLabel = '';
-        if(monthVal === 0 || monthVal === 3 || monthVal === 6 || monthVal === 9){
-          var qNum = Math.floor(monthVal / 3) + 1;
-          qLabel = '<span style="font-size:10px;font-weight:600;color:var(--primary);margin-right:4px">Q' + qNum + '</span>';
-        }
         var mIsCurrent = (todayIdx >= mStart && todayIdx < mEnd);
         var mCls = 'rm-header-minor month' + (mIsCurrent ? ' today' : '');
-        headerRow2 += '<div class="' + mCls + '" style="width:' + pxForDays(mDays) + 'px">' + qLabel + monthName + '</div>';
+        headerRow2 += '<div class="' + mCls + '" style="width:' + pxForDays(mDays) + 'px">' + monthName + '</div>';
         mStart = mEnd;
       }
     } else if(zoom.atomUnit === 'week'){
@@ -26776,4 +26778,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.26.0 · 任務中心減噪 — 週期管理零值統計隱藏、看板空狀態極簡化、看板零值計數隱藏 -->
+</html><!-- v0.27.0 · 時間軸優化 — 月視圖2個月可視、季視圖Q1/Q2主標籤、底部空白移除 -->
