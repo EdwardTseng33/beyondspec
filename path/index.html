@@ -9424,11 +9424,14 @@ canvas{display:block;margin:0 auto 24px}
     var cycleStripH = '';
 
     // v0.25.0: 移除 rollup bar — 只保留 group 分隔行 + task bars
+    // v0.27.0: 計算精確內容高度 — 消除 gantt 底部條紋空白
     var rowsH = '';
+    var canvasContentH = 0;
     groups.forEach(function(g){
       var expanded = RM.expanded[g.key];
       // v0.25.0: group 分隔行（薄型，與左側 group header 對齊高度）
       rowsH += '<div class="rm-group-sep-row' + (g.isPast?' past':'') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" style="cursor:pointer"></div>';
+      canvasContentH += 52; // group-sep-row height
 
       if(expanded){
         g.cards.forEach(function(c){
@@ -9475,9 +9478,11 @@ canvas{display:block;margin:0 auto 24px}
           }
           rowH += '</div>';
           rowsH += rowH;
+          canvasContentH += 56; // bar-row height
         });
       }
     });
+    if(groups.length === 0) canvasContentH = 200; // empty state min height
 
     var emptyH = '';
     if(groups.length === 0){
@@ -9495,7 +9500,7 @@ canvas{display:block;margin:0 auto 24px}
         '<div class="rm-header-row1">' + headerRow1 + '</div>' +
         '<div class="rm-header-row2">' + headerRow2 + '</div>' +
       '</div>' +
-      '<div class="rm-canvas" style="width:' + canvasW + 'px">' +
+      '<div class="rm-canvas" style="width:' + canvasW + 'px;height:' + canvasContentH + 'px">' +
         '<div class="rm-atom-stripes">' + atomStripesH + '</div>' +
         '<div class="rm-grid-lines">' + gridLinesH + '</div>' +
         '<div class="rm-today-line" style="left:' + todayOffsetPx + 'px"><div class="rm-today-diamond"></div></div>' +
