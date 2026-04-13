@@ -4146,7 +4146,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.25.0</div>
+        <div class="sidebar-version">v0.26.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7143,17 +7143,21 @@ canvas{display:block;margin:0 auto 24px}
       }
 
       // AI judgement card
+      // v0.26.0: 只在有問題時才顯示統計 — 全零不佔空間
+      var _hasAlerts1 = _overdueCards.length > 0 || _dueTodayCards.length > 0 || _staleDoingCards.length > 0;
       html += '<div class="cp-ai-card cp-ai-' + _tagClass + '">';
       html += '<div class="cp-ai-left">';
       html += '<div class="cp-ai-tag cp-ai-tag-' + _tagClass + '">' + _tag + '</div>';
       html += '<div class="cp-ai-head">' + _headline + '</div>';
       html += '<div class="cp-ai-sub">' + _sub + '</div>';
       html += '</div>';
-      html += '<div class="cp-ai-stats">';
-      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _overdueCards.length + '</div><div class="cp-ai-stat-lbl">已逾期</div></div>';
-      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _dueTodayCards.length + '</div><div class="cp-ai-stat-lbl">今日到期</div></div>';
-      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _staleDoingCards.length + '</div><div class="cp-ai-stat-lbl">停滯 ≥3 天</div></div>';
-      html += '</div>';
+      if(_hasAlerts1){
+        html += '<div class="cp-ai-stats">';
+        if(_overdueCards.length > 0) html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num" style="color:var(--rose)">' + _overdueCards.length + '</div><div class="cp-ai-stat-lbl">已逾期</div></div>';
+        if(_dueTodayCards.length > 0) html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num" style="color:var(--gold)">' + _dueTodayCards.length + '</div><div class="cp-ai-stat-lbl">今日到期</div></div>';
+        if(_staleDoingCards.length > 0) html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _staleDoingCards.length + '</div><div class="cp-ai-stat-lbl">停滯 ≥3 天</div></div>';
+        html += '</div>';
+      }
       html += '</div>';
 
       // Focus cards strip (top 3 most urgent)
@@ -8419,17 +8423,21 @@ canvas{display:block;margin:0 auto 24px}
       }
 
       // AI judgement pill card
+      // v0.26.0: 只在有問題時才顯示統計 — 全零不佔空間
+      var _hasAlerts2 = _overdueCards.length > 0 || _dueTodayCards.length > 0 || _staleDoingCards.length > 0;
       html += '<div class="cp-ai-card cp-ai-' + _tagClass + '">';
       html += '<div class="cp-ai-left">';
       html += '<div class="cp-ai-tag cp-ai-tag-' + _tagClass + '">' + _tag + '</div>';
       html += '<div class="cp-ai-head">' + _headline + '</div>';
       html += '<div class="cp-ai-sub">' + _sub + '</div>';
       html += '</div>';
-      html += '<div class="cp-ai-stats">';
-      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _overdueCards.length + '</div><div class="cp-ai-stat-lbl">已逾期</div></div>';
-      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _dueTodayCards.length + '</div><div class="cp-ai-stat-lbl">今日到期</div></div>';
-      html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _staleDoingCards.length + '</div><div class="cp-ai-stat-lbl">停滯 ≥3 天</div></div>';
-      html += '</div>';
+      if(_hasAlerts2){
+        html += '<div class="cp-ai-stats">';
+        if(_overdueCards.length > 0) html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num" style="color:var(--rose)">' + _overdueCards.length + '</div><div class="cp-ai-stat-lbl">已逾期</div></div>';
+        if(_dueTodayCards.length > 0) html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num" style="color:var(--gold)">' + _dueTodayCards.length + '</div><div class="cp-ai-stat-lbl">今日到期</div></div>';
+        if(_staleDoingCards.length > 0) html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _staleDoingCards.length + '</div><div class="cp-ai-stat-lbl">停滯 ≥3 天</div></div>';
+        html += '</div>';
+      }
       html += '</div>';
 
       // Focus cards strip (top 3 most urgent)
@@ -11273,7 +11281,8 @@ canvas{display:block;margin:0 auto 24px}
           html += '<div style="width:12px;height:12px;border-radius:50%;background:' + col.color + ';flex-shrink:0"></div>';
         }
         html += '<span style="font-size:14px;font-weight:700;color:var(--ink)">' + col.label + '</span>';
-        html += '<span style="font-size:12px;color:var(--ink-dim);background:rgba(255,255,255,.6);padding:1px 8px;border-radius:10px">' + colCards.length + '</span>';
+        // v0.26.0: 只在有卡片時才顯示計數
+        if(colCards.length > 0) html += '<span style="font-size:12px;color:var(--ink-dim);background:rgba(255,255,255,.6);padding:1px 8px;border-radius:10px">' + colCards.length + '</span>';
         html += '</div>';
         html += '<div style="display:flex;gap:2px;position:relative">';
         if(isInbox) html += '<button class="kanban-col-btn" onclick="event.stopPropagation();window._kbShowDecompose()" title="AI 拆解需求" style="color:var(--primary)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v4M8 10v4M2 8h4M10 8h4"/><circle cx="8" cy="8" r="2"/></svg></button>';
@@ -11286,21 +11295,10 @@ canvas{display:block;margin:0 auto 24px}
         html += '</div></div></div>';
 
         html += '<div class="kanban-col-body" data-col="' + col.id + '">';
+        // v0.26.0: 極簡空狀態 — 只用一行淡色文字提示，不用大圖標
         if(colCards.length === 0 && !sq){
-          html += '<div style="text-align:center;padding:32px 12px">';
-          if(isInbox){
-            html += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,rgba(148,163,184,.12),rgba(148,163,184,.04));display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:1px solid rgba(148,163,184,.15)">';
-            html += '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"><path d="M3 10h4l2 3h2l2-3h4"/><rect x="2" y="3" width="16" height="14" rx="3"/></svg>';
-            html += '</div>';
-            html += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">收件匣空空</div>';
-            html += '<div style="font-size:12px;color:var(--ink-dim);line-height:1.5">AI 拆解、會議紀錄、Email<br>會自動匯入這裡</div>';
-          } else {
-            html += '<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,' + hexToRgba(col.color,0.12) + ',' + hexToRgba(col.color,0.04) + ');display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:' + col.color + ';border:1px solid ' + hexToRgba(col.color,0.15) + '">';
-            html += '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="8" y1="10" x2="12" y2="10"/><line x1="10" y1="8" x2="10" y2="12"/></svg>';
-            html += '</div>';
-            html += '<div style="font-size:13px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">這裡還沒任務</div>';
-            html += '<div style="font-size:11px;color:var(--ink-dim);line-height:1.5">從左邊拖曳卡片過來<br>或按 <strong>+</strong> 建立新任務</div>';
-          }
+          html += '<div style="text-align:center;padding:28px 12px">';
+          html += '<div style="font-size:12px;color:var(--ink-dim);opacity:.6">' + (isInbox ? '自動匯入的任務會出現在這裡' : '拖曳卡片至此或按 +') + '</div>';
           html += '</div>';
         }
         colCards.forEach(function(card){
@@ -26778,4 +26776,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.25.0 · 河流式時間軸 — toolbar 精簡（移除 hero/圖例/help）、左側極簡（狀態色點+標題）、移除 cycle strip+rollup、逾期+今天線強化 -->
+</html><!-- v0.26.0 · 任務中心減噪 — 週期管理零值統計隱藏、看板空狀態極簡化、看板零值計數隱藏 -->
