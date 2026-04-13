@@ -9007,9 +9007,10 @@ canvas{display:block;margin:0 auto 24px}
     T.ensureCurrentCycle();
     var activeCycleId = T.getActiveCycleId();
 
-    // v0.29.0: 範例假資料 — 當任務 ≤1 時注入 demo 項目，展示時間軸效果
+    // v0.29.0: 範例假資料 — 注入 demo 項目展示時間軸效果（無 demo cycle 時自動注入）
     var _demoInjected = false;
-    if(cards.length <= 1){
+    var _hasDemoCycles = cycles.some(function(c){ return c.id && c.id.indexOf('demo-cy')===0; });
+    if(!_hasDemoCycles){
       _demoInjected = true;
       var _td = new Date(); _td.setHours(0,0,0,0);
       var _ds = function(d,offset){ var r=new Date(d); r.setDate(r.getDate()+offset); return r.toISOString().slice(0,10); };
