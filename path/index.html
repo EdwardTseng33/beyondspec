@@ -3375,11 +3375,9 @@ canvas{display:block;margin:0 auto 24px}
 .rm-cycle-tag.backlog{background:rgba(148,163,184,.18);color:var(--ink-muted)}
 /* Progress pill bar in left col (replaces duplicate roll-up in right) */
 .rm-group-progress-ring{display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;margin-left:4px}
-/* v0.28.0: 進度微型條恢復顯示 — 百分比旁的 mini progress bar */
-.rm-gpr-track{width:36px;height:4px;background:var(--bg-hover);border-radius:2px;overflow:hidden;flex-shrink:0}
-[data-theme="dark"] .rm-gpr-track{background:rgba(255,255,255,.08)}
-.rm-gpr-fill{height:100%;border-radius:2px;transition:width .4s cubic-bezier(.22,1,.36,1);background:var(--primary)}
-.rm-gpr-fill.complete{background:var(--teal)}
+/* v0.28.1: 進度只顯示百分比數字，不要讀條 */
+.rm-gpr-track{display:none}
+.rm-gpr-fill{display:none}
 .rm-gpr-num{font-size:12px;font-weight:var(--fw-title,700);color:var(--ink-muted);font-variant-numeric:tabular-nums;letter-spacing:.02em}
 
 /* Task row in left table — v0.18.0: 兩行式 row，對齊 kb-card-v2 視覺語彙
@@ -3458,9 +3456,11 @@ canvas{display:block;margin:0 auto 24px}
 .rm-header-minor.day{font-size:11px;font-weight:600;padding:0 4px;white-space:nowrap}
 
 /* Gantt canvas */
-/* v0.28.0: canvas 高度跟隨內容 + 底部收邊漸層 */
+/* v0.29.0: canvas 高度跟隨內容 + 底部收邊 + ambient fade */
 .rm-canvas{position:relative}
-.rm-canvas::after{content:'';position:absolute;bottom:-24px;left:0;right:0;height:24px;background:linear-gradient(to bottom,var(--border) 0px,transparent 1px);pointer-events:none;z-index:3}
+.rm-canvas::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--border);pointer-events:none;z-index:3}
+/* v0.29.0: gantt 區底部 ambient 漸層 — 內容結束後柔和淡出到背景色 */
+.rm-right::after{content:'';position:sticky;bottom:0;left:0;right:0;height:48px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:7;display:block}
 .rm-grid-lines{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:1}
 .rm-grid-vline{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.05)}
 [data-theme="dark"] .rm-grid-vline{background:rgba(255,255,255,.05)}
@@ -4153,7 +4153,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.28.0</div>
+        <div class="sidebar-version">v0.29.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -9007,6 +9007,35 @@ canvas{display:block;margin:0 auto 24px}
     T.ensureCurrentCycle();
     var activeCycleId = T.getActiveCycleId();
 
+    // v0.29.0: 範例假資料 — 當任務 ≤1 時注入 demo 項目，展示時間軸效果
+    var _demoInjected = false;
+    if(cards.length <= 1){
+      _demoInjected = true;
+      var _td = new Date(); _td.setHours(0,0,0,0);
+      var _ds = function(d,offset){ var r=new Date(d); r.setDate(r.getDate()+offset); return r.toISOString().slice(0,10); };
+      var demoCycles = [
+        { id:'demo-cy-1', label:'官網改版', startDate:_ds(_td,-14), endDate:_ds(_td,21) },
+        { id:'demo-cy-2', label:'App v2.0 開發', startDate:_ds(_td,-7), endDate:_ds(_td,42) },
+        { id:'demo-cy-3', label:'Q2 行銷活動', startDate:_ds(_td,7), endDate:_ds(_td,35) },
+        { id:'demo-cy-4', label:'客戶回饋整合', startDate:_ds(_td,-21), endDate:_ds(_td,0) }
+      ];
+      var demoCards = [
+        { id:'demo-c-1a', title:'首頁 Hero 區設計', cycleId:'demo-cy-1', columnId:'done', startDate:_ds(_td,-14), dueDate:_ds(_td,-5), category:'design', assignee:'agent' },
+        { id:'demo-c-1b', title:'產品頁面 RWD 調整', cycleId:'demo-cy-1', columnId:'doing', startDate:_ds(_td,-3), dueDate:_ds(_td,7), category:'design', assignee:'agent' },
+        { id:'demo-c-1c', title:'SEO 內容優化', cycleId:'demo-cy-1', columnId:'todo', startDate:_ds(_td,5), dueDate:_ds(_td,18), category:'marketing', assignee:'human' },
+        { id:'demo-c-2a', title:'核心 API 重構', cycleId:'demo-cy-2', columnId:'doing', startDate:_ds(_td,-7), dueDate:_ds(_td,14), category:'dev', assignee:'agent' },
+        { id:'demo-c-2b', title:'用戶認證模組', cycleId:'demo-cy-2', columnId:'todo', startDate:_ds(_td,3), dueDate:_ds(_td,21), category:'dev', assignee:'human' },
+        { id:'demo-c-2c', title:'推播通知功能', cycleId:'demo-cy-2', columnId:'inbox', startDate:_ds(_td,14), dueDate:_ds(_td,35), category:'dev', assignee:'agent' },
+        { id:'demo-c-3a', title:'KOL 合作洽談', cycleId:'demo-cy-3', columnId:'todo', startDate:_ds(_td,7), dueDate:_ds(_td,21), category:'marketing', assignee:'human' },
+        { id:'demo-c-3b', title:'社群內容排程', cycleId:'demo-cy-3', columnId:'inbox', startDate:_ds(_td,14), dueDate:_ds(_td,28), category:'marketing', assignee:'agent' },
+        { id:'demo-c-4a', title:'NPS 調查分析', cycleId:'demo-cy-4', columnId:'done', startDate:_ds(_td,-21), dueDate:_ds(_td,-10), category:'research', assignee:'human' },
+        { id:'demo-c-4b', title:'痛點優先度排序', cycleId:'demo-cy-4', columnId:'done', startDate:_ds(_td,-10), dueDate:_ds(_td,-3), category:'research', assignee:'agent' },
+        { id:'demo-c-4c', title:'改善方案提案', cycleId:'demo-cy-4', columnId:'review', startDate:_ds(_td,-3), dueDate:_ds(_td,0), category:'design', assignee:'human' }
+      ];
+      cycles = demoCycles.concat(cycles);
+      cards = demoCards.concat(cards);
+    }
+
     // ── State ──
     if(!window._rmState){
       window._rmState = { zoom: 'month', groupBy: 'category', expanded: {}, filter: '' };
@@ -9155,7 +9184,8 @@ canvas{display:block;margin:0 auto 24px}
         isPast: isPast,
         isFuture: isFuture
       });
-      if(RM.expanded[cy.id] === undefined) RM.expanded[cy.id] = isCurrent; // default expand current
+      // v0.29.0: demo 項目預設全展開，一般項目預設展開當期
+      if(RM.expanded[cy.id] === undefined) RM.expanded[cy.id] = _demoInjected || isCurrent;
     });
     // Backlog: cards with no cycleId AND not done AND not archived (v0.15.4: canonical definition)
     // 理由：需求池 = 尚未排程 × 尚未完成 × 未封存。done 卡不該再佔據「待排程」位置。
@@ -9201,21 +9231,24 @@ canvas{display:block;margin:0 auto 24px}
       return { key: k, label: CATS[k].label, color: CATS[k].color, count: kCount };
     }).filter(function(x){ return x.count > 0; });
 
-    // v0.25.0: 河流式時間軸 — toolbar 只留三件事：標題 / 縮放 / 今天
-    var toolbarH = '<div class="rm-toolbar">' +
-      '<div class="rm-title-block">' +
-        '<h1 class="rm-title">' + ICONS.roadmap + '<span>時間軸</span></h1>' +
-        '<p class="rm-sub">用時間看全局</p>' +
+    // v0.29.0: header 回歸 .page-title-area 統一格式 — zoom/今天按鈕移至右側 action
+    var toolbarH = '<div class="page-title-area no-border" style="margin-bottom:0;padding:14px 22px 14px 22px;border-bottom:1px solid var(--border)">' +
+      '<h1>' +
+        '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l-5 1.6V16.4L7 15l6 1.6L18 15V4.6L13 6 7 4z"/><line x1="7" y1="4" x2="7" y2="15"/><line x1="13" y1="6" x2="13" y2="16.4"/></svg>' +
+        '<span>時間軸</span>' +
+      '</h1>' +
+      '<p class="subtitle">用時間看全局</p>' +
+      '<div style="margin-left:auto;display:flex;align-items:center;gap:8px">' +
+        '<div class="rm-tool-group">' +
+          '<button class="rm-tool-btn' + (RM.zoom==='quarter'?' active':'') + '" onclick="window._rmSetZoom(\'quarter\')">季</button>' +
+          '<button class="rm-tool-btn' + (RM.zoom==='month'?' active':'') + '" onclick="window._rmSetZoom(\'month\')">月</button>' +
+          '<button class="rm-tool-btn' + (RM.zoom==='week'?' active':'') + '" onclick="window._rmSetZoom(\'week\')">週</button>' +
+        '</div>' +
+        '<button class="rm-today-btn" onclick="window._rmGoToday()">' +
+          '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="10" y1="16" x2="10" y2="18"/><line x1="2" y1="10" x2="4" y2="10"/><line x1="16" y1="10" x2="18" y2="10"/></svg>' +
+          '今天' +
+        '</button>' +
       '</div>' +
-      '<div class="rm-tool-group">' +
-        '<button class="rm-tool-btn' + (RM.zoom==='quarter'?' active':'') + '" onclick="window._rmSetZoom(\'quarter\')">季</button>' +
-        '<button class="rm-tool-btn' + (RM.zoom==='month'?' active':'') + '" onclick="window._rmSetZoom(\'month\')">月</button>' +
-        '<button class="rm-tool-btn' + (RM.zoom==='week'?' active':'') + '" onclick="window._rmSetZoom(\'week\')">週</button>' +
-      '</div>' +
-      '<button class="rm-today-btn" onclick="window._rmGoToday()">' +
-        '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="10" y1="16" x2="10" y2="18"/><line x1="2" y1="10" x2="4" y2="10"/><line x1="16" y1="10" x2="18" y2="10"/></svg>' +
-        '今天' +
-      '</button>' +
     '</div>';
 
     // v0.25.0: legend 已移除，不再需要 _rmLegendData
@@ -9247,7 +9280,6 @@ canvas{display:block;margin:0 auto 24px}
           '</div>' +
         '</div>' +
         '<div class="rm-group-progress-ring" aria-label="進度 ' + progressW + '%">' +
-          '<div class="rm-gpr-track"><div class="rm-gpr-fill' + (progressW >= 100 ? ' complete' : '') + '" style="width:' + progressW + '%"></div></div>' +
           '<div class="rm-gpr-num">' + progressW + '%</div>' +
         '</div>' +
       '</div>';
@@ -26790,4 +26822,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.28.0 · 時間軸視覺優化 — header瘦身56px、進度微型條、bar質感升級、底部收邊 -->
+</html><!-- v0.29.0 · 時間軸重構 — header統一page-title-area、範例假資料、底部ambient fade -->
