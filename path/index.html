@@ -4054,10 +4054,11 @@ canvas{display:block;margin:0 auto 24px}
 
 /* ── NEW: cp-ov (Unified Overview Band) ── */
 .cp-ov{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:16px 20px;margin-bottom:16px;box-shadow:var(--shadow-xs);transition:background var(--motion-normal) var(--ease-out)}
-.cp-ov.cp-ov-healthy{background:color-mix(in srgb,var(--bg-card) 96%,var(--teal))}
-.cp-ov.cp-ov-ahead{background:color-mix(in srgb,var(--bg-card) 95%,var(--teal))}
-.cp-ov.cp-ov-warn{background:color-mix(in srgb,var(--bg-card) 95%,var(--gold))}
-.cp-ov.cp-ov-danger{background:color-mix(in srgb,var(--bg-card) 94%,var(--rose))}
+.cp-ov.cp-ov-healthy{background:color-mix(in srgb,var(--bg-card) 90%,var(--teal))}
+.cp-ov.cp-ov-ahead{background:color-mix(in srgb,var(--bg-card) 90%,var(--teal))}
+.cp-ov.cp-ov-warn{background:color-mix(in srgb,var(--bg-card) 88%,var(--gold));border-color:color-mix(in srgb,var(--border) 70%,var(--gold));animation:cp-ov-pulse 3s ease-in-out infinite}
+.cp-ov.cp-ov-danger{background:color-mix(in srgb,var(--bg-card) 86%,var(--rose));border-color:color-mix(in srgb,var(--border) 60%,var(--rose));animation:cp-ov-pulse 2.5s ease-in-out infinite}
+@keyframes cp-ov-pulse{0%,100%{border-color:color-mix(in srgb,var(--border) 60%,currentColor)}50%{border-color:color-mix(in srgb,var(--border) 30%,currentColor)}}
 
 /* Row 1: timeline */
 .cp-ov-timeline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
@@ -4083,14 +4084,16 @@ canvas{display:block;margin:0 auto 24px}
 .cp-ov-bar[title]{cursor:help}
 
 /* Status line */
-.cp-ov-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.cp-ov-tag{display:inline-flex;align-items:center;height:20px;padding:0 8px;font-size:10px;font-weight:700;border-radius:5px;letter-spacing:.04em;flex-shrink:0}
+.cp-ov-status{display:flex;flex-direction:column;gap:4px}
+.cp-ov-status-row{display:flex;align-items:center;gap:8px}
+.cp-ov-tag{display:inline-flex;align-items:center;height:22px;padding:0 10px 0 8px;font-size:10px;font-weight:700;border-radius:5px;letter-spacing:.04em;flex-shrink:0;gap:6px}
+.cp-ov-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 0 2px color-mix(in srgb,currentColor 22%,transparent);animation:cyc-pulse 2s ease-in-out infinite}
 .cp-ov-tag-healthy{background:rgba(27,168,145,.14);color:var(--teal)}
 .cp-ov-tag-ahead{background:rgba(27,168,145,.14);color:var(--teal)}
-.cp-ov-tag-warn{background:rgba(224,138,58,.14);color:var(--gold)}
-.cp-ov-tag-danger{background:rgba(217,68,98,.14);color:var(--rose)}
-.cp-ov-msg{font-size:13px;font-weight:600;color:var(--ink);line-height:1.4}
-.cp-ov-hint{font-size:12px;color:var(--ink-muted);line-height:1.4}
+.cp-ov-tag-warn{background:rgba(224,138,58,.18);color:var(--gold)}
+.cp-ov-tag-danger{background:rgba(217,68,98,.18);color:var(--rose)}
+.cp-ov-msg{font-size:13px;font-weight:700;color:var(--ink);line-height:1.4}
+.cp-ov-hint{font-size:12px;color:var(--ink-muted);line-height:1.4;padding-left:2px}
 
 /* Focus pills row */
 .cp-ov-focus{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:2px;flex-wrap:wrap}
@@ -4310,7 +4313,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.31.1</div>
+        <div class="sidebar-version">v0.31.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7085,6 +7088,54 @@ canvas{display:block;margin:0 auto 24px}
     var currentCycle = T.ensureCurrentCycle();
     var cfg = T.getCycleConfig();
 
+    // ── Cycle settings modal (shared between TaskPlanning & CycleOverview) ──
+    window._cpShowSettings = function(){
+      var _cfg = T.getCycleConfig();
+      var curDuration = _cfg.duration || 7;
+      var curStartDay = _cfg.startDay !== undefined ? _cfg.startDay : 1;
+      var curCapacity = _cfg.suggestedCapacity || (curDuration === 7 ? 8 : 16);
+      var dayNames = ['週日','週一','週二','週三','週四','週五','週六'];
+      var ov = document.createElement('div');
+      ov.className = 'kb-overlay';
+      ov.innerHTML = '<div class="kb-modal" style="max-width:400px">' +
+        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">週期設定</h3><button class="kb-modal-close" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
+        '<div class="kb-modal-body" style="padding:20px">' +
+        '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px;display:block">週期長度</label>' +
+        '<div style="display:flex;gap:8px;margin-bottom:20px">' +
+        '<button id="cpDur7" onclick="document.getElementById(\'cpDurVal\').value=7;document.getElementById(\'cpDur7\').style.background=\'var(--primary)\';document.getElementById(\'cpDur7\').style.color=\'#fff\';document.getElementById(\'cpDur14\').style.background=\'transparent\';document.getElementById(\'cpDur14\').style.color=\'var(--ink-muted)\'" style="flex:1;padding:10px;border:1px solid ' + (curDuration===7?'var(--primary)':'var(--border)') + ';border-radius:var(--r-lg);background:' + (curDuration===7?'var(--primary)':'transparent') + ';color:' + (curDuration===7?'#fff':'var(--ink-muted)') + ';font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">1 週</button>' +
+        '<button id="cpDur14" onclick="document.getElementById(\'cpDurVal\').value=14;document.getElementById(\'cpDur14\').style.background=\'var(--primary)\';document.getElementById(\'cpDur14\').style.color=\'#fff\';document.getElementById(\'cpDur7\').style.background=\'transparent\';document.getElementById(\'cpDur7\').style.color=\'var(--ink-muted)\'" style="flex:1;padding:10px;border:1px solid ' + (curDuration===14?'var(--primary)':'var(--border)') + ';border-radius:var(--r-lg);background:' + (curDuration===14?'var(--primary)':'transparent') + ';color:' + (curDuration===14?'#fff':'var(--ink-muted)') + ';font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">2 週</button>' +
+        '</div>' +
+        '<input type="hidden" id="cpDurVal" value="' + curDuration + '">' +
+        '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px;display:block">起始日</label>' +
+        '<select id="cpStartDay" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;background:var(--bg);color:var(--ink);margin-bottom:20px">' +
+        '<option value="1"' + (curStartDay===1?' selected':'') + '>週一</option>' +
+        '<option value="0"' + (curStartDay===0?' selected':'') + '>週日</option>' +
+        '</select>' +
+        '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px;display:block">建議容量（每週項目數）</label>' +
+        '<input type="number" id="cpCapacity" value="' + curCapacity + '" min="1" max="50" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;margin-bottom:4px;font-family:inherit">' +
+        '<div style="font-size:11px;color:var(--ink-dim);margin-bottom:20px">每個週期的建議任務數量上限</div>' +
+        '<div style="font-size:12px;color:var(--ink-dim);margin-bottom:12px;line-height:1.5">更改設定後，下一個新週期會套用新的長度與起始日。當前週期不受影響。</div>' +
+        '</div>' +
+        '<div class="kb-modal-footer" style="justify-content:flex-end">' +
+        '<button class="btn btn-ghost" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))">取消</button>' +
+        '<button class="btn btn-accent" id="cpSettingsSave">儲存</button>' +
+        '</div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function(e){ if(e.target === ov) closeModalAnimated(ov); });
+      document.getElementById('cpSettingsSave').addEventListener('click', function(){
+        var newDuration = parseInt(document.getElementById('cpDurVal').value) || 7;
+        var newStartDay = parseInt(document.getElementById('cpStartDay').value);
+        var newCapacity = parseInt(document.getElementById('cpCapacity').value) || (newDuration === 7 ? 8 : 16);
+        _cfg.duration = newDuration;
+        _cfg.startDay = newStartDay;
+        _cfg.suggestedCapacity = newCapacity;
+        try{ localStorage.setItem('bp_cycle_config', JSON.stringify(_cfg)); }catch(e){}
+        closeModalAnimated(ov);
+        showToast('週期設定已更新（' + (newDuration===7?'1 週':'2 週') + '，從' + dayNames[newStartDay] + '開始，容量 ' + newCapacity + '）');
+        renderTaskPlanning();
+      });
+    };
+
     // Tab state: 'backlog' or 'cycle'
     if(!window._tpActiveTab) window._tpActiveTab = 'backlog';
 
@@ -7325,9 +7376,8 @@ canvas{display:block;margin:0 auto 24px}
 
       // Status line (one-liner, not a separate card)
       html += '<div class="cp-ov-status">';
-      html += '<span class="cp-ov-tag cp-ov-tag-' + _tagClass + '">' + _tag + '</span>';
-      html += '<span class="cp-ov-msg">' + _headline + '</span>';
-      if(_sub && _tagClass !== 'healthy') html += '<span class="cp-ov-hint"> · ' + _sub + '</span>';
+      html += '<div class="cp-ov-status-row"><span class="cp-ov-tag cp-ov-tag-' + _tagClass + '">' + _tag + '</span><span class="cp-ov-msg">' + _headline + '</span></div>';
+      if(_sub && _tagClass !== 'healthy') html += '<div class="cp-ov-hint">' + _sub + '</div>';
       html += '</div>';
 
       // Focus pills (inline, dismissible, with quick-complete)
@@ -27029,4 +27079,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.31.1 · 週期管理 unified overview band：三層合一、狀態色進度條、可操作 focus pills -->
+</html><!-- v0.31.2 · overview band fix：強化底色/動態/文字層次、齒輪設定可開啟 -->
