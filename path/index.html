@@ -4133,6 +4133,51 @@ canvas{display:block;margin:0 auto 24px}
 .kb-card-v2 .kb-v2-due.urgent{color:var(--gold)}
 .kb-card-v2 .kb-v2-checklist{font-size:10px;color:var(--ink-dim);display:inline-flex;align-items:center;gap:3px}
 .kb-card-v2 .kb-v2-ai-badge{font-size:9px;padding:1px 6px;border-radius:4px;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(167,139,250,.12));color:var(--primary);font-weight:700;letter-spacing:.3px}
+/* v0.31.0: Anti-Anxiety UX — AI Contribution Badge */
+.kb-ai-contrib{font-size:10px;padding:2px 8px;border-radius:9999px;font-weight:700;letter-spacing:.2px;white-space:nowrap;line-height:18px;height:18px;display:inline-flex;align-items:center;margin-left:auto;flex-shrink:0}
+.kb-ai-contrib.ai-badge-collab{background:linear-gradient(135deg,#7C5CFC,#A78BFA);color:#fff}
+.kb-ai-contrib.ai-badge-auto{background:linear-gradient(135deg,#1BA891,#34D399);color:#fff}
+.kb-ai-contrib.ai-badge-manual{background:var(--bg-hover);color:var(--ink-dim);font-weight:500}
+/* v0.31.0: Anti-Anxiety UX — Pulse View */
+@keyframes pulse-warm{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.03);opacity:1}}
+@keyframes pulse-neutral{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.05);opacity:1}}
+@keyframes pulse-alert{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.06);opacity:1}}
+.pulse-orb{width:120px;height:120px;border-radius:50%;flex-shrink:0;transition:background 2s ease,box-shadow 2s ease}
+.pulse-orb.healthy{background:radial-gradient(circle at 35% 35%,#34D399,#1BA891 40%,#0D9488 80%);box-shadow:0 0 40px rgba(27,168,145,.15);animation:pulse-warm 3s ease-in-out infinite}
+.pulse-orb.attention{background:radial-gradient(circle at 35% 35%,#C4B5FD,#7C5CFC 40%,#6D28D9 80%);box-shadow:0 0 40px rgba(124,92,252,.15);animation:pulse-neutral 2s ease-in-out infinite}
+.pulse-orb.at-risk{background:radial-gradient(circle at 35% 35%,#FCA5A5,#D94462 40%,#B91C1C 80%);box-shadow:0 0 40px rgba(217,68,98,.15);animation:pulse-alert 1.2s ease-in-out infinite}
+.pulse-summary{display:flex;flex-direction:column;gap:6px;flex:1;min-width:200px}
+.pulse-summary-line{font-size:14px;color:var(--ink);line-height:1.6;cursor:pointer;padding:4px 8px;border-radius:var(--r-sm);transition:background .15s}
+.pulse-summary-line:hover{background:var(--bg-hover)}
+.pulse-summary-line .ps-num{font-weight:700;color:var(--primary)}
+.pulse-summary-line .ps-warn{font-weight:700;color:var(--rose)}
+.pulse-hero{display:flex;align-items:center;gap:32px;padding:32px;background:var(--bg-card);border-radius:var(--r-xl);margin-bottom:24px;flex-wrap:wrap}
+.pulse-projects{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.pulse-proj-card{flex:1;min-width:180px;max-width:280px;padding:20px;background:var(--bg-card);border-radius:var(--r-lg);transition:all .2s;cursor:pointer;border:1px solid var(--border)}
+.pulse-proj-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.pulse-proj-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.pulse-proj-bar{height:6px;background:var(--bg-hover);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.pulse-proj-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.pulse-proj-status{display:flex;align-items:center;gap:6px;font-size:12px}
+.pulse-proj-status .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pulse-proj-status .label{color:var(--ink-muted)}
+.pulse-activity{background:var(--bg-card);border-radius:var(--r-xl);padding:20px 24px}
+.pulse-activity-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.pulse-activity-header h3{font-size:15px;font-weight:700;color:var(--ink);margin:0}
+.pulse-activity-tabs{display:flex;gap:4px}
+.pulse-activity-tabs button{border:none;background:none;padding:4px 12px;border-radius:var(--r-full);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink-muted);transition:all .15s}
+.pulse-activity-tabs button.active{background:var(--primary);color:#fff}
+.pulse-act-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.pulse-act-row:hover{background:var(--bg-hover);margin:0 -12px;padding:12px;border-radius:var(--r-md)}
+.pulse-act-row:last-child{border-bottom:none}
+.pulse-act-time{font-size:11px;color:var(--ink-dim);min-width:48px;flex-shrink:0;padding-top:2px}
+.pulse-act-actor{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--ink);min-width:60px}
+.pulse-act-actor.ai{color:var(--primary)}
+.pulse-act-actor.human-ai{color:var(--primary)}
+.pulse-act-body{flex:1;font-size:13px;color:var(--ink);line-height:1.5}
+.pulse-act-scope{font-size:11px;color:var(--ink-muted);margin-top:2px}
+.pulse-act-ai-bar{width:48px;height:4px;background:var(--bg-hover);border-radius:2px;flex-shrink:0;margin-top:6px}
+.pulse-act-ai-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#7C5CFC,#A78BFA)}
 /* Kanban header v2 */
 .kb-header-v2{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
 .kb-header-v2 h2{font-size:22px;font-weight:700;letter-spacing:-.3px;color:var(--ink);margin:0;display:flex;align-items:center;gap:8px;flex-shrink:0}
@@ -4207,7 +4252,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.30.1</div>
+        <div class="sidebar-version">v0.31.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6035,6 +6080,10 @@ canvas{display:block;margin:0 auto 24px}
       if(!c.assigneeType) c.assigneeType = 'human';
       if(!c.agentAutonomy) c.agentAutonomy = 'suggest';
       if(!c.estimatedHours) c.estimatedHours = 0;
+      // v0.31.0: Anti-Anxiety UX — AI contribution tracking
+      if(c.aiContribution === undefined) c.aiContribution = -1; // -1=manual, 0-100=AI%
+      if(!c.aiConfidence) c.aiConfidence = null; // high/medium/low/null
+      if(!c.aiSummary) c.aiSummary = '';
       return c;
     }
 
@@ -7613,46 +7662,47 @@ canvas{display:block;margin:0 auto 24px}
     }
 
     // ── Select card ──
-    window._blSelectCard = function(cardId, evt){
-      window._blSelectedCard = cardId;
+    window._bkSelectCard = function(cardId, evt){
+      window._bkSelectedCard = cardId;
       renderBacklog();
     };
 
     // ── Set filter category (legacy, kept for kanban board) ──
-    window._blSetFilter = function(cat){
-      window._blFilterCat = cat;
-      window._blSearch = '';
+    // v0.31.0: renamed _bl* → _bk* (Backlog) to avoid collision with Billing _bl*
+    window._bkSetFilter = function(cat){
+      window._bkFilterCat = cat;
+      window._bkSearch = '';
       renderBacklog();
     };
 
     // ── Batch select: toggle card ──
-    window._blToggleBatchCard = function(cardId){
-      if(!window._blBatchSelected) window._blBatchSelected = {};
-      if(window._blBatchSelected[cardId]){
-        delete window._blBatchSelected[cardId];
+    window._bkToggleBatchCard = function(cardId){
+      if(!window._bkBatchSelected) window._bkBatchSelected = {};
+      if(window._bkBatchSelected[cardId]){
+        delete window._bkBatchSelected[cardId];
       } else {
-        window._blBatchSelected[cardId] = true;
+        window._bkBatchSelected[cardId] = true;
       }
       renderBacklog();
     };
 
     // ── Batch select: enable mode ──
-    window._blEnableBatchMode = function(){
-      window._blBatchMode = true;
-      window._blBatchSelected = {};
+    window._bkEnableBatchMode = function(){
+      window._bkBatchMode = true;
+      window._bkBatchSelected = {};
       renderBacklog();
     };
 
     // ── Batch select: cancel mode ──
-    window._blCancelBatch = function(){
-      window._blBatchMode = false;
-      window._blBatchSelected = {};
+    window._bkCancelBatch = function(){
+      window._bkBatchMode = false;
+      window._bkBatchSelected = {};
       renderBacklog();
     };
 
     // ── Batch select: schedule all to current cycle ──
-    window._blBatchSchedule = function(){
-      var selectedIds = Object.keys(window._blBatchSelected || {});
+    window._bkBatchSchedule = function(){
+      var selectedIds = Object.keys(window._bkBatchSelected || {});
       if(selectedIds.length === 0) return;
       var allCards = T.getCards().map(T.migrateCard);
       var updatedCount = 0;
@@ -7670,8 +7720,8 @@ canvas{display:block;margin:0 auto 24px}
         T.saveCards(allCards);
         cards = T.getCards().map(T.migrateCard);
         backlogCards = getBacklogCards();
-        window._blBatchMode = false;
-        window._blBatchSelected = {};
+        window._bkBatchMode = false;
+        window._bkBatchSelected = {};
         showToast('已排入 ' + updatedCount + ' 個需求到「' + currentCycle.label + '」', null, function(){
           // Undo: move back to inbox
           var allCards2 = T.getCards().map(T.migrateCard);
@@ -7692,7 +7742,7 @@ canvas{display:block;margin:0 auto 24px}
     };
 
     // ── Schedule card into current cycle (immediate, no dropdown) ──
-    window._blScheduleCard = function(cardId, evt){
+    window._bkScheduleCard = function(cardId, evt){
       var allCards = T.getCards().map(T.migrateCard);
       var idx = allCards.findIndex(function(c){ return c.id === cardId; });
       if(idx === -1) return;
@@ -7713,7 +7763,7 @@ canvas{display:block;margin:0 auto 24px}
         T.saveCards(allCards);
         cards = T.getCards().map(T.migrateCard);
         backlogCards = getBacklogCards();
-        window._blSelectedCard = null;
+        window._bkSelectedCard = null;
         showToast('已排入「' + currentCycle.label + '」', null, function(){
           // Undo: move back to inbox
           var allCards2 = T.getCards().map(T.migrateCard);
@@ -7732,7 +7782,7 @@ canvas{display:block;margin:0 auto 24px}
     };
 
     // ── Archive card with confirmation dialog ──
-    window._blArchiveCard = function(cardId){
+    window._bkArchiveCard = function(cardId){
       var allCards = T.getCards().map(T.migrateCard);
       var cardToArchive = allCards.find(function(c){ return c.id === cardId; });
       if(!cardToArchive) return;
@@ -7748,14 +7798,14 @@ canvas{display:block;margin:0 auto 24px}
         '</div>' +
         '<div style="display:flex;gap:8px;justify-content:flex-end">' +
         '<button class="btn btn-ghost" onclick="this.closest(\'.tc-confirm-overlay\').remove()">取消</button>' +
-        '<button class="btn btn-accent" onclick="window._blConfirmArchive(\'' + cardId + '\'); this.closest(\'.tc-confirm-overlay\').remove()" style="background:var(--rose);border-color:var(--rose)">確認封存</button>' +
+        '<button class="btn btn-accent" onclick="window._bkConfirmArchive(\'' + cardId + '\'); this.closest(\'.tc-confirm-overlay\').remove()" style="background:var(--rose);border-color:var(--rose)">確認封存</button>' +
         '</div>';
       overlay.appendChild(box);
       document.body.appendChild(overlay);
     };
 
     // ── Confirm archive action ──
-    window._blConfirmArchive = function(cardId){
+    window._bkConfirmArchive = function(cardId){
       var allCards = T.getCards().map(T.migrateCard);
       var idx = allCards.findIndex(function(c){ return c.id === cardId; });
       if(idx === -1) return;
@@ -7774,7 +7824,7 @@ canvas{display:block;margin:0 auto 24px}
         T.saveCards(allCards);
         cards = T.getCards().map(T.migrateCard);
         backlogCards = getBacklogCards();
-        if(window._blSelectedCard === cardId) window._blSelectedCard = null;
+        if(window._bkSelectedCard === cardId) window._bkSelectedCard = null;
         showToast('已封存「' + allCards[idx].title + '」', null, function(){
           // Undo: restore from archive
           var allCards2 = T.getCards().map(T.migrateCard);
@@ -7792,7 +7842,7 @@ canvas{display:block;margin:0 auto 24px}
     };
 
     // ── Edit card → open kanban detail modal ──
-    window._blEditCard = function(cardId){
+    window._bkEditCard = function(cardId){
       navigate('biz-tasks');
       setTimeout(function(){ if(window._kbShowDetail) window._kbShowDetail(cardId); }, 200);
     };
@@ -7967,12 +8017,12 @@ canvas{display:block;margin:0 auto 24px}
     };
 
     // ── Quick add modal ──
-    window._blQuickAdd = function(){
+    window._bkQuickAdd = function(){
       window._tpOpenCard(null, 'inbox');
     };
 
-    // ── Legacy: _blQuickAdd used to be a standalone form, now wrapped ──
-    window._blQuickAdd_legacy = function(){
+    // ── Legacy: _bkQuickAdd used to be a standalone form, now wrapped ──
+    window._bkQuickAdd_legacy = function(){
       var _fStyle = 'font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:6px;display:block';
       var _fStyleM = 'font-size:12px;font-weight:600;color:var(--ink-muted);margin:14px 0 6px;display:block';
       var _iStyle = 'width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;background:var(--bg);color:var(--ink);box-sizing:border-box;font-family:inherit';
@@ -8054,8 +8104,8 @@ canvas{display:block;margin:0 auto 24px}
     };
 
     // Legacy compatibility: old code may call these
-    window._inboxQuickAdd = window._blQuickAdd;
-    window._inboxShowDetail = function(cardId){ window._blSelectCard(cardId); renderBacklog(); };
+    window._inboxQuickAdd = window._bkQuickAdd;
+    window._inboxShowDetail = function(cardId){ window._bkSelectCard(cardId); renderBacklog(); };
 
     // ── Tab switch ──
     window._tpSwitchTab = function(tab){
@@ -11142,6 +11192,11 @@ canvas{display:block;margin:0 auto 24px}
             html += '<span class="lv2-title">' + (card.title||'未命名') + '</span>';
             if(clTotal > 0) html += '<span class="lv2-sub-count">' + clDone + '/' + clTotal + '</span>';
             html += '</div>';
+            // v0.31.0: AI Contribution Badge (list view)
+            if(card.aiContribution >= 0) {
+              var _aiPct = card.aiContribution;
+              html += '<span class="kb-ai-contrib ' + (_aiPct === 100 ? 'ai-badge-auto' : 'ai-badge-collab') + '" style="font-size:10px;height:16px;line-height:16px">' + (_aiPct === 100 ? 'AI auto' : 'AI ' + _aiPct + '%') + '</span>';
+            }
             // Category
             html += '<span class="lv2-cat" style="background:' + cat.color + '14;color:' + cat.color + '">' + cat.label + '</span>';
             // Status (resolve from card's columnId, not group)
@@ -11261,9 +11316,20 @@ canvas{display:block;margin:0 auto 24px}
           var priKey = card.priority === 'high' ? 'high' : card.priority === 'medium' ? 'medium' : card.priority === 'low' ? 'low' : '';
           html += '<div class="kb-card-v2' + (card.archived?' archived-card':'') + '" draggable="true" data-card="' + card.id + '">';
 
-          // Row 1: Title (priority dot + title text)
+          // Row 1: Title (priority dot + title text + AI contribution badge)
           var dotH = priKey ? '<span class="kb-v2-pri-dot pri-' + priKey + '" aria-label="優先級 ' + priKey + '"></span>' : '';
-          html += '<div class="kb-v2-title">' + dotH + '<span class="kb-v2-title-text">' + (card.title||'未命名') + '</span></div>';
+          // v0.31.0: AI Contribution Badge — Anti-Anxiety UX
+          var aiBadgeH = '';
+          if(card.aiContribution >= 0) {
+            var aiPct = card.aiContribution;
+            var aiBadgeCls = aiPct === 100 ? 'ai-badge-auto' : 'ai-badge-collab';
+            var aiBadgeLabel = aiPct === 100 ? 'AI auto' : 'AI ' + aiPct + '%';
+            var aiTooltip = card.aiSummary || (aiPct === 100 ? 'AI 全自動完成' : 'AI 協助完成了約 ' + aiPct + '% 的內容');
+            aiBadgeH = '<span class="kb-ai-contrib ' + aiBadgeCls + '" title="' + aiTooltip + '">' + aiBadgeLabel + '</span>';
+          } else {
+            aiBadgeH = '<span class="kb-ai-contrib ai-badge-manual" title="手動建立">手動</span>';
+          }
+          html += '<div class="kb-v2-title">' + dotH + '<span class="kb-v2-title-text">' + (card.title||'未命名') + '</span>' + aiBadgeH + '</div>';
 
           // Row 2: Description preview (1 line)
           if(card.description){
@@ -12819,6 +12885,8 @@ canvas{display:block;margin:0 auto 24px}
       overlay.remove();
     }, 150);
   }
+  // v0.31.0: expose to global scope — inline onclick handlers run in window scope, not IIFE scope
+  window.closeModalAnimated = closeModalAnimated;
 
   // ═══════════════════════════════════════════
   // GLOBAL: Command Palette (Cmd+K / Ctrl+K)
@@ -16053,8 +16121,152 @@ canvas{display:block;margin:0 auto 24px}
     // Header
     html += '<div class="page-title-area">';
     html += '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="2 16 6 10 10 13 14 6 18 2"/><circle cx="18" cy="2" r="1.5" fill="var(--primary)"/></svg><span>AI 儀表板</span></h1>';
-    html += '<p class="subtitle">公司現在狀況怎樣？' + thisYear + '年' + (thisMonth + 1) + '月營運快照</p>';
+    html += '<p class="subtitle">公司現在狀況怎樣？</p>';
     html += '</div>';
+
+    // ═══ PULSE VIEW — Anti-Anxiety UX v0.31.0 ═══
+    // Calculate project health from cycles + tasks
+    var _cycles = getData('bp_cycles', []);
+    var _activeTasks = tasks.filter(function(t) { return !t.archived; });
+    var _todayISO = now.toISOString().slice(0, 10);
+    var _overdueTasks = _activeTasks.filter(function(t) {
+      return t.columnId !== 'done' && t.dueDate && t.dueDate.slice(0, 10) < _todayISO;
+    });
+    var _stuckTasks = _activeTasks.filter(function(t) {
+      if (t.columnId === 'done' || t.columnId === 'inbox') return false;
+      var lastActivity = t.updatedAt || t.createdAt || '';
+      if (!lastActivity) return false;
+      var daysSince = Math.floor((now.getTime() - new Date(lastActivity).getTime()) / 86400000);
+      return daysSince > 3;
+    });
+    var _weekDueTasks = _activeTasks.filter(function(t) {
+      if (t.columnId === 'done') return false;
+      if (!t.dueDate) return false;
+      var dd = new Date(t.dueDate);
+      var diff = Math.ceil((dd.getTime() - now.getTime()) / 86400000);
+      return diff >= 0 && diff <= 7;
+    });
+
+    // Health score: weighted composite
+    var _totalActive = _activeTasks.filter(function(t) { return t.columnId !== 'done'; }).length || 1;
+    var _overdueRatio = _overdueTasks.length / _totalActive;
+    var _stuckRatio = _stuckTasks.length / _totalActive;
+    var _weekDueRatio = _weekDueTasks.length / Math.max(_totalActive, 1);
+    var _healthScore = Math.max(0, Math.min(100, Math.round(100 - (_overdueRatio * 40 + _stuckRatio * 30 + _weekDueRatio * 15) * 100)));
+    var _healthStatus = _healthScore >= 70 ? 'healthy' : _healthScore >= 40 ? 'attention' : 'at-risk';
+    var _healthLabel = _healthScore >= 70 ? '一切順利' : _healthScore >= 40 ? '有些需注意' : '需要關注';
+
+    // Build project health from cycles
+    var _projectPulses = [];
+    _cycles.forEach(function(cyc) {
+      if (!cyc.id) return;
+      var cycCards = _activeTasks.filter(function(t) { return t.cycleId === cyc.id; });
+      if (cycCards.length === 0) return;
+      var doneCount = cycCards.filter(function(t) { return t.columnId === 'done'; }).length;
+      var overdueInCyc = cycCards.filter(function(t) {
+        return t.columnId !== 'done' && t.dueDate && t.dueDate.slice(0, 10) < _todayISO;
+      }).length;
+      var completion = Math.round(doneCount * 100 / cycCards.length);
+      var status = overdueInCyc > 1 ? 'at_risk' : overdueInCyc > 0 || completion < 30 ? 'needs_attention' : 'on_track';
+      var statusLabel = status === 'on_track' ? '進度正常' : status === 'needs_attention' ? '需注意' : '有風險';
+      var statusColor = status === 'on_track' ? 'var(--teal)' : status === 'needs_attention' ? 'var(--gold)' : 'var(--rose)';
+      var startD = cyc.startDate ? new Date(cyc.startDate) : null;
+      var endD = cyc.endDate ? new Date(cyc.endDate) : null;
+      var label = startD && endD ? (startD.getMonth() + 1) + '/' + startD.getDate() + ' — ' + (endD.getMonth() + 1) + '/' + endD.getDate() : cyc.name || cyc.id;
+      _projectPulses.push({
+        name: label,
+        total: cycCards.length,
+        done: doneCount,
+        completion: completion,
+        status: status,
+        statusLabel: statusLabel,
+        statusColor: statusColor,
+        overdue: overdueInCyc
+      });
+    });
+
+    // AI Activity log (from localStorage, or empty)
+    var _aiActivity = getData('bp_ai_activity', []);
+
+    // ── Pulse Hero: Orb + Summary ──
+    html += '<div class="pulse-hero">';
+    html += '<div class="pulse-orb ' + _healthStatus + '" title="團隊健康度：' + _healthScore + '/100 — ' + _healthLabel + '"></div>';
+    html += '<div class="pulse-summary">';
+    // Natural language summary lines
+    var _activeProjectCount = _projectPulses.length;
+    if (_activeProjectCount > 0) {
+      html += '<div class="pulse-summary-line"><span class="ps-num">' + _activeProjectCount + '</span> 個週期進行中</div>';
+    }
+    if (_weekDueTasks.length > 0) {
+      html += '<div class="pulse-summary-line"><span class="ps-num">' + _weekDueTasks.length + '</span> 個任務本週到期</div>';
+    }
+    if (_overdueTasks.length > 0) {
+      html += '<div class="pulse-summary-line"><span class="ps-warn">' + _overdueTasks.length + '</span> 個需要你的注意</div>';
+    }
+    if (_overdueTasks.length === 0 && _weekDueTasks.length === 0) {
+      html += '<div class="pulse-summary-line" style="color:var(--teal)">目前一切順利，沒有緊急事項</div>';
+    }
+    // AI contribution summary
+    var _aiCards = _activeTasks.filter(function(t) { return t.aiContribution >= 0; });
+    if (_aiCards.length > 0) {
+      var _avgAi = Math.round(_aiCards.reduce(function(s, c) { return s + c.aiContribution; }, 0) / _aiCards.length);
+      html += '<div class="pulse-summary-line" style="color:var(--primary)">AI 平均參與度 <span class="ps-num">' + _avgAi + '%</span>（' + _aiCards.length + ' 個任務）</div>';
+    }
+    html += '</div></div>';
+
+    // ── Project Pulses ──
+    if (_projectPulses.length > 0) {
+      html += '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:12px">專案脈搏</div>';
+      html += '<div class="pulse-projects">';
+      _projectPulses.forEach(function(p) {
+        html += '<div class="pulse-proj-card" onclick="navigate(\'biz-tasks\')">';
+        html += '<div class="pulse-proj-name">' + p.name + '</div>';
+        html += '<div class="pulse-proj-bar"><div class="pulse-proj-bar-fill" style="width:' + p.completion + '%;background:' + p.statusColor + '"></div></div>';
+        html += '<div class="pulse-proj-status">';
+        html += '<div class="dot" style="background:' + p.statusColor + '"></div>';
+        html += '<span class="label">' + p.statusLabel + '</span>';
+        html += '<span style="margin-left:auto;font-size:11px;color:var(--ink-dim)">' + p.done + '/' + p.total + ' 完成</span>';
+        html += '</div></div>';
+      });
+      html += '</div>';
+    }
+
+    // ── Activity Stream ──
+    html += '<div class="pulse-activity">';
+    html += '<div class="pulse-activity-header">';
+    html += '<h3>活動動態</h3>';
+    html += '</div>';
+    if (_aiActivity.length > 0) {
+      _aiActivity.slice(0, 10).forEach(function(act) {
+        var relTime = act.timestamp ? (function() {
+          var diff = Math.floor((now.getTime() - new Date(act.timestamp).getTime()) / 60000);
+          if (diff < 60) return diff + ' 分鐘前';
+          if (diff < 1440) return Math.floor(diff / 60) + ' 小時前';
+          return Math.floor(diff / 1440) + ' 天前';
+        })() : '';
+        var actorCls = act.actorType === 'ai' ? 'ai' : act.actorType === 'human+ai' ? 'human-ai' : '';
+        html += '<div class="pulse-act-row">';
+        html += '<div class="pulse-act-time">' + relTime + '</div>';
+        html += '<div class="pulse-act-actor ' + actorCls + '">' + (act.actorName || 'AI') + '</div>';
+        html += '<div style="flex:1"><div class="pulse-act-body">' + (act.action || '') + '</div>';
+        if (act.scope) html += '<div class="pulse-act-scope">' + act.scope + '</div>';
+        html += '</div>';
+        if (act.aiContribution >= 0) {
+          html += '<div class="pulse-act-ai-bar"><div class="pulse-act-ai-bar-fill" style="width:' + act.aiContribution + '%"></div></div>';
+        }
+        html += '</div>';
+      });
+    } else {
+      html += '<div style="text-align:center;padding:40px 20px">';
+      html += '<div style="width:48px;height:48px;border-radius:50%;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--ink-dim)" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg></div>';
+      html += '<div style="font-size:14px;font-weight:600;color:var(--ink-muted);margin-bottom:4px">今天還很安靜</div>';
+      html += '<div style="font-size:12px;color:var(--ink-dim)">團隊的 AI 活動會自動出現在這裡。</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // ═══ Separator ═══
+    html += '<div style="margin:32px 0;border-top:1px solid var(--border)"></div>';
 
     // ═══ Layer 1: Revenue Health (營收健康度) ═══
     html += '<div style="margin-bottom:28px">';
@@ -26726,4 +26938,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.30.1 · 可維護性修復 — Kanban 資料層去重、_cp* 死代碼移除、genId 統一、模組依賴地圖 -->
+</html><!-- v0.31.0 · Anti-Anxiety UX（Pulse View + AI Badge）、Backlog _bl*→_bk* rename、closeModalAnimated fix -->
