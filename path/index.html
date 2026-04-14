@@ -4314,7 +4314,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.31.2</div>
+        <div class="sidebar-version">v0.31.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4883,13 +4883,30 @@ canvas{display:block;margin:0 auto 24px}
   const BIZ_MODULES = ['biz-meetings','biz-insights','biz-docs'];
 
   // ── Module Enable/Disable System ──
+  // 預設只開 Free 方案能用的模組，避免 sidebar 出現一堆被鎖的項目（v0.15.3 邏輯修正）
   const MODULE_DEFAULTS = {
-    'mod-diagnose': true, 'mod-lab': true, 'mod-survey': true,
-    'mod-market': true, 'mod-report': true,
+    'mod-diagnose': true,
+    'mod-lab': false, 'mod-survey': false, 'mod-market': false, 'mod-report': false,
     'mod-tasks': true, 'mod-contacts': true,
-    'mod-quotes': true, 'mod-billing': true, 'mod-meetings': false,
+    'mod-quotes': false, 'mod-billing': false, 'mod-meetings': false,
     'mod-insights': false, 'mod-docs': false
   };
+
+  // 模組最低方案需求（sidebar/toggle 雙重 guard 使用）
+  const MODULE_MIN_PLAN = {
+    'mod-diagnose': 'free',
+    'mod-lab': 'starter', 'mod-survey': 'starter', 'mod-market': 'starter', 'mod-report': 'starter',
+    'mod-tasks': 'free', 'mod-contacts': 'free',
+    'mod-quotes': 'starter', 'mod-billing': 'pro', 'mod-meetings': 'starter',
+    'mod-insights': 'pro', 'mod-docs': 'pro'
+  };
+  const PLAN_RANK = { free: 0, starter: 1, pro: 2, enterprise: 3 };
+
+  function isModuleAvailable(modKey, plan) {
+    var p = plan || (state && state.plan) || 'free';
+    var min = MODULE_MIN_PLAN[modKey] || 'free';
+    return (PLAN_RANK[p] || 0) >= (PLAN_RANK[min] || 0);
+  }
 
   function getEnabledModules() {
     const saved = localStorage.getItem('bp_enabled_modules_v2');
@@ -4904,6 +4921,11 @@ canvas{display:block;margin:0 auto 24px}
   }
 
   function toggleModule(modKey) {
+    // Defense-in-depth：鎖住的模組不可從任何路徑 toggle
+    if (!isModuleAvailable(modKey)) {
+      showToast('此模組需要升級方案才能啟用');
+      return;
+    }
     const modules = getEnabledModules();
     modules[modKey] = !modules[modKey];
     saveEnabledModules(modules);
@@ -5010,19 +5032,19 @@ canvas{display:block;margin:0 auto 24px}
       { id: 'biz-docs', label: '文件庫', icon: 'folder', modKey: 'mod-docs', layer: 2, q: '那份合約在哪裡？' }
     ];
 
-    // Filter biz items by enabled modules
-    const visibleBiz = bizItems.filter(item => enabledModules[item.modKey]);
+    // Filter biz items by enabled modules AND plan availability (v0.15.3 plan guard)
+    const visibleBiz = bizItems.filter(item => enabledModules[item.modKey] && isModuleAvailable(item.modKey));
 
     const settingsItem = { id: 'settings', label: '設定', icon: 'sliders' };
 
     // Build nav HTML with category labels
     let navHtml = '';
 
-    // PATH tools (home always visible, rest filtered by module toggle)
+    // PATH tools (home always visible, rest filtered by module toggle + plan availability)
     navHtml += pathItems.filter(function(item) {
       if (item.id === 'home') return true;
       var modKey = 'mod-' + item.id;
-      return enabledModules[modKey] !== false;
+      return enabledModules[modKey] !== false && isModuleAvailable(modKey);
     }).map(item => {
       return `<div class="nav-item ${item.id === 'home' ? 'nav-home' : ''} ${state.currentModule === item.id ? 'active' : ''}" onclick="app.navClick(event,'${item.id}')" title="${item.label}">
         ${ICONS[item.icon]}
@@ -24238,41 +24260,34 @@ function loadHistory(){
             return planRank[curPlan] < planRank[mod.minPlan];
           }
 
-          /* ── 渲染單一模組卡片 ── */
+          /* ── 渲染單一模組卡片（v0.15.3 緊湊版：icon 左 + 名稱右，賦能問題 hover 才顯示） ── */
           function renderModCard(m, visibility) {
             var on = em[m.key];
             var locked = isLocked(m);
-            var visColor = visibility === 'personal' ? 'var(--primary)' : 'var(--teal)';
-            var visBg = visibility === 'personal' ? 'rgba(124,92,252,.08)' : 'rgba(27,168,145,.08)';
-            var visLabel = visibility === 'personal' ? '個人專屬' : '團隊共享';
-            var visIcon = visibility === 'personal' ? '<svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><path d="M10 3v-1M10 18v-1M17 10h1M2 10h1M14.5 5.5l.7-.7M4.8 15.2l.7-.7M14.5 14.5l.7.7M4.8 4.8l.7.7"/></svg>' : '<svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 8a4 4 0 1 0-8 0"/><circle cx="10" cy="14" r="1"/><path d="M4 8v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/></svg>';
+            var accent = visibility === 'personal' ? 'var(--primary)' : 'var(--teal)';
+            var accentBg = visibility === 'personal' ? 'rgba(124,92,252,.08)' : 'rgba(27,168,145,.08)';
 
-            var card = '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:14px;display:flex;flex-direction:column;gap:10px;transition:all .15s;border:1.5px solid ' + (locked ? 'transparent' : on ? 'rgba(124,92,252,.2)' : 'transparent') + ';' + (locked ? 'opacity:.55' : '') + '">';
+            var card = '<div title="' + (m.q || '') + '" style="background:var(--bg-app);border-radius:var(--r-md);padding:10px 12px;display:flex;align-items:center;gap:10px;transition:all .15s;border:1.5px solid ' + (locked ? 'transparent' : on ? 'rgba(124,92,252,.2)' : 'transparent') + ';' + (locked ? 'opacity:.55' : '') + ';min-height:56px">';
 
-            /* Row 1: icon + toggle/lock */
-            card += '<div style="display:flex;align-items:center;justify-content:space-between">';
-            card += '<div style="width:32px;height:32px;border-radius:var(--r-sm);background:' + (locked ? 'var(--bg-hover)' : on ? 'var(--primary-light)' : 'var(--bg-hover)') + ';color:' + (locked ? 'var(--ink-dim)' : on ? 'var(--primary)' : 'var(--ink-muted)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">' + ICONS[m.icon] + '</div>';
+            /* icon 28×28 */
+            card += '<div style="width:28px;height:28px;border-radius:var(--r-sm);background:' + (locked ? 'var(--bg-hover)' : on ? accentBg : 'var(--bg-hover)') + ';color:' + (locked ? 'var(--ink-dim)' : on ? accent : 'var(--ink-muted)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">' + ICONS[m.icon] + '</div>';
 
+            /* name + sensitive tag（一行） */
+            card += '<div style="flex:1;min-width:0;display:flex;align-items:center;gap:6px">';
+            card += '<span style="font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + m.label + '</span>';
+            if (m.sensitive) {
+              card += '<svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" title="金額限管理員"><rect x="5" y="9" width="10" height="8" rx="1.5"/><path d="M7 9V7a3 3 0 0 1 6 0v2"/></svg>';
+            }
+            card += '</div>';
+
+            /* toggle / lock chip */
             if (locked) {
-              card += '<div style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:' + planColorMap[m.minPlan] + ';background:' + (m.minPlan === 'starter' ? 'rgba(224,138,58,.1)' : m.minPlan === 'pro' ? 'rgba(124,92,252,.08)' : 'rgba(27,168,145,.08)') + ';padding:3px 8px;border-radius:10px"><svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="9" width="10" height="8" rx="1.5"/><path d="M7 9V7a3 3 0 0 1 6 0v2"/></svg> ' + planLabelMap[m.minPlan] + '</div>';
+              card += '<span style="font-size:10px;font-weight:700;color:' + planColorMap[m.minPlan] + ';background:' + (m.minPlan === 'starter' ? 'rgba(224,138,58,.1)' : m.minPlan === 'pro' ? 'rgba(124,92,252,.08)' : 'rgba(27,168,145,.08)') + ';padding:3px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0">' + planLabelMap[m.minPlan] + '</span>';
             } else {
-              card += '<button onclick="app.toggleModule(\'' + m.key + '\')" style="width:38px;height:22px;border-radius:11px;border:none;cursor:pointer;position:relative;transition:all .25s cubic-bezier(.4,0,.2,1);background:' + (on ? 'var(--primary)' : 'var(--bg-hover)') + ';flex-shrink:0" title="' + (on ? '點擊隱藏' : '點擊啟用') + '">';
-              card += '<div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:' + (on ? '19px' : '3px') + ';transition:left .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>';
+              card += '<button onclick="app.toggleModule(\'' + m.key + '\')" style="width:34px;height:20px;border-radius:10px;border:none;cursor:pointer;position:relative;transition:all .25s cubic-bezier(.4,0,.2,1);background:' + (on ? 'var(--primary)' : 'var(--bg-hover)') + ';flex-shrink:0" title="' + (on ? m.label + ' · 點擊隱藏' : m.label + ' · 點擊啟用') + '">';
+              card += '<div style="width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:3px;left:' + (on ? '17px' : '3px') + ';transition:left .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>';
               card += '</button>';
             }
-            card += '</div>';
-
-            /* Row 2: name + badges */
-            card += '<div>';
-            card += '<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;flex-wrap:wrap">';
-            card += '<span style="font-size:13px;font-weight:700;color:var(--ink)">' + m.label + '</span>';
-            card += '<span style="font-size:9px;font-weight:700;color:' + visColor + ';background:' + visBg + ';padding:2px 6px;border-radius:8px;letter-spacing:.02em;display:inline-flex;align-items:center;gap:3px">' + visIcon + visLabel + '</span>';
-            if (m.sensitive) {
-              card += '<span style="font-size:9px;font-weight:600;color:var(--gold);background:rgba(224,138,58,.08);padding:2px 6px;border-radius:8px">金額限管理員</span>';
-            }
-            card += '</div>';
-            card += '<div style="font-size:11px;color:var(--ink-muted);line-height:1.4">' + m.q + '</div>';
-            card += '</div>';
             card += '</div>';
             return card;
           }
@@ -24287,7 +24302,7 @@ function loadHistory(){
           html += '<div style="font-size:14px;font-weight:700;color:var(--ink)">你的工作台</div>';
           html += '<span style="font-size:11px;color:var(--ink-muted)">僅自己可見的驗證工具</span>';
           html += '</div>';
-          html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">';
+          html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">';
           personalMods.forEach(function(m) { html += renderModCard(m, 'personal'); });
           html += '</div></div>';
 
@@ -24298,7 +24313,7 @@ function loadHistory(){
           html += '<div style="font-size:14px;font-weight:700;color:var(--ink)">團隊營運</div>';
           html += '<span style="font-size:11px;color:var(--ink-muted)">團隊成員皆可存取</span>';
           html += '</div>';
-          html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">';
+          html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">';
           teamMods.forEach(function(m) { html += renderModCard(m, 'team'); });
           html += '</div></div>';
 
@@ -24357,17 +24372,16 @@ function loadHistory(){
         })()}
       </div>
 
-      <!-- ═══ AI Agent 與自主性 ═══ -->
+      <!-- ═══ AI 自主層級 ═══ -->
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px">AI Agent 設定</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">管理團隊成員、設定 AI 自主層級</div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px">AI 自主層級</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px;line-height:1.6">決定 AI 在任務建議、報價草稿、客戶洞察等場景中的介入程度。調整後，所有 AI 功能（PATH 診斷、Lab、任務建議、報價草擬⋯）都會套用這個層級。</div>
           </div>
         </div>
 
         ${(function(){
-          var mems = JSON.parse(localStorage.getItem('bp_task_members')||'[]');
           var globalAutonomy = localStorage.getItem('bp_agent_autonomy') || 'suggest';
           var levels = [
             {id:'off',label:'關閉',desc:'AI 不會主動行動',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg>'},
@@ -24379,12 +24393,8 @@ function loadHistory(){
 
           var html = '';
 
-          // Autonomy Level Dial
-          html += '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:20px;margin-bottom:16px">';
-          html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">';
-          html += '<div style="width:32px;height:32px;border-radius:var(--r-sm);background:linear-gradient(135deg,rgba(124,92,252,.15),rgba(124,92,252,.05));display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5Z"/></svg></div>';
-          html += '<div><div style="font-size:14px;font-weight:700;color:var(--ink)">全域自主層級</div>';
-          html += '<div style="font-size:11px;color:var(--ink-muted)">所有 AI Agent 的預設行為模式</div></div></div>';
+          // Autonomy Level Dial（外層已有標題與說明，內層只渲染互動控件）
+          html += '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:20px">';
 
           // Level steps
           html += '<div class="autonomy-steps">';
@@ -24409,46 +24419,6 @@ function loadHistory(){
           html += '</div>';
           html += '</div>';
 
-          // Team Members
-          html += '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:20px">';
-          html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
-          html += '<div style="font-size:14px;font-weight:700;color:var(--ink)">團隊成員</div>';
-          html += '<button class="btn btn-ghost" onclick="app.addAgentMember()" style="font-size:12px;padding:6px 12px"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg> 新增 Agent</button>';
-          html += '</div>';
-
-          if(mems.length === 0){
-            html += '<div style="padding:20px;border-radius:var(--r-md);background:linear-gradient(135deg,rgba(124,92,252,.04),rgba(27,168,145,.04));border:1px dashed rgba(124,92,252,.2)">';
-            html += '<div style="display:flex;align-items:flex-start;gap:14px">';
-            html += '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(124,92,252,.04));display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5Z"/></svg></div>';
-            html += '<div style="flex:1">';
-            html += '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px">AI Agent 能幫你做什麼？</div>';
-            html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.6;margin-bottom:12px">Agent 會自動分析任務優先序、建議每日排程、追蹤逾期風險，讓你專注在決策，AI 處理繁瑣的管理工作。</div>';
-            html += '<button onclick="app.addAgentMember()" class="btn btn-accent" style="font-size:12px;padding:6px 16px;border-radius:var(--r-md)"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:4px;vertical-align:-1px"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>建立第一位 Agent</button>';
-            html += '</div></div></div>';
-          } else {
-            mems.forEach(function(m){
-              var isAgent = (m.type === 'agent');
-              html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">';
-              // Avatar
-              if(isAgent){
-                html += '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7C5CFC,#A78BFA);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;box-shadow:0 0 0 2px rgba(124,92,252,.25)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5Z"/></svg></div>';
-              } else {
-                html += '<div style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">' + (m.name||'?').charAt(0) + '</div>';
-              }
-              // Info
-              html += '<div style="flex:1;min-width:0">';
-              html += '<div style="display:flex;align-items:center;gap:6px">';
-              html += '<span style="font-size:14px;font-weight:600;color:var(--ink)">' + (m.name||'未命名') + '</span>';
-              html += '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;' + (isAgent ? 'color:var(--primary);background:var(--primary-light)' : 'color:var(--teal);background:rgba(27,168,145,.1)') + '">' + (isAgent ? 'Agent' : '人類') + '</span>';
-              html += '</div>';
-              html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:2px">' + (m.role||'團隊成員') + '</div>';
-              html += '</div>';
-              // Remove button
-              html += '<button onclick="app.removeMember(\''+m.id+'\')" class="btn btn-ghost" style="padding:6px;color:var(--ink-muted)" title="移除"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button>';
-              html += '</div>';
-            });
-          }
-          html += '</div>';
           return html;
         })()}
       </div>
@@ -27083,4 +27053,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.31.2 · overview band fix：強化底色/動態/文字層次、齒輪設定可開啟 -->
+</html><!-- v0.31.3 · 設定頁優化：plan guard、模組卡縮小、AI Agent 區瘦身 -->
