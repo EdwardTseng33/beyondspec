@@ -1,4 +1,56 @@
 <!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════════════════════╗
+  ║  BeyondPath — Module Dependency Map (v1.0 · 2026-04-14)           ║
+  ║  Auto-read this before ANY cross-module modification.              ║
+  ║  Full details: module-dependency-map.md                            ║
+  ╠══════════════════════════════════════════════════════════════════════╣
+  ║                                                                    ║
+  ║  ARCHITECTURE: Single-file SPA, vanilla JS (ES5 only)              ║
+  ║  Core (1–5900) → _taskShared (5902–6256) → Modules (6265–26861)   ║
+  ║                                                                    ║
+  ║  SHARED DATA LAYER: _taskShared IIFE (line 5902)                   ║
+  ║    T.getCards/saveCards  T.getCycles/saveCycles  T.genId            ║
+  ║    T.migrateCard  T.getMembers  T.getActiveCycleId                 ║
+  ║    Consumers: Spec(6285) TaskPlan(6919) Backlog(7374)              ║
+  ║    CyclePlan(8277) TaskCycle(8736) Roadmap(9005)                   ║
+  ║    CycleOverview(10232) Timeline(10560)                            ║
+  ║                                                                    ║
+  ║  CRITICAL SHARED FUNCTIONS:                                        ║
+  ║    showToast(4428)→133 calls  closeModalAnimated(12947)→33 calls   ║
+  ║    navigate(4917)→76 calls  _scheduleFirestoreSync(4639)           ║
+  ║                                                                    ║
+  ║  CROSS-MODULE CALLS:                                               ║
+  ║    Home→_kbAddCard,_qtAdd  Spec→T.saveCards(creates kanban cards)  ║
+  ║    Roadmap→_kbOpenDetail,_kbEditCard  CycleOv→_kbOpenDetail        ║
+  ║    TaskPlan→_kbShowCardEdit  Quotes↔Contacts↔Billing(bp_contacts)  ║
+  ║                                                                    ║
+  ║  localStorage HIGH-COUPLING KEYS:                                  ║
+  ║    bp_kanban_cards → 9 modules read/write                          ║
+  ║    bp_kanban_cycles → 7 modules read/write                         ║
+  ║    bp_contacts → 5 modules read (Contacts,Quotes,Billing,Mt,Docs)  ║
+  ║                                                                    ║
+  ║  ⚠ DUPLICATIONS (resolve before next major version):               ║
+  ║    genId() x3: lines 5956, 10972, 13105                           ║
+  ║    migrateCard() x2: lines 5958, 11040                            ║
+  ║    _cp* handlers x2: lines 8012-8078 (dead), 8587-8677 (active)   ║
+  ║    Kanban data layer (10968-11004) duplicates _taskShared           ║
+  ║                                                                    ║
+  ║  CSS PREFIX REGISTRY:                                              ║
+  ║    kb-=Kanban ct-=Contacts qt-=Quotes bl-=Billing rm-=Roadmap     ║
+  ║    bp-=Platform diag-=Diagnose lab-=Lab spec-=Spec tp-=TaskPlan   ║
+  ║    cp-=CyclePlan cyc-=TaskCycle co-=CycleOv cmd-=CmdPalette      ║
+  ║    mt-=Meetings dc-=Docs landing-=Landing settings-=Settings      ║
+  ║    ⚠ _bl* JS prefix collision: Backlog(7561) vs Billing(16775)    ║
+  ║                                                                    ║
+  ║  SAFE MODIFICATION RULES:                                         ║
+  ║    Card schema change → update migrateCard at 5958 AND 11040       ║
+  ║    Cycle schema change → update getCycles at 5938 AND 10986        ║
+  ║    Contact schema → check Quotes, Billing, Meetings, Docs         ║
+  ║    New module → unique CSS prefix + window._ prefix + register     ║
+  ║                 in renderModule(5144)/renderBusinessModule(4973)    ║
+  ╚══════════════════════════════════════════════════════════════════════╝
+-->
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
@@ -4155,7 +4207,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.30.0</div>
+        <div class="sidebar-version">v0.30.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6255,6 +6307,9 @@ canvas{display:block;margin:0 auto 24px}
     };
   })();
 
+  // v0.30.1: Global ID generator — single source of truth, usable by non-task modules (Contacts, Quotes, etc.)
+  window.bpGenId = function(){ return _taskShared.genId(); };
+
   // ==================== AI PM BAR — REMOVED (v0.17.0) ====================
   // v0.17.0: AI PM 功能移除（愛德華裁決：很雞肋，實際上不知道有什麼作用）
   // renderAiPmBar / _aiPmToggle / _aiPmDismiss 保留為 no-op 以保護舊呼叫點
@@ -8008,118 +8063,8 @@ canvas{display:block;margin:0 auto 24px}
       renderBacklog();
     };
 
-    // ── Cycle navigation ──
-    window._cpCyclePrev = function(){
-      var idx = allCycles.findIndex(function(c){ return c.id === currentCycle.id; });
-      if(idx > 0){ currentCycle = allCycles[idx-1]; renderBacklog(); }
-    };
-    window._cpCycleNext = function(){
-      var idx = allCycles.findIndex(function(c){ return c.id === currentCycle.id; });
-      if(idx < allCycles.length-1){ currentCycle = allCycles[idx+1]; renderBacklog(); }
-    };
-
-    // ── Schedule card into current cycle (from cycle tab) ──
-    window._cpScheduleCard = function(cardId){
-      var cardEl = document.getElementById('card-' + cardId);
-      if(cardEl){ cardEl.classList.add('exiting'); }
-      setTimeout(function(){
-        var allCards = T.getCards().map(T.migrateCard);
-        var idx = allCards.findIndex(function(c){ return c.id === cardId; });
-        if(idx === -1) return;
-        allCards[idx].columnId = 'todo';
-        allCards[idx].cycleId = currentCycle.id;
-        allCards[idx].stateHistory = allCards[idx].stateHistory || [];
-        allCards[idx].stateHistory.push({from:'inbox',to:'todo',at:Date.now(),by:'user',cycleId:currentCycle.id});
-        T.saveCards(allCards);
-        cards = T.getCards().map(T.migrateCard);
-        backlogCards = getBacklogCards();
-        showToast('已排入本期', 4000, function(){
-          var allCards2 = T.getCards().map(T.migrateCard);
-          var idx2 = allCards2.findIndex(function(c){ return c.id === cardId; });
-          if(idx2!==-1){ allCards2[idx2].columnId='inbox'; allCards2[idx2].cycleId=''; }
-          T.saveCards(allCards2);
-          cards = T.getCards().map(T.migrateCard);
-          backlogCards = getBacklogCards();
-          renderBacklog();
-        });
-        renderBacklog();
-      }, cardEl ? 250 : 0);
-    };
-
-    // ── Unschedule card back to backlog ──
-    window._cpUnscheduleCard = function(cardId){
-      var cardEl = document.getElementById('card-' + cardId);
-      if(cardEl){ cardEl.classList.add('exiting'); }
-      setTimeout(function(){
-        var allCards = T.getCards().map(T.migrateCard);
-        var idx = allCards.findIndex(function(c){ return c.id === cardId; });
-        if(idx === -1) return;
-        allCards[idx].columnId = 'inbox';
-        allCards[idx].cycleId = '';
-        allCards[idx].stateHistory = allCards[idx].stateHistory || [];
-        allCards[idx].stateHistory.push({from:'scheduled',to:'inbox',at:Date.now(),by:'user'});
-        T.saveCards(allCards);
-        cards = T.getCards().map(T.migrateCard);
-        backlogCards = getBacklogCards();
-        showToast('已退回需求池', 4000, function(){
-          var allCards2 = T.getCards().map(T.migrateCard);
-          var idx2 = allCards2.findIndex(function(c){ return c.id === cardId; });
-          if(idx2!==-1){ allCards2[idx2].columnId='todo'; allCards2[idx2].cycleId=currentCycle.id; }
-          T.saveCards(allCards2);
-          cards = T.getCards().map(T.migrateCard);
-          backlogCards = getBacklogCards();
-          renderBacklog();
-        });
-        renderBacklog();
-      }, cardEl ? 250 : 0);
-    };
-
-    // ── Cycle settings modal ──
-    window._cpShowSettings = function(){
-      var curDuration = cfg.duration || 7;
-      var curStartDay = cfg.startDay !== undefined ? cfg.startDay : 1;
-      var curCapacity = cfg.suggestedCapacity || (curDuration === 7 ? 8 : 16);
-      var dayNames = ['週日','週一','週二','週三','週四','週五','週六'];
-
-      var ov = document.createElement('div');
-      ov.className = 'kb-overlay';
-      ov.innerHTML = '<div class="kb-modal" style="max-width:400px">' +
-        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">週期設定</h3><button class="kb-modal-close" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button></div>' +
-        '<div class="kb-modal-body" style="padding:20px">' +
-        '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px;display:block">週期長度</label>' +
-        '<div style="display:flex;gap:8px;margin-bottom:20px">' +
-        '<button id="cpDur7" onclick="document.getElementById(\'cpDurVal\').value=7;document.getElementById(\'cpDur7\').style.background=\'var(--primary)\';document.getElementById(\'cpDur7\').style.color=\'#fff\';document.getElementById(\'cpDur14\').style.background=\'transparent\';document.getElementById(\'cpDur14\').style.color=\'var(--ink-muted)\'" style="flex:1;padding:10px;border:1px solid ' + (curDuration===7?'var(--primary)':'var(--border)') + ';border-radius:var(--r-lg);background:' + (curDuration===7?'var(--primary)':'transparent') + ';color:' + (curDuration===7?'#fff':'var(--ink-muted)') + ';font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">1 週</button>' +
-        '<button id="cpDur14" onclick="document.getElementById(\'cpDurVal\').value=14;document.getElementById(\'cpDur14\').style.background=\'var(--primary)\';document.getElementById(\'cpDur14\').style.color=\'#fff\';document.getElementById(\'cpDur7\').style.background=\'transparent\';document.getElementById(\'cpDur7\').style.color=\'var(--ink-muted)\'" style="flex:1;padding:10px;border:1px solid ' + (curDuration===14?'var(--primary)':'var(--border)') + ';border-radius:var(--r-lg);background:' + (curDuration===14?'var(--primary)':'transparent') + ';color:' + (curDuration===14?'#fff':'var(--ink-muted)') + ';font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">2 週</button>' +
-        '</div>' +
-        '<input type="hidden" id="cpDurVal" value="' + curDuration + '">' +
-        '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px;display:block">起始日</label>' +
-        '<select id="cpStartDay" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;background:var(--bg);color:var(--ink);margin-bottom:20px;font-family:inherit">' +
-        '<option value="1"' + (curStartDay===1?' selected':'') + '>週一</option>' +
-        '<option value="0"' + (curStartDay===0?' selected':'') + '>週日</option>' +
-        '</select>' +
-        '<label style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px;display:block">建議容量（每週項目數）</label>' +
-        '<input type="number" id="cpCapacity" value="' + curCapacity + '" min="1" max="50" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;margin-bottom:4px;font-family:inherit">' +
-        '<div style="font-size:11px;color:var(--ink-dim);margin-bottom:20px">每個週期的建議任務數量上限</div>' +
-        '</div>' +
-        '<div class="kb-modal-footer" style="justify-content:flex-end">' +
-        '<button class="btn btn-ghost" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))">取消</button>' +
-        '<button class="btn btn-accent" id="cpSettingsSave">儲存</button>' +
-        '</div></div>';
-      document.body.appendChild(ov);
-      ov.addEventListener('click', function(e){ if(e.target === ov) closeModalAnimated(ov); });
-      document.getElementById('cpSettingsSave').addEventListener('click', function(){
-        var newDuration = parseInt(document.getElementById('cpDurVal').value) || 7;
-        var newStartDay = parseInt(document.getElementById('cpStartDay').value);
-        var newCapacity = parseInt(document.getElementById('cpCapacity').value) || (newDuration === 7 ? 8 : 16);
-        cfg.duration = newDuration;
-        cfg.startDay = newStartDay;
-        cfg.suggestedCapacity = newCapacity;
-        try{ localStorage.setItem('bp_cycle_config', JSON.stringify(cfg)); }catch(e){}
-        ov.remove();
-        showToast('週期設定已更新');
-        renderBacklog();
-      });
-    };
+    // v0.30.1: 已移除第一組 _cp* 定義（renderBacklog 版），保留第二組（renderPlanning 版，在 Cycle Planning 頁面內）
+    // 原位置：8064-8195（死代碼，被後方定義覆蓋）
 
     // ── Cycle tab content renderer ──
     function renderCycleTab(){
@@ -10965,103 +10910,25 @@ canvas{display:block;margin:0 auto 24px}
       }
     };
 
-    function getCols(){try{var s=localStorage.getItem(KB_COLS_KEY);if(s){var p=JSON.parse(s);return p&&p.length?p:DEFAULT_COLS;}return DEFAULT_COLS;}catch(e){return DEFAULT_COLS;}}
-    function saveCols(c){localStorage.setItem(KB_COLS_KEY,JSON.stringify(c));}
-    function getCards(){try{var s=localStorage.getItem(KB_CARDS_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
-    function saveCards(c){localStorage.setItem(KB_CARDS_KEY,JSON.stringify(c));_scheduleFirestoreSync();}
-    function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
-
-    // ── Cycle (週期) Data Layer ──
-    var KB_CYCLES_KEY = 'bp_kanban_cycles';
-    var KB_MEMBERS_KEY = 'bp_team_members';
-    var KB_ACTIVE_CYCLE_KEY = 'bp_active_cycle';
-
-    // v0.16.2: 與 T.getCycles 一致 — 線性 label 遷移
-    function _stripSprintPrefix2(lb){
-      if(!lb) return lb;
-      var m = lb.match(/^W\d+(?:-\d+)?（([^）]+)）/);
-      if(m) return m[1].replace(/-/g, '\u2013');
-      return lb;
-    }
-    function getCycles(){
-      try{
-        var s=localStorage.getItem(KB_CYCLES_KEY);
-        var arr = s?JSON.parse(s):[];
-        var dirty = false;
-        for(var i=0;i<arr.length;i++){
-          var nl = _stripSprintPrefix2(arr[i].label);
-          if(nl !== arr[i].label){ arr[i].label = nl; dirty = true; }
-        }
-        if(dirty){ try{ localStorage.setItem(KB_CYCLES_KEY, JSON.stringify(arr)); }catch(e){} }
-        return arr;
-      }catch(e){return[];}
-    }
-    function saveCycles(c){localStorage.setItem(KB_CYCLES_KEY,JSON.stringify(c));}
-    function getActiveCycleId(){return localStorage.getItem(KB_ACTIVE_CYCLE_KEY)||'';}
-    function setActiveCycleId(id){localStorage.setItem(KB_ACTIVE_CYCLE_KEY,id);}
-
-    function getMembers(){try{var s=localStorage.getItem(KB_MEMBERS_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
-    function saveMembers(m){localStorage.setItem(KB_MEMBERS_KEY,JSON.stringify(m));}
-
-    // Generate current week cycle if none exists
-    // Delegate to shared data layer (respects cycle config)
-    function ensureCurrentCycle(){ return _taskShared.ensureCurrentCycle(); }
-
-    function getISOWeek(d){
-      var tmp = new Date(d.getTime());
-      tmp.setHours(0,0,0,0);
-      tmp.setDate(tmp.getDate() + 3 - (tmp.getDay() + 6) % 7);
-      var week1 = new Date(tmp.getFullYear(), 0, 4);
-      return 1 + Math.round(((tmp.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
-    }
-    function fmtMD(d){ return (d.getMonth()+1) + '/' + d.getDate(); }
-
-    // Ensure default member (owner) exists
-    function ensureDefaultMember(){
-      var members = getMembers();
-      if(members.length === 0){
-        members.push({
-          id: 'owner',
-          name: '我',
-          role: 'founder',
-          agent: {
-            type: 'single',
-            name: 'AI 助手',
-            provider: 'claude-cowork',
-            autoLevel: 'suggest',
-            personas: []
-          }
-        });
-        saveMembers(members);
-      }
-      return members;
-    }
-
-    function migrateCard(c){
-      if(!c.type) c.type='product';
-      if(!c.category) {
-        var typeToCategory = {task:'product',spec:'product',product:'product',dev:'dev',design:'dev',bug:'dev',qa:'qa',sales:'sales',marketing:'marketing',finance:'admin',hr:'admin'};
-        c.category = typeToCategory[c.type] || 'product';
-      }
-      if(!c.tags) c.tags = [];
-      if(!c.checklist) c.checklist=[];
-      if(!c.customFields) c.customFields=[];
-      if(!c.activities) c.activities=[];
-      if(!c.attachments) c.attachments=[];
-      if(c.archived===undefined) c.archived=false;
-      if(!c.priority) c.priority='none';
-      if(!c.source) c.source='manual';
-      if(!c.subTasks) c.subTasks=[];
-      if(!c.discussion) c.discussion=[];
-      if(!c.stateHistory) c.stateHistory=[];
-      if(!c.collaborators) c.collaborators=[];
-      // v0.7.0: Cycle + Agent fields
-      if(!c.cycleId) c.cycleId = '';
-      if(!c.agentActions) c.agentActions = [];
-      if(c.agentCanAct === undefined) c.agentCanAct = false;
-      if(!c.assigneeId) c.assigneeId = '';
-      return c;
-    }
+    // v0.30.1: Kanban data layer — delegate to _taskShared (single source of truth)
+    // All local function names preserved for backward compatibility with ~30+ internal call sites
+    var T = _taskShared;
+    function getCols(){ return T.getCols(); }
+    function saveCols(c){ return T.saveCols(c); }
+    function getCards(){ return T.getCards(); }
+    function saveCards(c){ return T.saveCards(c); }
+    function genId(){ return T.genId(); }
+    function getCycles(){ return T.getCycles(); }
+    function saveCycles(c){ return T.saveCycles(c); }
+    function getMembers(){ return T.getMembers(); }
+    function saveMembers(m){ return T.saveMembers(m); }
+    function getActiveCycleId(){ return T.getActiveCycleId(); }
+    function setActiveCycleId(id){ return T.setActiveCycleId(id); }
+    function ensureCurrentCycle(){ return T.ensureCurrentCycle(); }
+    function ensureDefaultMember(){ return T.ensureDefaultMember(); }
+    function migrateCard(c){ return T.migrateCard(c); }
+    function getISOWeek(d){ return T.getISOWeek(d); }
+    function fmtMD(d){ return T.fmtMD(d); }
 
     var cols = getCols();
     // Auto-inject inbox col for existing users who don't have it
@@ -13102,7 +12969,8 @@ canvas{display:block;margin:0 auto 24px}
     var CT_KEY = 'bp_contacts';
     function getContacts(){try{var s=localStorage.getItem(CT_KEY);return s?JSON.parse(s):[];}catch(e){return[];}}
     function saveContacts(c){localStorage.setItem(CT_KEY,JSON.stringify(c));_scheduleFirestoreSync();}
-    function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+    // v0.30.1: delegate to global bpGenId (single source of truth)
+    function genId(){ return window.bpGenId(); }
 
     var contacts = getContacts();
 
@@ -26858,4 +26726,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.30.0 · 時間軸 summary bar — 收合項目時顯示整體時間跨度條 -->
+</html><!-- v0.30.1 · 可維護性修復 — Kanban 資料層去重、_cp* 死代碼移除、genId 統一、模組依賴地圖 -->
