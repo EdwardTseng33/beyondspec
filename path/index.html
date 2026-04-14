@@ -4020,8 +4020,10 @@ canvas{display:block;margin:0 auto 24px}
 .tc-capacity-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;min-width:60px}
 .tc-capacity-fill{height:100%;border-radius:3px;transition:width .4s cubic-bezier(.22,1,.36,1)}
 
-/* v0.17.0 Calm Interface: cp-ai-card 移除 ::before 4px 左側色條，改用極淡背景 tinting 表達狀態
-   v0.17.0: 也降低 padding / gap, 不讓進度提示欄位和下方需求池對衝壅擠 */
+/* v0.30.0 Unified Overview Band — 三層合併為一體化概覽帶
+   取代 cp-ai-card + cp-focus-row 的三層堆疊結構 */
+
+/* ── Legacy cp-ai / cp-focus (kept for CycleOverview page compatibility) ── */
 .cp-ai-card{display:flex;align-items:stretch;gap:16px;padding:14px 18px;margin:12px 0 0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);position:relative;overflow:hidden;box-shadow:var(--shadow-xs)}
 .cp-ai-card.cp-ai-healthy{background:color-mix(in srgb,var(--bg-card) 96%,var(--teal))}
 .cp-ai-card.cp-ai-ahead{background:color-mix(in srgb,var(--bg-card) 95%,var(--teal))}
@@ -4040,8 +4042,6 @@ canvas{display:block;margin:0 auto 24px}
 .cp-ai-stat-num{font-size:22px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.4px;line-height:1.1}
 .cp-ai-stat-lbl{font-size:10px;color:var(--ink-dim);margin-top:2px;letter-spacing:.04em}
 .cp-ai-danger .cp-ai-stat:first-child .cp-ai-stat-num{color:var(--rose)}
-
-/* Focus card strip (v0.17.0: 精簡 padding 避免與下方需求池對衝) */
 .cp-focus-row{margin:10px 0 14px;padding:10px 14px;background:color-mix(in srgb,var(--bg-card) 97%,var(--primary));border:1px solid var(--border);border-radius:var(--r-lg)}
 .cp-focus-label{font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.1em;margin-bottom:8px}
 .cp-focus-list{display:flex;gap:10px;overflow-x:auto;padding-bottom:2px}
@@ -4052,10 +4052,68 @@ canvas{display:block;margin:0 auto 24px}
 .cp-focus-title{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cp-focus-meta{font-size:11px;color:var(--ink-dim);margin-top:2px}
 
+/* ── NEW: cp-ov (Unified Overview Band) ── */
+.cp-ov{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:16px 20px;margin-bottom:16px;box-shadow:var(--shadow-xs);transition:background var(--motion-normal) var(--ease-out)}
+.cp-ov.cp-ov-healthy{background:color-mix(in srgb,var(--bg-card) 96%,var(--teal))}
+.cp-ov.cp-ov-ahead{background:color-mix(in srgb,var(--bg-card) 95%,var(--teal))}
+.cp-ov.cp-ov-warn{background:color-mix(in srgb,var(--bg-card) 95%,var(--gold))}
+.cp-ov.cp-ov-danger{background:color-mix(in srgb,var(--bg-card) 94%,var(--rose))}
+
+/* Row 1: timeline */
+.cp-ov-timeline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.cp-ov-nav{display:flex;align-items:center;gap:8px}
+.cp-ov-nav button{width:26px;height:26px;border:none;background:var(--bg-hover);cursor:pointer;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s}
+.cp-ov-nav button:hover{background:var(--border);color:var(--ink)}
+.cp-ov-nav button[disabled]{opacity:.3;pointer-events:none}
+.cp-ov-date{font-size:15px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.cp-ov-stats{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-muted);flex-wrap:wrap}
+.cp-ov-stats strong{font-weight:700}
+.cp-ov-stats .sep{opacity:.3}
+.cp-ov-stats .cp-ov-overdue{color:var(--rose);font-weight:700}
+.cp-ov-settings{width:28px;height:28px;border:none;background:transparent;cursor:pointer;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--ink-dim);transition:all .15s}
+.cp-ov-settings:hover{background:var(--bg-hover);color:var(--ink)}
+
+/* Progress bar */
+.cp-ov-bar{height:5px;border-radius:3px;background:var(--bg-hover);overflow:hidden;margin-bottom:14px;position:relative}
+.cp-ov-bar-fill{height:100%;border-radius:3px;transition:width .4s var(--ease-smooth),background .3s var(--ease-out)}
+.cp-ov-bar-fill.bar-healthy{background:var(--teal)}
+.cp-ov-bar-fill.bar-ahead{background:linear-gradient(90deg,var(--teal),#2dd4a8)}
+.cp-ov-bar-fill.bar-warn{background:var(--gold)}
+.cp-ov-bar-fill.bar-danger{background:var(--rose)}
+.cp-ov-bar[title]{cursor:help}
+
+/* Status line */
+.cp-ov-status{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cp-ov-tag{display:inline-flex;align-items:center;height:20px;padding:0 8px;font-size:10px;font-weight:700;border-radius:5px;letter-spacing:.04em;flex-shrink:0}
+.cp-ov-tag-healthy{background:rgba(27,168,145,.14);color:var(--teal)}
+.cp-ov-tag-ahead{background:rgba(27,168,145,.14);color:var(--teal)}
+.cp-ov-tag-warn{background:rgba(224,138,58,.14);color:var(--gold)}
+.cp-ov-tag-danger{background:rgba(217,68,98,.14);color:var(--rose)}
+.cp-ov-msg{font-size:13px;font-weight:600;color:var(--ink);line-height:1.4}
+.cp-ov-hint{font-size:12px;color:var(--ink-muted);line-height:1.4}
+
+/* Focus pills row */
+.cp-ov-focus{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:2px;flex-wrap:wrap}
+.cp-ov-pill{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg-app);border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:all var(--motion-normal) var(--ease-out);flex-shrink:0;max-width:320px;position:relative}
+.cp-ov-pill:hover{border-color:var(--border-hover);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.cp-ov-pill-tag{display:inline-flex;align-items:center;height:18px;padding:0 7px;font-size:9px;font-weight:700;color:#fff;border-radius:4px;letter-spacing:.03em;flex-shrink:0}
+.cp-ov-pill-title{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.cp-ov-pill-cat{font-size:10px;color:var(--ink-dim);flex-shrink:0}
+.cp-ov-pill-actions{display:flex;align-items:center;gap:2px;margin-left:auto;flex-shrink:0;opacity:0;transition:opacity var(--motion-fast) var(--ease-out)}
+.cp-ov-pill:hover .cp-ov-pill-actions{opacity:1}
+.cp-ov-pill-btn{width:22px;height:22px;border:none;background:transparent;cursor:pointer;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--ink-dim);transition:all .12s}
+.cp-ov-pill-btn:hover{background:var(--bg-hover);color:var(--ink)}
+.cp-ov-pill-btn.pill-done:hover{color:var(--teal);background:rgba(27,168,145,.1)}
+.cp-ov-pill-btn.pill-close:hover{color:var(--rose);background:rgba(217,68,98,.08)}
+
 @media(max-width:768px){
   .cp-ai-card{flex-direction:column;gap:14px;padding:14px 16px}
   .cp-ai-stats{padding-left:0;padding-top:14px;border-left:none;border-top:1px solid var(--border);justify-content:space-around}
   .cp-focus-card{min-width:180px}
+  .cp-ov{padding:14px 16px}
+  .cp-ov-timeline{flex-direction:column;align-items:flex-start;gap:8px}
+  .cp-ov-focus{flex-wrap:nowrap;overflow-x:auto}
+  .cp-ov-pill{min-width:240px}
 }
 
 /* ═══════════════════════════════════════════
@@ -4252,7 +4310,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.31.0</div>
+        <div class="sidebar-version">v0.31.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7175,36 +7233,7 @@ canvas{display:block;margin:0 auto 24px}
       var endLabel = fmtDate(currentCycle.endDate);
       var daysLeftColor = _daysLeft <= 1 ? 'var(--rose)' : _daysLeft <= 3 ? 'var(--gold)' : 'var(--teal)';
 
-      // ── Cycle timeline bar ──
-      html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:14px 20px;margin-bottom:20px">';
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
-      html += '<div style="display:flex;align-items:center;gap:8px">';
-      html += '<button onclick="window._cpCyclePrev()" style="width:26px;height:26px;border:none;background:var(--bg-hover);cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s' + (cycIdx<=0?';opacity:.3;pointer-events:none':'') + '"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="10,3 5,8 10,13"/></svg></button>';
-      html += '<div style="font-size:15px;font-weight:700;color:var(--ink)">' + startLabel + ' — ' + endLabel + '</div>';
-      html += '<button onclick="window._cpCycleNext()" style="width:26px;height:26px;border:none;background:var(--bg-hover);cursor:pointer;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
-      html += '</div>';
-      html += '<div style="display:flex;align-items:center;gap:12px">';
-      // v0.15.4: stats 空值處理 — 沒任務時不顯示 0/0，改為引導文案（每個數字都要有意義）
-      html += '<div style="display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ink-muted)">';
-      html += '<span>剩餘 <strong style="color:' + daysLeftColor + '">' + _daysLeft + '</strong> 天</span>';
-      if(totalCount > 0){
-        html += '<span style="opacity:.3">|</span>';
-        html += '<span>已排 <strong style="color:var(--ink)">' + totalCount + '</strong> 筆</span>';
-        html += '<span style="opacity:.3">|</span>';
-        html += '<span>完成 <strong style="color:var(--teal)">' + doneCount + '</strong></span>';
-        if(completionPct > 0){ html += '<span style="color:var(--teal);font-weight:600;margin-left:2px">' + completionPct + '%</span>'; }
-      } else {
-        html += '<span style="opacity:.3">|</span>';
-        html += '<span style="color:var(--ink-dim)">尚未排入任務 · 從需求池拖一張進來</span>';
-      }
-      html += '</div>';
-      html += '<button onclick="window._cpShowSettings()" style="padding:4px 10px;border:1px solid var(--border);border-radius:var(--r-md);background:transparent;cursor:pointer;color:var(--ink-muted);font-size:11px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>週期設定</button>';
-      html += '</div></div>';
-      html += '<div style="position:relative;height:5px;background:var(--bg-hover);border-radius:3px;overflow:hidden">';
-      html += '<div style="position:absolute;left:0;top:0;height:100%;width:' + timeProgressPct + '%;background:linear-gradient(90deg,' + daysLeftColor + ',var(--primary));border-radius:3px;transition:width .4s"></div>';
-      html += '</div></div>';
-
-      // ── v0.15.2 AI 判斷條 + 關注卡（吸收自已廢除的「當期總覽」頁） ──
+      // ── v0.30.0 Unified Overview Band ──
       var _today2 = new Date(); _today2.setHours(0,0,0,0);
       var _workProgress = totalCount > 0 ? (doneCount / totalCount) : 0;
       var _timeProgressRatio = Math.min(1, Math.max(0, _elapsed / _totalDays));
@@ -7237,69 +7266,104 @@ canvas{display:block;margin:0 auto 24px}
         _headline = _overdueCards.length >= 3
           ? '有 ' + _overdueCards.length + ' 張任務已逾期，需要立刻介入'
           : '今天是最後一天，還有 ' + (totalCount - doneCount) + ' 張沒完成';
-        _sub = '先處理下方關注卡，決定要延期、換人接手、還是直接砍掉。';
+        _sub = '決定要延期、換人接手、還是直接砍掉。';
       } else if(_workProgress >= _timeProgressRatio + 0.15){
-        _tagClass = 'ahead'; _tag = '週期進度超前';
-        _headline = '本週期任務節奏很穩，比預期多推進了 ' + Math.round((_workProgress - _timeProgressRatio) * 100) + '%';
-        _sub = '可以考慮把下個週期的卡提前拉進來，或花時間做技術債清理。';
+        _tagClass = 'ahead'; _tag = '進度超前';
+        _headline = '節奏很穩，比預期多推進了 ' + Math.round((_workProgress - _timeProgressRatio) * 100) + '%';
+        _sub = '可以把下個週期的卡提前拉進來，或花時間做技術債清理。';
       } else if(_workProgress < _timeProgressRatio - 0.15){
-        // v0.17.0: 明確標示此處指的是「本週期任務進度」, 不是需求池堆積
-        _tagClass = 'warn'; _tag = '週期進度落後';
-        _headline = '本週期任務稍微落後，剩 ' + _daysLeft + ' 天要趕上 ' + Math.round((_timeProgressRatio - _workProgress) * 100) + '%';
-        _sub = '看一下週期內哪些卡卡住，是不是有 scope 要砍、或某張卡太大要拆。（此進度只看週期內的任務，不含需求池）';
+        _tagClass = 'warn'; _tag = '稍微落後';
+        _headline = '剩 ' + _daysLeft + ' 天要趕上 ' + Math.round((_timeProgressRatio - _workProgress) * 100) + '%';
+        _sub = '看看哪些卡卡住，是不是有 scope 要砍、或某張卡太大要拆。';
       } else {
-        _tagClass = 'healthy'; _tag = '週期進度穩健';
+        _tagClass = 'healthy'; _tag = '節奏穩健';
         if(_daysLeft === 0) _headline = '今天是週期最後一天，收尾階段';
         else if(_daysLeft === 1) _headline = '週期剩最後 1 天，穩穩收尾';
-        else _headline = '本週期任務跟上節奏，剩 ' + _daysLeft + ' 天';
-        _sub = '維持現在的節奏就好，下方關注卡是今天可以優先處理的項目。';
+        else _headline = '任務跟上節奏，剩 ' + _daysLeft + ' 天';
+        _sub = '維持現在的節奏就好。';
       }
 
-      // AI judgement card
-      // v0.26.0: 只在有問題時才顯示統計 — 全零不佔空間
-      var _hasAlerts1 = _overdueCards.length > 0 || _dueTodayCards.length > 0 || _staleDoingCards.length > 0;
-      html += '<div class="cp-ai-card cp-ai-' + _tagClass + '">';
-      html += '<div class="cp-ai-left">';
-      html += '<div class="cp-ai-tag cp-ai-tag-' + _tagClass + '">' + _tag + '</div>';
-      html += '<div class="cp-ai-head">' + _headline + '</div>';
-      html += '<div class="cp-ai-sub">' + _sub + '</div>';
+      // Bar color follows status
+      var _barClass = 'bar-' + _tagClass;
+
+      // ── Unified container ──
+      html += '<div class="cp-ov cp-ov-' + _tagClass + '">';
+
+      // Row 1: Timeline navigation + stats
+      html += '<div class="cp-ov-timeline">';
+      html += '<div class="cp-ov-nav">';
+      html += '<button onclick="window._cpCyclePrev()"' + (cycIdx<=0?' disabled':'') + '><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="10,3 5,8 10,13"/></svg></button>';
+      html += '<div class="cp-ov-date">' + startLabel + ' — ' + endLabel + '</div>';
+      html += '<button onclick="window._cpCycleNext()"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
       html += '</div>';
-      if(_hasAlerts1){
-        html += '<div class="cp-ai-stats">';
-        if(_overdueCards.length > 0) html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num" style="color:var(--rose)">' + _overdueCards.length + '</div><div class="cp-ai-stat-lbl">已逾期</div></div>';
-        if(_dueTodayCards.length > 0) html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num" style="color:var(--gold)">' + _dueTodayCards.length + '</div><div class="cp-ai-stat-lbl">今日到期</div></div>';
-        if(_staleDoingCards.length > 0) html += '<div class="cp-ai-stat"><div class="cp-ai-stat-num">' + _staleDoingCards.length + '</div><div class="cp-ai-stat-lbl">停滯 ≥3 天</div></div>';
-        html += '</div>';
+      html += '<div class="cp-ov-stats">';
+      html += '<span>剩餘 <strong style="color:' + daysLeftColor + '">' + _daysLeft + '</strong> 天</span>';
+      if(totalCount > 0){
+        html += '<span class="sep">|</span>';
+        html += '<span>已排 <strong style="color:var(--ink)">' + totalCount + '</strong> 筆</span>';
+        html += '<span class="sep">|</span>';
+        html += '<span>完成 <strong style="color:var(--teal)">' + doneCount + '</strong>';
+        if(completionPct > 0) html += ' <span style="color:var(--teal);font-weight:600">' + completionPct + '%</span>';
+        html += '</span>';
+        if(_overdueCards.length > 0){
+          html += '<span class="sep">|</span>';
+          html += '<span class="cp-ov-overdue">' + _overdueCards.length + ' 逾期</span>';
+        }
+      } else {
+        html += '<span class="sep">|</span>';
+        html += '<span style="color:var(--ink-dim)">尚未排入任務</span>';
       }
       html += '</div>';
+      html += '<button class="cp-ov-settings" onclick="window._cpShowSettings()" title="週期設定"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="2.5"/><path d="M16.2 12.5a1.4 1.4 0 00.28 1.5l.05.05a1.7 1.7 0 01-2.4 2.4l-.05-.05a1.4 1.4 0 00-1.5-.28 1.4 1.4 0 00-.85 1.28V17.8a1.7 1.7 0 01-3.4 0v-.08a1.4 1.4 0 00-.91-1.28 1.4 1.4 0 00-1.5.28l-.05.05a1.7 1.7 0 01-2.4-2.4l.05-.05a1.4 1.4 0 00.28-1.5 1.4 1.4 0 00-1.28-.85H2.2a1.7 1.7 0 010-3.4h.08A1.4 1.4 0 003.56 7.3a1.4 1.4 0 00-.28-1.5l-.05-.05a1.7 1.7 0 012.4-2.4l.05.05a1.4 1.4 0 001.5.28h.06a1.4 1.4 0 00.85-1.28V2.2a1.7 1.7 0 013.4 0v.08a1.4 1.4 0 00.85 1.28 1.4 1.4 0 001.5-.28l.05-.05a1.7 1.7 0 012.4 2.4l-.05.05a1.4 1.4 0 00-.28 1.5v.06a1.4 1.4 0 001.28.85h.4a1.7 1.7 0 010 3.4h-.08a1.4 1.4 0 00-1.28.85z"/></svg></button>';
+      html += '</div>';
 
-      // Focus cards strip (top 3 most urgent)
+      // Progress bar — color follows status
+      var _barTooltip = '時間進度 ' + timeProgressPct + '% / 任務完成 ' + completionPct + '%';
+      html += '<div class="cp-ov-bar" title="' + _barTooltip + '">';
+      html += '<div class="cp-ov-bar-fill ' + _barClass + '" style="width:' + timeProgressPct + '%"></div>';
+      html += '</div>';
+
+      // Status line (one-liner, not a separate card)
+      html += '<div class="cp-ov-status">';
+      html += '<span class="cp-ov-tag cp-ov-tag-' + _tagClass + '">' + _tag + '</span>';
+      html += '<span class="cp-ov-msg">' + _headline + '</span>';
+      if(_sub && _tagClass !== 'healthy') html += '<span class="cp-ov-hint"> · ' + _sub + '</span>';
+      html += '</div>';
+
+      // Focus pills (inline, dismissible, with quick-complete)
       var _focusList = [];
-      _overdueCards.slice(0, 3).forEach(function(c){ _focusList.push({card:c, tag:'逾期', color:'#D94462'}); });
-      if(_focusList.length < 3){
-        _dueTodayCards.slice(0, 3 - _focusList.length).forEach(function(c){ _focusList.push({card:c, tag:'今到期', color:'#E08A3A'}); });
+      _overdueCards.slice(0, 4).forEach(function(c){ _focusList.push({card:c, tag:'逾期', color:'#D94462'}); });
+      if(_focusList.length < 4){
+        _dueTodayCards.slice(0, 4 - _focusList.length).forEach(function(c){ _focusList.push({card:c, tag:'今到期', color:'#E08A3A'}); });
       }
-      if(_focusList.length < 3){
-        _staleDoingCards.slice(0, 3 - _focusList.length).forEach(function(c){ _focusList.push({card:c, tag:'停滯', color:'#94A3B8'}); });
+      if(_focusList.length < 4){
+        _staleDoingCards.slice(0, 4 - _focusList.length).forEach(function(c){ _focusList.push({card:c, tag:'停滯', color:'#94A3B8'}); });
       }
+      // Filter out dismissed
+      var _dismissed = [];
+      try { _dismissed = JSON.parse(localStorage.getItem('bp_ov_dismissed_' + currentCycle.id) || '[]'); } catch(e){}
+      _focusList = _focusList.filter(function(f){ return _dismissed.indexOf(f.card.id) === -1; });
+
       if(_focusList.length > 0){
-        html += '<div class="cp-focus-row">';
-        html += '<div class="cp-focus-label">聚焦 · 今天可以先動的</div>';
-        html += '<div class="cp-focus-list">';
+        html += '<div class="cp-ov-focus">';
         _focusList.forEach(function(f){
           var fc = f.card;
           var fcat = T.TASK_CATEGORIES[fc.category] || T.TASK_CATEGORIES.product;
-          var titleEsc = (fc.title || '未命名').replace(/</g,'&lt;');
-          html += '<div class="cp-focus-card" onclick="window._tpOpenCard(\'' + fc.id + '\')" title="' + titleEsc.replace(/"/g,'&quot;') + '">';
-          html += '<div class="cp-focus-tag" style="background:' + f.color + '">' + f.tag + '</div>';
-          html += '<div class="cp-focus-body">';
-          html += '<div class="cp-focus-title">' + titleEsc + '</div>';
-          html += '<div class="cp-focus-meta"><span style="color:' + fcat.color + '">●</span> ' + fcat.label + '</div>';
-          html += '</div>';
+          var titleEsc = (fc.title || '未命名').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+          html += '<div class="cp-ov-pill" onclick="window._tpOpenCard(\'' + fc.id + '\')" title="' + titleEsc + '">';
+          html += '<span class="cp-ov-pill-tag" style="background:' + f.color + '">' + f.tag + '</span>';
+          html += '<span class="cp-ov-pill-title">' + titleEsc + '</span>';
+          html += '<span class="cp-ov-pill-cat"><span style="color:' + fcat.color + '">●</span> ' + fcat.label + '</span>';
+          html += '<span class="cp-ov-pill-actions">';
+          html += '<button class="cp-ov-pill-btn pill-done" onclick="event.stopPropagation();window._tpQuickComplete(\'' + fc.id + '\')" title="標記完成"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3,8 6.5,11.5 13,4.5"/></svg></button>';
+          html += '<button class="cp-ov-pill-btn pill-close" onclick="event.stopPropagation();window._tpDismissFocus(\'' + fc.id + '\')" title="暫時隱藏"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg></button>';
+          html += '</span>';
           html += '</div>';
         });
-        html += '</div></div>';
+        html += '</div>';
       }
+
+      html += '</div>'; // end cp-ov
 
       // ── Dual pane layout ──
       html += '<div style="display:flex;gap:16px;min-height:calc(100vh - 320px)">';
@@ -7845,6 +7909,33 @@ canvas{display:block;margin:0 auto 24px}
     window._bkEditCard = function(cardId){
       navigate('biz-tasks');
       setTimeout(function(){ if(window._kbShowDetail) window._kbShowDetail(cardId); }, 200);
+    };
+
+    // ── v0.30.0: Dismiss focus pill (per-cycle, stored in localStorage) ──
+    window._tpDismissFocus = function(cardId){
+      var cycId = currentCycle ? currentCycle.id : '';
+      var key = 'bp_ov_dismissed_' + cycId;
+      var arr = [];
+      try { arr = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){}
+      if(arr.indexOf(cardId) === -1) arr.push(cardId);
+      localStorage.setItem(key, JSON.stringify(arr));
+      if(typeof showToast === 'function') showToast('已隱藏，本週期不再顯示');
+      renderTaskPlanning();
+    };
+
+    // ── v0.30.0: Quick-complete from focus pill ──
+    window._tpQuickComplete = function(cardId){
+      var cards = T.getCards();
+      var card = null;
+      for(var i = 0; i < cards.length; i++){
+        if(cards[i].id === cardId){ card = cards[i]; break; }
+      }
+      if(!card) return;
+      card.columnId = 'done';
+      card.updatedAt = Date.now();
+      T.saveCards(cards);
+      if(typeof showToast === 'function') showToast('「' + (card.title || '任務').substring(0, 12) + '」已完成');
+      renderTaskPlanning();
     };
 
     // ── Open card: preview for existing, edit for new ──
@@ -26938,4 +27029,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.31.0 · Anti-Anxiety UX（Pulse View + AI Badge）、Backlog _bl*→_bk* rename、closeModalAnimated fix -->
+</html><!-- v0.31.1 · 週期管理 unified overview band：三層合一、狀態色進度條、可操作 focus pills -->
