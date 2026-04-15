@@ -3559,6 +3559,17 @@ canvas{display:block;margin:0 auto 24px}
 .rm-today-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary);transform:translateY(-1px);box-shadow:var(--shadow-purple)}
 .rm-today-btn:active{transform:translateY(0) scale(.98)}
 .rm-today-btn:focus-visible{outline:none;box-shadow:var(--shadow-glow)}
+.rm-add-cycle-btn{padding:7px 16px;border:1px solid var(--primary);background:var(--primary);font-size:var(--text-label,12px);font-weight:var(--fw-title,700);color:#fff;border-radius:var(--r-md);cursor:pointer;transition:all var(--motion-normal,180ms) var(--ease-out);font-family:inherit;display:flex;align-items:center;gap:6px}
+.rm-add-cycle-btn:hover{background:#6a4ce0;border-color:#6a4ce0;transform:translateY(-1px);box-shadow:var(--shadow-purple)}
+.rm-add-cycle-btn:active{transform:translateY(0) scale(.98)}
+.rm-add-cycle-btn:focus-visible{outline:none;box-shadow:var(--shadow-glow)}
+/* Add-cycle modal field */
+.rm-add-modal-field{margin-bottom:16px}
+.rm-add-modal-label{display:block;font-size:11px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.rm-add-modal-input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg);color:var(--ink);font-family:inherit;box-sizing:border-box;transition:border-color .14s ease,box-shadow .14s ease}
+.rm-add-modal-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.15)}
+.rm-add-modal-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rm-add-color-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:200px}
 .rm-help-btn{width:30px;height:30px;border:1px solid var(--border);background:var(--bg-card);color:var(--ink-muted);border-radius:50%;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all var(--motion-normal,180ms) var(--ease-out);margin-left:4px;padding:0}
 .rm-help-btn:hover{color:var(--primary);border-color:var(--primary);transform:translateY(-1px);box-shadow:var(--shadow-xs,0 1px 2px rgba(0,0,0,.04))}
 .rm-help-btn:active{transform:translateY(0) scale(.94)}
@@ -3617,9 +3628,21 @@ canvas{display:block;margin:0 auto 24px}
 .rm-group-header.collapsed .rm-group-chev{transform:rotate(-90deg)}
 .rm-group-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 /* v0.32.3：色點變 color picker，hover 放大 + 隱藏實際 input */
-.rm-group-dot.editable{position:relative;cursor:pointer;width:14px;height:14px;border-radius:4px;transition:transform .15s ease,box-shadow .15s ease;box-shadow:0 0 0 0 rgba(0,0,0,0)}
+.rm-group-dot.editable{position:relative;cursor:pointer;width:14px;height:14px;border-radius:4px;transition:transform .15s ease,box-shadow .15s ease;box-shadow:0 0 0 0 rgba(0,0,0,0);border:none;padding:0}
 .rm-group-dot.editable:hover{transform:scale(1.18);box-shadow:0 0 0 3px rgba(124,92,252,.18)}
-.rm-group-dot.editable input[type="color"]{position:absolute;inset:0;opacity:0;cursor:pointer;border:none;padding:0;width:100%;height:100%}
+/* Color palette popover (v0.32.7) */
+.rm-color-pop{position:fixed;z-index:9999;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 12px 32px rgba(15,23,42,.18),0 2px 8px rgba(15,23,42,.08);min-width:200px;animation:rmPopIn .14s ease-out}
+@keyframes rmPopIn{from{opacity:0;transform:translateY(-4px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.rm-color-pop-title{font-size:11px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.rm-color-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
+.rm-color-sw{width:28px;height:28px;border-radius:8px;border:none;cursor:pointer;padding:0;position:relative;transition:transform .12s ease,box-shadow .12s ease}
+.rm-color-sw:hover{transform:scale(1.12)}
+.rm-color-sw.active{box-shadow:0 0 0 2px var(--bg-card),0 0 0 4px var(--ink)}
+.rm-color-sw.active::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.rm-color-custom{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:1px dashed var(--border);border-radius:8px;background:transparent;cursor:pointer;font-size:12px;color:var(--ink-muted);font-family:inherit;font-weight:500;transition:all .14s ease;position:relative;overflow:hidden}
+.rm-color-custom:hover{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.04)}
+.rm-color-custom-swatch{width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#7C5CFC,#1BA891 33%,#E08A3A 66%,#D94462);flex-shrink:0}
+.rm-color-custom input[type="color"]{position:absolute;inset:0;opacity:0;cursor:pointer;border:none;padding:0;width:100%;height:100%}
 /* 項目名稱可編輯 — hover 顯示底線提示 */
 .rm-group-label[contenteditable="true"]{cursor:text;border-radius:4px;padding:1px 4px;margin:-1px -4px;transition:background .15s ease,box-shadow .15s ease;outline:none}
 .rm-group-label[contenteditable="true"]:hover{background:var(--bg-hover);box-shadow:inset 0 -1px 0 rgba(124,92,252,.35)}
@@ -4566,7 +4589,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.6</div>
+        <div class="sidebar-version">v0.32.7</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -9994,6 +10017,10 @@ canvas{display:block;margin:0 auto 24px}
           '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="10" y1="16" x2="10" y2="18"/><line x1="2" y1="10" x2="4" y2="10"/><line x1="16" y1="10" x2="18" y2="10"/></svg>' +
           '今天' +
         '</button>' +
+        '<button class="rm-add-cycle-btn" onclick="window._rmOpenAddCycle()" title="新增自訂項目（跨週里程碑）">' +
+          '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>' +
+          '新增項目' +
+        '</button>' +
       '</div>' +
     '</div>';
 
@@ -10018,9 +10045,7 @@ canvas{display:block;margin:0 auto 24px}
       // v0.32.3：項目 header — 色點變 color picker、名稱可雙擊改、保留 chevron+進度
       var canEdit = (g.kind === 'cycle');
       var dotHTML = canEdit
-        ? '<label class="rm-group-dot editable" style="background:' + g.color + '" title="點擊更換項目色" onclick="event.stopPropagation()">' +
-            '<input type="color" value="' + g.color + '" oninput="window._rmSetCycleColor(\'' + g.key + '\', this.value)" />' +
-          '</label>'
+        ? '<button type="button" class="rm-group-dot editable" style="background:' + g.color + '" title="點擊更換項目色" onclick="event.stopPropagation();window._rmOpenColorPop(event,\'' + g.key + '\',\'' + g.color + '\')"></button>'
         : '<span class="rm-group-dot" style="background:' + g.color + '"></span>';
       var labelHTML = canEdit
         ? '<span class="rm-group-label" contenteditable="true" spellcheck="false" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur()}" onblur="window._rmSetCycleLabel(\'' + g.key + '\', this.textContent)" title="雙擊或點擊編輯項目名稱">' + (g.label || '').replace(/</g,'&lt;') + '</span>'
@@ -10452,6 +10477,169 @@ canvas{display:block;margin:0 auto 24px}
     };
 
     // v0.32.3：項目色 & 名稱即時編輯（demo 假資料以 sessionStorage 保存，不污染真實 cycles）
+    // v0.32.7: 新增自訂項目 modal — 跨週里程碑、產品階段、客戶上線等
+    window._rmOpenAddCycle = function(){
+      var presets = ['#7C5CFC','#1BA891','#E08A3A','#3B82F6','#D94462','#8B5CF6','#0EA5E9','#EAB308','#10B981','#EC4899'];
+      var defaultColor = presets[0];
+      var today = new Date();
+      var weekLater = new Date(today.getTime() + 7*86400000);
+      function fmtDate(d){
+        var m = d.getMonth()+1; var dd = d.getDate();
+        return d.getFullYear() + '-' + (m<10?'0':'')+m + '-' + (dd<10?'0':'')+dd;
+      }
+      var ov = document.createElement('div');
+      ov.className = 'kb-overlay';
+      var swatchesH = '';
+      for(var i=0;i<presets.length;i++){
+        var c = presets[i];
+        swatchesH += '<button type="button" class="rm-color-sw' + (i===0?' active':'') + '" style="background:' + c + '" data-color="' + c + '"></button>';
+      }
+      ov.innerHTML = '<div class="kb-modal" style="max-width:440px">' +
+        '<div class="kb-modal-header"><h3 style="margin:0;font-size:16px;font-weight:700;color:var(--ink)">新增項目</h3>' +
+          '<button class="kb-modal-close" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg></button>' +
+        '</div>' +
+        '<div class="kb-modal-body" style="padding:20px">' +
+          '<div style="font-size:12px;color:var(--ink-dim);margin-bottom:16px;line-height:1.5">建立跨週的自訂項目（產品階段、客戶上線、行銷活動等）。短週期任務 sprint 仍由系統依「週期設定」自動產生。</div>' +
+          '<div class="rm-add-modal-field">' +
+            '<label class="rm-add-modal-label">項目名稱</label>' +
+            '<input type="text" id="rmAddName" class="rm-add-modal-input" placeholder="例：Q2 產品發布、客戶 A 上線" maxlength="60" />' +
+          '</div>' +
+          '<div class="rm-add-modal-field">' +
+            '<div class="rm-add-modal-row">' +
+              '<div><label class="rm-add-modal-label">開始日期</label><input type="date" id="rmAddStart" class="rm-add-modal-input" value="' + fmtDate(today) + '" /></div>' +
+              '<div><label class="rm-add-modal-label">結束日期</label><input type="date" id="rmAddEnd" class="rm-add-modal-input" value="' + fmtDate(weekLater) + '" /></div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="rm-add-modal-field">' +
+            '<label class="rm-add-modal-label">項目顏色</label>' +
+            '<div class="rm-add-color-grid" id="rmAddColorGrid">' + swatchesH + '</div>' +
+            '<input type="hidden" id="rmAddColor" value="' + defaultColor + '" />' +
+          '</div>' +
+        '</div>' +
+        '<div class="kb-modal-footer" style="justify-content:flex-end">' +
+          '<button class="btn btn-ghost" onclick="closeModalAnimated(this.closest(\'.kb-overlay\'))">取消</button>' +
+          '<button class="btn btn-accent" id="rmAddSave">建立項目</button>' +
+        '</div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function(e){ if(e.target === ov) closeModalAnimated(ov); });
+      // swatch 點擊
+      var grid = document.getElementById('rmAddColorGrid');
+      var swBtns = grid.querySelectorAll('.rm-color-sw');
+      for(var k=0;k<swBtns.length;k++){
+        swBtns[k].addEventListener('click', function(){
+          var btns = grid.querySelectorAll('.rm-color-sw');
+          for(var m=0;m<btns.length;m++) btns[m].classList.remove('active');
+          this.classList.add('active');
+          document.getElementById('rmAddColor').value = this.getAttribute('data-color');
+        });
+      }
+      // 自動 focus 名稱
+      setTimeout(function(){ var n = document.getElementById('rmAddName'); if(n) n.focus(); }, 50);
+      // 儲存
+      document.getElementById('rmAddSave').addEventListener('click', function(){
+        var name = (document.getElementById('rmAddName').value || '').trim();
+        var startDate = document.getElementById('rmAddStart').value;
+        var endDate = document.getElementById('rmAddEnd').value;
+        var color = document.getElementById('rmAddColor').value || defaultColor;
+        if(!name){ showToast('請輸入項目名稱'); return; }
+        if(!startDate || !endDate){ showToast('請選擇開始與結束日期'); return; }
+        if(endDate < startDate){ showToast('結束日期不能早於開始日期'); return; }
+        var cycles = T.getCycles();
+        var newCycle = {
+          id: 'cycle_' + T.genId(),
+          label: name,
+          name: name,
+          startDate: startDate,
+          endDate: endDate,
+          duration: Math.max(1, Math.round((new Date(endDate) - new Date(startDate))/86400000) + 1),
+          status: 'active',
+          color: color,
+          custom: true,
+          goals: [],
+          stats: { total:0, completed:0, carryOver:0, agentContributions:0 }
+        };
+        cycles.push(newCycle);
+        T.saveCycles(cycles);
+        closeModalAnimated(ov);
+        showToast('項目「' + name + '」已建立');
+        renderRoadmap();
+      });
+    };
+
+    // v0.32.7: 預設色盤 popover — 取代原生 <input type="color">
+    window._rmOpenColorPop = function(ev, cycleId, currentColor){
+      // 關閉已存在的 popover
+      var existing = document.querySelector('.rm-color-pop');
+      if(existing){ existing.remove(); }
+      var presets = ['#7C5CFC','#1BA891','#E08A3A','#3B82F6','#D94462','#8B5CF6','#0EA5E9','#EAB308','#10B981','#EC4899'];
+      var anchor = ev && ev.currentTarget;
+      var rect = anchor ? anchor.getBoundingClientRect() : {left:100,bottom:100};
+      var pop = document.createElement('div');
+      pop.className = 'rm-color-pop';
+      var swatchesH = '';
+      for(var i=0;i<presets.length;i++){
+        var c = presets[i];
+        var isActive = c.toLowerCase() === (currentColor||'').toLowerCase();
+        swatchesH += '<button type="button" class="rm-color-sw' + (isActive?' active':'') + '" style="background:' + c + '" data-color="' + c + '" title="' + c + '"></button>';
+      }
+      pop.innerHTML = '<div class="rm-color-pop-title">項目顏色</div>' +
+        '<div class="rm-color-grid">' + swatchesH + '</div>' +
+        '<label class="rm-color-custom" title="開啟系統色盤自訂顏色">' +
+          '<span class="rm-color-custom-swatch"></span>' +
+          '<span>自訂顏色</span>' +
+          '<input type="color" value="' + currentColor + '" />' +
+        '</label>';
+      document.body.appendChild(pop);
+      // 定位（避免超出視窗）
+      var popW = 224;
+      var popH = pop.offsetHeight || 180;
+      var left = rect.left;
+      var top = rect.bottom + 8;
+      if(left + popW > window.innerWidth - 12) left = window.innerWidth - popW - 12;
+      if(left < 12) left = 12;
+      if(top + popH > window.innerHeight - 12) top = rect.top - popH - 8;
+      pop.style.left = left + 'px';
+      pop.style.top = top + 'px';
+      // 預設色點擊
+      var swBtns = pop.querySelectorAll('.rm-color-sw');
+      for(var j=0;j<swBtns.length;j++){
+        swBtns[j].addEventListener('click', function(e){
+          e.stopPropagation();
+          var col = this.getAttribute('data-color');
+          window._rmSetCycleColor(cycleId, col);
+          pop.remove();
+        });
+      }
+      // 自訂色 input
+      var cInput = pop.querySelector('input[type="color"]');
+      if(cInput){
+        cInput.addEventListener('input', function(){
+          window._rmSetCycleColor(cycleId, this.value);
+        });
+        cInput.addEventListener('change', function(){
+          pop.remove();
+        });
+      }
+      // 點擊外部 / Esc 關閉
+      var closer = function(e){
+        if(pop.contains(e.target)) return;
+        pop.remove();
+        document.removeEventListener('mousedown', closer, true);
+        document.removeEventListener('keydown', escCloser, true);
+      };
+      var escCloser = function(e){
+        if(e.key === 'Escape'){
+          pop.remove();
+          document.removeEventListener('mousedown', closer, true);
+          document.removeEventListener('keydown', escCloser, true);
+        }
+      };
+      setTimeout(function(){
+        document.addEventListener('mousedown', closer, true);
+        document.addEventListener('keydown', escCloser, true);
+      }, 0);
+    };
+
     window._rmSetCycleColor = function(cycleId, color){
       if(!cycleId || !color) return;
       if(cycleId.indexOf('demo-cy-') === 0){
@@ -27782,4 +27970,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.6 · 時間軸：row 64→72px 再給讀條（parent bar）更多呼吸空間；移除 rmParentPulse 亮度閃爍動畫；移除 :active 的 scale/translateY 跳動；parent:hover 拿掉 translateY 改用純 brightness -->
+</html><!-- v0.32.7 · 時間軸：(1) 色點點擊改為 popover 預設色盤——10 個品牌預設色 + 自訂色入口（取代直接噴原生色盤）；(2) 新增「+ 新增項目」按鈕於 toolbar，可建立跨週自訂項目（產品階段、客戶上線等里程碑），補足項目創造可見性缺口 -->
