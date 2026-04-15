@@ -3618,7 +3618,7 @@ canvas{display:block;margin:0 auto 24px}
 .rm-left-body::-webkit-scrollbar-thumb:hover{background:var(--ink-muted)}
 
 /* v0.15.2 Group header (cycle) — two-line layout with state tag + progress ring */
-.rm-group-header{display:flex;align-items:center;gap:10px;padding:10px 14px 10px 12px;height:52px;cursor:pointer;user-select:none;background:var(--bg-card);border-bottom:1px solid var(--border);position:relative;transition:background var(--motion-fast,120ms) var(--ease-out);box-sizing:border-box}
+.rm-group-header{display:flex;align-items:center;gap:10px;padding:10px 14px 10px 12px;height:72px;cursor:pointer;user-select:none;background:var(--bg-card);border-bottom:1px solid var(--border);position:relative;transition:background var(--motion-fast,120ms) var(--ease-out);box-sizing:border-box}
 .rm-group-header:hover{background:var(--bg-hover)}
 .rm-group-header:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--primary)}
 /* v0.17.0: 移除 border-left inset shadow, 改用純漸層底色 + 極淡 glow 表達 current */
@@ -3769,27 +3769,34 @@ canvas{display:block;margin:0 auto 24px}
 
 /* v0.25.0: cycle strip 已移除 */
 /* v0.25.0: group separator row (右側甘特區對齊左側 group header) */
-.rm-group-sep-row{height:52px;position:relative;border-bottom:1px solid var(--border);background:var(--bg-card)}
+/* v0.32.7：parent sep-row 從 52→72px，與 child bar-row 高度統一 + 給 parent bar 呼吸 */
+.rm-group-sep-row{height:72px;position:relative;border-bottom:1px solid var(--border);background:var(--bg-card)}
 .rm-group-sep-row.past{opacity:.78}
 
 /* v0.30.0: summary bar — 收合狀態下顯示項目整體時間跨度 */
 /* v0.32.3：移除舊 .rm-summary-bar，父 bar 改用 .rm-bar.parent 統一語言 */
 /* v0.32.5：時間軸呼吸空間 — row 56→64，bar 垂直置中 padding 增加，fill gradient 調淡 */
 /* 父 bar：高 36px、字 12px/800、左側 chevron 開合提示、count chip 在右 */
-.rm-bar.parent{top:18px;height:36px;border-radius:10px;font-size:12px;font-weight:800;letter-spacing:-.01em;padding:0 12px;box-shadow:0 2px 6px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.22);gap:6px}
-.rm-bar.parent .rm-bar-fill{border-radius:8px 0 0 8px;background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(255,255,255,.05))}
-.rm-bar.parent .rm-bar-chev{width:14px;height:14px;color:rgba(255,255,255,.85);position:relative;z-index:1;flex-shrink:0;transition:transform .22s var(--ease-smooth)}
-.rm-bar.parent .rm-bar-title{font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.18)}
-.rm-bar.parent .rm-bar-count{margin-left:auto;background:rgba(255,255,255,.22);border-radius:10px;padding:2px 8px;font-size:10.5px;font-weight:700;position:relative;z-index:1;flex-shrink:0;letter-spacing:0}
-.rm-bar.parent:hover{filter:brightness(1.04)}
-/* 當期項目：呼吸光暈，提示用戶優先展開 */
-.rm-bar.parent.current{box-shadow:0 0 0 2px rgba(255,255,255,.18),0 0 0 4px var(--plan-color,rgba(124,92,252,.25)),0 4px 16px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.28)}
-/* v0.32.6：移除 rmParentPulse（亮度閃爍）讓畫面靜下來 */
+/* v0.32.7：parent 與 child bar 統一視覺語言
+   - 同圓角(8px)、同字粗(700)、同 padding；差別只在尺寸階級（parent 32 / child 28）
+   - parent 純展示：cursor default、無 chevron、無 hover elevation、無 click handler
+   - child 才是可互動：有 hover/click/drawer
+   - 展開/收合一律由「左側 group-header chevron」控制，不從右側甘特區操作
+   - parent 在 72px sep-row 中垂直置中：(72-32)/2 = 20px */
+.rm-bar.parent{top:20px;height:32px;border-radius:8px;font-size:12px;font-weight:700;letter-spacing:-.01em;padding:0 12px;box-shadow:0 1px 3px rgba(0,0,0,.10),inset 0 1px 0 rgba(255,255,255,.18);gap:6px;cursor:default}
+.rm-bar.parent .rm-bar-fill{border-radius:6px 0 0 6px;background:linear-gradient(90deg,rgba(255,255,255,.14),rgba(255,255,255,.04))}
+.rm-bar.parent .rm-bar-title{font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.rm-bar.parent .rm-bar-count{margin-left:auto;background:rgba(255,255,255,.20);border-radius:8px;padding:1px 7px;font-size:10.5px;font-weight:700;position:relative;z-index:1;flex-shrink:0;letter-spacing:0}
+/* parent 不再 elevate hover——純粹是時間範圍標記 */
+.rm-bar.parent:hover{box-shadow:0 1px 3px rgba(0,0,0,.10),inset 0 1px 0 rgba(255,255,255,.18);filter:none;transform:none;z-index:2}
+/* 當期項目：細緻光暈標記，但不誘導互動 */
+.rm-bar.parent.current{box-shadow:0 0 0 1.5px rgba(255,255,255,.18),0 0 0 3px var(--plan-color,rgba(124,92,252,.22)),0 2px 6px rgba(0,0,0,.10),inset 0 1px 0 rgba(255,255,255,.20)}
 .rm-bar.parent.past{opacity:.55}
 
-/* 子 bar：分類降級為左側 6×6 dot（不再搶 bar 主體色） */
-.rm-bar-cat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;position:relative;z-index:1;box-shadow:0 0 0 1.5px rgba(255,255,255,.5);margin-right:2px}
-.rm-bar.child.slim .rm-bar-cat-dot{display:none}
+/* v0.32.7：移除 child bar 上的分類色點（已在左側 row 顯示，避免重複 + 拿掉 O 視覺雜訊）*/
+.rm-bar-cat-dot{display:none}
+/* v0.32.7：移除 slim bar 的白色小圓點（造成視覺雜訊）*/
+.rm-bar.slim::before{display:none}
 
 /* Task row background (matches .rm-row in left, must align) */
 .rm-bar-row{height:72px;position:relative;border-bottom:1px solid rgba(0,0,0,.03);animation:rm-rowIn var(--motion-smooth,280ms) var(--ease-smooth) both}
@@ -4589,7 +4596,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.7</div>
+        <div class="sidebar-version">v0.32.8</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -10277,9 +10284,10 @@ canvas{display:block;margin:0 auto 24px}
             //   差異：高度 36px（vs 子 28px）、字粗 800、左側 chevron、整體更高存在感
             var labelEsc = (g.label || '').replace(/</g,'&lt;').replace(/"/g,'&quot;');
             var parentCls = 'rm-bar parent' + (g.isPast ? ' past' : '') + (g.isCurrent ? ' current' : '');
-            summaryBarH = '<div class="' + parentCls + '" style="left:' + sLeft + 'px;width:' + sWidth + 'px;background:' + g.color + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" title="' + labelEsc + ' — ' + taskCount + ' 個任務，完成 ' + g.progress + '%">' +
+            // v0.32.7：parent bar 改純展示——拿掉 onclick 與 chevron，避免兩種點擊 UX 衝突
+            //   展開/收合一律由左側 group-header chevron 操作
+            summaryBarH = '<div class="' + parentCls + '" style="left:' + sLeft + 'px;width:' + sWidth + 'px;background:' + g.color + '" title="' + labelEsc + ' — ' + taskCount + ' 個任務，完成 ' + g.progress + '%">' +
               '<div class="rm-bar-fill" style="width:' + progressFill + '%"></div>' +
-              '<svg class="rm-bar-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 12 10 8 14"/></svg>' +
               (showLabel ? '<span class="rm-bar-title">' + labelEsc + '</span>' : '') +
               '<span class="rm-bar-count">' + g.done + '/' + taskCount + '</span>' +
             '</div>';
@@ -10287,8 +10295,9 @@ canvas{display:block;margin:0 auto 24px}
         }
       }
       // v0.25.0: group 分隔行（薄型，與左側 group header 對齊高度）
-      rowsH += '<div class="rm-group-sep-row' + (g.isPast?' past':'') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" style="cursor:pointer">' + summaryBarH + '</div>';
-      canvasContentH += 52; // group-sep-row height
+      // v0.32.7：sep-row 不再可點擊（由左側 group-header chevron 控制展開）；高度 52→72px
+      rowsH += '<div class="rm-group-sep-row' + (g.isPast?' past':'') + '">' + summaryBarH + '</div>';
+      canvasContentH += 72; // group-sep-row height (v0.32.7: 52→72)
 
       if(expanded){
         g.cards.forEach(function(c){
@@ -10325,7 +10334,7 @@ canvas{display:block;margin:0 auto 24px}
             // v0.15.2 bug fix: only show title text when bar is wide enough (>= 80px)
             var showTitle = bWidth >= 80;
             var barCls = 'rm-bar child' + (isDone?' done':'') + (isOverdue?' overdue':'') + (showTitle?'':' slim');
-            var catDot = (showTitle && catColor) ? '<span class="rm-bar-cat-dot" style="background:' + catColor + '"></span>' : '';
+            // v0.32.7：移除 catDot（分類已在左側 row 顯示），bar 純粹是進度+標題
             rowH += '<div class="' + barCls + '" style="left:' + bLeft + 'px;width:' + bWidth + 'px;background:' + bColor + ';cursor:grab" ' +
               'data-card="' + c.id + '" tabindex="0" role="button" aria-label="' + titleEsc + ' — ' + (STATUS_LABELS[status] || status) + '" ' +
               'onmousedown="window._rmBarDragStart(event,\'' + c.id + '\')" ' +
@@ -10334,7 +10343,6 @@ canvas{display:block;margin:0 auto 24px}
               'onmouseenter="window._rmShowTip(event,\'' + c.id + '\')" onmouseleave="window._rmHideTip()" ' +
               'onfocus="window._rmShowTip(event,\'' + c.id + '\')" onblur="window._rmHideTip()">' +
               '<div class="rm-bar-fill" style="width:' + progress + '%"></div>' +
-              catDot +
               (showTitle ? '<span class="rm-bar-title">' + titleEsc + '</span>' : '') +
             '</div>';
           }
@@ -27970,4 +27978,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.7 · 時間軸：(1) 色點點擊改為 popover 預設色盤——10 個品牌預設色 + 自訂色入口（取代直接噴原生色盤）；(2) 新增「+ 新增項目」按鈕於 toolbar，可建立跨週自訂項目（產品階段、客戶上線等里程碑），補足項目創造可見性缺口 -->
+</html><!-- v0.32.8 · 時間軸視覺一致性：(1) parent bar 與 child bar 統一語言（同圓角/同字粗，僅高度 32/28 階級差）；(2) parent bar 改純展示——拿掉 onclick + chevron，避免兩種點擊 UX 衝突，展開/收合一律由左側 group-header 操作；(3) 移除 child bar 的 cat-dot 與 slim 白點（O 視覺雜訊全清）；(4) sep-row 與 group-header 統一 72px，呼吸空間到位 -->
