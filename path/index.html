@@ -2744,16 +2744,31 @@ canvas{display:block;margin:0 auto 24px}
 .kb-view-seg-btn svg{stroke-width:1.75}
 
 .kb-control-bar{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
-.kb-cyc-pill{display:inline-flex;align-items:center;gap:2px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:4px;min-height:44px;transition:border-color .15s var(--ease-out)}
-.kb-cyc-pill:hover{border-color:color-mix(in srgb,var(--primary) 30%,var(--border) 70%)}
+/* v0.32.13 kb-cyc-pill 改版：壓縮資訊層級（主行：dot + 名稱 + 天數 tone），副行：tonal bar + done/total */
+.kb-cyc-pill{display:inline-flex;align-items:center;gap:2px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:4px;min-height:46px;transition:border-color .18s var(--ease-out),box-shadow .18s var(--ease-out)}
+.kb-cyc-pill:hover{border-color:color-mix(in srgb,var(--primary) 30%,var(--border) 70%);box-shadow:0 2px 8px -4px rgba(124,92,252,.2)}
 .kb-cyc-nav{width:32px;height:32px;border:none;background:transparent;cursor:pointer;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s var(--ease-out);flex-shrink:0}
 .kb-cyc-nav:hover{background:var(--bg-hover);color:var(--ink)}
 .kb-cyc-nav[disabled]{opacity:.28;pointer-events:none}
-.kb-cyc-body{display:flex;flex-direction:column;gap:2px;padding:2px 12px;min-width:150px}
+.kb-cyc-body{display:flex;flex-direction:column;gap:3px;padding:2px 12px;min-width:170px}
+.kb-cyc-main{display:flex;align-items:center;gap:8px;line-height:1.2}
+.kb-cyc-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);flex-shrink:0;box-shadow:0 0 0 2px rgba(124,92,252,.12)}
+.kb-cyc-dot.t-healthy{background:var(--teal);box-shadow:0 0 0 2px rgba(27,168,145,.14)}
+.kb-cyc-dot.t-warn{background:var(--gold);box-shadow:0 0 0 2px rgba(224,138,58,.14)}
+.kb-cyc-dot.t-danger{background:var(--rose);box-shadow:0 0 0 2px rgba(217,68,98,.14)}
 .kb-cyc-date{font-size:13.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.2px;line-height:1.2}
+.kb-cyc-days{display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:5px;font-size:11px;font-weight:700;background:rgba(124,92,252,.1);color:var(--primary);letter-spacing:.02em;font-variant-numeric:tabular-nums;line-height:1}
+.kb-cyc-days.t-warn{background:rgba(224,138,58,.12);color:#b96d1e}
+.kb-cyc-days.t-danger{background:rgba(217,68,98,.14);color:var(--rose)}
+.kb-cyc-days.t-idle{background:var(--bg-hover);color:var(--ink-muted)}
 .kb-cyc-prog{display:flex;align-items:center;gap:8px}
-.kb-cyc-prog-bar{flex:1;height:4px;background:var(--bg-hover);border-radius:2px;overflow:hidden;min-width:80px}
-.kb-cyc-prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),#2dd4a8);border-radius:2px;transition:width .5s var(--ease-smooth)}
+.kb-cyc-prog-bar{flex:1;height:3px;background:var(--bg-hover);border-radius:2px;overflow:hidden;min-width:90px}
+.kb-cyc-prog-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .5s var(--ease-smooth),background .3s var(--ease-out)}
+.kb-cyc-prog-fill.bar-idle{background:color-mix(in srgb,var(--primary) 45%,var(--bg-hover))}
+.kb-cyc-prog-fill.bar-healthy{background:var(--teal)}
+.kb-cyc-prog-fill.bar-ahead{background:linear-gradient(90deg,var(--teal),#2dd4a8)}
+.kb-cyc-prog-fill.bar-warn{background:var(--gold)}
+.kb-cyc-prog-fill.bar-danger{background:var(--rose)}
 .kb-cyc-prog-text{font-size:11px;font-weight:700;color:var(--ink-muted);font-variant-numeric:tabular-nums;line-height:1;letter-spacing:.02em;white-space:nowrap}
 .kb-cyc-prog-sep{color:var(--ink-dim);margin:0 1px;font-weight:500}
 
@@ -2765,6 +2780,33 @@ canvas{display:block;margin:0 auto 24px}
 .kb-archive-btn:hover{border-color:var(--primary);color:var(--ink)}
 .kb-archive-btn.active{background:rgba(124,92,252,.08);border-color:color-mix(in srgb,var(--primary) 40%,transparent);color:var(--primary)}
 .kb-archive-btn svg{stroke-width:1.75}
+
+/* v0.32.13 分類 filter chip row */
+.kb-catfilter{display:flex;align-items:center;gap:8px;margin:0 0 14px 0;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;flex-wrap:wrap}
+.kb-catfilter-label{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ink-muted);letter-spacing:.02em;margin-right:2px;flex-shrink:0}
+.kb-catfilter-label svg{width:13px;height:13px;color:var(--ink-dim)}
+.kb-catfilter-chips{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.kb-catchip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border:1px solid var(--border);background:transparent;border-radius:13px;font-size:12px;font-weight:600;color:var(--ink-muted);cursor:pointer;font-family:inherit;transition:all .15s var(--ease-out);white-space:nowrap}
+.kb-catchip::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:.6}
+.kb-catchip:hover{border-color:var(--ink-dim);color:var(--ink)}
+.kb-catchip.active{border-color:currentColor;color:var(--_cat,var(--primary));background:color-mix(in srgb,var(--_cat,var(--primary)) 10%,transparent)}
+.kb-catchip.active::before{opacity:1}
+.kb-catfilter-clear{margin-left:auto;display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 10px;background:transparent;border:1px solid var(--border);border-radius:13px;font-size:11.5px;font-weight:600;color:var(--ink-muted);cursor:pointer;font-family:inherit;transition:all .15s var(--ease-out)}
+.kb-catfilter-clear:hover{border-color:var(--rose);color:var(--rose)}
+.kb-catfilter-clear svg{width:10px;height:10px;stroke-width:2}
+.kb-catfilter-hint{font-size:11.5px;color:var(--ink-muted);margin-left:6px;letter-spacing:.02em}
+
+/* v0.32.13 kb-toast */
+.kb-toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,12px);z-index:9999;padding:11px 18px;background:var(--ink);color:#fff;border-radius:10px;font-size:13px;font-weight:600;letter-spacing:.02em;box-shadow:0 10px 30px -10px rgba(0,0,0,.35);opacity:0;transition:opacity .25s var(--ease-out),transform .25s var(--ease-out);pointer-events:none;max-width:calc(100% - 48px);white-space:pre-line;text-align:center}
+.kb-toast.show{opacity:1;transform:translate(-50%,0)}
+.kb-toast-success{background:var(--teal)}
+.kb-toast-warn{background:var(--gold)}
+.kb-toast-danger{background:var(--rose)}
+
+/* v0.32.13 一鍵封存按鈕 */
+.kb-archive-all-btn{display:inline-flex;align-items:center;gap:6px;padding:0 12px;height:34px;background:transparent;border:1px dashed var(--border);border-radius:8px;font-size:12.5px;font-weight:600;color:var(--ink-muted);cursor:pointer;font-family:inherit;transition:all .15s var(--ease-out)}
+.kb-archive-all-btn:hover{border-style:solid;border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.06)}
+.kb-archive-all-btn svg{stroke-width:1.75}
 
 /* Column drag-to-reorder visual cues */
 .kanban-col.col-dragging{opacity:.4}
@@ -4780,7 +4822,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.12</div>
+        <div class="sidebar-version">v0.32.13</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11617,9 +11659,20 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       if(window._rmDragJustEnded){ return; }
       var evt = window.event;
       if(evt){ evt.stopPropagation(); }
-      var allCards = T.getCards().map(T.migrateCard);
+      // v0.32.13: 先查 render 快取（含 demo 卡），再 fallback 到 T.getCards()
+      var allCards = (window._rmAllCardsCache || []).slice();
+      if(allCards.length === 0){
+        allCards = T.getCards().map(T.migrateCard);
+      }
       var card = allCards.find(function(c){ return c.id === cardId; });
+      if(!card){
+        // fallback：再掃一次 storage（快取可能過期）
+        var storeCards = T.getCards().map(T.migrateCard);
+        card = storeCards.find(function(c){ return c.id === cardId; });
+      }
       if(!card){ return; }
+      // v0.32.13: 標記是否為 demo（demo cards 改成不可編輯，因為不在 storage）
+      var _isDemoCard = (card.id || '').indexOf('demo-') === 0;
       // Remove existing drawer if any
       var old = document.getElementById('rmInlineDrawer');
       if(old){ old.remove(); }
@@ -12730,18 +12783,49 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       }
       html += '<div class="kb-control-bar">';
 
-      // LEFT: Cycle pill with prev/next + date + mini progress
+      // LEFT: Cycle pill — v0.32.13 壓縮層級（dot + 名稱 + 剩 X 天 tone）+ tonal bar
+      // 計算狀態 tone：timeProgress vs workProgress, overdue count
+      var _pillTone = 'idle', _pillBarTone = 'idle';
+      var _pillDaysLeft = 0;
+      var _pillDaysLabel = '—';
+      if(_cyc.startDate && _cyc.endDate){
+        var _ps = new Date(_cyc.startDate + 'T00:00:00').getTime();
+        var _pe = new Date(_cyc.endDate + 'T00:00:00').getTime();
+        var _pn = new Date(new Date().toDateString()).getTime();
+        var _pTotalDays = Math.max(1, (_pe - _ps) / 86400000 + 1);
+        var _pElapsed = Math.min(_pTotalDays, Math.max(0, (_pn - _ps) / 86400000 + 1));
+        _pillDaysLeft = Math.max(0, Math.round((_pe - _pn) / 86400000));
+        _pillDaysLabel = _pn < _ps ? '未開始' : (_pn > _pe ? '已結束' : '剩 ' + _pillDaysLeft + ' 天');
+        var _pTime = _pElapsed / _pTotalDays;
+        var _pWork = _cycTotalCount > 0 ? (_cycDoneCount / _cycTotalCount) : 0;
+        var _pOverdue = cards.filter(function(c){
+          if(c.cycleId !== _cyc.id || c.archived || c.columnId === 'done') return false;
+          if(!c.dueDate) return false;
+          return new Date(c.dueDate + 'T00:00:00').getTime() < _pn;
+        }).length;
+        if(_cycTotalCount === 0){ _pillTone = 'idle'; _pillBarTone = 'idle'; }
+        else if(_pOverdue >= 3 || (_pillDaysLeft === 0 && _pWork < 0.7)){ _pillTone = 'danger'; _pillBarTone = 'danger'; }
+        else if(_pWork >= _pTime + 0.15){ _pillTone = 'healthy'; _pillBarTone = 'ahead'; }
+        else if(_pWork < _pTime - 0.15){ _pillTone = 'warn'; _pillBarTone = 'warn'; }
+        else { _pillTone = 'healthy'; _pillBarTone = 'healthy'; }
+      }
+      var _pillDaysToneCls = _pillDaysLeft <= 1 && _cycTotalCount > 0 ? ' t-danger' : _pillDaysLeft <= 3 && _cycTotalCount > 0 ? ' t-warn' : _cycTotalCount === 0 ? ' t-idle' : '';
+
       html += '<div class="kb-cyc-pill" role="group" aria-label="週期切換">';
       html += '<button class="kb-cyc-nav" onclick="window._kbCyclePrev()" title="上一週期" aria-label="上一週期"' + (_cycIdx <= 0 ? ' disabled' : '') + '><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="10,3 5,8 10,13"/></svg></button>';
       html += '<div class="kb-cyc-body">';
-      html += '<div class="kb-cyc-date">' + _cycDisplay + '</div>';
+      html += '<div class="kb-cyc-main">';
+      html += '<span class="kb-cyc-dot t-' + _pillTone + '" title="週期狀態：' + _pillTone + '"></span>';
+      html += '<span class="kb-cyc-date">' + _cycDisplay + '</span>';
+      html += '<span class="kb-cyc-days' + _pillDaysToneCls + '">' + _pillDaysLabel + '</span>';
+      html += '</div>';
       if(_cycTotalCount > 0){
         html += '<div class="kb-cyc-prog">';
-        html += '<div class="kb-cyc-prog-bar"><div class="kb-cyc-prog-fill" style="width:' + _cycPct + '%"></div></div>';
+        html += '<div class="kb-cyc-prog-bar"><div class="kb-cyc-prog-fill bar-' + _pillBarTone + '" style="width:' + _cycPct + '%"></div></div>';
         html += '<span class="kb-cyc-prog-text">' + _cycDoneCount + '<span class="kb-cyc-prog-sep">/</span>' + _cycTotalCount + '</span>';
         html += '</div>';
       } else {
-        html += '<div class="kb-cyc-prog"><span class="kb-cyc-prog-text" style="color:var(--ink-dim);font-weight:500">尚未排入任務</span></div>';
+        html += '<div class="kb-cyc-prog"><div class="kb-cyc-prog-bar"><div class="kb-cyc-prog-fill bar-idle" style="width:100%;opacity:.35"></div></div><span class="kb-cyc-prog-text" style="color:var(--ink-dim);font-weight:500">尚未排入</span></div>';
       }
       html += '</div>';
       html += '<button class="kb-cyc-nav" onclick="window._kbCycleNext()" title="下一週期" aria-label="下一週期"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
@@ -12761,6 +12845,11 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         });
         html += '</select></div>';
       }
+      // v0.32.13 一鍵封存本期已完成卡片（當 done 欄有卡時才顯示）
+      var _doneCountForArchive = cards.filter(function(c){ return c.cycleId === _cyc.id && c.columnId === 'done' && !c.archived; }).length;
+      if(_doneCountForArchive > 0){
+        html += '<button class="kb-archive-all-btn" onclick="window._kbArchiveCycleDone()" title="把本期已完成的卡片一鍵封存"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="12" height="3" rx="1"/><path d="M3 6v7a1 1 0 001 1h8a1 1 0 001-1V6"/><polyline points="6,9 8,11 11,8"/></svg>封存完成 ' + _doneCountForArchive + '</button>';
+      }
       if(archivedCount > 0){
         html += '<button class="kb-archive-btn' + (showArchived ? ' active' : '') + '" onclick="window._kbToggleArchived()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="12" height="3" rx="1"/><path d="M3 6v7a1 1 0 001 1h8a1 1 0 001-1V6"/><line x1="6.5" y1="9" x2="9.5" y2="9"/></svg>' + (showArchived ? '隱藏封存' : '封存 ' + archivedCount) + '</button>';
       }
@@ -12768,12 +12857,35 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       html += '</div>';
       html += '</div>';
 
+      // v0.32.13 分類 filter chip row（多選、與搜尋/封存平行）
+      var _catFilter = window._kbCatFilter || [];
+      var _catEntries = [];
+      for(var _ckk in TASK_CATEGORIES){ _catEntries.push({k:_ckk, v:TASK_CATEGORIES[_ckk]}); }
+      html += '<div class="kb-catfilter" role="group" aria-label="分類篩選">';
+      html += '<span class="kb-catfilter-label"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 3h12M4 8h8M6 13h4"/></svg>分類</span>';
+      html += '<div class="kb-catfilter-chips">';
+      _catEntries.forEach(function(e){
+        var _on = _catFilter.indexOf(e.k) >= 0;
+        html += '<button type="button" class="kb-catchip' + (_on ? ' active' : '') + '" data-cat="' + e.k + '" style="--_cat:' + e.v.color + '" onclick="window._kbToggleCat(\'' + e.k + '\')">' + e.v.label + '</button>';
+      });
+      html += '</div>';
+      if(_catFilter.length > 0){
+        html += '<span class="kb-catfilter-hint">已篩選 ' + _catFilter.length + ' 類</span>';
+        html += '<button type="button" class="kb-catfilter-clear" onclick="window._kbClearCatFilter()"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M2 2l6 6M8 2l-6 6"/></svg>清空</button>';
+      }
+      html += '</div>';
+
       // Board columns: exclude inbox (inbox has its own page now)
       var boardCols = cols.filter(function(c){ return c.id !== 'inbox'; });
 
       // ── LIST VIEW V2 (v0.9.5 — strict cycle filter) ──
       if(viewMode === 'list'){
-        var allActiveCards = cards.filter(function(c){ return c.columnId !== 'inbox' && !c.archived && c.cycleId === _cyc.id; });
+        var _lvCatF = window._kbCatFilter || [];
+        var allActiveCards = cards.filter(function(c){
+          if(c.columnId === 'inbox' || c.archived || c.cycleId !== _cyc.id) return false;
+          if(_lvCatF.length > 0 && _lvCatF.indexOf(c.category) < 0) return false;
+          return true;
+        });
         if(sq){
           allActiveCards = allActiveCards.filter(function(c){
             return (c.title||'').toLowerCase().indexOf(sq) !== -1 || (c.description||'').toLowerCase().indexOf(sq) !== -1 || (c.assignee||'').toLowerCase().indexOf(sq) !== -1;
@@ -12985,11 +13097,14 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       html += '<div class="kanban-board-wrap" id="kbBoardWrap">';
       html += '<div class="kanban-board" id="kbBoard">';
       boardCols.forEach(function(col, ci){
+        var _bvCatF = window._kbCatFilter || [];
         var colCards = cards.filter(function(c){
           if(c.columnId !== col.id) return false;
           if(!showArchived && c.archived) return false;
           // v0.9.5: strict cycle filter — only show cards in current cycle
           if(c.cycleId !== _cyc.id) return false;
+          // v0.32.13: 分類 filter
+          if(_bvCatF.length > 0 && _bvCatF.indexOf(c.category) < 0) return false;
           if(sq){
             var m = (c.title||'').toLowerCase().includes(sq) || (c.assignee||'').toLowerCase().includes(sq) || (c.description||'').toLowerCase().includes(sq);
             if(!m) m = (c.customFields||[]).some(function(f){return (f.value||'').toLowerCase().includes(sq);});
@@ -14253,6 +14368,82 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     window._kbSetView = function(mode){ window._kbViewMode = mode; renderBoard(); };
     window._kbSetGroupBy = function(val){ window._kbListGroupBy = val; renderBoard(); };
     window._kbToggleArchived = function(){window._kbShowArchived=!window._kbShowArchived;showArchived=window._kbShowArchived;renderBoard();};
+
+    // ── v0.32.13 分類 filter 多選 toggle + localStorage 持久化 ──
+    (function(){
+      try{
+        var _saved = localStorage.getItem('bp.kbCatFilter');
+        if(_saved){ window._kbCatFilter = JSON.parse(_saved) || []; }
+      }catch(e){ window._kbCatFilter = []; }
+    })();
+    window._kbToggleCat = function(k){
+      var arr = (window._kbCatFilter || []).slice();
+      var i = arr.indexOf(k);
+      if(i >= 0) arr.splice(i, 1); else arr.push(k);
+      window._kbCatFilter = arr;
+      try{ localStorage.setItem('bp.kbCatFilter', JSON.stringify(arr)); }catch(e){}
+      renderBoard();
+    };
+    window._kbClearCatFilter = function(){
+      window._kbCatFilter = [];
+      try{ localStorage.removeItem('bp.kbCatFilter'); }catch(e){}
+      renderBoard();
+    };
+
+    // ── v0.32.13 任務封存 ──
+    // 單張手動封存：已存在 archived 欄位，此處提供 UI 接口
+    window._kbArchiveCard = function(cardId){
+      var allCards = T.getCards();
+      var idx = -1;
+      for(var i=0;i<allCards.length;i++){ if(allCards[i].id === cardId){ idx = i; break; } }
+      if(idx < 0) return;
+      allCards[idx].archived = true;
+      allCards[idx].archivedAt = Date.now();
+      T.saveCards(allCards);
+      if(window._kbToast) window._kbToast('已封存這張卡片', 'success');
+      renderBoard();
+    };
+    window._kbUnarchiveCard = function(cardId){
+      var allCards = T.getCards();
+      var idx = -1;
+      for(var i=0;i<allCards.length;i++){ if(allCards[i].id === cardId){ idx = i; break; } }
+      if(idx < 0) return;
+      allCards[idx].archived = false;
+      delete allCards[idx].archivedAt;
+      T.saveCards(allCards);
+      if(window._kbToast) window._kbToast('已將卡片移出封存', 'success');
+      renderBoard();
+    };
+    // 一鍵封存本期 done 卡片
+    window._kbArchiveCycleDone = function(){
+      var curCyc = (typeof currentCycle !== 'undefined' && currentCycle) ? currentCycle : null;
+      if(!curCyc){ if(window._kbToast) window._kbToast('目前沒有啟用週期', 'warn'); return; }
+      var allCards = T.getCards();
+      var targets = allCards.filter(function(c){ return c.cycleId === curCyc.id && c.columnId === 'done' && !c.archived; });
+      if(targets.length === 0){ if(window._kbToast) window._kbToast('本期沒有可封存的完成卡片', 'info'); return; }
+      var msg = '確認封存本期 ' + targets.length + ' 張已完成卡片？\n\n封存後仍可從「封存」切換顯示或透過搜尋找回。';
+      if(!confirm(msg)) return;
+      var now = Date.now();
+      var tids = {};
+      targets.forEach(function(t){ tids[t.id] = 1; });
+      allCards.forEach(function(c){ if(tids[c.id]){ c.archived = true; c.archivedAt = now; } });
+      T.saveCards(allCards);
+      if(window._kbToast) window._kbToast('已封存 ' + targets.length + ' 張完成卡片', 'success');
+      renderBoard();
+    };
+    // 輕量 toast（若已存在則不覆寫）
+    if(!window._kbToast){
+      window._kbToast = function(text, kind){
+        try{
+          var el = document.createElement('div');
+          el.className = 'kb-toast kb-toast-' + (kind || 'info');
+          el.textContent = text;
+          document.body.appendChild(el);
+          setTimeout(function(){ el.classList.add('show'); }, 10);
+          setTimeout(function(){ el.classList.remove('show'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 300); }, 2600);
+        }catch(e){}
+      };
+    }
 
     // ── Detail Panel (v0.9.0) ──
     window._kbOpenDetail = function(cardId) {
@@ -28663,4 +28854,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.12 · 任務看板空狀態 + 週期底色修正：(1) 空看板佈局 bug——舊 empty state 用 grid-column:1/-1 但 .kanban-board 是 display:flex，empty block 成了第 4 個 flex sibling 跟 columns 並排；新增 early-return 分支：當 totalInCycle===0 且無搜尋時不渲染 columns，直接渲染統一 .kb-empty-hero（icon 84×84 primary gradient + 3 步快速導引卡：新增需求→排入週期→開始執行 + CTA 前往需求池），動畫 kbEmptyIn spring stagger 80/140/200ms，CTA 延 280ms，手機 640px 降 padding 縮 icon 改單欄；(2) 週期底色不符 PATH 規範——空狀態原本套 'warn' 類（gold #E08A3A 偏暖），語意錯誤且視覺偏移；新增 'idle' 狀態走 primary（#7C5CFC）微染色（card bg mix 96% + 4%、border 60/25 mix、tag rgba .12、bar 45% mix），cp-ov / cp-ov-tag / bar 三處同步支援 bar-idle/cp-ov-idle/cp-ov-tag-idle，cp-ai 側 cp-ai-idle / cp-ai-tag-idle 亦到位；JS 面兩處（line 8118 cp-ov 帶、line 9350 cp-ai 卡）_tagClass 從 'warn' → 'idle'，_tag 文案維持「待排程」 · 前版 v0.32.11 成就（保留）：修兩個 v0.32.10 漏網 bug——(a) 色塊點擊不開 drawer，demo cycles 從未進 T.getCycles()，_rmGetCycleByKey 回 null；新增 window._rmAllCyclesCache / _rmAllCardsCache 走 render-time 快取；(b) 展開動畫太微弱，重做 @keyframes rmGroupRowIn：translateY -22px、scaleY spring overshoot、blur 2px→0、.52s、stagger 60ms (max 360ms)、chevron .42s + primary/muted 色彩切換 --><!-- v0.32.11 · 修兩個 v0.32.10 漏網 bug：(1) 色塊點擊不開 drawer——demo cycles 從未進 T.getCycles() 儲存層，_rmGetCycleByKey 一律找不到回 null，drawer 提前 return；新增 window._rmAllCyclesCache / _rmAllCardsCache 在 render-time 暴露完整列表（含 demo），_rmGetCycleByKey 與 _rmOpenCycleDrawer 優先讀快取再 fallback 到 storage；(2) 展開動畫太微弱看不出來——重做 @keyframes rmGroupRowIn：translateY -22px、scaleY .85→1.02→1（spring overshoot）、blur(2px)→0、duration .52s、stagger 從 30ms 拉到 60ms（最後一階 360ms），加 transform-origin top center 確保視覺從 group bar 往下展開；chevron 旋轉延長到 .42s 並加色彩切換（collapsed=muted, expanded=primary） · 後續 v0.32.10 changelog: --> 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
+</html><!-- v0.32.13 · 城堡三題交付（pill 改版 / 分類 filter / 任務封存）+ 時間軸項目編輯修正：(1) 週期 pill 壓縮層級——新增 primary/healthy/warn/danger/idle 狀態 dot（shadow halo）、tonal「剩 X 天」chip（t-warn/t-danger/t-idle 語意色）、tonal 進度條（bar-idle/healthy/ahead/warn/danger 沿用 cp-ov 同套 token）；JS 端計算 _pillTone（timeProgress vs workProgress + overdue count 綜合判斷），達成 planning（完整 cp-ov 卡）→ tasks（壓縮 pill）的資訊密度梯度；(2) 分類 filter chip row——6 個分類（產品/研發/QA/行銷/業務/行政）多選 chip，active 態用該分類 color border + 10% bg（不 fill 以保留卡片視覺）、idle 態 muted，已選時右側浮「已篩選 N 類」+ dashed 清空按鈕；localStorage 持久化（bp.kbCatFilter），board view / list view / 空狀態判斷 _earlyTotal 三處濾鏡同步；(3) 任務封存 UX——新增「封存完成 N」一鍵按鈕（dashed border，done 欄有卡時才浮現），confirm dialog 列 N 張預設全封存，archived+archivedAt 寫入 card；新增 window._kbArchiveCard / _kbUnarchiveCard / _kbArchiveCycleDone；kb-toast 元件（success/warn/danger 三態，2.6s auto-dismiss）提供操作回饋；(4) 時間軸 _rmOpenCard 補 _rmAllCardsCache 快取查詢，demo 卡點擊不再 silent fail，查不到再 fallback 到 storage · 前版 v0.32.12 成就：任務看板空狀態佈局修復 + 週期底色 warn→idle --><!-- v0.32.12 · 任務看板空狀態 + 週期底色修正：(1) 空看板佈局 bug——舊 empty state 用 grid-column:1/-1 但 .kanban-board 是 display:flex，empty block 成了第 4 個 flex sibling 跟 columns 並排；新增 early-return 分支：當 totalInCycle===0 且無搜尋時不渲染 columns，直接渲染統一 .kb-empty-hero（icon 84×84 primary gradient + 3 步快速導引卡：新增需求→排入週期→開始執行 + CTA 前往需求池），動畫 kbEmptyIn spring stagger 80/140/200ms，CTA 延 280ms，手機 640px 降 padding 縮 icon 改單欄；(2) 週期底色不符 PATH 規範——空狀態原本套 'warn' 類（gold #E08A3A 偏暖），語意錯誤且視覺偏移；新增 'idle' 狀態走 primary（#7C5CFC）微染色（card bg mix 96% + 4%、border 60/25 mix、tag rgba .12、bar 45% mix），cp-ov / cp-ov-tag / bar 三處同步支援 bar-idle/cp-ov-idle/cp-ov-tag-idle，cp-ai 側 cp-ai-idle / cp-ai-tag-idle 亦到位；JS 面兩處（line 8118 cp-ov 帶、line 9350 cp-ai 卡）_tagClass 從 'warn' → 'idle'，_tag 文案維持「待排程」 · 前版 v0.32.11 成就（保留）：修兩個 v0.32.10 漏網 bug——(a) 色塊點擊不開 drawer，demo cycles 從未進 T.getCycles()，_rmGetCycleByKey 回 null；新增 window._rmAllCyclesCache / _rmAllCardsCache 走 render-time 快取；(b) 展開動畫太微弱，重做 @keyframes rmGroupRowIn：translateY -22px、scaleY spring overshoot、blur 2px→0、.52s、stagger 60ms (max 360ms)、chevron .42s + primary/muted 色彩切換 --><!-- v0.32.11 · 修兩個 v0.32.10 漏網 bug：(1) 色塊點擊不開 drawer——demo cycles 從未進 T.getCycles() 儲存層，_rmGetCycleByKey 一律找不到回 null，drawer 提前 return；新增 window._rmAllCyclesCache / _rmAllCardsCache 在 render-time 暴露完整列表（含 demo），_rmGetCycleByKey 與 _rmOpenCycleDrawer 優先讀快取再 fallback 到 storage；(2) 展開動畫太微弱看不出來——重做 @keyframes rmGroupRowIn：translateY -22px、scaleY .85→1.02→1（spring overshoot）、blur(2px)→0、duration .52s、stagger 從 30ms 拉到 60ms（最後一階 360ms），加 transform-origin top center 確保視覺從 group bar 往下展開；chevron 旋轉延長到 .42s 並加色彩切換（collapsed=muted, expanded=primary） · 後續 v0.32.10 changelog: --> 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
