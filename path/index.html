@@ -3650,7 +3650,7 @@ canvas{display:block;margin:0 auto 24px}
    - 副行：status badge + category dot · category label + due chip + avatar
    - Height 56px，padding 左 40px（避開 group chev 縮排）*/
 /* v0.25.0: 極簡單行 row — 狀態色點 + 標題 */
-.rm-row{display:flex;align-items:center;height:56px;padding:0 14px 0 40px;color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
+.rm-row{display:flex;align-items:center;height:64px;padding:0 14px 0 40px;color:var(--ink);border-bottom:1px solid rgba(0,0,0,.03);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out);position:relative}
 [data-theme="dark"] .rm-row{border-bottom-color:rgba(255,255,255,.04)}
 .rm-row:hover{background:var(--bg-hover)}
 .rm-row:focus-visible{outline:none;background:var(--bg-hover);box-shadow:0 0 0 1px rgba(124,92,252,.35)}
@@ -3751,9 +3751,10 @@ canvas{display:block;margin:0 auto 24px}
 
 /* v0.30.0: summary bar — 收合狀態下顯示項目整體時間跨度 */
 /* v0.32.3：移除舊 .rm-summary-bar，父 bar 改用 .rm-bar.parent 統一語言 */
+/* v0.32.5：時間軸呼吸空間 — row 56→64，bar 垂直置中 padding 增加，fill gradient 調淡 */
 /* 父 bar：高 36px、字 12px/800、左側 chevron 開合提示、count chip 在右 */
-.rm-bar.parent{top:8px;height:36px;border-radius:10px;font-size:12px;font-weight:800;letter-spacing:-.01em;padding:0 12px;box-shadow:0 2px 6px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.28);gap:6px}
-.rm-bar.parent .rm-bar-fill{border-radius:8px 0 0 8px;background:linear-gradient(90deg,rgba(255,255,255,.28),rgba(255,255,255,.1))}
+.rm-bar.parent{top:14px;height:36px;border-radius:10px;font-size:12px;font-weight:800;letter-spacing:-.01em;padding:0 12px;box-shadow:0 2px 6px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.22);gap:6px}
+.rm-bar.parent .rm-bar-fill{border-radius:8px 0 0 8px;background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(255,255,255,.05))}
 .rm-bar.parent .rm-bar-chev{width:14px;height:14px;color:rgba(255,255,255,.85);position:relative;z-index:1;flex-shrink:0;transition:transform .22s var(--ease-smooth)}
 .rm-bar.parent .rm-bar-title{font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.18)}
 .rm-bar.parent .rm-bar-count{margin-left:auto;background:rgba(255,255,255,.22);border-radius:10px;padding:2px 8px;font-size:10.5px;font-weight:700;position:relative;z-index:1;flex-shrink:0;letter-spacing:0}
@@ -3768,7 +3769,7 @@ canvas{display:block;margin:0 auto 24px}
 .rm-bar.child.slim .rm-bar-cat-dot{display:none}
 
 /* Task row background (matches .rm-row in left, must align) */
-.rm-bar-row{height:56px;position:relative;border-bottom:1px solid rgba(0,0,0,.03);animation:rm-rowIn var(--motion-smooth,280ms) var(--ease-smooth) both}
+.rm-bar-row{height:64px;position:relative;border-bottom:1px solid rgba(0,0,0,.03);animation:rm-rowIn var(--motion-smooth,280ms) var(--ease-smooth) both}
 .rm-bar-row:nth-child(1){animation-delay:0ms}
 .rm-bar-row:nth-child(2){animation-delay:30ms}
 .rm-bar-row:nth-child(3){animation-delay:60ms}
@@ -3782,12 +3783,12 @@ canvas{display:block;margin:0 auto 24px}
 
 /* Task bar */
 /* v0.16.1: bar 高度 26→28，r-md 圓角更柔和，hover 動效 scale 收斂 1.015→1.008 減少跳動感 */
-.rm-bar{position:absolute;top:14px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;padding:0 12px;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:#fff;white-space:nowrap;overflow:hidden;z-index:2;transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s cubic-bezier(.22,1,.36,1),filter .22s cubic-bezier(.22,1,.36,1);min-width:24px;box-shadow:0 1px 2px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.22);user-select:none;animation:rm-barIn var(--motion-smooth,280ms) var(--ease-smooth) both}
+.rm-bar{position:absolute;top:18px;height:28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;padding:0 12px;font-size:var(--text-micro,11px);font-weight:var(--fw-title,700);color:#fff;white-space:nowrap;overflow:hidden;z-index:2;transition:transform .22s cubic-bezier(.22,1,.36,1),box-shadow .22s cubic-bezier(.22,1,.36,1),filter .22s cubic-bezier(.22,1,.36,1);min-width:24px;box-shadow:0 1px 2px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.18);user-select:none;animation:rm-barIn var(--motion-smooth,280ms) var(--ease-smooth) both}
 .rm-bar:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.32);z-index:5;filter:brightness(1.05)}
 .rm-bar:active{transform:translateY(0) scale(.99)}
 .rm-bar:focus-visible{outline:none;box-shadow:0 0 0 3px var(--bg-card),0 0 0 5px var(--primary);z-index:6}
 /* v0.28.0: bar fill 改進 — 漸層透明度 + 動畫過渡 */
-.rm-bar-fill{position:absolute;top:0;left:0;bottom:0;background:linear-gradient(90deg,rgba(255,255,255,.3),rgba(255,255,255,.12));border-radius:6px 0 0 6px;pointer-events:none;transition:width .5s cubic-bezier(.22,1,.36,1)}
+.rm-bar-fill{position:absolute;top:0;left:0;bottom:0;background:linear-gradient(90deg,rgba(255,255,255,.18),rgba(255,255,255,.05));border-radius:6px 0 0 6px;pointer-events:none;transition:width .5s cubic-bezier(.22,1,.36,1)}
 .rm-bar-title{position:relative;z-index:1;text-overflow:ellipsis;overflow:hidden;flex:1;text-shadow:0 1px 2px rgba(0,0,0,.15)}
 .rm-bar.slim{padding:0;justify-content:center}
 .rm-bar.slim::before{content:'';display:block;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.9);position:relative;z-index:2}
@@ -3800,7 +3801,7 @@ canvas{display:block;margin:0 auto 24px}
 [data-theme="dark"] .rm-bar.no-date{background:repeating-linear-gradient(45deg,var(--bg-hover),var(--bg-hover) 6px,rgba(255,255,255,.04) 6px,rgba(255,255,255,.04) 12px)!important}
 
 /* Milestone diamond */
-.rm-milestone{position:absolute;top:10px;width:22px;height:22px;transform:rotate(45deg);background:var(--gold);border:2px solid var(--bg-card);z-index:4;cursor:pointer;box-shadow:0 2px 6px rgba(224,138,58,.4)}
+.rm-milestone{position:absolute;top:21px;width:22px;height:22px;transform:rotate(45deg);background:var(--gold);border:2px solid var(--bg-card);z-index:4;cursor:pointer;box-shadow:0 2px 6px rgba(224,138,58,.4)}
 .rm-milestone:hover{transform:rotate(45deg) scale(1.15)}
 
 /* Empty state */
@@ -4565,7 +4566,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.4</div>
+        <div class="sidebar-version">v0.32.5</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -27781,4 +27782,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.4 · 週期總覽去焦慮重設計（中性容器/狀態色集中進度條/KPI 數字主角/inline 聚焦列）、任務看板 header 重構（雙行階層：標題列+視圖切換／控制列+週期進度條/搜尋/分組/封存）、狀態欄位左右拖曳排序（+menu ←→ 按鈕）、列表 view 去掉 hover 左側色條+refresh typography -->
+</html><!-- v0.32.5 · 時間軸呼吸空間：row 56→64px、bar 垂直置中（top padding 重新計算）、bar fill 白色漸層 .30→.18 調淡減少視覺噪音、milestone 位置對齊新 row -->
