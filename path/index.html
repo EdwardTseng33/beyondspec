@@ -992,6 +992,53 @@ canvas{display:block;margin:0 auto 24px}
 /* ===== PRICING MODAL ===== */
 .pricing-grid-modal{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
 
+/* ===== SUBSCRIBE MODAL (v0.32.0) ===== */
+.sub-modal{background:var(--bg-card);border-radius:var(--r-xl);padding:32px;width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-xl)}
+.sub-modal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.sub-modal-title{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.3px;display:flex;align-items:center;gap:10px}
+.sub-modal-close{background:none;border:none;cursor:pointer;color:var(--ink-muted);padding:4px;border-radius:6px;transition:background var(--motion-fast)}
+.sub-modal-close:hover{background:var(--bg-hover);color:var(--ink)}
+.sub-modal-subtitle{color:var(--ink-muted);font-size:13px;margin-bottom:20px;line-height:1.5}
+.sub-trial-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--teal-bg);color:var(--teal);font-size:12px;font-weight:600;margin-bottom:16px}
+.sub-trial-badge svg{width:14px;height:14px}
+.sub-cycle-toggle{display:inline-flex;background:var(--bg-hover);border-radius:10px;padding:4px;gap:2px;margin-bottom:20px}
+.sub-cycle-btn{border:none;background:transparent;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink-muted);cursor:pointer;transition:all var(--motion-fast);font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.sub-cycle-btn.active{background:var(--bg-card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sub-cycle-save{font-size:11px;font-weight:700;color:var(--teal);background:var(--teal-bg);padding:2px 6px;border-radius:4px}
+.sub-plan-summary{padding:20px;border-radius:var(--r-lg);background:var(--bg-hover);margin-bottom:20px}
+.sub-plan-name{font-size:14px;color:var(--ink-muted);font-weight:500;margin-bottom:4px}
+.sub-plan-price{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-.5px;display:flex;align-items:baseline;gap:6px}
+.sub-plan-price-unit{font-size:14px;color:var(--ink-muted);font-weight:500}
+.sub-plan-original{font-size:13px;color:var(--ink-muted);margin-top:4px;text-decoration:line-through}
+.sub-plan-features{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.sub-plan-features li{list-style:none;font-size:13px;color:var(--ink-sec);padding:4px 0;display:flex;align-items:center;gap:8px}
+.sub-plan-features li::before{content:'';width:14px;height:14px;background:var(--primary);mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='4 11 8 15 16 6'/></svg>") center/contain no-repeat;-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='4 11 8 15 16 6'/></svg>") center/contain no-repeat;flex-shrink:0}
+.sub-section-label{font-size:12px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.sub-pay-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.sub-pay-card{border:1.5px solid var(--border);border-radius:var(--r-md);padding:12px 8px;cursor:pointer;background:var(--bg-card);transition:all var(--motion-fast);display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--ink-sec);font-weight:500}
+.sub-pay-card:hover{border-color:var(--primary);background:var(--primary-light)}
+.sub-pay-card.selected{border-color:var(--primary);background:var(--primary-light);color:var(--primary);font-weight:600}
+.sub-pay-card svg{width:24px;height:24px}
+.sub-confirm-btn{width:100%;padding:14px;border:none;border-radius:var(--r-md);background:var(--primary);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all var(--motion-fast);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.sub-confirm-btn:hover{filter:brightness(.95);transform:translateY(-1px)}
+.sub-confirm-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.sub-fineprint{font-size:11px;color:var(--ink-muted);text-align:center;margin-top:12px;line-height:1.5}
+
+/* ===== DOWNGRADE MODAL ===== */
+.down-modal{background:var(--bg-card);border-radius:var(--r-xl);padding:32px;width:480px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-xl)}
+.down-warn-banner{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--r-md);background:rgba(217,68,98,.08);border:1px solid rgba(217,68,98,.2);margin-bottom:16px;font-size:13px;color:var(--ink-sec);line-height:1.55}
+.down-warn-banner svg{width:18px;height:18px;color:var(--rose);flex-shrink:0;margin-top:1px}
+.down-lost-list{background:var(--bg-hover);border-radius:var(--r-md);padding:14px 16px;margin-bottom:18px;max-height:200px;overflow-y:auto}
+.down-lost-list-title{font-size:12px;font-weight:600;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.down-lost-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;color:var(--ink-sec)}
+.down-lost-item::before{content:'×';color:var(--rose);font-weight:700;font-size:14px;width:14px;text-align:center}
+.down-actions{display:flex;gap:10px}
+.down-actions button{flex:1;padding:12px;border-radius:var(--r-md);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all var(--motion-fast)}
+.down-cancel{background:var(--bg-hover);border:1px solid var(--border);color:var(--ink-sec)}
+.down-cancel:hover{background:var(--border)}
+.down-confirm{background:var(--rose);border:none;color:#fff}
+.down-confirm:hover{filter:brightness(.95)}
+
 /* ===== BANNER ===== */
 .banner{background:var(--primary-light);border:1px solid rgba(124,92,252,.2);border-radius:var(--r-sm);padding:12px 16px;font-size:var(--text-sm);color:var(--primary);margin-bottom:20px;font-weight:500}
 
@@ -4314,7 +4361,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.31.3</div>
+        <div class="sidebar-version">v0.32.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4628,8 +4675,8 @@ canvas{display:block;margin:0 auto 24px}
           升級方案解鎖更多 AI Credits、Lab 研究、問卷引擎、市場報告等進階功能。
         </div>
         <div class="modal-actions" style="display:flex;flex-direction:column;gap:8px">
-          <button style="flex:1;background-color:var(--primary);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade()">升級到 Starter · NT$390/月（500 Credits）</button>
-          <button style="flex:1;background-color:var(--gold);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade()">升級到 Pro · NT$990/月（3,000 Credits）</button>
+          <button style="flex:1;background-color:var(--primary);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade('starter')">升級到 Starter · NT$390/月（500 Credits）</button>
+          <button style="flex:1;background-color:var(--gold);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade('pro')">升級到 Pro · NT$990/月（3,000 Credits）</button>
         </div>
         <div style="text-align: center; margin-top: 12px;">
           <span style="color: var(--ink-muted); font-size: var(--text-sm); cursor: pointer;" onclick="app.closePaywallModal()">稍後再說</span>
@@ -4859,9 +4906,9 @@ canvas{display:block;margin:0 auto 24px}
     hideLoginModal();
   }
 
-  function handleUpgrade() {
-    showToast('付費功能開發中，敬請期待');
+  function handleUpgrade(planId) {
     closePaywallModal();
+    openSubscribeFlow(planId || 'pro');
   }
 
   // ==================== NAVIGATION ====================
@@ -4906,6 +4953,261 @@ canvas{display:block;margin:0 auto 24px}
     var p = plan || (state && state.plan) || 'free';
     var min = MODULE_MIN_PLAN[modKey] || 'free';
     return (PLAN_RANK[p] || 0) >= (PLAN_RANK[min] || 0);
+  }
+
+  // ── Subscription Catalog（v0.32.0：訂閱系統 single source of truth）──
+  // 月價 → 年價：折 17%（送 2 個月）
+  const PLAN_CATALOG = {
+    free: {
+      id: 'free', name: 'Free', tagline: '永久免費',
+      monthly: 0, annual: 0, color: 'var(--ink-muted)',
+      credits: 30,
+      highlights: ['每月 30 AI Credits', 'PATH 四維診斷', '任務中心 · 客戶管理', '客戶上限 50 筆'],
+      modules: ['mod-diagnose','mod-tasks','mod-contacts']
+    },
+    starter: {
+      id: 'starter', name: 'Starter', tagline: '個人創業者最佳起點',
+      monthly: 390, annual: 3900, color: 'var(--gold)',
+      credits: 500,
+      highlights: ['每月 500 AI Credits', 'Lab 研究 · 問卷引擎 · 市場探測', '報價提案 · 會議紀錄', '客戶無上限'],
+      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-meetings']
+    },
+    pro: {
+      id: 'pro', name: 'Pro', tagline: '小團隊全功能旗艦',
+      monthly: 990, annual: 9900, color: 'var(--primary)',
+      credits: 3000,
+      highlights: ['每月 3,000 AI Credits', 'AI 模型切換（Sonnet / Opus）', '收款管理 · AI 儀表板 · 文件庫', '團隊最多 5 人 + Claude MCP'],
+      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-meetings','mod-insights','mod-docs'],
+      featured: true
+    },
+    enterprise: {
+      id: 'enterprise', name: 'Enterprise', tagline: '20 人以上組織',
+      monthly: null, annual: null, color: 'var(--teal)',
+      credits: 'unlimited',
+      highlights: ['無限 AI Credits', 'Pro 全部功能', '團隊最多 20 人 · 管理員角色', 'API 整合 · 專屬客戶經理'],
+      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-meetings','mod-insights','mod-docs']
+    }
+  };
+
+  // 訂閱狀態（month / annual / null=未訂閱）
+  function getBillingCycle() {
+    return localStorage.getItem('bp_billing_cycle') || 'monthly';
+  }
+  function setBillingCycle(cycle) {
+    localStorage.setItem('bp_billing_cycle', cycle);
+  }
+
+  function comparePlans(a, b) {
+    return (PLAN_RANK[a] || 0) - (PLAN_RANK[b] || 0);
+  }
+
+  // 計算降級會失去的模組（給降級警告 Modal 用）
+  function getModulesLostOnDowngrade(currentPlan, targetPlan) {
+    var curMods = (PLAN_CATALOG[currentPlan] || {}).modules || [];
+    var tgtMods = (PLAN_CATALOG[targetPlan] || {}).modules || [];
+    return curMods.filter(function(m){ return tgtMods.indexOf(m) === -1; });
+  }
+
+  // 模組顯示名稱（給降級 Modal 用）
+  var MODULE_DISPLAY_NAME = {
+    'mod-diagnose': 'PATH 診斷',
+    'mod-lab': 'Lab 研究',
+    'mod-survey': '問卷引擎',
+    'mod-market': '市場探測',
+    'mod-report': '市場報告',
+    'mod-tasks': '任務看板',
+    'mod-contacts': '客戶管理',
+    'mod-quotes': '報價提案',
+    'mod-billing': '收款管理',
+    'mod-meetings': '會議紀錄',
+    'mod-insights': 'AI 儀表板',
+    'mod-docs': '文件庫'
+  };
+
+  // 付款方式
+  var PAY_METHODS = [
+    { id: 'card', name: '信用卡', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 11h20"/><path d="M6 16h3"/></svg>' },
+    { id: 'apple', name: 'Apple Pay', icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.04c-.03-2.71 2.21-4.01 2.31-4.07-1.26-1.84-3.22-2.09-3.92-2.12-1.66-.17-3.25.98-4.1.98-.86 0-2.16-.96-3.55-.93-1.83.03-3.51 1.06-4.45 2.7-1.9 3.29-.49 8.16 1.36 10.83.9 1.31 1.97 2.78 3.36 2.73 1.35-.05 1.86-.87 3.49-.87s2.09.87 3.51.85c1.45-.03 2.37-1.33 3.26-2.65 1.03-1.52 1.45-2.99 1.47-3.07-.03-.01-2.83-1.09-2.86-4.32zm-2.69-7.94c.74-.9 1.24-2.15 1.1-3.39-1.07.04-2.36.71-3.13 1.61-.69.79-1.29 2.06-1.13 3.28 1.19.09 2.42-.6 3.16-1.5z"/></svg>' },
+    { id: 'google', name: 'Google Pay', icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"/></svg>' }
+  ];
+
+  // ── Landing Pricing 月/年切換 ──
+  function lpSetCycle(cycle) {
+    setBillingCycle(cycle);
+    var monthBtn = document.getElementById('lpCycleMonthly');
+    var annualBtn = document.getElementById('lpCycleAnnual');
+    if (monthBtn) monthBtn.classList.toggle('active', cycle === 'monthly');
+    if (annualBtn) annualBtn.classList.toggle('active', cycle === 'annual');
+    var priceMap = {
+      free: { monthly: '免費', annual: '免費', monthUnit: '永久免費', annualUnit: '永久免費' },
+      starter: { monthly: 'NT$390', annual: 'NT$325', monthUnit: '每月計費', annualUnit: '/月（年繳 NT$3,900）' },
+      pro: { monthly: 'NT$990', annual: 'NT$825', monthUnit: '每月計費', annualUnit: '/月（年繳 NT$9,900）' }
+    };
+    Object.keys(priceMap).forEach(function(pid){
+      var pEl = document.querySelector('[data-lp-price="' + pid + '"]');
+      var uEl = document.querySelector('[data-lp-unit="' + pid + '"]');
+      if (pEl) pEl.textContent = cycle === 'annual' ? priceMap[pid].annual : priceMap[pid].monthly;
+      if (uEl) uEl.textContent = cycle === 'annual' ? priceMap[pid].annualUnit : priceMap[pid].monthUnit;
+    });
+  }
+
+  // ── Subscribe Flow ──
+  function openSubscribeFlow(planId) {
+    if (!PLAN_CATALOG[planId]) return;
+    if (planId === 'enterprise') {
+      // Enterprise → 走聯絡業務
+      showToast('Enterprise 方案請聯絡 hello@beyondspec.tw');
+      return;
+    }
+    if (planId === 'free') return;
+    var currentPlan = (state && state.plan) || 'free';
+    if (comparePlans(planId, currentPlan) < 0) {
+      // 降級流程
+      openDowngradeFlow(planId);
+      return;
+    }
+    if (planId === currentPlan) {
+      showToast('您目前正使用此方案');
+      return;
+    }
+    renderSubscribeModal(planId);
+  }
+
+  function renderSubscribeModal(planId) {
+    var plan = PLAN_CATALOG[planId];
+    var cycle = getBillingCycle();
+    var selPay = window._subSelectedPay || 'card';
+    window._subSelectedPay = selPay;
+    var monthlyPrice = plan.monthly;
+    var annualPrice = plan.annual;
+    var displayPrice = cycle === 'annual' ? Math.round(annualPrice / 12) : monthlyPrice;
+    var totalAnnual = monthlyPrice * 12;
+    var savingsAmount = totalAnnual - annualPrice;
+
+    var featuresHTML = (plan.highlights || []).map(function(f){
+      return '<li>' + f + '</li>';
+    }).join('');
+
+    var payHTML = PAY_METHODS.map(function(p){
+      var sel = (p.id === selPay) ? ' selected' : '';
+      return '<div class="sub-pay-card' + sel + '" onclick="app.selectSubPay(\'' + p.id + '\',\'' + planId + '\')">' +
+        p.icon + '<span>' + p.name + '</span></div>';
+    }).join('');
+
+    var cycleHTML = '' +
+      '<div class="sub-cycle-toggle">' +
+        '<button class="sub-cycle-btn ' + (cycle === 'monthly' ? 'active' : '') + '" onclick="app.setSubCycle(\'monthly\',\'' + planId + '\')">月付</button>' +
+        '<button class="sub-cycle-btn ' + (cycle === 'annual' ? 'active' : '') + '" onclick="app.setSubCycle(\'annual\',\'' + planId + '\')">年付 <span class="sub-cycle-save">省 17%</span></button>' +
+      '</div>';
+
+    var priceBlockHTML = cycle === 'annual'
+      ? '<div class="sub-plan-price">NT$' + displayPrice.toLocaleString() + '<span class="sub-plan-price-unit">/月（年繳 NT$' + annualPrice.toLocaleString() + '）</span></div>' +
+        '<div class="sub-plan-original">原價 NT$' + totalAnnual.toLocaleString() + '·年省 NT$' + savingsAmount.toLocaleString() + '</div>'
+      : '<div class="sub-plan-price">NT$' + displayPrice.toLocaleString() + '<span class="sub-plan-price-unit">/月</span></div>';
+
+    var overlay = document.getElementById('modalOverlay');
+    overlay.innerHTML = '' +
+      '<div class="sub-modal">' +
+        '<div class="sub-modal-header">' +
+          '<div class="sub-modal-title">升級到 ' + plan.name + '</div>' +
+          '<button class="sub-modal-close" onclick="app.closeSubscribeModal()" aria-label="關閉">' +
+            '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>' +
+          '</button>' +
+        '</div>' +
+        '<div class="sub-modal-subtitle">' + plan.tagline + '</div>' +
+        '<div class="sub-trial-badge">' +
+          '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2"/></svg>' +
+          '7 天免費試用·隨時可取消' +
+        '</div>' +
+        cycleHTML +
+        '<div class="sub-plan-summary">' +
+          '<div class="sub-plan-name">' + plan.name + '·' + plan.tagline + '</div>' +
+          priceBlockHTML +
+          '<ul class="sub-plan-features">' + featuresHTML + '</ul>' +
+        '</div>' +
+        '<div class="sub-section-label">付款方式</div>' +
+        '<div class="sub-pay-grid">' + payHTML + '</div>' +
+        '<button class="sub-confirm-btn" onclick="app.confirmSubscribe(\'' + planId + '\')">' +
+          '開始 7 天免費試用' +
+        '</button>' +
+        '<div class="sub-fineprint">試用結束自動以 ' + (cycle === 'annual' ? '年付 NT$' + annualPrice.toLocaleString() : '月付 NT$' + monthlyPrice.toLocaleString()) + ' 續訂·可隨時於設定中取消</div>' +
+      '</div>';
+    overlay.classList.add('active');
+  }
+
+  function setSubCycle(cycle, planId) {
+    setBillingCycle(cycle);
+    renderSubscribeModal(planId);
+  }
+
+  function selectSubPay(payId, planId) {
+    window._subSelectedPay = payId;
+    renderSubscribeModal(planId);
+  }
+
+  function closeSubscribeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+  }
+
+  function confirmSubscribe(planId) {
+    var cycle = getBillingCycle();
+    var pay = window._subSelectedPay || 'card';
+    var payName = (PAY_METHODS.find(function(p){ return p.id === pay; }) || {}).name || '信用卡';
+    // 模擬訂閱完成（金流串接 placeholder）
+    changePlan(planId);
+    closeSubscribeModal();
+    showToast('已啟動 ' + PLAN_CATALOG[planId].name + ' 方案 7 天免費試用（' + (cycle === 'annual' ? '年付' : '月付') + '·' + payName + '）');
+  }
+
+  // ── Downgrade Flow ──
+  function openDowngradeFlow(targetPlan) {
+    var currentPlan = (state && state.plan) || 'free';
+    var lost = getModulesLostOnDowngrade(currentPlan, targetPlan);
+    var lostHTML = lost.length
+      ? '<div class="down-lost-list">' +
+          '<div class="down-lost-list-title">將失去存取的模組（' + lost.length + '）</div>' +
+          lost.map(function(m){ return '<div class="down-lost-item">' + (MODULE_DISPLAY_NAME[m] || m) + '</div>'; }).join('') +
+        '</div>'
+      : '';
+
+    var overlay = document.getElementById('modalOverlay');
+    overlay.innerHTML = '' +
+      '<div class="down-modal">' +
+        '<div class="sub-modal-header">' +
+          '<div class="sub-modal-title">降級到 ' + PLAN_CATALOG[targetPlan].name + '</div>' +
+          '<button class="sub-modal-close" onclick="app.closeSubscribeModal()" aria-label="關閉">' +
+            '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>' +
+          '</button>' +
+        '</div>' +
+        '<div class="sub-modal-subtitle">確認降級前請閱讀以下說明</div>' +
+        '<div class="down-warn-banner">' +
+          '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2L1 18h18L10 2z"/><path d="M10 8v4M10 15v.5"/></svg>' +
+          '<div>降級後，被鎖模組的歷史資料將進入<strong>90 天唯讀模式</strong>——您仍可查看和匯出，但無法新增或編輯。90 天後若未升回，資料將被永久刪除。</div>' +
+        '</div>' +
+        lostHTML +
+        '<div class="down-actions">' +
+          '<button class="down-cancel" onclick="app.closeSubscribeModal()">取消</button>' +
+          '<button class="down-confirm" onclick="app.confirmDowngrade(\'' + targetPlan + '\')">確認降級</button>' +
+        '</div>' +
+      '</div>';
+    overlay.classList.add('active');
+  }
+
+  function confirmDowngrade(targetPlan) {
+    changePlan(targetPlan);
+    closeSubscribeModal();
+    showToast('已降級到 ' + PLAN_CATALOG[targetPlan].name + ' 方案·被鎖模組進入 90 天唯讀');
+  }
+
+  // ── 方案切換實作 ──
+  function changePlan(planId) {
+    if (!PLAN_CATALOG[planId]) return;
+    state.plan = planId;
+    if (typeof saveState === 'function') saveState();
+    // 重繪 sidebar 套用新 guard
+    if (typeof renderSidebar === 'function') renderSidebar();
+    // 若停留在設定頁，重繪設定
+    if (state.currentPage === 'settings' && typeof renderSettings === 'function') renderSettings();
   }
 
   function getEnabledModules() {
@@ -24321,108 +24623,6 @@ function loadHistory(){
         })()}
       </div>
 
-      <!-- ═══ 任務設定 ═══ -->
-      <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px">任務設定</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">調整週期長度、起始日與預設行為</div>
-          </div>
-        </div>
-        ${(function(){
-          var cd = JSON.parse(localStorage.getItem('bp_cycle_config')||'{}');
-          var dur = cd.duration || 7;
-          var startDay = cd.startDay || 1;
-          var dayLabels = ['週日','週一','週二','週三','週四','週五','週六'];
-
-          var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">';
-          // Cycle Duration
-          html += '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">';
-          html += '<div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:10px">週期長度</div>';
-          html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-          var opts = [{v:7,l:'1 週'},{v:14,l:'2 週'},{v:0,l:'自訂'}];
-          opts.forEach(function(o){
-            var sel = (o.v === 0 && dur !== 7 && dur !== 14) ? true : (dur === o.v);
-            html += '<button onclick="app.setCycleDuration('+o.v+')" style="flex:1;min-width:60px;padding:8px 12px;border-radius:var(--r-md);border:1.5px solid '+(sel?'var(--primary)':'var(--border)')+';background:'+(sel?'var(--primary-light)':'transparent')+';color:'+(sel?'var(--primary)':'var(--ink-muted)')+';font-weight:'+(sel?'700':'500')+';font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s">'+o.l+'</button>';
-          });
-          html += '</div>';
-          // Custom days input (show when custom)
-          if(dur !== 7 && dur !== 14){
-            html += '<div style="margin-top:10px;display:flex;align-items:center;gap:8px">';
-            html += '<input type="number" id="cycleCustomDays" value="'+dur+'" min="1" max="30" style="width:60px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-md);font-size:14px;text-align:center;background:var(--bg);color:var(--ink);font-family:inherit">';
-            html += '<span style="font-size:13px;color:var(--ink-muted)">天</span>';
-            html += '<button onclick="var v=parseInt(document.getElementById(\'cycleCustomDays\').value)||7;app.setCycleDuration(v)" class="btn btn-ghost" style="padding:4px 12px;font-size:12px">套用</button>';
-            html += '</div>';
-          }
-          html += '</div>';
-
-          // Start Day
-          html += '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">';
-          html += '<div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:10px">週期起始日</div>';
-          html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
-          [1,0].forEach(function(d){
-            var sel = (startDay === d);
-            html += '<button onclick="app.setCycleStartDay('+d+')" style="padding:8px 14px;border-radius:var(--r-md);border:1.5px solid '+(sel?'var(--primary)':'var(--border)')+';background:'+(sel?'var(--primary-light)':'transparent')+';color:'+(sel?'var(--primary)':'var(--ink-muted)')+';font-weight:'+(sel?'700':'500')+';font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s">'+dayLabels[d]+'</button>';
-          });
-          html += '</div>';
-          html += '<div style="font-size:11px;color:var(--ink-dim);margin-top:8px;line-height:1.5">週期從選定的日子開始計算，變更後下一個新週期生效</div>';
-          html += '</div>';
-          html += '</div>';
-          return html;
-        })()}
-      </div>
-
-      <!-- ═══ AI 自主層級 ═══ -->
-      <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px">
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px">AI 自主層級</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px;line-height:1.6">決定 AI 在任務建議、報價草稿、客戶洞察等場景中的介入程度。調整後，所有 AI 功能（PATH 診斷、Lab、任務建議、報價草擬⋯）都會套用這個層級。</div>
-          </div>
-        </div>
-
-        ${(function(){
-          var globalAutonomy = localStorage.getItem('bp_agent_autonomy') || 'suggest';
-          var levels = [
-            {id:'off',label:'關閉',desc:'AI 不會主動行動',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg>'},
-            {id:'suggest',label:'建議',desc:'AI 給建議，你決定是否採用',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 7v3l2 2"/></svg>'},
-            {id:'copilot',label:'協作',desc:'AI 起草，你審核確認後生效',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 15l3-3 3 3 6-6"/></svg>'},
-            {id:'auto',label:'自動',desc:'AI 自動執行低風險操作，高風險前詢問',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15.5L5 18L6 12.5L2 8.5L7.5 7.5Z"/></svg>'},
-            {id:'full',label:'全自主',desc:'AI 完全自主行動，僅回報結果',icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><path d="M6 10l3 3 5-5"/></svg>'}
-          ];
-
-          var html = '';
-
-          // Autonomy Level Dial（外層已有標題與說明，內層只渲染互動控件）
-          html += '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:20px">';
-
-          // Level steps
-          html += '<div class="autonomy-steps">';
-          levels.forEach(function(lv, i){
-            var isActive = (globalAutonomy === lv.id);
-            var passedIdx = levels.findIndex(function(l){ return l.id === globalAutonomy; });
-            var isPassed = (i <= passedIdx);
-            html += '<div class="autonomy-step' + (isActive ? ' active' : '') + '" onclick="app.setAgentAutonomy(\''+lv.id+'\')" style="cursor:pointer">';
-            html += '<div class="step-dot" style="' + (isPassed ? 'background:var(--primary);border-color:var(--primary)' : '') + '">' + (isActive ? lv.icon : '') + '</div>';
-            html += '<div class="step-label" style="' + (isActive ? 'color:var(--primary);font-weight:700' : '') + '">' + lv.label + '</div>';
-            html += '</div>';
-            if(i < levels.length - 1){
-              html += '<div style="flex:1;height:2px;background:' + (isPassed && i < passedIdx ? 'var(--primary)' : 'var(--border)') + ';margin:0 -4px;align-self:flex-start;margin-top:14px"></div>';
-            }
-          });
-          html += '</div>';
-          // Description of current level
-          var curLevel = levels.find(function(l){ return l.id === globalAutonomy; }) || levels[1];
-          html += '<div style="margin-top:14px;padding:12px 16px;background:linear-gradient(135deg,rgba(124,92,252,.06),rgba(124,92,252,.02));border-radius:var(--r-md);border:1px solid rgba(124,92,252,.1)">';
-          html += '<div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:2px">' + curLevel.label + ' 模式</div>';
-          html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.5">' + curLevel.desc + '</div>';
-          html += '</div>';
-          html += '</div>';
-
-          return html;
-        })()}
-      </div>
-
       <!-- ═══ 方案與用量 ═══ -->
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">方案與用量</div>
@@ -24470,19 +24670,29 @@ function loadHistory(){
           </div>
         </div>
 
-        ${plan==='free' ? `
-        <button class="btn btn-gold" style="width:100%;padding:12px 0" onclick="app.handleUpgrade()">升級方案 · 從 NT$390/月起</button>
-        ` : plan==='starter' ? `
-        <button class="btn btn-gold" style="width:100%;padding:12px 0" onclick="app.handleUpgrade()">升級到 Pro · NT$990/月</button>
-        ` : plan==='pro' ? `
-        <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--ink-muted)">
-          使用 Opus 模型時 credit 消耗為 Sonnet 的 3 倍
+        <!-- Plan-aware CTA Row（v0.32.0：四方案一覽） -->
+        <div style="margin-top:8px">
+          <div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:10px;letter-spacing:.3px">切換方案</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            ${(['free','starter','pro','enterprise']).map(function(pid){
+              var p = PLAN_CATALOG[pid];
+              var cur = pid === plan;
+              var rank = PLAN_RANK[pid] - PLAN_RANK[plan];
+              var cta = cur ? '目前方案' : (rank > 0 ? (pid === 'enterprise' ? '聯絡業務' : '升級') : '降級');
+              var bg = cur ? 'var(--bg-hover)' : (rank > 0 ? p.color : 'transparent');
+              var color = cur ? 'var(--ink-muted)' : (rank > 0 ? '#fff' : 'var(--ink-sec)');
+              var border = cur ? '1.5px solid var(--primary)' : (rank > 0 ? 'none' : '1px solid var(--border)');
+              var priceText = pid === 'enterprise' ? '洽談' : (p.monthly === 0 ? '免費' : 'NT$' + p.monthly + '/月');
+              return '<button onclick="app.openSubscribeFlow(\'' + pid + '\')" ' + (cur ? 'disabled' : '') + ' style="padding:14px 8px;border-radius:var(--r-md);background:' + bg + ';color:' + color + ';border:' + border + ';cursor:' + (cur ? 'default' : 'pointer') + ';font-family:inherit;text-align:center;transition:all .15s">' +
+                '<div style="font-size:13px;font-weight:700;margin-bottom:4px">' + p.name + '</div>' +
+                '<div style="font-size:11px;opacity:.85;margin-bottom:6px">' + priceText + '</div>' +
+                '<div style="font-size:11px;font-weight:600;letter-spacing:.3px">' + cta + '</div>' +
+              '</button>';
+            }).join('')}
+          </div>
+          ${plan==='pro' ? '<div style="text-align:center;padding:10px 0 0;font-size:11px;color:var(--ink-muted)">使用 Opus 模型時 credit 消耗為 Sonnet 的 3 倍</div>' : ''}
+          ${plan==='enterprise' ? '<div style="text-align:center;padding:10px 0 0;font-size:11px;color:var(--ink-muted)">Enterprise 方案 · 無限 credit 額度與模型配置</div>' : ''}
         </div>
-        ` : `
-        <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--ink-muted)">
-          Enterprise 方案 · 無限 credit 額度與模型配置
-        </div>
-        `}
       </div>
 
       <!-- ═══ 功能對照表 ═══ -->
@@ -24525,10 +24735,10 @@ function loadHistory(){
             </tbody>
           </table>
         </div>
-        ${plan==='free' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.handleUpgrade()">升級方案 · 從 NT$390/月起</button>' : plan==='starter' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.handleUpgrade()">升級到 Pro · NT$990/月</button>' : ''}
+        ${plan==='free' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.openSubscribeFlow(\'starter\')">升級到 Starter · NT$390/月</button>' : plan==='starter' ? '<button class="btn btn-gold" style="width:100%;margin-top:16px;padding:12px 0" onclick="app.openSubscribeFlow(\'pro\')">升級到 Pro · NT$990/月</button>' : ''}
       </div>
 
-      <!-- ═══ 團隊協作（Pro+）═══ -->
+      <!-- ═══ 團隊管理（Pro+ 才顯示，Free/Starter 不再顯示灰階卡）═══ -->
       ${(plan==='pro' || plan==='enterprise') ? `
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">團隊管理</div>
@@ -24547,13 +24757,7 @@ function loadHistory(){
         </button>
         <div style="margin-top:12px;font-size:13px;color:var(--ink-muted);text-align:center">${plan==='enterprise' ? 'Enterprise 方案支援最多 20 位成員，含管理員角色與權限控制' : 'Pro 方案支援最多 5 位成員協作'}</div>
       </div>
-      ` : `
-      <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px;opacity:.55">
-        <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">團隊協作</div>
-        <div style="font-size:14px;color:var(--ink-muted);line-height:1.6;margin-bottom:14px">Pro 方案起可邀請團隊成員共同管理，Enterprise 支援管理員角色與權限控制。</div>
-        <button class="btn btn-gold" style="width:100%;padding:10px 0;font-size:13px" onclick="app.handleUpgrade()">升級到 Pro · 開啟團隊協作</button>
-      </div>
-      `}
+      ` : ''}
 
       <!-- ═══ Claude 連接（MCP Plugin）═══ -->
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
@@ -25885,6 +26089,16 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     setAgentAutonomy,
     addAgentMember,
     removeMember,
+    // v0.32.0 Subscription flow
+    openSubscribeFlow,
+    closeSubscribeModal,
+    setSubCycle,
+    selectSubPay,
+    confirmSubscribe,
+    openDowngradeFlow,
+    confirmDowngrade,
+    changePlan,
+    lpSetCycle,
   };
 
   // ==================== BLOG FUNCTIONS ====================
@@ -26268,49 +26482,55 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           <div class="section-center">
             <div class="section-header">
               <h2>簡單透明的定價</h2>
-              <p class="section-sub">選擇最適合你的方案，每月自動重置 Credits</p>
+              <p class="section-sub">選擇最適合你的方案 · 7 天免費試用 · 隨時可取消</p>
             </div>
-            <div class="pricing-grid" style="grid-template-columns:repeat(4,1fr);gap:16px">
+
+            <!-- 月/年 切換 -->
+            <div style="display:flex;justify-content:center;margin:24px 0 8px">
+              <div class="sub-cycle-toggle" style="background:rgba(124,92,252,.08)">
+                <button class="sub-cycle-btn active" id="lpCycleMonthly" onclick="app.lpSetCycle('monthly')">月付</button>
+                <button class="sub-cycle-btn" id="lpCycleAnnual" onclick="app.lpSetCycle('annual')">年付 <span class="sub-cycle-save">省 17%</span></button>
+              </div>
+            </div>
+
+            <div class="pricing-grid" style="grid-template-columns:repeat(4,1fr);gap:16px;margin-top:24px">
               <div class="price-card stagger-child d1">
                 <h3>Free</h3>
-                <div class="price-amount">免費</div>
-                <small>永久免費</small>
+                <div class="price-amount" data-lp-price="free">免費</div>
+                <small data-lp-unit="free">永久免費</small>
                 <ul>
                   <li>每月 30 Credits</li>
                   <li>PATH 四維診斷</li>
-                  <li>文件匯入評分</li>
                   <li>任務中心 · 客戶管理</li>
-                  <li>報價提案</li>
+                  <li>客戶上限 50 筆</li>
                 </ul>
                 <button class="btn-price" onclick="app.showLoginModal()">免費開始</button>
               </div>
               <div class="price-card stagger-child d2">
                 <h3>Starter</h3>
-                <div class="price-amount">NT$390</div>
-                <small>每月計費</small>
+                <div class="price-amount" data-lp-price="starter">NT$390</div>
+                <small data-lp-unit="starter">每月計費</small>
                 <ul>
                   <li>每月 500 Credits</li>
-                  <li>Free 所有功能</li>
-                  <li>Lab AI 深度研究</li>
-                  <li>問卷引擎 · 市場探測</li>
-                  <li>完整診斷報告</li>
+                  <li>Lab 研究 · 問卷引擎</li>
+                  <li>市場探測 · 報價提案</li>
+                  <li>會議紀錄 · 客戶無上限</li>
                 </ul>
-                <button class="btn-price" onclick="app.handleUpgrade()">升級 Starter</button>
+                <button class="btn-price" onclick="app.openSubscribeFlow('starter')">7 天免費試用</button>
               </div>
               <div class="price-card featured stagger-child d3">
                 <div class="price-badge">推薦</div>
                 <h3>Pro</h3>
-                <div class="price-amount">NT$990</div>
-                <small>每月計費</small>
+                <div class="price-amount" data-lp-price="pro">NT$990</div>
+                <small data-lp-unit="pro">每月計費</small>
                 <ul>
                   <li>每月 3,000 Credits</li>
                   <li>Starter 所有功能</li>
-                  <li>AI 模型切換（Opus / Sonnet）</li>
-                  <li>完整市場報告 + 匯出</li>
-                  <li>Claude MCP 連接</li>
-                  <li>進階資料匯出</li>
+                  <li>AI 模型切換（Opus/Sonnet）</li>
+                  <li>收款 · 文件庫 · AI 儀表板</li>
+                  <li>團隊最多 5 人 + Claude MCP</li>
                 </ul>
-                <button class="btn-price featured" onclick="app.handleUpgrade()">升級 Pro</button>
+                <button class="btn-price featured" onclick="app.openSubscribeFlow('pro')">7 天免費試用</button>
               </div>
               <div class="price-card stagger-child d4">
                 <h3>Enterprise</h3>
@@ -26319,15 +26539,14 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                 <ul>
                   <li>無限 Credits</li>
                   <li>Pro 所有功能</li>
-                  <li>團隊多人協作（1-20 人）</li>
-                  <li>API 整合</li>
-                  <li>專屬客戶成功經理</li>
+                  <li>團隊最多 20 人 + 管理員</li>
+                  <li>API 整合 · 專屬客戶經理</li>
                 </ul>
-                <button class="btn-price" onclick="window.location.href='mailto:edwardt0303@gmail.com'">聯繫我們</button>
+                <button class="btn-price" onclick="window.location.href='mailto:hello@beyondspec.tw'">聯繫我們</button>
               </div>
             </div>
             <div class="method-note" style="margin-top:2rem;text-align:center">
-              <strong>Credits 說明：</strong>每個 AI 功能消耗不同 Credits（PATH 診斷 5、文件匯入 8、問卷生成 10、Lab 研究 20）。每月 1 日自動重置。使用 Opus 模型消耗 3 倍 Credits。
+              <strong>付款方式：</strong>信用卡 · Apple Pay · Google Pay。<strong>Credits 說明：</strong>每月 1 日自動重置，使用 Opus 模型消耗 3 倍 Credits。
             </div>
           </div>
         </section>
@@ -27053,4 +27272,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.31.3 · 設定頁優化：plan guard、模組卡縮小、AI Agent 區瘦身 -->
+</html><!-- v0.32.0 · 訂閱系統：月/年切換、7 天試用、Modal 升降級、Landing pricing 重構 -->
