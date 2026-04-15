@@ -3968,6 +3968,28 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
   .rm-group-header .rm-group-chev{transition:none}
 }
 
+/* v0.32.12 任務看板 unified empty state — 取代「空欄位 + 旁邊孤兒 onboarding hero」破版 */
+.kb-empty-hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:64px 24px 80px;max-width:640px;margin:0 auto;animation:kbEmptyIn .42s cubic-bezier(.34,1.36,.64,1) backwards}
+@keyframes kbEmptyIn{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+.kb-empty-icon{width:84px;height:84px;border-radius:24px;background:linear-gradient(135deg,rgba(124,92,252,.14),rgba(124,92,252,.04));display:flex;align-items:center;justify-content:center;margin-bottom:24px;border:1px solid rgba(124,92,252,.18);box-shadow:0 8px 24px -12px rgba(124,92,252,.4)}
+.kb-empty-title{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.3px}
+.kb-empty-sub{font-size:14px;color:var(--ink-muted);margin-bottom:32px;letter-spacing:.2px}
+.kb-empty-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;margin-bottom:28px}
+.kb-empty-step{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px 16px;cursor:pointer;transition:transform .18s cubic-bezier(.34,1.36,.64,1),border-color .18s,box-shadow .18s;text-align:left;font-family:inherit;animation:kbEmptyIn .42s cubic-bezier(.34,1.36,.64,1) backwards}
+.kb-empty-step:nth-child(1){animation-delay:80ms}
+.kb-empty-step:nth-child(2){animation-delay:140ms}
+.kb-empty-step:nth-child(3){animation-delay:200ms}
+.kb-empty-step:hover{transform:translateY(-3px);border-color:var(--primary);box-shadow:0 12px 28px -16px rgba(124,92,252,.35)}
+.kb-empty-step-num{width:30px;height:30px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-bottom:12px;box-shadow:0 4px 10px -4px currentColor}
+.kb-empty-step-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.kb-empty-step-desc{font-size:12px;color:var(--ink-muted);line-height:1.55}
+.kb-empty-cta{padding:11px 28px !important;font-size:14px !important;font-weight:600 !important;border-radius:10px !important;animation:kbEmptyIn .42s cubic-bezier(.34,1.36,.64,1) 280ms backwards}
+@media (max-width:640px){
+  .kb-empty-hero{padding:40px 16px 56px}
+  .kb-empty-steps{grid-template-columns:1fr;gap:10px}
+  .kb-empty-icon{width:64px;height:64px;border-radius:18px;margin-bottom:18px}
+}
+
 /* v0.32.10 cycle drawer 沿用 .rmdrw-* 視覺語言：補幾個小元件 */
 .rmdrw-color-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;padding:4px 2px}
 .rmdrw-color-sw{width:100%;aspect-ratio:1;border-radius:8px;border:none;cursor:pointer;padding:0;position:relative;transition:transform .15s cubic-bezier(.34,1.56,.64,1),box-shadow .18s}
@@ -4439,12 +4461,15 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 .cp-ai-card.cp-ai-ahead{background:color-mix(in srgb,var(--bg-card) 95%,var(--teal))}
 .cp-ai-card.cp-ai-warn{background:color-mix(in srgb,var(--bg-card) 95%,var(--gold))}
 .cp-ai-card.cp-ai-danger{background:color-mix(in srgb,var(--bg-card) 94%,var(--rose))}
+/* v0.32.12: empty/idle 用 primary 微染色，與 PATH 整體用色一致（不再借用警示 gold） */
+.cp-ai-card.cp-ai-idle{background:color-mix(in srgb,var(--bg-card) 96%,var(--primary));border-color:rgba(124,92,252,.18)}
 .cp-ai-left{flex:1;min-width:0}
 .cp-ai-tag{display:inline-flex;align-items:center;height:22px;padding:0 10px;font-size:11px;font-weight:700;border-radius:6px;letter-spacing:.06em;margin-bottom:10px}
 .cp-ai-tag-healthy{background:rgba(27,168,145,.14);color:var(--teal)}
 .cp-ai-tag-ahead{background:rgba(27,168,145,.14);color:var(--teal)}
 .cp-ai-tag-warn{background:rgba(224,138,58,.14);color:var(--gold)}
 .cp-ai-tag-danger{background:rgba(217,68,98,.14);color:var(--rose)}
+.cp-ai-tag-idle{background:rgba(124,92,252,.12);color:var(--primary)}
 .cp-ai-head{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.2px;line-height:1.4;margin-bottom:4px}
 .cp-ai-sub{font-size:13px;color:var(--ink-muted);line-height:1.55;max-width:640px}
 .cp-ai-stats{display:flex;align-items:center;gap:18px;padding-left:20px;border-left:1px solid var(--border);flex-shrink:0}
@@ -4473,6 +4498,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 .cp-ov{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:18px 22px 14px;margin-bottom:20px;box-shadow:var(--shadow-sm);transition:border-color .25s var(--ease-out)}
 .cp-ov.cp-ov-warn{border-color:color-mix(in srgb,var(--border) 60%,var(--gold) 40%)}
 .cp-ov.cp-ov-danger{border-color:color-mix(in srgb,var(--border) 50%,var(--rose) 50%)}
+/* v0.32.12: idle = 空狀態，primary 微染色，與 PATH 整體用色一致 */
+.cp-ov.cp-ov-idle{border-color:color-mix(in srgb,var(--border) 60%,var(--primary) 25%);background:color-mix(in srgb,var(--bg-card) 96%,var(--primary))}
 
 /* Row 1: 週期導航 + KPI 數字行 */
 .cp-ov-timeline{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap}
@@ -4501,6 +4528,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 .cp-ov-bar-fill.bar-ahead{background:linear-gradient(90deg,var(--teal),#2dd4a8)}
 .cp-ov-bar-fill.bar-warn{background:var(--gold)}
 .cp-ov-bar-fill.bar-danger{background:var(--rose)}
+.cp-ov-bar-fill.bar-idle{background:color-mix(in srgb,var(--primary) 45%,var(--bg-hover))}
 
 /* Row 3: 狀態 chip + headline（單行；hint 已砍） */
 .cp-ov-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -4510,6 +4538,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 .cp-ov-tag-ahead{background:rgba(27,168,145,.12);color:var(--teal)}
 .cp-ov-tag-warn{background:rgba(224,138,58,.14);color:#b96d1e}
 .cp-ov-tag-danger{background:rgba(217,68,98,.14);color:var(--rose)}
+.cp-ov-tag-idle{background:rgba(124,92,252,.12);color:var(--primary)}
 .cp-ov-msg{font-size:13px;font-weight:600;color:var(--ink);line-height:1.45;letter-spacing:-.05px}
 
 /* Row 4: 逾期/聚焦任務 — inline list（不再用大 pill） */
@@ -4751,7 +4780,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.11</div>
+        <div class="sidebar-version">v0.32.12</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -8085,7 +8114,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 
       var _tagClass, _tag, _headline, _sub;
       if(totalCount === 0){
-        _tagClass = 'warn'; _tag = '待排程';
+        // v0.32.12: empty 不再用 warn 警示色（gold），改用 idle（primary subtle）
+        _tagClass = 'idle'; _tag = '待排程';
         _headline = '這個週期還沒有任務';
         _sub = '從左側需求池拖曳卡片到本週期，或按「新增需求」直接建立。';
       } else if(_overdueCards.length >= 3 || (_daysLeft === 0 && _workProgress < 0.7)){
@@ -9316,7 +9346,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 
       var _state, _tagClass, _tag, _headline, _sub;
       if(totalCount === 0){
-        _state = 'empty'; _tagClass = 'warn'; _tag = '待排程';
+        // v0.32.12: empty 不再用 warn 警示色（gold），改用 idle（primary subtle）符合 PATH 用色規範
+        _state = 'empty'; _tagClass = 'idle'; _tag = '待排程';
         _headline = '這個週期還沒有任務';
         _sub = '從右側需求池點「排入」把本週要做的事拉進來，或按「＋ 新增卡片」直接建立。';
       } else if(_overdueCards.length >= 3 || (_daysLeft === 0 && _workProgress < 0.7)){
@@ -12908,6 +12939,36 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       }
 
       // ── BOARD VIEW ──
+      // v0.32.12: empty-board 走獨立 unified empty state，不再渲染空欄位（避免 grid-column:1/-1 在 flex 容器裡破版變成第 4 個 sibling）
+      var _kbCatF = window._kbCatFilter || [];
+      var _earlyTotal = cards.filter(function(c){ return c.cycleId === _cyc.id && !c.archived && c.columnId !== 'inbox' && (_kbCatF.length === 0 || _kbCatF.indexOf(c.category) >= 0); }).length;
+      if(_earlyTotal === 0 && !sq){
+        html += '<div class="kb-empty-hero">';
+        html += '<div class="kb-empty-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.3" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="4" rx="1.5"/><rect x="14" y="10" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="4" rx="1.5"/></svg></div>';
+        html += '<div class="kb-empty-title">本期還沒有任務</div>';
+        html += '<div class="kb-empty-sub">三步開始你的工作流程</div>';
+        html += '<div class="kb-empty-steps">';
+        var _obSteps2 = [
+          {n:'1',t:'新增需求',d:'在任務規劃建立待辦項目',nav:'biz-planning',color:'var(--primary)'},
+          {n:'2',t:'排入週期',d:'挑選本期要做的需求',nav:'biz-planning',color:'var(--gold)'},
+          {n:'3',t:'開始執行',d:'在看板追蹤進度',nav:'biz-tasks',color:'var(--teal)'}
+        ];
+        _obSteps2.forEach(function(s){
+          html += '<button type="button" class="kb-empty-step" onclick="navigate(\'' + s.nav + '\')">';
+          html += '<div class="kb-empty-step-num" style="background:' + s.color + '">' + s.n + '</div>';
+          html += '<div class="kb-empty-step-title">' + s.t + '</div>';
+          html += '<div class="kb-empty-step-desc">' + s.d + '</div>';
+          html += '</button>';
+        });
+        html += '</div>';
+        html += '<button class="btn btn-accent kb-empty-cta" onclick="navigate(\'biz-inbox\')">前往需求池</button>';
+        html += '</div>';
+        content.innerHTML = html;
+        _kbBindSearch();
+        _kbBindKeyboard();
+        _kbFirstVisitNudge();
+        return;
+      }
       // Mobile tabs (hidden on desktop via CSS)
       html += '<div class="kb-mobile-tabs" id="kbMobileTabs" style="display:none">';
       boardCols.forEach(function(col, ci){
@@ -13041,33 +13102,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         html += '</div></div>';
       });
 
-      // Onboarding: empty board state
+      // v0.32.12: empty-board hero 已移到 columns 渲染前 early-return（避免 grid-column 在 flex 容器破版）
       var _totalBoardCards = cards.filter(function(c){ return c.cycleId === _cyc.id && !c.archived && c.columnId !== 'inbox'; }).length;
-      if(_totalBoardCards === 0 && !sq) {
-        html += '<div style="grid-column:1/-1;text-align:center;padding:48px 24px">';
-        html += '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(124,92,252,.03));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;border:1px solid rgba(124,92,252,.1)">';
-        html += '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="4" rx="1.5"/><rect x="14" y="10" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="4" rx="1.5"/></svg>';
-        html += '</div>';
-        html += '<div style="font-size:17px;font-weight:700;color:var(--ink);margin-bottom:8px">本期還沒有任務</div>';
-        html += '<div style="font-size:14px;color:var(--ink-muted);line-height:1.7;max-width:400px;margin:0 auto 24px">';
-        html += '三步開始你的工作流程：</div>';
-        html += '<div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;max-width:520px;margin:0 auto 28px">';
-        var _obSteps = [
-          {n:'1',t:'新增需求',d:'在任務規劃建立待辦項目',nav:'biz-planning',color:'var(--primary)'},
-          {n:'2',t:'排入週期',d:'挑選本期要做的需求',nav:'biz-planning',color:'var(--gold)'},
-          {n:'3',t:'開始執行',d:'在看板追蹤執行進度',nav:'biz-tasks',color:'var(--teal)'}
-        ];
-        _obSteps.forEach(function(s){
-          html += '<div onclick="navigate(\'' + s.nav + '\')" style="flex:1;min-width:140px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);cursor:pointer;transition:all .15s;text-align:left" onmouseover="this.style.borderColor=\'' + s.color + '\'" onmouseout="this.style.borderColor=\'var(--border)\'">';
-          html += '<div style="width:28px;height:28px;border-radius:50%;background:' + s.color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-bottom:10px">' + s.n + '</div>';
-          html += '<div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px">' + s.t + '</div>';
-          html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.5">' + s.d + '</div>';
-          html += '</div>';
-        });
-        html += '</div>';
-        html += '<button class="btn btn-accent" onclick="navigate(\'biz-inbox\')" style="padding:10px 24px;font-size:14px;font-weight:600">前往需求池</button>';
-        html += '</div>';
-      }
       // Empty search result for board view
       if(_totalBoardCards === 0 && sq) {
         html += '<div style="grid-column:1/-1;text-align:center;padding:48px 24px">';
@@ -28627,4 +28663,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.11 · 修兩個 v0.32.10 漏網 bug：(1) 色塊點擊不開 drawer——demo cycles 從未進 T.getCycles() 儲存層，_rmGetCycleByKey 一律找不到回 null，drawer 提前 return；新增 window._rmAllCyclesCache / _rmAllCardsCache 在 render-time 暴露完整列表（含 demo），_rmGetCycleByKey 與 _rmOpenCycleDrawer 優先讀快取再 fallback 到 storage；(2) 展開動畫太微弱看不出來——重做 @keyframes rmGroupRowIn：translateY -22px、scaleY .85→1.02→1（spring overshoot）、blur(2px)→0、duration .52s、stagger 從 30ms 拉到 60ms（最後一階 360ms），加 transform-origin top center 確保視覺從 group bar 往下展開；chevron 旋轉延長到 .42s 並加色彩切換（collapsed=muted, expanded=primary） · 後續 v0.32.10 changelog: --> 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
+</html><!-- v0.32.12 · 任務看板空狀態 + 週期底色修正：(1) 空看板佈局 bug——舊 empty state 用 grid-column:1/-1 但 .kanban-board 是 display:flex，empty block 成了第 4 個 flex sibling 跟 columns 並排；新增 early-return 分支：當 totalInCycle===0 且無搜尋時不渲染 columns，直接渲染統一 .kb-empty-hero（icon 84×84 primary gradient + 3 步快速導引卡：新增需求→排入週期→開始執行 + CTA 前往需求池），動畫 kbEmptyIn spring stagger 80/140/200ms，CTA 延 280ms，手機 640px 降 padding 縮 icon 改單欄；(2) 週期底色不符 PATH 規範——空狀態原本套 'warn' 類（gold #E08A3A 偏暖），語意錯誤且視覺偏移；新增 'idle' 狀態走 primary（#7C5CFC）微染色（card bg mix 96% + 4%、border 60/25 mix、tag rgba .12、bar 45% mix），cp-ov / cp-ov-tag / bar 三處同步支援 bar-idle/cp-ov-idle/cp-ov-tag-idle，cp-ai 側 cp-ai-idle / cp-ai-tag-idle 亦到位；JS 面兩處（line 8118 cp-ov 帶、line 9350 cp-ai 卡）_tagClass 從 'warn' → 'idle'，_tag 文案維持「待排程」 · 前版 v0.32.11 成就（保留）：修兩個 v0.32.10 漏網 bug——(a) 色塊點擊不開 drawer，demo cycles 從未進 T.getCycles()，_rmGetCycleByKey 回 null；新增 window._rmAllCyclesCache / _rmAllCardsCache 走 render-time 快取；(b) 展開動畫太微弱，重做 @keyframes rmGroupRowIn：translateY -22px、scaleY spring overshoot、blur 2px→0、.52s、stagger 60ms (max 360ms)、chevron .42s + primary/muted 色彩切換 --><!-- v0.32.11 · 修兩個 v0.32.10 漏網 bug：(1) 色塊點擊不開 drawer——demo cycles 從未進 T.getCycles() 儲存層，_rmGetCycleByKey 一律找不到回 null，drawer 提前 return；新增 window._rmAllCyclesCache / _rmAllCardsCache 在 render-time 暴露完整列表（含 demo），_rmGetCycleByKey 與 _rmOpenCycleDrawer 優先讀快取再 fallback 到 storage；(2) 展開動畫太微弱看不出來——重做 @keyframes rmGroupRowIn：translateY -22px、scaleY .85→1.02→1（spring overshoot）、blur(2px)→0、duration .52s、stagger 從 30ms 拉到 60ms（最後一階 360ms），加 transform-origin top center 確保視覺從 group bar 往下展開；chevron 旋轉延長到 .42s 並加色彩切換（collapsed=muted, expanded=primary） · 後續 v0.32.10 changelog: --> 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
