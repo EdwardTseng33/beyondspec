@@ -2808,19 +2808,34 @@ canvas{display:block;margin:0 auto 24px}
 .kb-archive-all-btn:hover{border-style:solid;border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.06)}
 .kb-archive-all-btn svg{stroke-width:1.75}
 
-/* v0.32.16 header 重構：分類 chips 變 inline（無卡片包裹）、封存降階 icon ghost、搜尋固定寬 */
+/* v0.32.17 header 二次優化：兩層節奏（context row / control row）+ 統一高度 32px + pill 升到 title 行 */
+/* Row 1：page-title-area 容納 pill，align 從 baseline 改 center 以容納 46px pill */
+.page-title-area.kb-title-row{align-items:center;gap:12px}
+.page-title-area.kb-title-row h1{align-items:center}
+.page-title-area.kb-title-row .subtitle{align-self:center}
+.page-title-area.kb-title-row .kb-cyc-pill{margin-left:auto;flex-shrink:0}
+/* Row 2 控制列：所有元件 32px 齊平 */
+.kb-control-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
 .kb-catfilter-inline{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
-.kb-catfilter-inline .kb-catchip{height:28px}
-.kb-catfilter-clear-inline{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 9px;background:transparent;border:1px solid var(--border);border-radius:14px;font-size:11.5px;font-weight:600;color:var(--ink-muted);cursor:pointer;font-family:inherit;transition:all .15s var(--ease-out)}
+.kb-catfilter-inline .kb-catchip{height:32px;padding:0 12px;border-radius:16px;font-size:12.5px}
+.kb-catfilter-clear-inline{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 10px;background:transparent;border:1px solid var(--border);border-radius:16px;font-size:11.5px;font-weight:600;color:var(--ink-muted);cursor:pointer;font-family:inherit;transition:all .15s var(--ease-out)}
 .kb-catfilter-clear-inline:hover{border-color:var(--rose);color:var(--rose)}
 .kb-catfilter-clear-inline svg{width:10px;height:10px;stroke-width:2}
-.kb-search-wrap{flex:0 0 auto;min-width:180px;max-width:240px}
-.kb-search-wrap .bp-search{width:100%}
-.kb-archive-icon{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;background:transparent;border:1px solid transparent;border-radius:7px;color:var(--ink-muted);cursor:pointer;font-family:inherit;transition:all .15s var(--ease-out);padding:0;position:relative}
+.kb-search-wrap{flex:0 0 auto;width:220px;height:32px}
+.kb-search-wrap .bp-search{width:100%;height:32px}
+.kb-search-wrap .bp-search input{height:32px;font-size:12.5px}
+.kb-control-bar .kb-view-seg{height:32px}
+.kb-control-bar .kb-view-seg-btn{height:28px;padding:0 12px}
+.kb-control-bar .kb-groupby{height:32px}
+.kb-archive-icon{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:32px;height:32px;padding:0 8px;background:transparent;border:1px solid transparent;border-radius:8px;color:var(--ink-muted);cursor:pointer;font-family:inherit;transition:all .15s var(--ease-out);font-size:11.5px;font-weight:700;letter-spacing:.02em}
 .kb-archive-icon:hover{background:var(--bg-hover);color:var(--ink);border-color:var(--border)}
 .kb-archive-icon.active{color:var(--primary);background:color-mix(in srgb,var(--primary) 8%,transparent);border-color:color-mix(in srgb,var(--primary) 30%,transparent)}
-.kb-archive-icon svg{stroke-width:1.6}
-.kb-archive-icon-badge{position:absolute;top:-4px;right:-4px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:var(--ink);color:#fff;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;line-height:1;letter-spacing:0}
+.kb-archive-icon svg{stroke-width:1.6;flex-shrink:0}
+.kb-archive-icon-count{font-variant-numeric:tabular-nums;opacity:.9}
+@media(max-width:900px){
+  .page-title-area.kb-title-row{flex-wrap:wrap}
+  .page-title-area.kb-title-row .kb-cyc-pill{margin-left:0;width:100%;justify-content:space-between}
+}
 
 /* Column drag-to-reorder visual cues */
 .kanban-col.col-dragging{opacity:.4}
@@ -4837,7 +4852,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.16</div>
+        <div class="sidebar-version">v0.32.17</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -12778,14 +12793,13 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       // View mode: board (default) or list
       var viewMode = window._kbViewMode || 'board';
 
-      // ── v0.32.16 Header Redesign ──
-      // Row 1: page-title-area（只保留 title + subtitle，view toggle 下放到 row 2）
-      html += '<div class="page-title-area">';
+      // ── v0.32.17 Header Redesign（兩層節奏）──
+      // Row 1: page-title-area = title + subtitle + 週期 pill（context 行，pill 靠右）
+      html += '<div class="page-title-area kb-title-row">';
       html += '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="14" rx="2"/><rect x="12" y="3" width="6" height="10" rx="2"/></svg><span>任務看板</span></h1>';
       html += '<p class="subtitle">今天要做什麼？拖曳卡片推進工作</p>';
-      html += '</div>';
 
-      // Row 2: Control bar — Cycle nav (left, with progress) + filters (right)
+      // 計算週期顯示 + tone（pill 要進 row 1，必須先算）
       var archivedCount = cards.filter(function(c){return c.archived;}).length;
       var _cycPct = _cycTotalCount > 0 ? Math.round(_cycDoneCount / _cycTotalCount * 100) : 0;
       var _cycDisplay = _cyc.label;
@@ -12794,10 +12808,6 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         var _ce = new Date(_cyc.endDate + 'T00:00:00');
         _cycDisplay = (_cs.getMonth()+1) + '/' + _cs.getDate() + ' — ' + (_ce.getMonth()+1) + '/' + _ce.getDate();
       }
-      html += '<div class="kb-control-bar">';
-
-      // LEFT: Cycle pill — v0.32.13 壓縮層級（dot + 名稱 + 剩 X 天 tone）+ tonal bar
-      // 計算狀態 tone：timeProgress vs workProgress, overdue count
       var _pillTone = 'idle', _pillBarTone = 'idle';
       var _pillDaysLeft = 0;
       var _pillDaysLabel = '—';
@@ -12824,46 +12834,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       }
       var _pillDaysToneCls = _pillDaysLeft <= 1 && _cycTotalCount > 0 ? ' t-danger' : _pillDaysLeft <= 3 && _cycTotalCount > 0 ? ' t-warn' : _cycTotalCount === 0 ? ' t-idle' : '';
 
-      // v0.32.16 新順序：分類 chips | 搜尋 | 看板/列表 | 週期 pill（靠右）| 封存 icon ghost
-
-      // 1. 分類 chips（原 row 3 併入）
-      var _catFilter = window._kbCatFilter || [];
-      var _catEntries = [];
-      for(var _ckk in TASK_CATEGORIES){ _catEntries.push({k:_ckk, v:TASK_CATEGORIES[_ckk]}); }
-      html += '<div class="kb-catfilter-inline" role="group" aria-label="分類篩選">';
-      _catEntries.forEach(function(e){
-        var _on = _catFilter.indexOf(e.k) >= 0;
-        html += '<button type="button" class="kb-catchip' + (_on ? ' active' : '') + '" data-cat="' + e.k + '" style="--_cat:' + e.v.color + '" onclick="window._kbToggleCat(\'' + e.k + '\')">' + e.v.label + '</button>';
-      });
-      if(_catFilter.length > 0){
-        html += '<button type="button" class="kb-catfilter-clear-inline" onclick="window._kbClearCatFilter()" title="清空分類篩選"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M2 2l6 6M8 2l-6 6"/></svg>清空 ' + _catFilter.length + '</button>';
-      }
-      html += '</div>';
-
-      // 2. 搜尋（fixed width，不搶位）
-      html += '<div class="kb-search-wrap">' + bpSearchBar('kbSearchInput', window._kbSearch||'', '搜尋任務…') + '</div>';
-
-      // 3. 看板/列表 toggle
-      html += '<div class="kb-view-seg" role="tablist" aria-label="檢視模式">';
-      html += '<button class="kb-view-seg-btn' + (viewMode==='board'?' active':'') + '" onclick="window._kbSetView(\'board\')" role="tab" aria-selected="' + (viewMode==='board') + '"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="1.5" width="4" height="11" rx="1"/><rect x="8.5" y="1.5" width="4" height="7" rx="1"/></svg>看板</button>';
-      html += '<button class="kb-view-seg-btn' + (viewMode==='list'?' active':'') + '" onclick="window._kbSetView(\'list\')" role="tab" aria-selected="' + (viewMode==='list') + '"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="3" x2="12" y2="3"/><line x1="2" y1="7" x2="12" y2="7"/><line x1="2" y1="11" x2="12" y2="11"/></svg>列表</button>';
-      html += '</div>';
-
-      // 4. 分組 selector（list view only，貼在 view toggle 後）
-      if(viewMode === 'list'){
-        var _gbVal = window._kbListGroupBy || 'status';
-        var _gbOpts = [
-          {v:'status',l:'狀態'},{v:'priority',l:'優先級'},{v:'category',l:'分類'},{v:'assignee',l:'負責人'}
-        ];
-        html += '<div class="kb-groupby"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M4 8h8M6 12h4"/></svg><span class="kb-groupby-label">分組</span><select id="kbGroupBySelect" onchange="window._kbSetGroupBy(this.value)" class="kb-groupby-select">';
-        _gbOpts.forEach(function(o){
-          html += '<option value="' + o.v + '"' + (_gbVal === o.v ? ' selected' : '') + '>' + o.l + '</option>';
-        });
-        html += '</select></div>';
-      }
-
-      // 5. 週期 pill（靠右，margin-left:auto）
-      html += '<div class="kb-cyc-pill" role="group" aria-label="週期切換" style="margin-left:auto">';
+      // 週期 pill 升到 Row 1 page-title-area（context 屬性：週期是頁面主要上下文，貼 title）
+      html += '<div class="kb-cyc-pill" role="group" aria-label="週期切換">';
       html += '<button class="kb-cyc-nav" onclick="window._kbCyclePrev()" title="上一週期" aria-label="上一週期"' + (_cycIdx <= 0 ? ' disabled' : '') + '><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="10,3 5,8 10,13"/></svg></button>';
       html += '<div class="kb-cyc-body">';
       html += '<div class="kb-cyc-main">';
@@ -12882,14 +12854,54 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       html += '</div>';
       html += '<button class="kb-cyc-nav" onclick="window._kbCycleNext()" title="下一週期" aria-label="下一週期"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,3 11,8 6,13"/></svg></button>';
       html += '</div>';
+      html += '</div>';  // close page-title-area
+
+      // Row 2：control bar — 全部 32px 齊平
+      html += '<div class="kb-control-bar">';
+
+      // 1. 分類 chips
+      var _catFilter = window._kbCatFilter || [];
+      var _catEntries = [];
+      for(var _ckk in TASK_CATEGORIES){ _catEntries.push({k:_ckk, v:TASK_CATEGORIES[_ckk]}); }
+      html += '<div class="kb-catfilter-inline" role="group" aria-label="分類篩選">';
+      _catEntries.forEach(function(e){
+        var _on = _catFilter.indexOf(e.k) >= 0;
+        html += '<button type="button" class="kb-catchip' + (_on ? ' active' : '') + '" data-cat="' + e.k + '" style="--_cat:' + e.v.color + '" onclick="window._kbToggleCat(\'' + e.k + '\')">' + e.v.label + '</button>';
+      });
+      if(_catFilter.length > 0){
+        html += '<button type="button" class="kb-catfilter-clear-inline" onclick="window._kbClearCatFilter()" title="清空分類篩選"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M2 2l6 6M8 2l-6 6"/></svg>清空 ' + _catFilter.length + '</button>';
+      }
+      html += '</div>';
+
+      // 2. 搜尋
+      html += '<div class="kb-search-wrap">' + bpSearchBar('kbSearchInput', window._kbSearch||'', '搜尋任務…') + '</div>';
+
+      // 3. 看板/列表 toggle
+      html += '<div class="kb-view-seg" role="tablist" aria-label="檢視模式">';
+      html += '<button class="kb-view-seg-btn' + (viewMode==='board'?' active':'') + '" onclick="window._kbSetView(\'board\')" role="tab" aria-selected="' + (viewMode==='board') + '"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="1.5" width="4" height="11" rx="1"/><rect x="8.5" y="1.5" width="4" height="7" rx="1"/></svg>看板</button>';
+      html += '<button class="kb-view-seg-btn' + (viewMode==='list'?' active':'') + '" onclick="window._kbSetView(\'list\')" role="tab" aria-selected="' + (viewMode==='list') + '"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="3" x2="12" y2="3"/><line x1="2" y1="7" x2="12" y2="7"/><line x1="2" y1="11" x2="12" y2="11"/></svg>列表</button>';
+      html += '</div>';
+
+      // 4. 分組 selector（list view only）
+      if(viewMode === 'list'){
+        var _gbVal = window._kbListGroupBy || 'status';
+        var _gbOpts = [
+          {v:'status',l:'狀態'},{v:'priority',l:'優先級'},{v:'category',l:'分類'},{v:'assignee',l:'負責人'}
+        ];
+        html += '<div class="kb-groupby"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M4 8h8M6 12h4"/></svg><span class="kb-groupby-label">分組</span><select id="kbGroupBySelect" onchange="window._kbSetGroupBy(this.value)" class="kb-groupby-select">';
+        _gbOpts.forEach(function(o){
+          html += '<option value="' + o.v + '"' + (_gbVal === o.v ? ' selected' : '') + '>' + o.l + '</option>';
+        });
+        html += '</select></div>';
+      }
 
       // 6. 封存 icon ghost 群（對標 Linear/Trello 的 overflow 化；badge 顯示數量）
       var _doneCountForArchive = cards.filter(function(c){ return c.cycleId === _cyc.id && c.columnId === 'done' && !c.archived; }).length;
       if(_doneCountForArchive > 0){
-        html += '<button class="kb-archive-icon" onclick="window._kbArchiveCycleDone()" title="封存本期已完成 ' + _doneCountForArchive + ' 張" aria-label="封存本期已完成"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="15" height="3.5" rx="1"/><path d="M4 7.5v8a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5v-8"/><polyline points="7.5,11 9.5,13 13,9.5"/></svg><span class="kb-archive-icon-badge">' + _doneCountForArchive + '</span></button>';
+        html += '<button class="kb-archive-icon" onclick="window._kbArchiveCycleDone()" title="封存本期已完成 ' + _doneCountForArchive + ' 張" aria-label="封存本期已完成"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="15" height="3.5" rx="1"/><path d="M4 7.5v8a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5v-8"/><polyline points="7.5,11 9.5,13 13,9.5"/></svg><span class="kb-archive-icon-count">' + _doneCountForArchive + '</span></button>';
       }
       if(archivedCount > 0){
-        html += '<button class="kb-archive-icon' + (showArchived ? ' active' : '') + '" onclick="window._kbToggleArchived()" title="' + (showArchived ? '隱藏封存' : '顯示封存 ' + archivedCount + ' 張') + '" aria-label="切換封存顯示" aria-pressed="' + showArchived + '"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="15" height="3.5" rx="1"/><path d="M4 7.5v8a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5v-8"/><line x1="8" y1="11" x2="12" y2="11"/></svg>' + (!showArchived ? '<span class="kb-archive-icon-badge">' + archivedCount + '</span>' : '') + '</button>';
+        html += '<button class="kb-archive-icon' + (showArchived ? ' active' : '') + '" onclick="window._kbToggleArchived()" title="' + (showArchived ? '隱藏封存' : '顯示封存 ' + archivedCount + ' 張') + '" aria-label="切換封存顯示" aria-pressed="' + showArchived + '"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="15" height="3.5" rx="1"/><path d="M4 7.5v8a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5v-8"/><line x1="8" y1="11" x2="12" y2="11"/></svg>' + (!showArchived ? '<span class="kb-archive-icon-count">' + archivedCount + '</span>' : '') + '</button>';
       }
       html += '</div>';
 
@@ -28872,4 +28884,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.16 · 任務看板 header 重構 + 封存動作降階（對齊 Linear/Notion/Trello/Jira 業界慣例）：(1) Row 1 page-title-area 移除「看板/列表」toggle，只保留 h1 + subtitle——title 區回到城堡憲法規範單純態；(2) Row 2 kb-control-bar 完全重排序為愛德華指定順序「分類 chips | 搜尋 | 看板/列表 toggle | 週期 pill（靠右）」，分組 select（list only）緊貼 view toggle 後；週期 pill 改以 margin-left:auto 靠右定位，符合「左邊操作、右邊上下文」資訊流；(3) Row 3 .kb-catfilter 整條卡片整塊取消，分類 chips 以 .kb-catfilter-inline 併入 row 2，chip 高度 26→28px 微升以對齊 bar 其他元件，移除原 label 「分類」字樣（chip 本身已明示分類含意，避免三重冗餘），「清空 N」按鈕改為 inline 變體貼在 chips 尾；(4) 封存按鈕動作降階——原「封存完成 N」實心 dashed 按鈕 + 「封存 N / 隱藏封存」實心按鈕兩顆掛在 row 2 右側（違反憲法「每個 UI 元素必須有存在的理由」，低頻動作搶一級視覺），改為新 .kb-archive-icon ghost 按鈕（30×30 透明底 + hover 才浮 bg + 右上 14px ink badge 顯示張數），對齊 Linear overflow menu / Trello card actions / Notion ... menu 的「封存收進次級動作」業界慣例；active 態（showArchived=true）用 primary 8% tint + 30% border 保留語意回饋；(5) 搜尋框包 .kb-search-wrap（min-width:180 / max-width:240）避免 flex grow 搶位把 chips 擠出 row；(6) CSS 新增 .kb-catfilter-inline / .kb-catfilter-clear-inline / .kb-search-wrap / .kb-archive-icon / .kb-archive-icon-badge 五個 class 走 token 系統，不碰舊 .kb-catfilter / .kb-archive-btn / .kb-archive-all-btn（歷史相容保留，後續版本清理） --><!-- v0.32.15 · PATH 色對齊 + 憲法落地：(1) dev 分類色 #3B82F6（Tailwind blue 違規）→ #5B3FC9（PATH primary-deep 同家族深階），全站任務分類回到 PATH 5 色封閉集合；(2) .tp-cat tag pill 背景從 color + '12' hex suffix（7% opacity 蒼白）→ color-mix(in srgb, cat-color 14%, transparent) + 22% border，文字維持 full-saturation，符合憲法 Pastel 下限 14% 並保 AA 對比；(3) .tp-grip 預設 opacity:0，改為 .tp-row:hover 才 fade-in 到 opacity:.5，靜態下左緣完全乾淨、根除 grip + pri-dot 組合造成的 left-stripe 觀感；(4) .tp-pri 從獨立左緣 flex item 移到 title flex 內前置（6×6 dot，無 box-shadow ring），優先級貼內容而非貼卡片邊緣，.tp-title 升級為 flex 容器 gap:8px；(5) cp-ov 進度條從卡片頂部（stats row 下方）移到卡片最底 footer 位置，新增 .cp-ov-bar-footer 變體：高度 3px、margin-top:12px、60% 色淡 track，資料流改為 context → stats → status → focus → progress（憲法：progress 屬資料尾部，貼頂像 top-stripe）；(6) .rmdrw-kb-preview::before 頂部色帶整段移除（CSS + 兩處 JS 使用點的 inline `<style>` 清掉），drawer 專案詳情頂部不再有色線違憲；同步 CLAUDE.md 憲法擴充「Universal Design Rules」七類通用條款（Color / Layout / Interaction / Encoding / Scale / Reuse / Meta-enforcement）及「Design Principle Application Checklist」十項，取消「飽和大膽」作為預設偏好，每次動手前先跑 checklist 再下 code · 後續 v0.32.16 計畫：分類 filter wrapper card 移除 + 搜尋列重配（看板頁改版 mockup 已在 mockups/）--><!-- v0.32.14 · P0 結構除錯（任務中心稽核後）：(1) Demo cycle override 合併不完整 bug——v0.32.3 引入的 sessionStorage override 邏輯只套用 color/label，但 _rmCycleSetDates 與 _rmCycleSetDesc 都有把 startDate/endDate/description 寫入 sessionStorage，結果編輯後靜默消失；renderRoadmap demo 注入處補齊 startDate/endDate/description 的 override 套用（line 10024-10038），時間軸上 demo 項目的日期與描述編輯現在會正確保留直到 session 結束（demo 本質限制）；(2) `.tp-row.tp-overdue` 左側色條違規——原設計用 box-shadow:inset 3px 0 0 var(--rose) 模擬 border-left stripe，違反 CLAUDE.md 憲法「不用 border-left colored stripe cards」；改為整邊 rose 邊框漸變 + 微染底（color-mix），加上邊框 pulse 呼吸動畫維持逾期警示可見度，dark mode 同步；(3) 移除 .tp-row 上未使用的 tp-pri-high/medium/low class cruft——JS 端加 class 但 CSS 沒對應（v0.17.0 Calm Interface 已改用 6px dot 表達優先級），清理冗代碼避免未來誤接到 left-border 重新長回來 · 稽核綜合分 72→目標 90+ 路徑：v0.32.14 結構除錯 → v0.32.15 三 row 視覺統一 → v0.33.0 規劃↔看板動線 + AI 引擎 → v0.33.1 週期生命週期 --><!-- v0.32.13 · 城堡三題交付（pill 改版 / 分類 filter / 任務封存）+ 時間軸項目編輯修正：(1) 週期 pill 壓縮層級——新增 primary/healthy/warn/danger/idle 狀態 dot（shadow halo）、tonal「剩 X 天」chip（t-warn/t-danger/t-idle 語意色）、tonal 進度條（bar-idle/healthy/ahead/warn/danger 沿用 cp-ov 同套 token）；JS 端計算 _pillTone（timeProgress vs workProgress + overdue count 綜合判斷），達成 planning（完整 cp-ov 卡）→ tasks（壓縮 pill）的資訊密度梯度；(2) 分類 filter chip row——6 個分類（產品/研發/QA/行銷/業務/行政）多選 chip，active 態用該分類 color border + 10% bg（不 fill 以保留卡片視覺）、idle 態 muted，已選時右側浮「已篩選 N 類」+ dashed 清空按鈕；localStorage 持久化（bp.kbCatFilter），board view / list view / 空狀態判斷 _earlyTotal 三處濾鏡同步；(3) 任務封存 UX——新增「封存完成 N」一鍵按鈕（dashed border，done 欄有卡時才浮現），confirm dialog 列 N 張預設全封存，archived+archivedAt 寫入 card；新增 window._kbArchiveCard / _kbUnarchiveCard / _kbArchiveCycleDone；kb-toast 元件（success/warn/danger 三態，2.6s auto-dismiss）提供操作回饋；(4) 時間軸 _rmOpenCard 補 _rmAllCardsCache 快取查詢，demo 卡點擊不再 silent fail，查不到再 fallback 到 storage · 前版 v0.32.12 成就：任務看板空狀態佈局修復 + 週期底色 warn→idle --><!-- v0.32.12 · 任務看板空狀態 + 週期底色修正：(1) 空看板佈局 bug——舊 empty state 用 grid-column:1/-1 但 .kanban-board 是 display:flex，empty block 成了第 4 個 flex sibling 跟 columns 並排；新增 early-return 分支：當 totalInCycle===0 且無搜尋時不渲染 columns，直接渲染統一 .kb-empty-hero（icon 84×84 primary gradient + 3 步快速導引卡：新增需求→排入週期→開始執行 + CTA 前往需求池），動畫 kbEmptyIn spring stagger 80/140/200ms，CTA 延 280ms，手機 640px 降 padding 縮 icon 改單欄；(2) 週期底色不符 PATH 規範——空狀態原本套 'warn' 類（gold #E08A3A 偏暖），語意錯誤且視覺偏移；新增 'idle' 狀態走 primary（#7C5CFC）微染色（card bg mix 96% + 4%、border 60/25 mix、tag rgba .12、bar 45% mix），cp-ov / cp-ov-tag / bar 三處同步支援 bar-idle/cp-ov-idle/cp-ov-tag-idle，cp-ai 側 cp-ai-idle / cp-ai-tag-idle 亦到位；JS 面兩處（line 8118 cp-ov 帶、line 9350 cp-ai 卡）_tagClass 從 'warn' → 'idle'，_tag 文案維持「待排程」 · 前版 v0.32.11 成就（保留）：修兩個 v0.32.10 漏網 bug——(a) 色塊點擊不開 drawer，demo cycles 從未進 T.getCycles()，_rmGetCycleByKey 回 null；新增 window._rmAllCyclesCache / _rmAllCardsCache 走 render-time 快取；(b) 展開動畫太微弱，重做 @keyframes rmGroupRowIn：translateY -22px、scaleY spring overshoot、blur 2px→0、.52s、stagger 60ms (max 360ms)、chevron .42s + primary/muted 色彩切換 --><!-- v0.32.11 · 修兩個 v0.32.10 漏網 bug：(1) 色塊點擊不開 drawer——demo cycles 從未進 T.getCycles() 儲存層，_rmGetCycleByKey 一律找不到回 null，drawer 提前 return；新增 window._rmAllCyclesCache / _rmAllCardsCache 在 render-time 暴露完整列表（含 demo），_rmGetCycleByKey 與 _rmOpenCycleDrawer 優先讀快取再 fallback 到 storage；(2) 展開動畫太微弱看不出來——重做 @keyframes rmGroupRowIn：translateY -22px、scaleY .85→1.02→1（spring overshoot）、blur(2px)→0、duration .52s、stagger 從 30ms 拉到 60ms（最後一階 360ms），加 transform-origin top center 確保視覺從 group bar 往下展開；chevron 旋轉延長到 .42s 並加色彩切換（collapsed=muted, expanded=primary） · 後續 v0.32.10 changelog: --> 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
+</html><!-- v0.32.17 · 任務看板 header 二次優化（UIUX 齊平 + 雙層節奏）：v0.32.16 重構後截圖顯示四個問題——週期 pill 換行到 row 2 單獨落腳（視覺孤兒）、封存 badge 絕對定位像脫離的紅點、row 2 五個元件高度不一（chip 28 / search 36 / view 30 / groupby 34 / pill 46px，視覺 jagged）、控制項擠在一排密度過高。修正對標 Linear cycle header 雙層節奏：(1) Row 1 page-title-area 升級為 .kb-title-row（align-items:center、gap:12px），週期 pill 以 margin-left:auto 進駐 title 行——週期是頁面 context 屬於 headline 層，與 h1 同行表達「這個頁面是哪個週期」；(2) Row 2 新 .kb-control-bar 獨立一層專責控制項，順序維持「分類 chips | 搜尋 | view toggle | groupby」，移除 pill；(3) 全 row 2 元件統一 height:32px 齊平——chip 28→32、chip padding 10→12、search wrap 固定 width:220 height:32、view-seg 30→32（內 btn 28）、groupby 34→32，整排水平掃描無跳動；(4) 封存按鈕 .kb-archive-icon 從「30×30 icon + 絕對定位 badge」改為「min-width:32 height:32 ghost button + inline count」（.kb-archive-icon-count 替代 .kb-archive-icon-badge），數字 tabular-nums 對齊，icon + 數字成一體（封存 3）而非脫離紅點；(5) 響應式 @media(max-width:900px) pill 於 row 1 降為 width:100% 獨立一行 justify-content:space-between 保行動版可讀 · 對標競品：Linear cycle page 週期 chip 與 title 同行 / Height board header 兩層結構（context / control）/ Notion database 週期 filter 貼 title · 後續 v0.33 計畫維持：規劃↔看板動線、AI 引擎、週期生命週期 --><!-- v0.32.16 · 任務看板 header 重構 + 封存動作降階（對齊 Linear/Notion/Trello/Jira 業界慣例）：(1) Row 1 page-title-area 移除「看板/列表」toggle，只保留 h1 + subtitle——title 區回到城堡憲法規範單純態；(2) Row 2 kb-control-bar 完全重排序為愛德華指定順序「分類 chips | 搜尋 | 看板/列表 toggle | 週期 pill（靠右）」，分組 select（list only）緊貼 view toggle 後；週期 pill 改以 margin-left:auto 靠右定位，符合「左邊操作、右邊上下文」資訊流；(3) Row 3 .kb-catfilter 整條卡片整塊取消，分類 chips 以 .kb-catfilter-inline 併入 row 2，chip 高度 26→28px 微升以對齊 bar 其他元件，移除原 label 「分類」字樣（chip 本身已明示分類含意，避免三重冗餘），「清空 N」按鈕改為 inline 變體貼在 chips 尾；(4) 封存按鈕動作降階——原「封存完成 N」實心 dashed 按鈕 + 「封存 N / 隱藏封存」實心按鈕兩顆掛在 row 2 右側（違反憲法「每個 UI 元素必須有存在的理由」，低頻動作搶一級視覺），改為新 .kb-archive-icon ghost 按鈕（30×30 透明底 + hover 才浮 bg + 右上 14px ink badge 顯示張數），對齊 Linear overflow menu / Trello card actions / Notion ... menu 的「封存收進次級動作」業界慣例；active 態（showArchived=true）用 primary 8% tint + 30% border 保留語意回饋；(5) 搜尋框包 .kb-search-wrap（min-width:180 / max-width:240）避免 flex grow 搶位把 chips 擠出 row；(6) CSS 新增 .kb-catfilter-inline / .kb-catfilter-clear-inline / .kb-search-wrap / .kb-archive-icon / .kb-archive-icon-badge 五個 class 走 token 系統，不碰舊 .kb-catfilter / .kb-archive-btn / .kb-archive-all-btn（歷史相容保留，後續版本清理） --><!-- v0.32.15 · PATH 色對齊 + 憲法落地：(1) dev 分類色 #3B82F6（Tailwind blue 違規）→ #5B3FC9（PATH primary-deep 同家族深階），全站任務分類回到 PATH 5 色封閉集合；(2) .tp-cat tag pill 背景從 color + '12' hex suffix（7% opacity 蒼白）→ color-mix(in srgb, cat-color 14%, transparent) + 22% border，文字維持 full-saturation，符合憲法 Pastel 下限 14% 並保 AA 對比；(3) .tp-grip 預設 opacity:0，改為 .tp-row:hover 才 fade-in 到 opacity:.5，靜態下左緣完全乾淨、根除 grip + pri-dot 組合造成的 left-stripe 觀感；(4) .tp-pri 從獨立左緣 flex item 移到 title flex 內前置（6×6 dot，無 box-shadow ring），優先級貼內容而非貼卡片邊緣，.tp-title 升級為 flex 容器 gap:8px；(5) cp-ov 進度條從卡片頂部（stats row 下方）移到卡片最底 footer 位置，新增 .cp-ov-bar-footer 變體：高度 3px、margin-top:12px、60% 色淡 track，資料流改為 context → stats → status → focus → progress（憲法：progress 屬資料尾部，貼頂像 top-stripe）；(6) .rmdrw-kb-preview::before 頂部色帶整段移除（CSS + 兩處 JS 使用點的 inline `<style>` 清掉），drawer 專案詳情頂部不再有色線違憲；同步 CLAUDE.md 憲法擴充「Universal Design Rules」七類通用條款（Color / Layout / Interaction / Encoding / Scale / Reuse / Meta-enforcement）及「Design Principle Application Checklist」十項，取消「飽和大膽」作為預設偏好，每次動手前先跑 checklist 再下 code · 後續 v0.32.16 計畫：分類 filter wrapper card 移除 + 搜尋列重配（看板頁改版 mockup 已在 mockups/）--><!-- v0.32.14 · P0 結構除錯（任務中心稽核後）：(1) Demo cycle override 合併不完整 bug——v0.32.3 引入的 sessionStorage override 邏輯只套用 color/label，但 _rmCycleSetDates 與 _rmCycleSetDesc 都有把 startDate/endDate/description 寫入 sessionStorage，結果編輯後靜默消失；renderRoadmap demo 注入處補齊 startDate/endDate/description 的 override 套用（line 10024-10038），時間軸上 demo 項目的日期與描述編輯現在會正確保留直到 session 結束（demo 本質限制）；(2) `.tp-row.tp-overdue` 左側色條違規——原設計用 box-shadow:inset 3px 0 0 var(--rose) 模擬 border-left stripe，違反 CLAUDE.md 憲法「不用 border-left colored stripe cards」；改為整邊 rose 邊框漸變 + 微染底（color-mix），加上邊框 pulse 呼吸動畫維持逾期警示可見度，dark mode 同步；(3) 移除 .tp-row 上未使用的 tp-pri-high/medium/low class cruft——JS 端加 class 但 CSS 沒對應（v0.17.0 Calm Interface 已改用 6px dot 表達優先級），清理冗代碼避免未來誤接到 left-border 重新長回來 · 稽核綜合分 72→目標 90+ 路徑：v0.32.14 結構除錯 → v0.32.15 三 row 視覺統一 → v0.33.0 規劃↔看板動線 + AI 引擎 → v0.33.1 週期生命週期 --><!-- v0.32.13 · 城堡三題交付（pill 改版 / 分類 filter / 任務封存）+ 時間軸項目編輯修正：(1) 週期 pill 壓縮層級——新增 primary/healthy/warn/danger/idle 狀態 dot（shadow halo）、tonal「剩 X 天」chip（t-warn/t-danger/t-idle 語意色）、tonal 進度條（bar-idle/healthy/ahead/warn/danger 沿用 cp-ov 同套 token）；JS 端計算 _pillTone（timeProgress vs workProgress + overdue count 綜合判斷），達成 planning（完整 cp-ov 卡）→ tasks（壓縮 pill）的資訊密度梯度；(2) 分類 filter chip row——6 個分類（產品/研發/QA/行銷/業務/行政）多選 chip，active 態用該分類 color border + 10% bg（不 fill 以保留卡片視覺）、idle 態 muted，已選時右側浮「已篩選 N 類」+ dashed 清空按鈕；localStorage 持久化（bp.kbCatFilter），board view / list view / 空狀態判斷 _earlyTotal 三處濾鏡同步；(3) 任務封存 UX——新增「封存完成 N」一鍵按鈕（dashed border，done 欄有卡時才浮現），confirm dialog 列 N 張預設全封存，archived+archivedAt 寫入 card；新增 window._kbArchiveCard / _kbUnarchiveCard / _kbArchiveCycleDone；kb-toast 元件（success/warn/danger 三態，2.6s auto-dismiss）提供操作回饋；(4) 時間軸 _rmOpenCard 補 _rmAllCardsCache 快取查詢，demo 卡點擊不再 silent fail，查不到再 fallback 到 storage · 前版 v0.32.12 成就：任務看板空狀態佈局修復 + 週期底色 warn→idle --><!-- v0.32.12 · 任務看板空狀態 + 週期底色修正：(1) 空看板佈局 bug——舊 empty state 用 grid-column:1/-1 但 .kanban-board 是 display:flex，empty block 成了第 4 個 flex sibling 跟 columns 並排；新增 early-return 分支：當 totalInCycle===0 且無搜尋時不渲染 columns，直接渲染統一 .kb-empty-hero（icon 84×84 primary gradient + 3 步快速導引卡：新增需求→排入週期→開始執行 + CTA 前往需求池），動畫 kbEmptyIn spring stagger 80/140/200ms，CTA 延 280ms，手機 640px 降 padding 縮 icon 改單欄；(2) 週期底色不符 PATH 規範——空狀態原本套 'warn' 類（gold #E08A3A 偏暖），語意錯誤且視覺偏移；新增 'idle' 狀態走 primary（#7C5CFC）微染色（card bg mix 96% + 4%、border 60/25 mix、tag rgba .12、bar 45% mix），cp-ov / cp-ov-tag / bar 三處同步支援 bar-idle/cp-ov-idle/cp-ov-tag-idle，cp-ai 側 cp-ai-idle / cp-ai-tag-idle 亦到位；JS 面兩處（line 8118 cp-ov 帶、line 9350 cp-ai 卡）_tagClass 從 'warn' → 'idle'，_tag 文案維持「待排程」 · 前版 v0.32.11 成就（保留）：修兩個 v0.32.10 漏網 bug——(a) 色塊點擊不開 drawer，demo cycles 從未進 T.getCycles()，_rmGetCycleByKey 回 null；新增 window._rmAllCyclesCache / _rmAllCardsCache 走 render-time 快取；(b) 展開動畫太微弱，重做 @keyframes rmGroupRowIn：translateY -22px、scaleY spring overshoot、blur 2px→0、.52s、stagger 60ms (max 360ms)、chevron .42s + primary/muted 色彩切換 --><!-- v0.32.11 · 修兩個 v0.32.10 漏網 bug：(1) 色塊點擊不開 drawer——demo cycles 從未進 T.getCycles() 儲存層，_rmGetCycleByKey 一律找不到回 null，drawer 提前 return；新增 window._rmAllCyclesCache / _rmAllCardsCache 在 render-time 暴露完整列表（含 demo），_rmGetCycleByKey 與 _rmOpenCycleDrawer 優先讀快取再 fallback 到 storage；(2) 展開動畫太微弱看不出來——重做 @keyframes rmGroupRowIn：translateY -22px、scaleY .85→1.02→1（spring overshoot）、blur(2px)→0、duration .52s、stagger 從 30ms 拉到 60ms（最後一階 360ms），加 transform-origin top center 確保視覺從 group bar 往下展開；chevron 旋轉延長到 .42s 並加色彩切換（collapsed=muted, expanded=primary） · 後續 v0.32.10 changelog: --> 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
