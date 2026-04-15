@@ -3473,11 +3473,11 @@ canvas{display:block;margin:0 auto 24px}
 .tp-row:hover{border-color:rgba(124,92,252,.22);box-shadow:0 4px 16px rgba(17,17,17,.06);transform:translateY(-1px)}
 .tp-row:active{cursor:grabbing}
 .tp-row.dragging{opacity:.4;border:1px dashed var(--primary)}
-/* 逾期：較明顯玫瑰底 + 左側色帶暗示 */
-.tp-row.tp-overdue{background:color-mix(in srgb,var(--bg-card) 90%,var(--rose));border-color:rgba(217,68,98,.3);animation:tp-overdue-pulse 3s ease-in-out infinite;box-shadow:inset 3px 0 0 var(--rose)}
-@keyframes tp-overdue-pulse{0%,100%{border-color:rgba(217,68,98,.25)}50%{border-color:rgba(217,68,98,.45)}}
+/* v0.32.14 逾期：改用整邊 rose 邊框 + 微染底，不再用左側色條（CLAUDE.md: 不要 border-left colored stripe） */
+.tp-row.tp-overdue{background:color-mix(in srgb,var(--bg-card) 92%,var(--rose));border-color:color-mix(in srgb,var(--border) 40%,var(--rose) 60%);animation:tp-overdue-pulse 3s ease-in-out infinite}
+@keyframes tp-overdue-pulse{0%,100%{border-color:color-mix(in srgb,var(--border) 55%,var(--rose) 45%)}50%{border-color:color-mix(in srgb,var(--border) 30%,var(--rose) 70%)}}
 [data-theme="dark"] .tp-row{background:var(--bg-card)}
-[data-theme="dark"] .tp-row.tp-overdue{background:rgba(217,68,98,.1);border-color:rgba(217,68,98,.25);box-shadow:inset 3px 0 0 var(--rose)}
+[data-theme="dark"] .tp-row.tp-overdue{background:rgba(217,68,98,.1);border-color:rgba(217,68,98,.35)}
 .tp-row .tp-grip{
   width:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;
   opacity:.25;transition:opacity .15s;cursor:grab;
@@ -4822,7 +4822,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.13</div>
+        <div class="sidebar-version">v0.32.14</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -8047,12 +8047,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         dueStr = (dd.getMonth()+1) + '/' + dd.getDate();
         if(dd < now && card.columnId !== 'done') isOverdue = true;
       }
-      // Row classes: priority left-border + overdue background
+      // v0.32.14: 移除 tp-pri-high/medium/low 冗 class（無對應 CSS 且 v0.17.0 已改用 6px dot 表達優先級）
       var rowCls = 'tp-row';
-      var pri = card.priority || 'none';
-      if(pri === 'high') rowCls += ' tp-pri-high';
-      else if(pri === 'medium') rowCls += ' tp-pri-medium';
-      else if(pri === 'low') rowCls += ' tp-pri-low';
       if(isOverdue) rowCls += ' tp-overdue';
 
       var _isBatch = window._tpBatchMode && dragSource === 'backlog';
@@ -10019,7 +10015,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         { id:'demo-c-4b', title:'痛點優先度排序', cycleId:'demo-cy-4', columnId:'done', startDate:_ds(_td,-10), dueDate:_ds(_td,-3), category:'research', assignee:'agent' },
         { id:'demo-c-4c', title:'改善方案提案', cycleId:'demo-cy-4', columnId:'review', startDate:_ds(_td,-3), dueDate:_ds(_td,0), category:'design', assignee:'human' }
       ];
-      // v0.32.3：套用 demo 編輯（顏色/名稱）overrides
+      // v0.32.14：套用 demo 編輯 overrides（顏色/名稱/日期/描述全部）
+      // v0.32.3 只套用 color + label，導致日期與描述的編輯靜默消失 — P0 結構 bug
       try{
         var dmOv = JSON.parse(sessionStorage.getItem('bp_rm_demo_overrides') || '{}');
         demoCycles.forEach(function(dc){
@@ -10027,6 +10024,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           if(ov){
             if(ov.color) dc.color = ov.color;
             if(ov.label) dc.label = ov.label;
+            if(ov.startDate) dc.startDate = ov.startDate;
+            if(ov.endDate) dc.endDate = ov.endDate;
+            if(typeof ov.description === 'string') dc.description = ov.description;
           }
         });
       }catch(e){}
@@ -28854,4 +28854,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.13 · 城堡三題交付（pill 改版 / 分類 filter / 任務封存）+ 時間軸項目編輯修正：(1) 週期 pill 壓縮層級——新增 primary/healthy/warn/danger/idle 狀態 dot（shadow halo）、tonal「剩 X 天」chip（t-warn/t-danger/t-idle 語意色）、tonal 進度條（bar-idle/healthy/ahead/warn/danger 沿用 cp-ov 同套 token）；JS 端計算 _pillTone（timeProgress vs workProgress + overdue count 綜合判斷），達成 planning（完整 cp-ov 卡）→ tasks（壓縮 pill）的資訊密度梯度；(2) 分類 filter chip row——6 個分類（產品/研發/QA/行銷/業務/行政）多選 chip，active 態用該分類 color border + 10% bg（不 fill 以保留卡片視覺）、idle 態 muted，已選時右側浮「已篩選 N 類」+ dashed 清空按鈕；localStorage 持久化（bp.kbCatFilter），board view / list view / 空狀態判斷 _earlyTotal 三處濾鏡同步；(3) 任務封存 UX——新增「封存完成 N」一鍵按鈕（dashed border，done 欄有卡時才浮現），confirm dialog 列 N 張預設全封存，archived+archivedAt 寫入 card；新增 window._kbArchiveCard / _kbUnarchiveCard / _kbArchiveCycleDone；kb-toast 元件（success/warn/danger 三態，2.6s auto-dismiss）提供操作回饋；(4) 時間軸 _rmOpenCard 補 _rmAllCardsCache 快取查詢，demo 卡點擊不再 silent fail，查不到再 fallback 到 storage · 前版 v0.32.12 成就：任務看板空狀態佈局修復 + 週期底色 warn→idle --><!-- v0.32.12 · 任務看板空狀態 + 週期底色修正：(1) 空看板佈局 bug——舊 empty state 用 grid-column:1/-1 但 .kanban-board 是 display:flex，empty block 成了第 4 個 flex sibling 跟 columns 並排；新增 early-return 分支：當 totalInCycle===0 且無搜尋時不渲染 columns，直接渲染統一 .kb-empty-hero（icon 84×84 primary gradient + 3 步快速導引卡：新增需求→排入週期→開始執行 + CTA 前往需求池），動畫 kbEmptyIn spring stagger 80/140/200ms，CTA 延 280ms，手機 640px 降 padding 縮 icon 改單欄；(2) 週期底色不符 PATH 規範——空狀態原本套 'warn' 類（gold #E08A3A 偏暖），語意錯誤且視覺偏移；新增 'idle' 狀態走 primary（#7C5CFC）微染色（card bg mix 96% + 4%、border 60/25 mix、tag rgba .12、bar 45% mix），cp-ov / cp-ov-tag / bar 三處同步支援 bar-idle/cp-ov-idle/cp-ov-tag-idle，cp-ai 側 cp-ai-idle / cp-ai-tag-idle 亦到位；JS 面兩處（line 8118 cp-ov 帶、line 9350 cp-ai 卡）_tagClass 從 'warn' → 'idle'，_tag 文案維持「待排程」 · 前版 v0.32.11 成就（保留）：修兩個 v0.32.10 漏網 bug——(a) 色塊點擊不開 drawer，demo cycles 從未進 T.getCycles()，_rmGetCycleByKey 回 null；新增 window._rmAllCyclesCache / _rmAllCardsCache 走 render-time 快取；(b) 展開動畫太微弱，重做 @keyframes rmGroupRowIn：translateY -22px、scaleY spring overshoot、blur 2px→0、.52s、stagger 60ms (max 360ms)、chevron .42s + primary/muted 色彩切換 --><!-- v0.32.11 · 修兩個 v0.32.10 漏網 bug：(1) 色塊點擊不開 drawer——demo cycles 從未進 T.getCycles() 儲存層，_rmGetCycleByKey 一律找不到回 null，drawer 提前 return；新增 window._rmAllCyclesCache / _rmAllCardsCache 在 render-time 暴露完整列表（含 demo），_rmGetCycleByKey 與 _rmOpenCycleDrawer 優先讀快取再 fallback 到 storage；(2) 展開動畫太微弱看不出來——重做 @keyframes rmGroupRowIn：translateY -22px、scaleY .85→1.02→1（spring overshoot）、blur(2px)→0、duration .52s、stagger 從 30ms 拉到 60ms（最後一階 360ms），加 transform-origin top center 確保視覺從 group bar 往下展開；chevron 旋轉延長到 .42s 並加色彩切換（collapsed=muted, expanded=primary） · 後續 v0.32.10 changelog: --> 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
+</html><!-- v0.32.14 · P0 結構除錯（任務中心稽核後）：(1) Demo cycle override 合併不完整 bug——v0.32.3 引入的 sessionStorage override 邏輯只套用 color/label，但 _rmCycleSetDates 與 _rmCycleSetDesc 都有把 startDate/endDate/description 寫入 sessionStorage，結果編輯後靜默消失；renderRoadmap demo 注入處補齊 startDate/endDate/description 的 override 套用（line 10024-10038），時間軸上 demo 項目的日期與描述編輯現在會正確保留直到 session 結束（demo 本質限制）；(2) `.tp-row.tp-overdue` 左側色條違規——原設計用 box-shadow:inset 3px 0 0 var(--rose) 模擬 border-left stripe，違反 CLAUDE.md 憲法「不用 border-left colored stripe cards」；改為整邊 rose 邊框漸變 + 微染底（color-mix），加上邊框 pulse 呼吸動畫維持逾期警示可見度，dark mode 同步；(3) 移除 .tp-row 上未使用的 tp-pri-high/medium/low class cruft——JS 端加 class 但 CSS 沒對應（v0.17.0 Calm Interface 已改用 6px dot 表達優先級），清理冗代碼避免未來誤接到 left-border 重新長回來 · 稽核綜合分 72→目標 90+ 路徑：v0.32.14 結構除錯 → v0.32.15 三 row 視覺統一 → v0.33.0 規劃↔看板動線 + AI 引擎 → v0.33.1 週期生命週期 --><!-- v0.32.13 · 城堡三題交付（pill 改版 / 分類 filter / 任務封存）+ 時間軸項目編輯修正：(1) 週期 pill 壓縮層級——新增 primary/healthy/warn/danger/idle 狀態 dot（shadow halo）、tonal「剩 X 天」chip（t-warn/t-danger/t-idle 語意色）、tonal 進度條（bar-idle/healthy/ahead/warn/danger 沿用 cp-ov 同套 token）；JS 端計算 _pillTone（timeProgress vs workProgress + overdue count 綜合判斷），達成 planning（完整 cp-ov 卡）→ tasks（壓縮 pill）的資訊密度梯度；(2) 分類 filter chip row——6 個分類（產品/研發/QA/行銷/業務/行政）多選 chip，active 態用該分類 color border + 10% bg（不 fill 以保留卡片視覺）、idle 態 muted，已選時右側浮「已篩選 N 類」+ dashed 清空按鈕；localStorage 持久化（bp.kbCatFilter），board view / list view / 空狀態判斷 _earlyTotal 三處濾鏡同步；(3) 任務封存 UX——新增「封存完成 N」一鍵按鈕（dashed border，done 欄有卡時才浮現），confirm dialog 列 N 張預設全封存，archived+archivedAt 寫入 card；新增 window._kbArchiveCard / _kbUnarchiveCard / _kbArchiveCycleDone；kb-toast 元件（success/warn/danger 三態，2.6s auto-dismiss）提供操作回饋；(4) 時間軸 _rmOpenCard 補 _rmAllCardsCache 快取查詢，demo 卡點擊不再 silent fail，查不到再 fallback 到 storage · 前版 v0.32.12 成就：任務看板空狀態佈局修復 + 週期底色 warn→idle --><!-- v0.32.12 · 任務看板空狀態 + 週期底色修正：(1) 空看板佈局 bug——舊 empty state 用 grid-column:1/-1 但 .kanban-board 是 display:flex，empty block 成了第 4 個 flex sibling 跟 columns 並排；新增 early-return 分支：當 totalInCycle===0 且無搜尋時不渲染 columns，直接渲染統一 .kb-empty-hero（icon 84×84 primary gradient + 3 步快速導引卡：新增需求→排入週期→開始執行 + CTA 前往需求池），動畫 kbEmptyIn spring stagger 80/140/200ms，CTA 延 280ms，手機 640px 降 padding 縮 icon 改單欄；(2) 週期底色不符 PATH 規範——空狀態原本套 'warn' 類（gold #E08A3A 偏暖），語意錯誤且視覺偏移；新增 'idle' 狀態走 primary（#7C5CFC）微染色（card bg mix 96% + 4%、border 60/25 mix、tag rgba .12、bar 45% mix），cp-ov / cp-ov-tag / bar 三處同步支援 bar-idle/cp-ov-idle/cp-ov-tag-idle，cp-ai 側 cp-ai-idle / cp-ai-tag-idle 亦到位；JS 面兩處（line 8118 cp-ov 帶、line 9350 cp-ai 卡）_tagClass 從 'warn' → 'idle'，_tag 文案維持「待排程」 · 前版 v0.32.11 成就（保留）：修兩個 v0.32.10 漏網 bug——(a) 色塊點擊不開 drawer，demo cycles 從未進 T.getCycles()，_rmGetCycleByKey 回 null；新增 window._rmAllCyclesCache / _rmAllCardsCache 走 render-time 快取；(b) 展開動畫太微弱，重做 @keyframes rmGroupRowIn：translateY -22px、scaleY spring overshoot、blur 2px→0、.52s、stagger 60ms (max 360ms)、chevron .42s + primary/muted 色彩切換 --><!-- v0.32.11 · 修兩個 v0.32.10 漏網 bug：(1) 色塊點擊不開 drawer——demo cycles 從未進 T.getCycles() 儲存層，_rmGetCycleByKey 一律找不到回 null，drawer 提前 return；新增 window._rmAllCyclesCache / _rmAllCardsCache 在 render-time 暴露完整列表（含 demo），_rmGetCycleByKey 與 _rmOpenCycleDrawer 優先讀快取再 fallback 到 storage；(2) 展開動畫太微弱看不出來——重做 @keyframes rmGroupRowIn：translateY -22px、scaleY .85→1.02→1（spring overshoot）、blur(2px)→0、duration .52s、stagger 從 30ms 拉到 60ms（最後一階 360ms），加 transform-origin top center 確保視覺從 group bar 往下展開；chevron 旋轉延長到 .42s 並加色彩切換（collapsed=muted, expanded=primary） · 後續 v0.32.10 changelog: --> 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
