@@ -3854,6 +3854,82 @@ canvas{display:block;margin:0 auto 24px}
 @keyframes rm-rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
 @media (prefers-reduced-motion:reduce){.rm-bar,.rm-row,.cyc-focus-card,.cyc-pulse-fill,.cyc-ring-fill,.rmdrw,.rmdrw-mask{animation:none!important;transition:none!important}}
 
+/* ========== v0.32.9: 項目 Drawer (cycle drawer) ========== */
+.rmcd-title-block{display:flex;align-items:center;gap:10px;padding-bottom:6px}
+.rmcd-color-dot{width:18px;height:18px;border-radius:6px;cursor:pointer;flex-shrink:0;transition:transform .15s,box-shadow .15s;border:none;padding:0;position:relative}
+.rmcd-color-dot:hover{transform:scale(1.12);box-shadow:0 0 0 3px rgba(124,92,252,.2)}
+.rmcd-title-input{flex:1;min-width:0;font-size:20px;font-weight:700;color:var(--ink);background:transparent;border:none;outline:none;padding:6px 8px;border-radius:6px;font-family:inherit;letter-spacing:-.01em;transition:background .14s}
+.rmcd-title-input:hover{background:var(--bg-hover)}
+.rmcd-title-input:focus{background:var(--bg-hover);box-shadow:inset 0 0 0 1.5px var(--primary)}
+.rmcd-status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;font-weight:600;color:var(--ink-muted)}
+.rmcd-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:10px;background:var(--bg-hover);color:var(--ink-muted);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.rmcd-pill.active{background:rgba(27,168,145,.13);color:var(--teal)}
+.rmcd-pill.past{background:rgba(148,163,184,.18);color:var(--ink-dim)}
+.rmcd-pill.future{background:rgba(124,92,252,.12);color:var(--primary)}
+.rmcd-section{display:flex;flex-direction:column;gap:8px}
+.rmcd-section-label{font-size:11px;font-weight:700;color:var(--ink-dim);letter-spacing:.08em;text-transform:uppercase}
+.rmcd-date-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rmcd-date-input{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--ink);font-family:inherit;font-variant-numeric:tabular-nums;box-sizing:border-box;transition:border-color .14s,box-shadow .14s}
+.rmcd-date-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.13)}
+.rmcd-desc-input{width:100%;min-height:72px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--ink);font-family:inherit;line-height:1.55;resize:vertical;box-sizing:border-box;transition:border-color .14s,box-shadow .14s}
+.rmcd-desc-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.13)}
+.rmcd-needs-list{display:flex;flex-direction:column;gap:1px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg)}
+.rmcd-need-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card);transition:background .14s;cursor:pointer;border-bottom:1px solid var(--border)}
+.rmcd-need-row:last-child{border-bottom:none}
+.rmcd-need-row:hover{background:var(--bg-hover)}
+.rmcd-need-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rmcd-need-dot.todo{background:var(--primary)}
+.rmcd-need-dot.doing{background:var(--gold)}
+.rmcd-need-dot.review{background:#3B82F6}
+.rmcd-need-dot.done{background:var(--teal)}
+.rmcd-need-title{flex:1;min-width:0;font-size:13px;font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
+.rmcd-need-title.done{text-decoration:line-through;color:var(--ink-dim)}
+.rmcd-need-due{font-size:11px;color:var(--ink-dim);font-variant-numeric:tabular-nums;font-weight:500;flex-shrink:0}
+.rmcd-need-due.overdue{color:var(--rose);font-weight:700}
+.rmcd-need-remove{width:24px;height:24px;border-radius:6px;background:transparent;border:none;color:var(--ink-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .14s;flex-shrink:0;opacity:0;padding:0}
+.rmcd-need-row:hover .rmcd-need-remove{opacity:1}
+.rmcd-need-remove:hover{background:rgba(217,68,98,.12);color:var(--rose)}
+.rmcd-needs-empty{padding:24px 16px;text-align:center;font-size:12px;color:var(--ink-dim);background:var(--bg);border:1px dashed var(--border);border-radius:8px;line-height:1.6}
+.rmcd-needs-actions{display:flex;gap:8px;align-items:stretch}
+.rmcd-add-btn{flex:1;padding:10px 14px;border:1px dashed var(--border);background:transparent;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-muted);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .14s}
+.rmcd-add-btn:hover{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.04)}
+.rmcd-add-btn svg{width:13px;height:13px;flex-shrink:0}
+.rmcd-add-inline{display:flex;gap:6px;align-items:stretch}
+.rmcd-add-inline input{flex:1;padding:9px 12px;border:1.5px solid var(--primary);border-radius:8px;font-size:13px;background:var(--bg);color:var(--ink);font-family:inherit;outline:none;box-shadow:0 0 0 3px rgba(124,92,252,.13)}
+.rmcd-add-inline button{padding:0 14px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .14s}
+.rmcd-add-inline button:hover{background:#6a4ce0}
+.rmcd-add-inline button.cancel{background:transparent;color:var(--ink-muted);border:1px solid var(--border)}
+.rmcd-add-inline button.cancel:hover{background:var(--bg-hover);color:var(--ink)}
+
+/* Backlog picker modal */
+.rmcd-pick-overlay{position:fixed;inset:0;background:rgba(12,14,22,.42);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);z-index:9500;display:flex;align-items:center;justify-content:center;animation:rmcdFade .18s ease-out}
+@keyframes rmcdFade{from{opacity:0}to{opacity:1}}
+.rmcd-pick-modal{background:var(--bg-card);border-radius:14px;width:min(560px,92vw);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(12,14,22,.32);animation:rmcdRise .22s cubic-bezier(.22,1,.36,1)}
+@keyframes rmcdRise{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.rmcd-pick-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0}
+.rmcd-pick-head h3{margin:0;font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.rmcd-pick-search{padding:14px 22px 10px;flex-shrink:0}
+.rmcd-pick-search input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--ink);font-family:inherit;box-sizing:border-box;outline:none}
+.rmcd-pick-search input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.13)}
+.rmcd-pick-list{flex:1;overflow-y:auto;padding:4px 14px 14px}
+.rmcd-pick-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .12s}
+.rmcd-pick-row:hover{background:var(--bg-hover)}
+.rmcd-pick-row.checked{background:rgba(124,92,252,.08)}
+.rmcd-pick-check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:all .14s}
+.rmcd-pick-row.checked .rmcd-pick-check{background:var(--primary);border-color:var(--primary)}
+.rmcd-pick-check svg{width:11px;height:11px;color:#fff;opacity:0;transition:opacity .14s}
+.rmcd-pick-row.checked .rmcd-pick-check svg{opacity:1}
+.rmcd-pick-title{flex:1;min-width:0;font-size:13px;color:var(--ink);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rmcd-pick-meta{font-size:11px;color:var(--ink-dim);flex-shrink:0;font-variant-numeric:tabular-nums}
+.rmcd-pick-empty{padding:48px 20px;text-align:center;color:var(--ink-dim);font-size:13px;line-height:1.7}
+.rmcd-pick-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-shrink:0}
+.rmcd-pick-count{font-size:12px;color:var(--ink-muted);font-weight:600}
+.rmcd-pick-actions{display:flex;gap:8px}
+
+/* Group-header click areas v0.32.9: 把展開/收合移到 chevron 與 dot 之外的 cursor */
+.rm-group-header .rm-group-chev{cursor:pointer;padding:2px;border-radius:4px;transition:background .14s}
+.rm-group-header .rm-group-chev:hover{background:var(--bg-hover)}
+
 /* ═══════════════════════════════════════════
    v0.16.1 — Roadmap Inline Drawer (calm pattern)
    ═══════════════════════════════════════════ */
@@ -4596,7 +4672,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.8</div>
+        <div class="sidebar-version">v0.32.9</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -10049,16 +10125,19 @@ canvas{display:block;margin:0 auto 24px}
         stateTag = '<span class="rm-cycle-tag backlog">需求池</span>';
       }
       var progressW = Math.max(0, Math.min(100, g.progress));
-      // v0.32.3：項目 header — 色點變 color picker、名稱可雙擊改、保留 chevron+進度
+      // v0.32.9：項目 header — chevron 展開/收合，色點 color picker，其餘區域開項目 drawer
+      //   名稱編輯統一移到 drawer，避免「inline rename + drawer 編輯」兩條路徑
       var canEdit = (g.kind === 'cycle');
       var dotHTML = canEdit
         ? '<button type="button" class="rm-group-dot editable" style="background:' + g.color + '" title="點擊更換項目色" onclick="event.stopPropagation();window._rmOpenColorPop(event,\'' + g.key + '\',\'' + g.color + '\')"></button>'
         : '<span class="rm-group-dot" style="background:' + g.color + '"></span>';
-      var labelHTML = canEdit
-        ? '<span class="rm-group-label" contenteditable="true" spellcheck="false" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur()}" onblur="window._rmSetCycleLabel(\'' + g.key + '\', this.textContent)" title="雙擊或點擊編輯項目名稱">' + (g.label || '').replace(/</g,'&lt;') + '</span>'
-        : '<span class="rm-group-label">' + (g.label || '').replace(/</g,'&lt;') + '</span>';
-      leftH += '<div class="rm-group-header' + (expanded?'':' collapsed') + (g.isPast?' past':'') + (g.isCurrent?' current':'') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" data-group="' + g.key + '">' +
-        '<svg class="rm-group-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 8 10 12 14 8"/></svg>' +
+      var labelHTML = '<span class="rm-group-label">' + (g.label || '').replace(/</g,'&lt;') + '</span>';
+      var headerClick = canEdit
+        ? ' onclick="window._rmOpenCycleDrawer(\'' + g.key + '\')"'
+        : ' onclick="window._rmToggleGroup(\'' + g.key + '\')"';
+      var headerCursor = canEdit ? ';cursor:pointer' : '';
+      leftH += '<div class="rm-group-header' + (expanded?'':' collapsed') + (g.isPast?' past':'') + (g.isCurrent?' current':'') + '"' + headerClick + ' data-group="' + g.key + '" title="' + (canEdit ? '點擊編輯項目；左側箭頭展開/收合' : '') + '" style="position:relative' + headerCursor + '">' +
+        '<svg class="rm-group-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" onclick="event.stopPropagation();window._rmToggleGroup(\'' + g.key + '\')" title="展開/收合"><polyline points="6 8 10 12 14 8"/></svg>' +
         dotHTML +
         '<div class="rm-group-main">' +
           '<div class="rm-group-topline">' +
@@ -10284,9 +10363,10 @@ canvas{display:block;margin:0 auto 24px}
             //   差異：高度 36px（vs 子 28px）、字粗 800、左側 chevron、整體更高存在感
             var labelEsc = (g.label || '').replace(/</g,'&lt;').replace(/"/g,'&quot;');
             var parentCls = 'rm-bar parent' + (g.isPast ? ' past' : '') + (g.isCurrent ? ' current' : '');
-            // v0.32.7：parent bar 改純展示——拿掉 onclick 與 chevron，避免兩種點擊 UX 衝突
-            //   展開/收合一律由左側 group-header chevron 操作
-            summaryBarH = '<div class="' + parentCls + '" style="left:' + sLeft + 'px;width:' + sWidth + 'px;background:' + g.color + '" title="' + labelEsc + ' — ' + taskCount + ' 個任務，完成 ' + g.progress + '%">' +
+            // v0.32.9：parent bar 點擊開項目 drawer（檢視/編輯項目元資訊+需求清單）
+            //   展開/收合仍由左側 group-header chevron 操作
+            var parentClickable = (g.kind === 'cycle') ? ' onclick="window._rmOpenCycleDrawer(\'' + g.key + '\')" style="cursor:pointer;left:' + sLeft + 'px;width:' + sWidth + 'px;background:' + g.color + '"' : ' style="left:' + sLeft + 'px;width:' + sWidth + 'px;background:' + g.color + '"';
+            summaryBarH = '<div class="' + parentCls + '"' + parentClickable + ' title="' + labelEsc + ' — ' + taskCount + ' 個任務，完成 ' + g.progress + '%（點擊查看/編輯）">' +
               '<div class="rm-bar-fill" style="width:' + progressFill + '%"></div>' +
               (showLabel ? '<span class="rm-bar-title">' + labelEsc + '</span>' : '') +
               '<span class="rm-bar-count">' + g.done + '/' + taskCount + '</span>' +
@@ -10687,6 +10767,455 @@ canvas{display:block;margin:0 auto 24px}
       }
       T.saveCycles(cs);
       renderRoadmap();
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // v0.32.9: 項目 Drawer — 編輯項目 + 加入需求
+    // 城堡裁決：把項目所有編輯（名稱/顏色/日期/描述/需求歸屬/刪除）統一在 drawer
+    //   攤開全架構時，點任何項目就能看到時間軸與需求清單，理解先後順序。
+    // ═══════════════════════════════════════════════════════════════
+    function _rmEsc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function _rmFmtMD(d){
+      if(!d) return '—';
+      try { var dt = new Date(d); return (dt.getMonth()+1) + '/' + dt.getDate(); } catch(e){ return '—'; }
+    }
+    function _rmGetCycleByKey(cycleKey){
+      // demo override 與真實 cycle 都從 T.getCycles() 取（demo 已注入 cycles array）
+      var all = T.getCycles();
+      for(var i=0;i<all.length;i++){ if(all[i].id === cycleKey) return all[i]; }
+      return null;
+    }
+    window._rmOpenCycleDrawer = function(cycleKey){
+      if(window._rmDragJustEnded){ return; }
+      var evt = window.event;
+      if(evt){ evt.stopPropagation(); }
+      // backlog 不開項目 drawer（沒有元資訊可編）
+      if(cycleKey === '_backlog'){ return; }
+      var cy = _rmGetCycleByKey(cycleKey);
+      if(!cy){ return; }
+      // 移除既有 drawer
+      var old = document.getElementById('rmInlineDrawer'); if(old) old.remove();
+      var oldMask = document.getElementById('rmInlineDrawerMask'); if(oldMask) oldMask.remove();
+
+      var allCards = T.getCards().map(T.migrateCard);
+      var cyCards = allCards.filter(function(c){ return c.cycleId === cy.id && !c.archived; });
+      var doneCount = cyCards.filter(function(c){ return c.columnId === 'done'; }).length;
+      var pct = cyCards.length ? Math.round(doneCount / cyCards.length * 100) : 0;
+
+      var today = new Date(); today.setHours(0,0,0,0);
+      var sd = cy.startDate ? new Date(cy.startDate + 'T00:00:00') : null;
+      var ed = cy.endDate ? new Date(cy.endDate + 'T00:00:00') : null;
+      var statusKey = 'future', statusLabel = '尚未開始';
+      if(sd && ed){
+        if(today < sd){ statusKey = 'future'; statusLabel = '尚未開始'; }
+        else if(today > ed){ statusKey = 'past'; statusLabel = '已結束'; }
+        else { statusKey = 'active'; statusLabel = '進行中'; }
+      }
+      var color = cy.color || '#7C5CFC';
+      var label = cy.label || cy.name || '未命名項目';
+
+      // 標題區
+      var titleBlockH = '<div class="rmcd-title-block">' +
+        '<button type="button" class="rmcd-color-dot" style="background:' + color + '" title="更換項目顏色" onclick="event.stopPropagation();window._rmOpenColorPop(event,\'' + cy.id + '\',\'' + color + '\')"></button>' +
+        '<input type="text" class="rmcd-title-input" id="rmcdTitleInput" value="' + _rmEsc(label) + '" placeholder="項目名稱" maxlength="60" />' +
+      '</div>';
+
+      // 狀態列
+      var statusH = '<div class="rmcd-status-row">' +
+        '<span class="rmcd-pill ' + statusKey + '">' + statusLabel + '</span>' +
+        '<span class="rmcd-pill">' + cyCards.length + ' 個需求</span>' +
+        '<span class="rmcd-pill">完成 ' + pct + '%</span>' +
+        (sd && ed ? '<span class="rmcd-pill">' + _rmFmtMD(sd) + ' – ' + _rmFmtMD(ed) + '</span>' : '') +
+      '</div>';
+
+      // 日期區
+      var datesH = '<div class="rmcd-section">' +
+        '<div class="rmcd-section-label">時間範圍</div>' +
+        '<div class="rmcd-date-grid">' +
+          '<input type="date" class="rmcd-date-input" id="rmcdStartDate" value="' + (cy.startDate || '') + '" />' +
+          '<input type="date" class="rmcd-date-input" id="rmcdEndDate" value="' + (cy.endDate || '') + '" />' +
+        '</div>' +
+      '</div>';
+
+      // 描述區
+      var descH = '<div class="rmcd-section">' +
+        '<div class="rmcd-section-label">項目說明</div>' +
+        '<textarea class="rmcd-desc-input" id="rmcdDescInput" placeholder="這個項目的目標、範圍、注意事項…">' + _rmEsc(cy.description || '') + '</textarea>' +
+      '</div>';
+
+      // 需求清單（依 dueDate 排序，無 due 排尾）
+      var sortedCards = cyCards.slice().sort(function(a,b){
+        var da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+        var db = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+        return da - db;
+      });
+      var needsListH = '';
+      if(sortedCards.length === 0){
+        needsListH = '<div class="rmcd-needs-empty">這個項目還沒有需求<br/>用下方按鈕加一個，或從需求池選</div>';
+      } else {
+        needsListH = '<div class="rmcd-needs-list">';
+        sortedCards.forEach(function(c){
+          var cStatus = c.columnId || 'todo';
+          var dotCls = 'rmcd-need-dot ' + cStatus;
+          var titleCls = 'rmcd-need-title' + (cStatus === 'done' ? ' done' : '');
+          var dueStr = '';
+          var dueCls = 'rmcd-need-due';
+          if(c.dueDate){
+            var dd = new Date(c.dueDate + 'T00:00:00');
+            dueStr = _rmFmtMD(dd);
+            if(cStatus !== 'done' && dd < today){ dueCls += ' overdue'; }
+          }
+          needsListH += '<div class="rmcd-need-row" onclick="window._rmCloseInlineDrawer();setTimeout(function(){window._rmOpenCard(\'' + c.id + '\')},220)">' +
+            '<span class="' + dotCls + '" title="' + cStatus + '"></span>' +
+            '<span class="' + titleCls + '">' + _rmEsc(c.title || '(未命名)') + '</span>' +
+            (dueStr ? '<span class="' + dueCls + '">' + dueStr + '</span>' : '') +
+            '<button type="button" class="rmcd-need-remove" title="從項目移除（保留卡片到需求池）" onclick="event.stopPropagation();window._rmCycleRemoveCard(\'' + cy.id + '\',\'' + c.id + '\')">' +
+              '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>' +
+            '</button>' +
+          '</div>';
+        });
+        needsListH += '</div>';
+      }
+
+      var addBtnsH = '<div class="rmcd-needs-actions" id="rmcdAddArea">' +
+        '<button type="button" class="rmcd-add-btn" onclick="window._rmCycleShowAddInline()">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>' +
+          '新增需求' +
+        '</button>' +
+        '<button type="button" class="rmcd-add-btn" onclick="window._rmCyclePickFromBacklog(\'' + cy.id + '\')">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h12v3H2zM3 7v6h10V7"/></svg>' +
+          '從需求池選' +
+        '</button>' +
+      '</div>';
+
+      var needsSecH = '<div class="rmcd-section">' +
+        '<div class="rmcd-section-label">需求清單 · ' + cyCards.length + ' 個</div>' +
+        needsListH +
+        addBtnsH +
+      '</div>';
+
+      // header & footer
+      var headActionsH =
+        '<button type="button" class="rmdrw-icon-btn danger" aria-label="刪除項目" title="刪除項目" onclick="window._rmCycleDelete(\'' + cy.id + '\')">' +
+          '<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h14M8 6V4h4v2M5 6l1 11h8l1-11"/></svg>' +
+        '</button>' +
+        '<button type="button" class="rmdrw-icon-btn" aria-label="關閉" onclick="window._rmCloseInlineDrawer()">' +
+          '<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>' +
+        '</button>';
+
+      var drawerH = '' +
+        '<div id="rmInlineDrawerMask" class="rmdrw-mask" aria-hidden="true"></div>' +
+        '<aside id="rmInlineDrawer" class="rmdrw" role="dialog" aria-modal="true" aria-label="項目詳情" data-cycle-id="' + cy.id + '">' +
+          '<header class="rmdrw-head">' +
+            '<span class="rmdrw-head-label">項目詳情</span>' +
+            '<div class="rmdrw-head-actions">' + headActionsH + '</div>' +
+          '</header>' +
+          '<div class="rmdrw-body">' +
+            titleBlockH +
+            statusH +
+            datesH +
+            descH +
+            needsSecH +
+          '</div>' +
+        '</aside>';
+
+      var wrap = document.createElement('div');
+      wrap.innerHTML = drawerH;
+      while(wrap.firstChild){ document.body.appendChild(wrap.firstChild); }
+
+      var maskEl = document.getElementById('rmInlineDrawerMask');
+      var drawerEl = document.getElementById('rmInlineDrawer');
+      requestAnimationFrame(function(){
+        if(maskEl){ maskEl.classList.add('open'); }
+        if(drawerEl){ drawerEl.classList.add('open'); }
+      });
+
+      // 即時保存：標題（blur 存）/ 日期（change 存）/ 描述（blur 存）
+      var titleInput = document.getElementById('rmcdTitleInput');
+      if(titleInput){
+        titleInput.addEventListener('blur', function(){
+          window._rmSetCycleLabel(cy.id, this.value);
+        });
+        titleInput.addEventListener('keydown', function(e){
+          if(e.key === 'Enter'){ e.preventDefault(); this.blur(); }
+        });
+      }
+      var startInput = document.getElementById('rmcdStartDate');
+      var endInput = document.getElementById('rmcdEndDate');
+      function _saveDates(){
+        var s = startInput ? startInput.value : '';
+        var e = endInput ? endInput.value : '';
+        window._rmCycleSetDates(cy.id, s, e);
+      }
+      if(startInput) startInput.addEventListener('change', _saveDates);
+      if(endInput) endInput.addEventListener('change', _saveDates);
+      var descInput = document.getElementById('rmcdDescInput');
+      if(descInput){
+        descInput.addEventListener('blur', function(){
+          window._rmCycleSetDesc(cy.id, this.value);
+        });
+      }
+
+      if(maskEl){ maskEl.addEventListener('click', window._rmCloseInlineDrawer); }
+      var escHandler = function(e){
+        if(e.key === 'Escape'){
+          window._rmCloseInlineDrawer();
+          document.removeEventListener('keydown', escHandler);
+        }
+      };
+      document.addEventListener('keydown', escHandler);
+      window._rmDrawerEscHandler = escHandler;
+    };
+
+    // 新增需求 inline 輸入框
+    window._rmCycleShowAddInline = function(){
+      var area = document.getElementById('rmcdAddArea');
+      if(!area) return;
+      var drawer = document.getElementById('rmInlineDrawer');
+      if(!drawer) return;
+      var cycleId = drawer.getAttribute('data-cycle-id');
+      area.innerHTML = '<div class="rmcd-add-inline">' +
+        '<input type="text" id="rmcdNewTitle" placeholder="新需求名稱（按 Enter 新增）" maxlength="80" />' +
+        '<button type="button" id="rmcdNewSave">新增</button>' +
+        '<button type="button" class="cancel" id="rmcdNewCancel">取消</button>' +
+      '</div>';
+      var inp = document.getElementById('rmcdNewTitle');
+      var saveBtn = document.getElementById('rmcdNewSave');
+      var cancelBtn = document.getElementById('rmcdNewCancel');
+      function _save(){
+        var t = (inp.value || '').trim();
+        if(!t){ inp.focus(); return; }
+        window._rmCycleAddCard(cycleId, t);
+      }
+      function _restore(){
+        // re-render drawer to refresh list
+        window._rmOpenCycleDrawer(cycleId);
+      }
+      if(saveBtn) saveBtn.addEventListener('click', _save);
+      if(cancelBtn) cancelBtn.addEventListener('click', _restore);
+      if(inp){
+        inp.addEventListener('keydown', function(e){
+          if(e.key === 'Enter'){ e.preventDefault(); _save(); }
+          if(e.key === 'Escape'){ e.preventDefault(); _restore(); }
+        });
+        setTimeout(function(){ inp.focus(); }, 30);
+      }
+    };
+
+    // 新增 card 並綁 cycleId
+    window._rmCycleAddCard = function(cycleId, title){
+      if(!cycleId || !title) return;
+      var allCards = T.getCards().map(T.migrateCard);
+      var newCard = T.migrateCard({
+        id: T.genId(),
+        title: title,
+        description: '',
+        columnId: 'todo',
+        category: 'product',
+        cycleId: cycleId,
+        createdAt: Date.now(),
+        order: 0
+      });
+      allCards.push(newCard);
+      T.saveCards(allCards);
+      if(typeof showToast === 'function') showToast('已新增需求「' + title + '」');
+      // 重新打開以刷新清單
+      window._rmOpenCycleDrawer(cycleId);
+      // 背景時間軸也刷新
+      if(typeof renderRoadmap === 'function') renderRoadmap();
+    };
+
+    // 從需求池選 modal
+    window._rmCyclePickFromBacklog = function(cycleId){
+      var allCards = T.getCards().map(T.migrateCard);
+      var backlog = allCards.filter(function(c){ return !c.cycleId && !c.archived && c.columnId !== 'done'; });
+      var ov = document.createElement('div');
+      ov.className = 'rmcd-pick-overlay';
+      var listH = '';
+      if(backlog.length === 0){
+        listH = '<div class="rmcd-pick-empty">需求池目前是空的<br/>到任務看板新增任務後，這裡會自動帶出</div>';
+      } else {
+        backlog.forEach(function(c){
+          var cat = T.TASK_CATEGORIES[c.category] || T.TASK_CATEGORIES.product;
+          listH += '<div class="rmcd-pick-row" data-cid="' + c.id + '">' +
+            '<span class="rmcd-pick-check"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 7 6 10 11 4"/></svg></span>' +
+            '<span class="rmcd-pick-title">' + _rmEsc(c.title || '(未命名)') + '</span>' +
+            '<span class="rmcd-pick-meta">' + _rmEsc(cat.label || '') + '</span>' +
+          '</div>';
+        });
+      }
+      ov.innerHTML = '<div class="rmcd-pick-modal" role="dialog" aria-label="從需求池選">' +
+        '<div class="rmcd-pick-head">' +
+          '<h3>從需求池選</h3>' +
+          '<button class="rmdrw-icon-btn" aria-label="關閉" id="rmcdPickClose"><svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg></button>' +
+        '</div>' +
+        '<div class="rmcd-pick-search"><input type="text" id="rmcdPickSearch" placeholder="搜尋需求…" /></div>' +
+        '<div class="rmcd-pick-list" id="rmcdPickList">' + listH + '</div>' +
+        '<div class="rmcd-pick-foot">' +
+          '<span class="rmcd-pick-count" id="rmcdPickCount">已選 0 個</span>' +
+          '<div class="rmcd-pick-actions">' +
+            '<button class="btn btn-ghost" id="rmcdPickCancel">取消</button>' +
+            '<button class="btn btn-accent" id="rmcdPickConfirm">加入項目</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+      document.body.appendChild(ov);
+
+      var selected = {};
+      function _updateCount(){
+        var n = 0; for(var k in selected){ if(selected[k]) n++; }
+        var ce = document.getElementById('rmcdPickCount');
+        if(ce) ce.textContent = '已選 ' + n + ' 個';
+      }
+      var listEl = document.getElementById('rmcdPickList');
+      if(listEl){
+        listEl.addEventListener('click', function(e){
+          var row = e.target.closest('.rmcd-pick-row');
+          if(!row) return;
+          var cid = row.getAttribute('data-cid');
+          if(!cid) return;
+          if(selected[cid]){ delete selected[cid]; row.classList.remove('checked'); }
+          else { selected[cid] = true; row.classList.add('checked'); }
+          _updateCount();
+        });
+      }
+      var searchEl = document.getElementById('rmcdPickSearch');
+      if(searchEl){
+        searchEl.addEventListener('input', function(){
+          var q = (this.value || '').toLowerCase().trim();
+          var rows = listEl.querySelectorAll('.rmcd-pick-row');
+          for(var i=0;i<rows.length;i++){
+            var t = rows[i].querySelector('.rmcd-pick-title');
+            var txt = (t ? t.textContent : '').toLowerCase();
+            rows[i].style.display = (!q || txt.indexOf(q) >= 0) ? '' : 'none';
+          }
+        });
+      }
+      function _close(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }
+      var closeBtn = document.getElementById('rmcdPickClose');
+      var cancelBtn = document.getElementById('rmcdPickCancel');
+      if(closeBtn) closeBtn.addEventListener('click', _close);
+      if(cancelBtn) cancelBtn.addEventListener('click', _close);
+      ov.addEventListener('click', function(e){ if(e.target === ov) _close(); });
+
+      var confirmBtn = document.getElementById('rmcdPickConfirm');
+      if(confirmBtn){
+        confirmBtn.addEventListener('click', function(){
+          var ids = []; for(var k in selected){ if(selected[k]) ids.push(k); }
+          if(ids.length === 0){ if(typeof showToast === 'function') showToast('請先選擇需求'); return; }
+          var allC = T.getCards();
+          for(var i=0;i<allC.length;i++){
+            if(ids.indexOf(allC[i].id) >= 0){
+              allC[i].cycleId = cycleId;
+              allC[i].updatedAt = new Date().toISOString();
+            }
+          }
+          T.saveCards(allC);
+          _close();
+          if(typeof showToast === 'function') showToast('已將 ' + ids.length + ' 個需求加入項目');
+          window._rmOpenCycleDrawer(cycleId);
+          if(typeof renderRoadmap === 'function') renderRoadmap();
+        });
+      }
+      // ESC 關閉
+      var esc = function(e){
+        if(e.key === 'Escape'){ _close(); document.removeEventListener('keydown', esc); }
+      };
+      document.addEventListener('keydown', esc);
+      setTimeout(function(){ if(searchEl) searchEl.focus(); }, 50);
+    };
+
+    // 從項目移除需求（cycleId 解綁，卡片回到需求池）
+    window._rmCycleRemoveCard = function(cycleId, cardId){
+      if(!cycleId || !cardId) return;
+      var allC = T.getCards();
+      for(var i=0;i<allC.length;i++){
+        if(allC[i].id === cardId){
+          allC[i].cycleId = null;
+          allC[i].updatedAt = new Date().toISOString();
+          break;
+        }
+      }
+      T.saveCards(allC);
+      if(typeof showToast === 'function') showToast('已從項目移除（仍在需求池）');
+      window._rmOpenCycleDrawer(cycleId);
+      if(typeof renderRoadmap === 'function') renderRoadmap();
+    };
+
+    // 改項目日期
+    window._rmCycleSetDates = function(cycleId, startDate, endDate){
+      if(!cycleId) return;
+      if(startDate && endDate && endDate < startDate){
+        if(typeof showToast === 'function') showToast('結束日期不能早於開始日期');
+        return;
+      }
+      if(cycleId.indexOf('demo-cy-') === 0){
+        try{
+          var dm = JSON.parse(sessionStorage.getItem('bp_rm_demo_overrides') || '{}');
+          dm[cycleId] = dm[cycleId] || {};
+          dm[cycleId].startDate = startDate;
+          dm[cycleId].endDate = endDate;
+          sessionStorage.setItem('bp_rm_demo_overrides', JSON.stringify(dm));
+        }catch(e){}
+      } else {
+        var cs = T.getCycles();
+        for(var i=0;i<cs.length;i++){
+          if(cs[i].id === cycleId){
+            cs[i].startDate = startDate;
+            cs[i].endDate = endDate;
+            if(startDate && endDate){
+              cs[i].duration = Math.max(1, Math.round((new Date(endDate) - new Date(startDate))/86400000) + 1);
+            }
+            break;
+          }
+        }
+        T.saveCycles(cs);
+      }
+      if(typeof renderRoadmap === 'function') renderRoadmap();
+    };
+
+    // 改項目描述
+    window._rmCycleSetDesc = function(cycleId, desc){
+      if(!cycleId) return;
+      desc = (desc || '').slice(0, 500);
+      if(cycleId.indexOf('demo-cy-') === 0){
+        try{
+          var dm = JSON.parse(sessionStorage.getItem('bp_rm_demo_overrides') || '{}');
+          dm[cycleId] = dm[cycleId] || {};
+          dm[cycleId].description = desc;
+          sessionStorage.setItem('bp_rm_demo_overrides', JSON.stringify(dm));
+        }catch(e){}
+        return;
+      }
+      var cs = T.getCycles();
+      for(var i=0;i<cs.length;i++){
+        if(cs[i].id === cycleId){ cs[i].description = desc; break; }
+      }
+      T.saveCycles(cs);
+    };
+
+    // 刪除項目（解綁 cards 回需求池，移除 cycle）
+    window._rmCycleDelete = function(cycleId){
+      if(!cycleId) return;
+      if(!confirm('確定刪除這個項目？\n項目下的需求會回到「需求池」，不會被刪除。')) return;
+      // 解綁 cards
+      var allC = T.getCards();
+      var unbound = 0;
+      for(var i=0;i<allC.length;i++){
+        if(allC[i].cycleId === cycleId){
+          allC[i].cycleId = null;
+          allC[i].updatedAt = new Date().toISOString();
+          unbound++;
+        }
+      }
+      T.saveCards(allC);
+      // 移除 cycle
+      var cs = T.getCycles();
+      var newCs = cs.filter(function(c){ return c.id !== cycleId; });
+      T.saveCycles(newCs);
+      window._rmCloseInlineDrawer();
+      if(typeof showToast === 'function') showToast('項目已刪除' + (unbound ? '，' + unbound + ' 個需求回到需求池' : ''));
+      if(typeof renderRoadmap === 'function') renderRoadmap();
     };
 
     // ── v0.18.0: Legend popover（項目顏色圖例）──
@@ -27978,4 +28507,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.8 · 時間軸視覺一致性：(1) parent bar 與 child bar 統一語言（同圓角/同字粗，僅高度 32/28 階級差）；(2) parent bar 改純展示——拿掉 onclick + chevron，避免兩種點擊 UX 衝突，展開/收合一律由左側 group-header 操作；(3) 移除 child bar 的 cat-dot 與 slim 白點（O 視覺雜訊全清）；(4) sep-row 與 group-header 統一 72px，呼吸空間到位 -->
+</html><!-- v0.32.9 · 項目 Drawer + 加入需求工作流：(1) 新增 _rmOpenCycleDrawer——點 parent bar 或左側 group-header 即開項目編輯抽屜（標題/顏色/起迄/描述/需求清單/刪除）；(2) 收回 inline contenteditable rename，名稱改在 drawer 編輯，UX 路徑唯一化；(3) chevron 獨立 click 區，header 主區開 drawer，互動分層清晰；(4) 「+ 新增需求」inline 輸入 / 「從需求池選」勾選 modal——讓「攤開全架構→看時間→決定先後」可在 drawer 內完成 -->
