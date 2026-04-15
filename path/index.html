@@ -3926,9 +3926,82 @@ canvas{display:block;margin:0 auto 24px}
 .rmcd-pick-count{font-size:12px;color:var(--ink-muted);font-weight:600}
 .rmcd-pick-actions{display:flex;gap:8px}
 
-/* Group-header click areas v0.32.9: 把展開/收合移到 chevron 與 dot 之外的 cursor */
-.rm-group-header .rm-group-chev{cursor:pointer;padding:2px;border-radius:4px;transition:background .14s}
-.rm-group-header .rm-group-chev:hover{background:var(--bg-hover)}
+/* Group-header click areas v0.32.10: header 整列 = toggle, 色塊 = drawer 入口 */
+.rm-group-header{cursor:pointer;user-select:none}
+.rm-group-header .rm-group-chev{padding:2px;border-radius:4px;transition:transform .26s cubic-bezier(.34,1.56,.64,1)}
+.rm-group-header.collapsed .rm-group-chev{transform:rotate(-90deg)}
+.rm-group-header .rm-group-dot.editable{cursor:pointer;transition:transform .15s cubic-bezier(.34,1.56,.64,1),box-shadow .15s}
+.rm-group-header .rm-group-dot.editable:hover{transform:scale(1.18);box-shadow:0 0 0 3px rgba(124,92,252,.18)}
+
+/* v0.32.10 cursor bug fix：所有裝飾性文字不顯示 I-beam，避免「假可編輯」誤導 */
+.page-title-area h1,.page-title-area h1 span,.page-title-area .subtitle,
+.rm-group-label,.rm-bar-title,.rm-bar-count,.rm-cycle-tag,
+.rmdrw-head-label,.rmdrw-sec-title,.rmdrw-meta-key,.rmdrw-meta-val,
+.rmdrw-kb-title-text,.rmdrw-kb-cat,.rmdrw-kb-status,
+.rm-row-title-text,.rm-gpr-num{cursor:default;user-select:none}
+.rm-row,.rm-group-header,.rm-bar{user-select:none}
+/* 但真的可編輯欄位（input/textarea）保留 text cursor */
+input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
+.rmdrw-body input[type="text"],.rmdrw-body input[type="date"],.rmdrw-body textarea{cursor:text;user-select:auto}
+
+/* v0.32.10 Group expand/collapse 動畫 — child row 進場 stagger */
+@keyframes rmGroupRowIn{
+  0%{opacity:0;transform:translateY(-6px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+.rm-bar-row,.rm-row{animation:rmGroupRowIn .28s cubic-bezier(.22,1,.36,1) backwards}
+.rm-bar-row[data-stagger="0"],.rm-row[data-stagger="0"]{animation-delay:0ms}
+.rm-bar-row[data-stagger="1"],.rm-row[data-stagger="1"]{animation-delay:30ms}
+.rm-bar-row[data-stagger="2"],.rm-row[data-stagger="2"]{animation-delay:60ms}
+.rm-bar-row[data-stagger="3"],.rm-row[data-stagger="3"]{animation-delay:90ms}
+.rm-bar-row[data-stagger="4"],.rm-row[data-stagger="4"]{animation-delay:115ms}
+.rm-bar-row[data-stagger="5"],.rm-row[data-stagger="5"]{animation-delay:135ms}
+.rm-bar-row[data-stagger="6"],.rm-row[data-stagger="6"]{animation-delay:150ms}
+.rm-bar-row[data-stagger="7"],.rm-row[data-stagger="7"]{animation-delay:160ms}
+@media (prefers-reduced-motion: reduce){
+  .rm-bar-row,.rm-row{animation:none}
+}
+
+/* v0.32.10 cycle drawer 沿用 .rmdrw-* 視覺語言：補幾個小元件 */
+.rmdrw-color-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;padding:4px 2px}
+.rmdrw-color-sw{width:100%;aspect-ratio:1;border-radius:8px;border:none;cursor:pointer;padding:0;position:relative;transition:transform .15s cubic-bezier(.34,1.56,.64,1),box-shadow .18s}
+.rmdrw-color-sw:hover{transform:scale(1.12)}
+.rmdrw-color-sw.active{box-shadow:0 0 0 2px var(--bg-card),0 0 0 4px var(--primary)}
+.rmdrw-color-sw.active::after{content:'';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 7 6 10 11 4'/></svg>") center/14px 14px no-repeat}
+.rmdrw-need-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;transition:all .14s;cursor:pointer;margin-bottom:6px}
+.rmdrw-need-row:hover{background:var(--bg-hover);border-color:rgba(124,92,252,.3);transform:translateX(2px)}
+.rmdrw-need-row:last-child{margin-bottom:0}
+.rmdrw-need-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rmdrw-need-status.todo{background:var(--primary)}
+.rmdrw-need-status.doing{background:var(--gold)}
+.rmdrw-need-status.review{background:#3B82F6}
+.rmdrw-need-status.done{background:var(--teal)}
+.rmdrw-need-status.inbox{background:#94A3B8}
+.rmdrw-need-text{flex:1;min-width:0;font-size:13px;font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.01em}
+.rmdrw-need-text.done{text-decoration:line-through;color:var(--ink-dim)}
+.rmdrw-need-due{font-size:11px;color:var(--ink-dim);font-variant-numeric:tabular-nums;font-weight:600;flex-shrink:0;padding:2px 8px;border-radius:5px;background:var(--bg-hover)}
+.rmdrw-need-due.overdue{color:var(--rose);background:rgba(217,68,98,.1)}
+.rmdrw-need-x{width:24px;height:24px;border-radius:6px;background:transparent;border:none;color:var(--ink-dim);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .14s;flex-shrink:0;opacity:0;padding:0}
+.rmdrw-need-row:hover .rmdrw-need-x{opacity:1}
+.rmdrw-need-x:hover{background:rgba(217,68,98,.12);color:var(--rose)}
+.rmdrw-add-bar{display:flex;gap:8px;margin-top:10px}
+.rmdrw-add-bar button{flex:1;padding:10px 12px;border:1px dashed var(--border);background:transparent;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-muted);font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .14s}
+.rmdrw-add-bar button:hover{border-color:var(--primary);color:var(--primary);background:rgba(124,92,252,.04)}
+.rmdrw-add-bar svg{width:13px;height:13px}
+.rmdrw-add-input-row{display:flex;gap:6px;margin-top:10px}
+.rmdrw-add-input-row input{flex:1;padding:9px 12px;border:1.5px solid var(--primary);border-radius:8px;font-size:13px;background:var(--bg);color:var(--ink);font-family:inherit;outline:none;box-shadow:0 0 0 3px rgba(124,92,252,.13)}
+.rmdrw-add-input-row button{padding:0 14px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.rmdrw-add-input-row button.cancel{background:transparent;color:var(--ink-muted);border:1px solid var(--border)}
+.rmdrw-title-input{flex:1;min-width:0;font-size:18px;font-weight:700;color:var(--ink);background:transparent;border:none;outline:none;padding:6px 8px;border-radius:6px;font-family:inherit;letter-spacing:-.01em;transition:background .14s}
+.rmdrw-title-input:hover,.rmdrw-title-input:focus{background:var(--bg-hover)}
+.rmdrw-title-input:focus{box-shadow:inset 0 0 0 1.5px var(--primary)}
+.rmdrw-title-row{display:flex;align-items:center;gap:10px;padding-bottom:4px}
+.rmdrw-title-color{width:18px;height:18px;border-radius:6px;flex-shrink:0;box-shadow:0 0 0 2px var(--bg-card)}
+.rmdrw-date-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rmdrw-date-grid .rmdrw-date-input{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--ink);font-family:inherit;font-variant-numeric:tabular-nums;box-sizing:border-box;transition:border-color .14s,box-shadow .14s}
+.rmdrw-date-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.13)}
+.rmdrw-desc-input{width:100%;min-height:72px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg);color:var(--ink);font-family:inherit;line-height:1.55;resize:vertical;box-sizing:border-box;transition:border-color .14s,box-shadow .14s}
+.rmdrw-desc-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.13)}
 
 /* ═══════════════════════════════════════════
    v0.16.1 — Roadmap Inline Drawer (calm pattern)
@@ -4672,7 +4745,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.9</div>
+        <div class="sidebar-version">v0.32.10</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -10125,19 +10198,15 @@ canvas{display:block;margin:0 auto 24px}
         stateTag = '<span class="rm-cycle-tag backlog">需求池</span>';
       }
       var progressW = Math.max(0, Math.min(100, g.progress));
-      // v0.32.9：項目 header — chevron 展開/收合，色點 color picker，其餘區域開項目 drawer
-      //   名稱編輯統一移到 drawer，避免「inline rename + drawer 編輯」兩條路徑
+      // v0.32.10：分工終版 — header 整列 = 展開/收合（Fitt's Law），色塊 = 開項目 drawer
+      //   名稱編輯、改色、加需求都統一在 drawer 內處理（單一入口）
       var canEdit = (g.kind === 'cycle');
       var dotHTML = canEdit
-        ? '<button type="button" class="rm-group-dot editable" style="background:' + g.color + '" title="點擊更換項目色" onclick="event.stopPropagation();window._rmOpenColorPop(event,\'' + g.key + '\',\'' + g.color + '\')"></button>'
+        ? '<button type="button" class="rm-group-dot editable" style="background:' + g.color + '" title="點擊管理項目（改名/改色/加需求）" onclick="event.stopPropagation();window._rmOpenCycleDrawer(\'' + g.key + '\')"></button>'
         : '<span class="rm-group-dot" style="background:' + g.color + '"></span>';
       var labelHTML = '<span class="rm-group-label">' + (g.label || '').replace(/</g,'&lt;') + '</span>';
-      var headerClick = canEdit
-        ? ' onclick="window._rmOpenCycleDrawer(\'' + g.key + '\')"'
-        : ' onclick="window._rmToggleGroup(\'' + g.key + '\')"';
-      var headerCursor = canEdit ? ';cursor:pointer' : '';
-      leftH += '<div class="rm-group-header' + (expanded?'':' collapsed') + (g.isPast?' past':'') + (g.isCurrent?' current':'') + '"' + headerClick + ' data-group="' + g.key + '" title="' + (canEdit ? '點擊編輯項目；左側箭頭展開/收合' : '') + '" style="position:relative' + headerCursor + '">' +
-        '<svg class="rm-group-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" onclick="event.stopPropagation();window._rmToggleGroup(\'' + g.key + '\')" title="展開/收合"><polyline points="6 8 10 12 14 8"/></svg>' +
+      leftH += '<div class="rm-group-header' + (expanded?'':' collapsed') + (g.isPast?' past':'') + (g.isCurrent?' current':'') + '" onclick="window._rmToggleGroup(\'' + g.key + '\')" data-group="' + g.key + '" title="點擊展開/收合' + (canEdit ? '；左側色塊管理項目' : '') + '" style="position:relative">' +
+        '<svg class="rm-group-chev" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 8 10 12 14 8"/></svg>' +
         dotHTML +
         '<div class="rm-group-main">' +
           '<div class="rm-group-topline">' +
@@ -10158,7 +10227,8 @@ canvas{display:block;margin:0 auto 24px}
           // v0.25.0: 單行極簡 row — 狀態色點 + 標題（hover 看詳情，click 開 drawer）
           var statusDotCls = 'rm-status-dot ' + status;
           if(isOverdue) statusDotCls += ' overdue';
-          leftH += '<div class="rm-row' + (isDone?' done':'') + (isOverdue?' overdue':'') + '" data-card="' + c.id + '" data-row-idx="' + rowIdx + '" data-group="' + g.key + '" tabindex="0" role="button" draggable="true" onclick="window._rmOpenCard(\'' + c.id + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window._rmOpenCard(\'' + c.id + '\')}" ondragstart="window._rmRowDragStart(event,\'' + c.id + '\')" ondragover="window._rmRowDragOver(event)" ondragleave="window._rmRowDragLeave(event)" ondrop="window._rmRowDrop(event,\'' + c.id + '\')" ondragend="window._rmRowDragEnd(event)">' +
+          var _stagger = Math.min(7, rowIdx);
+          leftH += '<div class="rm-row' + (isDone?' done':'') + (isOverdue?' overdue':'') + '" data-card="' + c.id + '" data-row-idx="' + rowIdx + '" data-group="' + g.key + '" data-stagger="' + _stagger + '" tabindex="0" role="button" draggable="true" onclick="window._rmOpenCard(\'' + c.id + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();window._rmOpenCard(\'' + c.id + '\')}" ondragstart="window._rmRowDragStart(event,\'' + c.id + '\')" ondragover="window._rmRowDragOver(event)" ondragleave="window._rmRowDragLeave(event)" ondrop="window._rmRowDrop(event,\'' + c.id + '\')" ondragend="window._rmRowDragEnd(event)">' +
             '<div class="rm-row-title">' +
               '<span class="' + statusDotCls + '" title="' + (STATUS_LABELS[status] || status) + '"></span>' +
               '<span class="rm-row-title-text' + (isDone?' done':'') + '">' + title + '</span>' +
@@ -10380,8 +10450,9 @@ canvas{display:block;margin:0 auto 24px}
       canvasContentH += 72; // group-sep-row height (v0.32.7: 52→72)
 
       if(expanded){
-        g.cards.forEach(function(c){
-          var rowH = '<div class="rm-bar-row" data-card="' + c.id + '">';
+        g.cards.forEach(function(c, _ridx){
+          var _gstag = Math.min(7, _ridx);
+          var rowH = '<div class="rm-bar-row" data-card="' + c.id + '" data-stagger="' + _gstag + '">';
           var sd2 = c.startDate ? new Date(c.startDate) : null;
           var ed2 = c.dueDate ? new Date(c.dueDate) : null;
           if(sd2) sd2.setHours(0,0,0,0);
@@ -10747,6 +10818,10 @@ canvas{display:block;margin:0 auto 24px}
       T.saveCycles(cs);
       renderRoadmap();
     };
+    window._rmCycleSetColor = function(cycleId, color){
+      window._rmSetCycleColor(cycleId, color);
+      setTimeout(function(){ window._rmOpenCycleDrawer(cycleId); }, 0);
+    };
     window._rmSetCycleLabel = function(cycleId, label){
       if(!cycleId) return;
       label = (label || '').trim().slice(0,60);
@@ -10789,11 +10864,9 @@ canvas{display:block;margin:0 auto 24px}
       if(window._rmDragJustEnded){ return; }
       var evt = window.event;
       if(evt){ evt.stopPropagation(); }
-      // backlog 不開項目 drawer（沒有元資訊可編）
       if(cycleKey === '_backlog'){ return; }
       var cy = _rmGetCycleByKey(cycleKey);
       if(!cy){ return; }
-      // 移除既有 drawer
       var old = document.getElementById('rmInlineDrawer'); if(old) old.remove();
       var oldMask = document.getElementById('rmInlineDrawerMask'); if(oldMask) oldMask.remove();
 
@@ -10805,96 +10878,126 @@ canvas{display:block;margin:0 auto 24px}
       var today = new Date(); today.setHours(0,0,0,0);
       var sd = cy.startDate ? new Date(cy.startDate + 'T00:00:00') : null;
       var ed = cy.endDate ? new Date(cy.endDate + 'T00:00:00') : null;
-      var statusKey = 'future', statusLabel = '尚未開始';
+      var statusKey = 'inbox', statusLabel = '未排期';
       if(sd && ed){
-        if(today < sd){ statusKey = 'future'; statusLabel = '尚未開始'; }
-        else if(today > ed){ statusKey = 'past'; statusLabel = '已結束'; }
-        else { statusKey = 'active'; statusLabel = '進行中'; }
+        if(today < sd){ statusKey = 'todo'; statusLabel = '尚未開始'; }
+        else if(today > ed){ statusKey = 'done'; statusLabel = '已結束'; }
+        else { statusKey = 'doing'; statusLabel = '進行中'; }
       }
       var color = cy.color || '#7C5CFC';
       var label = cy.label || cy.name || '未命名項目';
 
-      // 標題區
-      var titleBlockH = '<div class="rmcd-title-block">' +
-        '<button type="button" class="rmcd-color-dot" style="background:' + color + '" title="更換項目顏色" onclick="event.stopPropagation();window._rmOpenColorPop(event,\'' + cy.id + '\',\'' + color + '\')"></button>' +
-        '<input type="text" class="rmcd-title-input" id="rmcdTitleInput" value="' + _rmEsc(label) + '" placeholder="項目名稱" maxlength="60" />' +
-      '</div>';
-
-      // 狀態列
-      var statusH = '<div class="rmcd-status-row">' +
-        '<span class="rmcd-pill ' + statusKey + '">' + statusLabel + '</span>' +
-        '<span class="rmcd-pill">' + cyCards.length + ' 個需求</span>' +
-        '<span class="rmcd-pill">完成 ' + pct + '%</span>' +
-        (sd && ed ? '<span class="rmcd-pill">' + _rmFmtMD(sd) + ' – ' + _rmFmtMD(ed) + '</span>' : '') +
-      '</div>';
-
-      // 日期區
-      var datesH = '<div class="rmcd-section">' +
-        '<div class="rmcd-section-label">時間範圍</div>' +
-        '<div class="rmcd-date-grid">' +
-          '<input type="date" class="rmcd-date-input" id="rmcdStartDate" value="' + (cy.startDate || '') + '" />' +
-          '<input type="date" class="rmcd-date-input" id="rmcdEndDate" value="' + (cy.endDate || '') + '" />' +
+      // ───── kb-preview 風格的項目卡（沿用任務 drawer 視覺語言） ─────
+      // 用 inline style 把 ::before 色帶換成項目色（透過 data attr + CSS var）
+      var kbPreviewH = '<div class="rmdrw-kb-preview" style="border-color:' + color + '40">' +
+        '<style>#rmInlineDrawer .rmdrw-kb-preview::before{background:' + color + ' !important}</style>' +
+        '<div class="rmdrw-title-row">' +
+          '<span class="rmdrw-title-color" style="background:' + color + '"></span>' +
+          '<input type="text" class="rmdrw-title-input" id="rmcdTitleInput" value="' + _rmEsc(label) + '" placeholder="項目名稱" maxlength="60" />' +
+        '</div>' +
+        '<div class="rmdrw-kb-meta">' +
+          '<span class="rmdrw-kb-status ' + statusKey + '">' + statusLabel + '</span>' +
+          '<span class="rmdrw-kb-tag">' + cyCards.length + ' 個需求</span>' +
+          '<span class="rmdrw-kb-tag">完成 ' + pct + '%</span>' +
+          (sd && ed ? '<span class="rmdrw-kb-tag">' + _rmFmtMD(sd) + ' – ' + _rmFmtMD(ed) + '</span>' : '') +
         '</div>' +
       '</div>';
 
-      // 描述區
-      var descH = '<div class="rmcd-section">' +
-        '<div class="rmcd-section-label">項目說明</div>' +
-        '<textarea class="rmcd-desc-input" id="rmcdDescInput" placeholder="這個項目的目標、範圍、注意事項…">' + _rmEsc(cy.description || '') + '</textarea>' +
+      // ───── meta-grid: 起始/結束/進度/需求數 四宮格 ─────
+      var metaGridH = '<div class="rmdrw-meta-grid">' +
+        '<div class="rmdrw-meta-item"><div class="rmdrw-meta-key">開始</div><div class="rmdrw-meta-val">' + (sd ? _rmFmtMD(sd) : '<span class="rmdrw-sec-empty">—</span>') + '</div></div>' +
+        '<div class="rmdrw-meta-item"><div class="rmdrw-meta-key">結束</div><div class="rmdrw-meta-val">' + (ed ? _rmFmtMD(ed) : '<span class="rmdrw-sec-empty">—</span>') + '</div></div>' +
+        '<div class="rmdrw-meta-item"><div class="rmdrw-meta-key">進度</div><div class="rmdrw-meta-val">' + pct + '%</div></div>' +
+        '<div class="rmdrw-meta-item"><div class="rmdrw-meta-key">需求</div><div class="rmdrw-meta-val">' + cyCards.length + ' 個</div></div>' +
       '</div>';
 
-      // 需求清單（依 dueDate 排序，無 due 排尾）
+      // ───── sec: 時間範圍（編輯） ─────
+      var datesH = '<div class="rmdrw-sec">' +
+        '<div class="rmdrw-sec-title">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="3" width="12" height="11" rx="1.5"/><line x1="2" y1="6" x2="14" y2="6"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/></svg>' +
+          '時間範圍' +
+        '</div>' +
+        '<div class="rmdrw-date-grid">' +
+          '<input type="date" class="rmdrw-date-input" id="rmcdStartDate" value="' + (cy.startDate || '') + '" />' +
+          '<input type="date" class="rmdrw-date-input" id="rmcdEndDate" value="' + (cy.endDate || '') + '" />' +
+        '</div>' +
+      '</div>';
+
+      // ───── sec: 描述 ─────
+      var descH = '<div class="rmdrw-sec">' +
+        '<div class="rmdrw-sec-title">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="3" y1="5" x2="13" y2="5"/><line x1="3" y1="8" x2="13" y2="8"/><line x1="3" y1="11" x2="9" y2="11"/></svg>' +
+          '項目說明' +
+        '</div>' +
+        '<textarea class="rmdrw-desc-input" id="rmcdDescInput" placeholder="這個項目的目標、範圍、注意事項…">' + _rmEsc(cy.description || '') + '</textarea>' +
+      '</div>';
+
+      // ───── sec: 需求清單（kb-card 縮小版） ─────
       var sortedCards = cyCards.slice().sort(function(a,b){
         var da = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
         var db = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
         return da - db;
       });
-      var needsListH = '';
+      var needsBodyH = '';
       if(sortedCards.length === 0){
-        needsListH = '<div class="rmcd-needs-empty">這個項目還沒有需求<br/>用下方按鈕加一個，或從需求池選</div>';
+        needsBodyH = '<div class="rmdrw-empty-block">這個項目還沒有需求<br/>用下方按鈕加一個，或從需求池選現成的</div>';
       } else {
-        needsListH = '<div class="rmcd-needs-list">';
         sortedCards.forEach(function(c){
           var cStatus = c.columnId || 'todo';
-          var dotCls = 'rmcd-need-dot ' + cStatus;
-          var titleCls = 'rmcd-need-title' + (cStatus === 'done' ? ' done' : '');
+          var titleCls = 'rmdrw-need-text' + (cStatus === 'done' ? ' done' : '');
           var dueStr = '';
-          var dueCls = 'rmcd-need-due';
+          var dueCls = 'rmdrw-need-due';
           if(c.dueDate){
             var dd = new Date(c.dueDate + 'T00:00:00');
             dueStr = _rmFmtMD(dd);
             if(cStatus !== 'done' && dd < today){ dueCls += ' overdue'; }
           }
-          needsListH += '<div class="rmcd-need-row" onclick="window._rmCloseInlineDrawer();setTimeout(function(){window._rmOpenCard(\'' + c.id + '\')},220)">' +
-            '<span class="' + dotCls + '" title="' + cStatus + '"></span>' +
+          needsBodyH += '<div class="rmdrw-need-row" onclick="window._rmCloseInlineDrawer();setTimeout(function(){window._rmOpenCard(\'' + c.id + '\')},220)">' +
+            '<span class="rmdrw-need-status ' + cStatus + '" title="' + (STATUS_LABELS[cStatus] || cStatus) + '"></span>' +
             '<span class="' + titleCls + '">' + _rmEsc(c.title || '(未命名)') + '</span>' +
             (dueStr ? '<span class="' + dueCls + '">' + dueStr + '</span>' : '') +
-            '<button type="button" class="rmcd-need-remove" title="從項目移除（保留卡片到需求池）" onclick="event.stopPropagation();window._rmCycleRemoveCard(\'' + cy.id + '\',\'' + c.id + '\')">' +
+            '<button type="button" class="rmdrw-need-x" title="從項目移除（保留到需求池）" onclick="event.stopPropagation();window._rmCycleRemoveCard(\'' + cy.id + '\',\'' + c.id + '\')">' +
               '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>' +
             '</button>' +
           '</div>';
         });
-        needsListH += '</div>';
       }
-
-      var addBtnsH = '<div class="rmcd-needs-actions" id="rmcdAddArea">' +
-        '<button type="button" class="rmcd-add-btn" onclick="window._rmCycleShowAddInline()">' +
+      var addBarH = '<div class="rmdrw-add-bar" id="rmcdAddArea">' +
+        '<button type="button" onclick="window._rmCycleShowAddInline()">' +
           '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>' +
           '新增需求' +
         '</button>' +
-        '<button type="button" class="rmcd-add-btn" onclick="window._rmCyclePickFromBacklog(\'' + cy.id + '\')">' +
+        '<button type="button" onclick="window._rmCyclePickFromBacklog(\'' + cy.id + '\')">' +
           '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h12v3H2zM3 7v6h10V7"/></svg>' +
           '從需求池選' +
         '</button>' +
       '</div>';
-
-      var needsSecH = '<div class="rmcd-section">' +
-        '<div class="rmcd-section-label">需求清單 · ' + cyCards.length + ' 個</div>' +
-        needsListH +
-        addBtnsH +
+      var needsSecH = '<div class="rmdrw-sec">' +
+        '<div class="rmdrw-sec-title">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><polyline points="3 5 5 7 8 4"/><polyline points="3 9 5 11 8 8"/><line x1="11" y1="6" x2="14" y2="6"/><line x1="11" y1="10" x2="14" y2="10"/></svg>' +
+          '需求清單 · ' + cyCards.length + ' 個' +
+        '</div>' +
+        needsBodyH +
+        addBarH +
       '</div>';
 
-      // header & footer
+      // ───── sec: 外觀（顏色 swatch grid） ─────
+      var palette = ['#7C5CFC','#1BA891','#E08A3A','#3B82F6','#D94462','#8B5CF6','#0EA5E9','#EAB308','#10B981','#EC4899'];
+      var swatchH = '';
+      for(var pi=0; pi<palette.length; pi++){
+        var pc = palette[pi];
+        var act = pc.toLowerCase() === color.toLowerCase() ? ' active' : '';
+        swatchH += '<button type="button" class="rmdrw-color-sw' + act + '" style="background:' + pc + '" data-color="' + pc + '" title="' + pc + '" onclick="window._rmCycleSetColor(\'' + cy.id + '\',\'' + pc + '\')"></button>';
+      }
+      var appearH = '<div class="rmdrw-sec">' +
+        '<div class="rmdrw-sec-title">' +
+          '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8" cy="8" r="5"/><circle cx="8" cy="8" r="2"/></svg>' +
+          '外觀色彩' +
+        '</div>' +
+        '<div class="rmdrw-color-grid">' + swatchH + '</div>' +
+      '</div>';
+
+      // ───── header & footer ─────
       var headActionsH =
         '<button type="button" class="rmdrw-icon-btn danger" aria-label="刪除項目" title="刪除項目" onclick="window._rmCycleDelete(\'' + cy.id + '\')">' +
           '<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h14M8 6V4h4v2M5 6l1 11h8l1-11"/></svg>' +
@@ -10911,11 +11014,12 @@ canvas{display:block;margin:0 auto 24px}
             '<div class="rmdrw-head-actions">' + headActionsH + '</div>' +
           '</header>' +
           '<div class="rmdrw-body">' +
-            titleBlockH +
-            statusH +
+            kbPreviewH +
+            metaGridH +
             datesH +
             descH +
             needsSecH +
+            appearH +
           '</div>' +
         '</aside>';
 
@@ -28507,4 +28611,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.9 · 項目 Drawer + 加入需求工作流：(1) 新增 _rmOpenCycleDrawer——點 parent bar 或左側 group-header 即開項目編輯抽屜（標題/顏色/起迄/描述/需求清單/刪除）；(2) 收回 inline contenteditable rename，名稱改在 drawer 編輯，UX 路徑唯一化；(3) chevron 獨立 click 區，header 主區開 drawer，互動分層清晰；(4) 「+ 新增需求」inline 輸入 / 「從需求池選」勾選 modal——讓「攤開全架構→看時間→決定先後」可在 drawer 內完成 -->
+</html><!-- v0.32.10 · 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
