@@ -3944,22 +3944,28 @@ canvas{display:block;margin:0 auto 24px}
 input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 .rmdrw-body input[type="text"],.rmdrw-body input[type="date"],.rmdrw-body textarea{cursor:text;user-select:auto}
 
-/* v0.32.10 Group expand/collapse 動畫 — child row 進場 stagger */
+/* v0.32.11 Group expand 動畫升級 — 更顯著的 stagger 進場（spring easing + 翻飛感） */
 @keyframes rmGroupRowIn{
-  0%{opacity:0;transform:translateY(-6px)}
-  100%{opacity:1;transform:translateY(0)}
+  0%{opacity:0;transform:translateY(-22px) scaleY(.85);transform-origin:top center;filter:blur(2px)}
+  60%{opacity:1;transform:translateY(2px) scaleY(1.02);filter:blur(0)}
+  100%{opacity:1;transform:translateY(0) scaleY(1);filter:blur(0)}
 }
-.rm-bar-row,.rm-row{animation:rmGroupRowIn .28s cubic-bezier(.22,1,.36,1) backwards}
+.rm-bar-row,.rm-row{animation:rmGroupRowIn .52s cubic-bezier(.34,1.46,.64,1) backwards;will-change:transform,opacity}
 .rm-bar-row[data-stagger="0"],.rm-row[data-stagger="0"]{animation-delay:0ms}
-.rm-bar-row[data-stagger="1"],.rm-row[data-stagger="1"]{animation-delay:30ms}
-.rm-bar-row[data-stagger="2"],.rm-row[data-stagger="2"]{animation-delay:60ms}
-.rm-bar-row[data-stagger="3"],.rm-row[data-stagger="3"]{animation-delay:90ms}
-.rm-bar-row[data-stagger="4"],.rm-row[data-stagger="4"]{animation-delay:115ms}
-.rm-bar-row[data-stagger="5"],.rm-row[data-stagger="5"]{animation-delay:135ms}
-.rm-bar-row[data-stagger="6"],.rm-row[data-stagger="6"]{animation-delay:150ms}
-.rm-bar-row[data-stagger="7"],.rm-row[data-stagger="7"]{animation-delay:160ms}
+.rm-bar-row[data-stagger="1"],.rm-row[data-stagger="1"]{animation-delay:60ms}
+.rm-bar-row[data-stagger="2"],.rm-row[data-stagger="2"]{animation-delay:120ms}
+.rm-bar-row[data-stagger="3"],.rm-row[data-stagger="3"]{animation-delay:180ms}
+.rm-bar-row[data-stagger="4"],.rm-row[data-stagger="4"]{animation-delay:230ms}
+.rm-bar-row[data-stagger="5"],.rm-row[data-stagger="5"]{animation-delay:280ms}
+.rm-bar-row[data-stagger="6"],.rm-row[data-stagger="6"]{animation-delay:320ms}
+.rm-bar-row[data-stagger="7"],.rm-row[data-stagger="7"]{animation-delay:360ms}
+/* chevron 旋轉動態升級 */
+.rm-group-header .rm-group-chev{transition:transform .42s cubic-bezier(.34,1.46,.64,1),color .2s}
+.rm-group-header.collapsed .rm-group-chev{transform:rotate(-90deg);color:var(--ink-muted)}
+.rm-group-header:not(.collapsed) .rm-group-chev{color:var(--primary)}
 @media (prefers-reduced-motion: reduce){
   .rm-bar-row,.rm-row{animation:none}
+  .rm-group-header .rm-group-chev{transition:none}
 }
 
 /* v0.32.10 cycle drawer 沿用 .rmdrw-* 視覺語言：補幾個小元件 */
@@ -4745,7 +4751,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.10</div>
+        <div class="sidebar-version">v0.32.11</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -9954,6 +9960,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       cycles = demoCycles.concat(cycles);
       cards = demoCards.concat(cards);
     }
+    // v0.32.11: 暴露 cycles 與 cards 給 drawer 查詢（demo 不在 T.getCycles()，必須走快取）
+    window._rmAllCyclesCache = cycles;
+    window._rmAllCardsCache = cards;
 
     // ── State ──
     if(!window._rmState){
@@ -10855,7 +10864,11 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       try { var dt = new Date(d); return (dt.getMonth()+1) + '/' + dt.getDate(); } catch(e){ return '—'; }
     }
     function _rmGetCycleByKey(cycleKey){
-      // demo override 與真實 cycle 都從 T.getCycles() 取（demo 已注入 cycles array）
+      // v0.32.11: 先查 render 快取（含 demo），再 fallback 到 T.getCycles()
+      var cache = window._rmAllCyclesCache;
+      if(cache && cache.length){
+        for(var j=0;j<cache.length;j++){ if(cache[j].id === cycleKey) return cache[j]; }
+      }
       var all = T.getCycles();
       for(var i=0;i<all.length;i++){ if(all[i].id === cycleKey) return all[i]; }
       return null;
@@ -10870,7 +10883,10 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       var old = document.getElementById('rmInlineDrawer'); if(old) old.remove();
       var oldMask = document.getElementById('rmInlineDrawerMask'); if(oldMask) oldMask.remove();
 
-      var allCards = T.getCards().map(T.migrateCard);
+      // v0.32.11: demo cards 也只在 render-time cache 內，需 fallback
+      var allCards = (window._rmAllCardsCache && window._rmAllCardsCache.length)
+        ? window._rmAllCardsCache
+        : T.getCards().map(T.migrateCard);
       var cyCards = allCards.filter(function(c){ return c.cycleId === cy.id && !c.archived; });
       var doneCount = cyCards.filter(function(c){ return c.columnId === 'done'; }).length;
       var pct = cyCards.length ? Math.round(doneCount / cyCards.length * 100) : 0;
@@ -28611,4 +28627,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.10 · 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
+</html><!-- v0.32.11 · 修兩個 v0.32.10 漏網 bug：(1) 色塊點擊不開 drawer——demo cycles 從未進 T.getCycles() 儲存層，_rmGetCycleByKey 一律找不到回 null，drawer 提前 return；新增 window._rmAllCyclesCache / _rmAllCardsCache 在 render-time 暴露完整列表（含 demo），_rmGetCycleByKey 與 _rmOpenCycleDrawer 優先讀快取再 fallback 到 storage；(2) 展開動畫太微弱看不出來——重做 @keyframes rmGroupRowIn：translateY -22px、scaleY .85→1.02→1（spring overshoot）、blur(2px)→0、duration .52s、stagger 從 30ms 拉到 60ms（最後一階 360ms），加 transform-origin top center 確保視覺從 group bar 往下展開；chevron 旋轉延長到 .42s 並加色彩切換（collapsed=muted, expanded=primary） · 後續 v0.32.10 changelog: --> 時間軸 6 點 UX 修正：(1) 全域 cursor:default + user-select:none 處理裝飾性文字（header/subtitle/group-label/bar-title/drawer-title 等），inputs/textareas 顯式保留 cursor:text，根除 I-beam 浮標 bug；(2) header 整列 onclick = 展開/收合（Fitt's Law 大命中區），左側色塊 onclick = 開項目 drawer，互動分工清晰；(3) @keyframes rmGroupRowIn 展開 stagger 動畫（spring easing，data-stagger 0–7 階段 0–160ms），respect prefers-reduced-motion；(4) 顏色編輯統一收進 drawer 的「外觀色彩」section（10 色 swatch grid + active 勾選打勾），不再用 dot popover；(5) 2026 UIUX 趨勢（spring 微互動/空間轉場/自適應密度）列入後續迭代；(6) drawer 全面改用既有 .rmdrw-* 視覺語言（kb-preview / meta-grid / sec / empty-block），與任務編輯抽屜一致，零學習成本 -->
