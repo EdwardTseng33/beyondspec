@@ -4361,7 +4361,7 @@ canvas{display:block;margin:0 auto 24px}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.0</div>
+        <div class="sidebar-version">v0.32.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -4720,6 +4720,8 @@ canvas{display:block;margin:0 auto 24px}
       // Pull cloud data first, init workspace, then show dashboard
       _pullFromFirestore(function() {
         _initWorkspace(function() {
+          // Dev unlock check（白名單 email 自動升級 enterprise + URL ?dev=）
+          if (typeof applyDevUnlockOnLogin === 'function') applyDevUnlockOnLogin();
           showDashboard();
           showToast('歡迎回來，' + state.user.name + '！');
           // After pull, sync back any local-only data
@@ -5208,6 +5210,59 @@ canvas{display:block;margin:0 auto 24px}
     if (typeof renderSidebar === 'function') renderSidebar();
     // 若停留在設定頁，重繪設定
     if (state.currentPage === 'settings' && typeof renderSettings === 'function') renderSettings();
+  }
+
+  // ── DEV UNLOCK（v0.32.1：隱藏管理員後門，僅限魔法長使用）──
+  // 三種啟動方式：
+  //   1. Email 白名單：edwardt0303@gmail.com 登入即自動 enterprise
+  //   2. URL 參數：?dev=enterprise（或 free / starter / pro）
+  //   3. Console 指令：app.devUnlock('enterprise')
+  //   4. 鍵盤快捷鍵：Ctrl+Shift+E（toggle Enterprise / Free）
+  var DEV_EMAILS = ['edwardt0303@gmail.com'];
+
+  function isDevUser() {
+    if (!state || !state.user) return false;
+    return DEV_EMAILS.indexOf((state.user.email || '').toLowerCase()) !== -1;
+  }
+
+  function devUnlock(planId) {
+    var target = planId || 'enterprise';
+    if (!PLAN_CATALOG[target]) { console.warn('[DevUnlock] 無效方案:', target); return; }
+    changePlan(target);
+    // 同時解鎖所有模組
+    var allOn = {};
+    Object.keys(MODULE_DEFAULTS).forEach(function(k){ allOn[k] = true; });
+    saveEnabledModules(allOn);
+    if (typeof renderSidebar === 'function') renderSidebar();
+    showToast('🔓 Dev Unlock：' + PLAN_CATALOG[target].name + '（所有模組已解鎖）');
+    console.log('[DevUnlock] plan →', target, '· modules → ALL ON');
+  }
+
+  function applyDevUnlockOnLogin() {
+    // 登入後自動套用：若是白名單 email，預設 enterprise
+    if (isDevUser() && state.plan !== 'enterprise') {
+      console.log('[DevUnlock] 偵測到管理員 email，自動升級 Enterprise');
+      devUnlock('enterprise');
+    }
+    // URL 參數覆蓋
+    try {
+      var qs = new URLSearchParams(window.location.search);
+      var devPlan = qs.get('dev');
+      if (devPlan && PLAN_CATALOG[devPlan]) {
+        devUnlock(devPlan);
+      }
+    } catch(e) {}
+  }
+
+  // 鍵盤快捷鍵（Ctrl+Shift+E）：toggle Enterprise / Free
+  if (typeof document !== 'undefined') {
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) {
+        e.preventDefault();
+        var nextPlan = (state && state.plan === 'enterprise') ? 'free' : 'enterprise';
+        devUnlock(nextPlan);
+      }
+    });
   }
 
   function getEnabledModules() {
@@ -26099,6 +26154,8 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     confirmDowngrade,
     changePlan,
     lpSetCycle,
+    devUnlock,
+    isDevUser,
   };
 
   // ==================== BLOG FUNCTIONS ====================
@@ -26674,6 +26731,8 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
 
   function showDashboard() {
     state.currentView = 'dashboard';
+    // Dev unlock：每次進入 dashboard 時檢查（涵蓋 reload / offline mode）
+    if (typeof applyDevUnlockOnLogin === 'function') applyDevUnlockOnLogin();
     document.getElementById('landingPage').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     document.getElementById('loginModal').className = 'modal-overlay';
@@ -27272,4 +27331,4 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
 </script>
 </body>
-</html><!-- v0.32.0 · 訂閱系統：月/年切換、7 天試用、Modal 升降級、Landing pricing 重構 -->
+</html><!-- v0.32.1 · Dev Unlock：白名單 email + URL ?dev= + Ctrl+Shift+E 後門 -->
