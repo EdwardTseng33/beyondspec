@@ -2745,6 +2745,14 @@ canvas{display:block;margin:0 auto 24px}
 .kb-view-seg-btn:hover{color:var(--ink)}
 .kb-view-seg-btn.active{background:var(--primary);color:#fff;box-shadow:0 1px 3px rgba(124,92,252,.35)}
 .kb-view-seg-btn svg{stroke-width:1.75}
+/* v1.0.6: 新增欄位 button（搬到 toolbar 跟 view-toggle 並排）*/
+.kb-addcol-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;height:32px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:8px;
+  font-size:12.5px;font-weight:600;color:var(--ink-muted);cursor:pointer;font-family:inherit;
+  transition:all .15s var(--ease-out);white-space:nowrap;flex-shrink:0}
+.kb-addcol-btn:hover{color:var(--primary);border-color:color-mix(in srgb,var(--primary) 40%,var(--border) 60%);background:color-mix(in srgb,var(--primary) 5%,var(--bg-card) 95%)}
+.kb-addcol-btn:active{transform:translateY(1px)}
+.kb-addcol-btn svg{stroke-width:1.8;flex-shrink:0}
 
 .kb-control-bar{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
 /* v0.32.13 kb-cyc-pill 改版：壓縮資訊層級（主行：dot + 名稱 + 天數 tone），副行：tonal bar + done/total */
@@ -2900,11 +2908,12 @@ canvas{display:block;margin:0 auto 24px}
 .kanban-board-wrap.has-scroll-left::before{opacity:1}
 .kanban-board-wrap.has-scroll-right::after{opacity:1}
 /* Dot indicator bar — removed by design decision, keep scrollbar + fade only */
-/* v1.0.5: 核彈級結構修復——橫向 overflow 永久關閉，Chrome 原生 autoscroll 找不到 h-scrollable 祖先
-   = 在 col-body 中鍵 100% 不可能觸發橫向散逸，從根本消除問題。
-   代價：欄多時在小螢幕會擠；透過 .kanban-col 降 min-width 到 200px + flex-wrap:wrap 緩解 */
-.kanban-board{display:flex;gap:16px;overflow:hidden;padding-bottom:16px;min-height:calc(100vh - 220px);align-items:flex-start;flex-wrap:wrap}
-.kanban-col{flex:1 1 240px;min-width:200px;max-width:420px;background:var(--bg-card);border-radius:var(--r-lg);display:flex;flex-direction:column;max-height:calc(100vh - 220px);box-shadow:var(--shadow-sm)}
+/* v1.0.6: 結構維持 overflow:hidden（擋 Chrome autoscroll），但單列不 wrap，欄位自適應縮放
+   - flex-wrap:nowrap：永遠單列
+   - .kanban-col flex:1 1 0：完全彈性，從 min-width 200px 延伸至填滿容器
+   - 拿掉 max-width：高螢幕時欄位均等拉伸，不會一邊塞一邊留白 */
+.kanban-board{display:flex;gap:16px;overflow:hidden;padding-bottom:16px;min-height:calc(100vh - 220px);align-items:flex-start;flex-wrap:nowrap}
+.kanban-col{flex:1 1 0;min-width:200px;background:var(--bg-card);border-radius:var(--r-lg);display:flex;flex-direction:column;max-height:calc(100vh - 220px);box-shadow:var(--shadow-sm)}
 .kanban-col-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:var(--r-lg) var(--r-lg) 0 0}
 /* v0.32.20：col-body gap 12px 讓卡片上下有呼吸感（取代原 .kanban-card margin-bottom:8px 過密） */
 .kanban-col-body{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:12px;min-height:80px;transition:background .2s;display:flex;flex-direction:column;gap:12px}
@@ -3033,14 +3042,46 @@ body.mid-panning .kanban-col-body{touch-action:pan-y !important;overscroll-behav
 .kb-input{width:100%;padding:10px 14px;height:44px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:14px;background:var(--bg-input,var(--bg-card));color:var(--ink);outline:none;font-family:inherit;box-sizing:border-box;transition:border-color .15s}
 .kb-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.12)}
 .kb-label{font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:6px;display:block}
-.kb-priority-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);background:none;color:var(--ink-muted);cursor:pointer;transition:all .15s;font-family:inherit}
-.kb-priority-btn.sel{color:#fff}
-.kb-cat-btn{border:2px solid var(--border);background:var(--bg-card);border-radius:var(--r-md);padding:10px 8px;text-align:center;cursor:pointer;transition:all .15s;font-family:inherit;display:flex;flex-direction:column;align-items:center}
-.kb-cat-btn:hover{border-color:var(--ink-muted)}
-.kb-cat-btn.sel{box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.kb-tag-chip{padding:4px 10px;font-size:11px;font-weight:600;border-radius:20px;cursor:pointer;transition:all .15s;font-family:inherit;border:1.5px solid var(--border);background:transparent;color:var(--ink-muted)}
-.kb-tag-chip:hover{border-color:var(--ink-muted)}
-.kb-tag-chip.sel{border-color:inherit}
+/* v1.0.6: 統一 toggleable chip 系統——right-pane control 規範 32px 高度、消除 ✓ 前綴 layout shift
+   三階高度：32（chip）/ 40（date input）/ 44（bpSelect）
+   雙編碼：色 + 形（選中 = 填色 bg + 粗字 + border 同色，未選中 = 邊框 + 灰字） */
+.kb-chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;
+  border:1px solid var(--border);border-radius:999px;background:var(--bg-card);
+  color:var(--ink-muted);cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;
+  line-height:1;white-space:nowrap;transition:background .12s,border-color .12s,color .12s;
+  --_chip-c:var(--primary);
+}
+.kb-chip:hover{border-color:color-mix(in srgb,var(--_chip-c) 35%,var(--border));color:var(--ink)}
+.kb-chip.sel{
+  background:color-mix(in srgb,var(--_chip-c) 14%,var(--bg-card));
+  border-color:color-mix(in srgb,var(--_chip-c) 50%,transparent);
+  color:var(--_chip-c);font-weight:700;
+}
+.kb-chip-dot{width:7px;height:7px;border-radius:50%;background:var(--_chip-c);flex-shrink:0}
+.kb-chip.sel .kb-chip-dot{box-shadow:0 0 0 2px color-mix(in srgb,var(--_chip-c) 22%,transparent)}
+/* Priority 顏色覆寫 via data-p */
+.kb-chip[data-p="high"]{--_chip-c:var(--rose)}
+.kb-chip[data-p="medium"]{--_chip-c:var(--gold)}
+.kb-chip[data-p="low"]{--_chip-c:var(--slate,#94A3B8)}
+
+/* v1.0.6: Date input 包一層 wrapper + PATH-style calendar icon（取代 browser 灰色預設）*/
+.kb-date-wrap{position:relative;display:block}
+.kb-date-wrap input[type="date"]{height:40px;padding:8px 36px 8px 12px;width:100%;
+  border:1px solid var(--border);border-radius:var(--r-sm);font-size:13.5px;
+  background:var(--bg-input,var(--bg-card));color:var(--ink);outline:none;font-family:inherit;
+  box-sizing:border-box;transition:border-color .15s}
+.kb-date-wrap input[type="date"]:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.1)}
+.kb-date-wrap input[type="date"]::-webkit-calendar-picker-indicator{opacity:0;cursor:pointer;position:absolute;right:0;top:0;width:40px;height:40px}
+.kb-date-wrap .kb-date-icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ink-muted)}
+
+/* v1.0.6: 負責人 bpSelect 外層 avatar prefix */
+.kb-assignee-wrap{position:relative}
+.kb-assignee-avatar{position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  font-size:10.5px;font-weight:700;color:#fff;background:var(--ink-dim);
+  pointer-events:none;z-index:2;letter-spacing:0}
+.kb-assignee-avatar.empty{background:transparent;border:1.5px dashed var(--ink-dim);color:var(--ink-dim)}
+.kb-assignee-wrap .bp-select-trigger{padding-left:42px !important;font-size:14px !important;height:44px !important}
 .kb-cl-item{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .kb-cl-item input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--primary);flex-shrink:0}
 .kb-cl-item input[type="text"]{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;background:var(--bg-input,var(--bg-card));color:var(--ink);outline:none;font-family:inherit}
@@ -5010,7 +5051,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.0.5</div>
+        <div class="sidebar-version">v1.0.6</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -5077,6 +5118,600 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     roadmap: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l-6 2v14l6-2 6 2 6-2V5l-6 2-6-2z"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="7" x2="15" y2="21"/></svg>'
   };
 
+  // ==================== BP NAMESPACE (Phase 0 · v1.0.4 · 2026-04-18) ====================
+  // 統一 shared store + selectors + events + format + lifecycle + ai
+  // 設計原則：
+  //   1. 上層 wrapper，不取代現有 _get/getData/bizGet（向下相容）
+  //   2. ES5 only — var + function + 無 arrow/const/let/template literal
+  //   3. 純函式 selector — 不改資料、不寫 localStorage（BP.store.set 除外）
+  //   4. Feature flag: localStorage.bp_store_bypass === "1" 時 Phase 1/2 呼叫點繞過
+  //   5. 無破壞性 migration：read-through normalize，不回寫
+  //   6. 為「信任・包覆・情緒價值感」三層靈魂鋪路
+
+  window.BP = window.BP || {};
+
+  BP.KEYS = {
+    TASKS:         "bp_kanban_cards",
+    CYCLES:        "bp_kanban_cycles",
+    QUOTES:        "bp_quotes",
+    CONTACTS:      "bp_contacts",
+    BILLING:       "bp_billing",
+    MEETINGS:      "bp_meetings",
+    ACTIVITY:      "bp_ai_activity",
+    DIAGNOSES:     "bp_diagnoses",
+    DIAG_HISTORY:  "bp_diagnose_history",
+    RESEARCHES:    "bp_researches",
+    PATH_RESULTS:  "bp_path_results",
+    DIAG_RESULTS:  "bp_diagnose_results",
+    LAB_HISTORY:   "path_lab_history",
+    LIFECYCLE:     "bp_lifecycle_profile",
+    DETECTIONS:    "bp_ai_detections",
+    PUSH_HISTORY:  "bp_ai_push_history",
+    NARRATIVE_HIST:"bp_narrative_history"
+  };
+
+  BP.store = {
+    _bypass: function(){ return localStorage.getItem("bp_store_bypass") === "1"; },
+
+    get: function(key, fallback){
+      try {
+        var s = localStorage.getItem(key);
+        if (!s) return fallback;
+        var parsed = JSON.parse(s);
+        if (key === BP.KEYS.TASKS && Array.isArray(parsed)) {
+          parsed = parsed.map(BP.store._migrateCard);
+        }
+        return parsed;
+      } catch(e) {
+        console.warn("[BP.store] parse failed for " + key + ": " + (e && e.message));
+        return fallback;
+      }
+    },
+
+    set: function(key, value){
+      try {
+        var normalized = value;
+        if (key === BP.KEYS.TASKS && Array.isArray(value)) {
+          normalized = value.map(BP.store._migrateCard);
+        }
+        localStorage.setItem(key, JSON.stringify(normalized));
+        return true;
+      } catch(e) {
+        console.error("[BP.store] set failed for " + key + ": " + (e && e.message));
+        return false;
+      }
+    },
+
+    remove: function(key){
+      try { localStorage.removeItem(key); return true; } catch(e) { return false; }
+    },
+
+    getNamespaced: function(uid, slot, fallback){
+      try {
+        var k = "castle_user_" + uid + "_" + slot;
+        var s = localStorage.getItem(k);
+        return s ? JSON.parse(s) : fallback;
+      } catch(e) { return fallback; }
+    },
+
+    keys: function(){
+      var out = [];
+      try {
+        for (var i=0; i<localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && (k.indexOf("bp_") === 0 || k.indexOf("castle_") === 0 || k.indexOf("path_") === 0)) {
+            out.push(k);
+          }
+        }
+      } catch(e) {}
+      return out;
+    },
+
+    _migrateCard: function(c){
+      if (!c || typeof c !== "object") return c;
+      if (!c.columnId && c.column) c.columnId = c.column;
+      if (!c.column && c.columnId) c.column = c.columnId;
+      if (c.createdAt && typeof c.createdAt === "string") {
+        var parsed = new Date(c.createdAt).getTime();
+        if (!isNaN(parsed)) c.createdAt = parsed;
+      }
+      return c;
+    },
+
+    backupOnce: function(){
+      var flag = "bp_store_backup_preV1_done";
+      if (localStorage.getItem(flag) === "1") return;
+      var keysToBackup = [BP.KEYS.TASKS, BP.KEYS.QUOTES, BP.KEYS.CONTACTS, BP.KEYS.BILLING, BP.KEYS.MEETINGS];
+      try {
+        for (var i=0; i<keysToBackup.length; i++) {
+          var raw = localStorage.getItem(keysToBackup[i]);
+          if (raw) localStorage.setItem(keysToBackup[i] + "_backup_preV1", raw);
+        }
+        localStorage.setItem(flag, "1");
+        console.log("[BP.store] backupOnce complete");
+      } catch(e) {
+        console.warn("[BP.store] backupOnce failed: " + (e && e.message));
+      }
+    }
+  };
+
+  // ---- Selectors: pure read functions ----
+  BP.selectors = {};
+
+  function _ymdLocal(d){
+    var y = d.getFullYear();
+    var m = d.getMonth() + 1;
+    var dd = d.getDate();
+    return y + "-" + (m<10?"0":"") + m + "-" + (dd<10?"0":"") + dd;
+  }
+  function _todayYMD(){ return _ymdLocal(new Date()); }
+
+  // 憲法：columnId 權威，column fallback
+  function _colId(t){ return (t && (t.columnId || t.column)) || ""; }
+  function _isDone(t){ return _colId(t) === "done"; }
+  function _isDoing(t){ return _colId(t) === "doing"; }
+
+  BP.selectors.tasks = {
+    overdue: function(opts){
+      var today = _todayYMD();
+      var all = BP.store.get(BP.KEYS.TASKS, []);
+      var list = [], byOwner = {};
+      for (var i=0; i<all.length; i++) {
+        var t = all[i];
+        if (_isDone(t)) continue;
+        var dueStr = t.due || (t.dueDate ? String(t.dueDate).slice(0,10) : "");
+        if (dueStr && dueStr < today) {
+          list.push(t);
+          var o = t.owner || "unassigned";
+          byOwner[o] = (byOwner[o] || 0) + 1;
+        }
+      }
+      return { count: list.length, list: list, byOwner: byOwner };
+    },
+    inProgress: function(opts){
+      var all = BP.store.get(BP.KEYS.TASKS, []);
+      var list = all.filter(_isDoing);
+      return { count: list.length, list: list };
+    },
+    todayDue: function(){
+      var today = _todayYMD();
+      var all = BP.store.get(BP.KEYS.TASKS, []);
+      var list = [];
+      for (var i=0; i<all.length; i++) {
+        var t = all[i];
+        if (_isDone(t)) continue;
+        var dueStr = t.due || (t.dueDate ? String(t.dueDate).slice(0,10) : "");
+        if (dueStr === today) list.push(t);
+      }
+      return { count: list.length, list: list };
+    },
+    completionRate: function(range){
+      var all = BP.store.get(BP.KEYS.TASKS, []);
+      if (!all.length) return { rate: 0, done: 0, total: 0 };
+      var done = all.filter(_isDone).length;
+      return { rate: Math.round(done * 100 / all.length), done: done, total: all.length };
+    }
+  };
+
+  function _quoteTotal(q){
+    var t = 0;
+    var items = (q && q.items) || [];
+    for (var i=0; i<items.length; i++) {
+      t += (items[i].qty || 1) * (items[i].unitPrice || 0);
+    }
+    return t;
+  }
+
+  BP.selectors.quotes = {
+    pending: function(){
+      var all = BP.store.get(BP.KEYS.QUOTES, []).filter(function(q){ return !q.archived; });
+      var list = all.filter(function(q){ return q.status === "sent"; });
+      var total = 0;
+      for (var i=0; i<list.length; i++) total += _quoteTotal(list[i]);
+      return { count: list.length, total: total, list: list };
+    },
+    expiringIn: function(days){
+      var all = BP.store.get(BP.KEYS.QUOTES, []).filter(function(q){ return !q.archived; });
+      var list = [];
+      var now = Date.now();
+      var limit = days * 86400000;
+      for (var i=0; i<all.length; i++) {
+        var q = all[i];
+        if (q.status !== "sent" || !q.validUntil) continue;
+        var diff = new Date(q.validUntil).getTime() - now;
+        if (diff >= 0 && diff <= limit) list.push(q);
+      }
+      return { count: list.length, list: list };
+    },
+    monthlyTotal: function(ym){
+      var now = new Date();
+      var y = ym ? ym.year : now.getFullYear();
+      var m = ym ? ym.month : now.getMonth();
+      var all = BP.store.get(BP.KEYS.QUOTES, []).filter(function(q){ return !q.archived; });
+      var list = [], total = 0;
+      for (var i=0; i<all.length; i++) {
+        var q = all[i];
+        var d = new Date(q.created);
+        if (d.getFullYear() === y && d.getMonth() === m) {
+          list.push(q);
+          total += _quoteTotal(q);
+        }
+      }
+      return { total: total, list: list };
+    },
+    closeRate: function(ym){
+      var all = BP.store.get(BP.KEYS.QUOTES, []).filter(function(q){ return !q.archived; });
+      var sent = 0, accepted = 0;
+      for (var i=0; i<all.length; i++) {
+        if (all[i].status === "sent") sent++;
+        else if (all[i].status === "accepted") accepted++;
+      }
+      var denom = sent + accepted;
+      return {
+        rate: denom > 0 ? Math.round(accepted * 100 / denom) : 0,
+        sent: sent, accepted: accepted
+      };
+    }
+  };
+
+  BP.selectors.billing = {
+    overdue: function(){
+      // 憲法：統一算法 — status==="overdue" OR (pending + dueDate<today)
+      var today = _todayYMD();
+      var all = BP.store.get(BP.KEYS.BILLING, []);
+      var list = [], total = 0;
+      for (var i=0; i<all.length; i++) {
+        var b = all[i];
+        var isOverdue = b.status === "overdue" ||
+                        (b.status === "pending" && b.dueDate && b.dueDate < today);
+        if (isOverdue) { list.push(b); total += (b.amount || 0); }
+      }
+      return { count: list.length, total: total, list: list };
+    },
+    receivedThisMonth: function(){
+      var now = new Date();
+      var all = BP.store.get(BP.KEYS.BILLING, []);
+      var list = [], total = 0;
+      for (var i=0; i<all.length; i++) {
+        var b = all[i];
+        if (b.status !== "paid") continue;
+        var d = new Date(b.paidDate || b.date);
+        if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+          list.push(b);
+          total += (b.amount || 0);
+        }
+      }
+      return { total: total, list: list };
+    }
+  };
+
+  BP.selectors.meetings = {
+    today: function(){
+      var today = _todayYMD();
+      var all = BP.store.get(BP.KEYS.MEETINGS, []);
+      var list = all.filter(function(m){ return m.date === today; });
+      return { count: list.length, list: list };
+    },
+    pendingActionItems: function(){
+      var all = BP.store.get(BP.KEYS.MEETINGS, []);
+      var list = [], count = 0;
+      for (var i=0; i<all.length; i++) {
+        var items = (all[i].actionItems || []).filter(function(a){ return !a.done; });
+        if (items.length) { count += items.length; list.push({ meetingId: all[i].id, items: items }); }
+      }
+      return { count: count, list: list };
+    }
+  };
+
+  BP.selectors.contacts = {
+    newThisMonth: function(){
+      var now = new Date();
+      var all = BP.store.get(BP.KEYS.CONTACTS, []);
+      var list = all.filter(function(c){
+        var d = new Date(c.created || c.createdAt);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      });
+      return { count: list.length, list: list };
+    },
+    active: function(){
+      var all = BP.store.get(BP.KEYS.CONTACTS, []);
+      var count = all.filter(function(c){
+        return c.type === "client" || c.type === "partner";
+      }).length;
+      return { count: count };
+    }
+  };
+
+  BP.selectors.health = {
+    score: function(){
+      // v1 composite: 任務完成率(40%) + 逾期反扣(30%) + 會議待辦反扣(15%) + 報價活躍度(15%)
+      var taskRate = BP.selectors.tasks.completionRate("all").rate;
+      var overdueCount = BP.selectors.tasks.overdue().count;
+      var meetingPending = BP.selectors.meetings.pendingActionItems().count;
+      var quotesPending = BP.selectors.quotes.pending().count;
+
+      var raw = taskRate * 0.40
+              + Math.max(0, 100 - overdueCount * 15) * 0.30
+              + Math.max(0, 100 - meetingPending * 10) * 0.15
+              + (quotesPending > 0 ? 80 : 60) * 0.15;
+
+      var score = Math.round(raw);
+      if (score > 100) score = 100;
+      if (score < 0) score = 0;
+
+      var band = "healthy";
+      if (score < 60) band = "at-risk";
+      else if (score < 80) band = "attention";
+
+      return {
+        score: score,
+        band: band,
+        breakdown: { taskRate: taskRate, overdueCount: overdueCount, meetingPending: meetingPending, quotesPending: quotesPending }
+      };
+    }
+  };
+
+  BP.selectors.activity = {
+    recent: function(limit){
+      var all = BP.store.get(BP.KEYS.ACTIVITY, []);
+      if (!Array.isArray(all)) return [];
+      var sorted = all.slice().sort(function(a,b){ return (b.at || 0) - (a.at || 0); });
+      return sorted.slice(0, limit || 10);
+    }
+  };
+
+  BP.selectors.lifecycle = {
+    continuity: function(){
+      var p = BP.store.get(BP.KEYS.LIFECYCLE, null) || {};
+      var now = Date.now();
+      var sinceLast = p.lastLoginAt ? Math.floor((now - p.lastLoginAt) / 3600000) : null;
+      return {
+        sinceLastLoginHours: sinceLast,
+        yesterdayCompleted: p.yesterdayCompletedCount || 0,
+        thisWeekCompleted: p.thisWeekCompletedCount || 0,
+        streak: p.currentStreak || 0,
+        longestStreak: p.longestStreak || 0,
+        stage: p.stage || "new",
+        milestoneCount: (p.personalMilestones || []).length
+      };
+    }
+  };
+
+  BP.selectors.ai = {
+    pendingDetections: function(){
+      var out = [];
+      var dismissed = BP.store.get("bp_dismissed_signals", []) || [];
+      var isDismissed = function(id){
+        for (var i=0; i<dismissed.length; i++) if (dismissed[i] === id) return true;
+        return false;
+      };
+
+      // Rule 1: 報價 sent 超過 7 天無後續（stale_deal）
+      var pending = BP.selectors.quotes.pending();
+      for (var i=0; i<pending.list.length; i++) {
+        var q = pending.list[i];
+        var daysSince = Math.floor((Date.now() - new Date(q.created).getTime()) / 86400000);
+        if (daysSince > 7) {
+          var d = {
+            id: "stale_quote_" + q.id,
+            type: "stale_deal",
+            severity: "warn",
+            title: (q.title || "未命名報價") + " 已送出 " + daysSince + " 天未回覆",
+            subjectRef: { module: "biz-quotes", id: q.id },
+            suggestedAction: { label: "追蹤報價", navigateTo: "biz-quotes", oneClick: false },
+            detectedAt: Date.now()
+          };
+          if (!isDismissed(d.id)) out.push(d);
+        }
+      }
+
+      // Rule 2: 逾期任務（overdue_task）
+      var overdue = BP.selectors.tasks.overdue();
+      if (overdue.count > 0) {
+        var d2 = {
+          id: "overdue_tasks_bulk",
+          type: "overdue_task",
+          severity: overdue.count >= 3 ? "critical" : "warn",
+          title: "有 " + overdue.count + " 個任務已逾期",
+          subjectRef: { module: "biz-tasks", id: null },
+          suggestedAction: { label: "處理逾期任務", navigateTo: "biz-tasks", oneClick: false },
+          detectedAt: Date.now()
+        };
+        if (!isDismissed(d2.id)) out.push(d2);
+      }
+
+      // Rule 3: 逾期款項（overdue_billing）
+      var ob = BP.selectors.billing.overdue();
+      if (ob.count > 0) {
+        var d3 = {
+          id: "overdue_billing_bulk",
+          type: "overdue_billing",
+          severity: "critical",
+          title: "有 " + ob.count + " 筆款項逾期（共 NT$ " + ob.total.toLocaleString() + "）",
+          subjectRef: { module: "biz-billing", id: null },
+          suggestedAction: { label: "查看收款", navigateTo: "biz-billing", oneClick: false },
+          detectedAt: Date.now()
+        };
+        if (!isDismissed(d3.id)) out.push(d3);
+      }
+
+      // Rule 4: 會議待辦累積超過 5（followup_backlog）
+      var mp = BP.selectors.meetings.pendingActionItems();
+      if (mp.count > 5) {
+        var d4 = {
+          id: "meeting_backlog",
+          type: "followup_backlog",
+          severity: "info",
+          title: "會議待辦累積 " + mp.count + " 項未完成",
+          subjectRef: { module: "biz-meetings", id: null },
+          suggestedAction: { label: "整理會議待辦", navigateTo: "biz-meetings", oneClick: false },
+          detectedAt: Date.now()
+        };
+        if (!isDismissed(d4.id)) out.push(d4);
+      }
+
+      return out;
+    }
+  };
+
+  // ---- Events: lightweight pub/sub ----
+  BP.events = {
+    _listeners: {},
+    on: function(eventName, fn){
+      if (!this._listeners[eventName]) this._listeners[eventName] = [];
+      this._listeners[eventName].push(fn);
+      return fn;
+    },
+    off: function(eventName, fn){
+      var arr = this._listeners[eventName];
+      if (!arr) return;
+      for (var i=arr.length-1; i>=0; i--) if (arr[i] === fn) arr.splice(i, 1);
+    },
+    emit: function(eventName, payload){
+      var arr = this._listeners[eventName];
+      if (!arr) return;
+      for (var i=0; i<arr.length; i++) {
+        try { arr[i](payload); }
+        catch(e) { console.error("[BP.events] " + eventName + " listener error: " + (e && e.message)); }
+      }
+    },
+    clearNamespace: function(ns){
+      var self = this;
+      Object.keys(this._listeners).forEach(function(name){
+        if (name.indexOf(ns + ":") === 0) self._listeners[name] = [];
+      });
+    }
+  };
+
+  BP.EVENTS = {
+    TASKS_CHANGED:     "tasks:changed",
+    QUOTES_CHANGED:    "quotes:changed",
+    BILLING_CHANGED:   "billing:changed",
+    MEETINGS_CHANGED:  "meetings:changed",
+    CONTACTS_CHANGED:  "contacts:changed",
+    AI_DETECTION_NEW:  "ai:detection:new",
+    LIFECYCLE_TICK:    "lifecycle:tick"
+  };
+
+  // ---- Format: i18n-aware display helpers ----
+  BP.format = {
+    money: function(n){ return "NT$ " + (n || 0).toLocaleString(); },
+    relTime: function(ts){
+      if (!ts) return "";
+      var diff = Date.now() - new Date(ts).getTime();
+      var mins = Math.floor(diff / 60000);
+      if (mins < 1) return "剛剛";
+      if (mins < 60) return mins + " 分鐘前";
+      var hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + " 小時前";
+      var days = Math.floor(hrs / 24);
+      if (days < 7) return days + " 天前";
+      var d = new Date(ts);
+      return (d.getMonth()+1) + "/" + d.getDate();
+    },
+    shortDate: function(ts){
+      if (!ts) return "";
+      var d = new Date(ts);
+      return d.toLocaleDateString("zh-TW", {month:"short", day:"numeric"});
+    },
+    ymdLocal: function(d){
+      d = d || new Date();
+      var y = d.getFullYear();
+      var m = d.getMonth() + 1;
+      var dd = d.getDate();
+      return y + "-" + (m<10?"0":"") + m + "-" + (dd<10?"0":"") + dd;
+    },
+    weekdayLong: function(d){
+      d = d || new Date();
+      return d.toLocaleDateString("zh-TW", {month:"long", day:"numeric", weekday:"long"});
+    }
+  };
+
+  // ---- Lifecycle: user-journey profile mutation API (for 路徑 B 雙層敘事) ----
+  BP.lifecycle = {
+    _defaultProfile: function(){
+      return {
+        userId: null,
+        firstSeenAt: Date.now(),
+        lastLoginAt: Date.now(),
+        previousLoginAt: null,
+        totalSessionCount: 0,
+        yesterdayCompletedCount: 0,
+        thisWeekCompletedCount: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        stage: "new",
+        personalMilestones: [],
+        narrativeHistory: [],
+        industryStoriesPool: {},
+        connectivityDetections: [],
+        signalDetections: [],
+        funnelMetrics: { stage: "discovery", conversions: {} },
+        dismissedSignals: [],
+        pushPreferences: {
+          weeklyReport: true,
+          anomalyAlerts: true,
+          quietHours: { start: "22:00", end: "08:00" }
+        }
+      };
+    },
+
+    readProfile: function(){
+      var p = BP.store.get(BP.KEYS.LIFECYCLE, null);
+      if (!p) {
+        p = this._defaultProfile();
+        BP.store.set(BP.KEYS.LIFECYCLE, p);
+      }
+      return p;
+    },
+
+    writeProfile: function(p){ return BP.store.set(BP.KEYS.LIFECYCLE, p); },
+
+    bumpLoginStamp: function(){
+      var p = this.readProfile();
+      var now = Date.now();
+      var THROTTLE = 5 * 60 * 1000;
+      if (p.lastLoginAt && (now - p.lastLoginAt) < THROTTLE) return p;
+      p.previousLoginAt = p.lastLoginAt;
+      p.lastLoginAt = now;
+      p.totalSessionCount = (p.totalSessionCount || 0) + 1;
+      this.writeProfile(p);
+      BP.events.emit(BP.EVENTS.LIFECYCLE_TICK, { sessionCount: p.totalSessionCount });
+      return p;
+    },
+
+    addMilestone: function(id, data){
+      var p = this.readProfile();
+      var exists = p.personalMilestones.some(function(m){ return m.id === id; });
+      if (exists) return false;
+      p.personalMilestones.push({ id: id, achievedAt: Date.now(), data: data || null });
+      this.writeProfile(p);
+      return true;
+    },
+
+    recordNarrativeShown: function(id){
+      var p = this.readProfile();
+      var cutoff = Date.now() - 30 * 86400000;
+      p.narrativeHistory = (p.narrativeHistory || []).filter(function(n){ return n.shownAt > cutoff; });
+      p.narrativeHistory.push({ id: id, shownAt: Date.now() });
+      this.writeProfile(p);
+    },
+
+    wasNarrativeShownRecently: function(id){
+      var p = this.readProfile();
+      var cutoff = Date.now() - 30 * 86400000;
+      return (p.narrativeHistory || []).some(function(n){ return n.id === id && n.shownAt > cutoff; });
+    }
+  };
+
+  // ---- AI: detection read / push history / schedule stubs (Phase 3 will implement) ----
+  BP.ai = BP.ai || {};
+  BP.ai.readDetections = function(){ return BP.store.get(BP.KEYS.DETECTIONS, []) || []; };
+  BP.ai.pushHistory = function(){ return BP.store.get(BP.KEYS.PUSH_HISTORY, []) || []; };
+  BP.ai.scheduleCheck = function(){ return null; }; // Phase 3 placeholder
+
+  // ==================== END BP NAMESPACE ====================
+
   // ==================== STATE MANAGEMENT ====================
   const state = {
     isLoggedIn: false,
@@ -5130,6 +5765,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       savedReports: JSON.parse(localStorage.getItem('bp_savedReports') || '[]')
     };
     Object.assign(state, saved);
+    // Phase 0 (v1.0.4): BP namespace lifecycle bootstrap
+    if (window.BP && BP.store && BP.store.backupOnce) BP.store.backupOnce();
+    if (window.BP && BP.lifecycle && BP.lifecycle.bumpLoginStamp) BP.lifecycle.bumpLoginStamp();
   }
 
   function loadTheme() {
@@ -13571,6 +14209,13 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       html += '<button class="kb-view-seg-btn' + (viewMode==='list'?' active':'') + '" onclick="window._kbSetView(\'list\')" role="tab" aria-selected="' + (viewMode==='list') + '"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="3" x2="12" y2="3"/><line x1="2" y1="7" x2="12" y2="7"/><line x1="2" y1="11" x2="12" y2="11"/></svg>列表</button>';
       html += '</div>';
 
+      // v1.0.6: + 新增欄位 button（只在 board view 顯示，跟 view-toggle 並排於 toolbar）
+      if(viewMode === 'board'){
+        html += '<button class="kb-addcol-btn" onclick="window._kbAddCol()" title="新增狀態欄位">';
+        html += '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>';
+        html += '新增欄位</button>';
+      }
+
       // 4. 分組 selector（list view only）— v1.0.1 清理：不再用外包 label+icon wrapper，直接用 bpSelect + icon prefix
       if(viewMode === 'list'){
         // v1.0.1: 從 localStorage 讀持久化值（跨 session 記住）
@@ -13969,12 +14614,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         html += '</div>';
       }
 
-      // v0.32.22：新增欄位入口永遠顯示——愛德華反映「用戶怎麼新增新的狀態列」，v0.15.4 的 `_totalBoardCards > 0` 條件是錯的
-      // 空狀態下用戶最需要自訂欄位（例如刪掉不用的「驗收中」或加一個「擱置中」），藏起來 = 用戶永遠不知道可自訂
-      // 對標 Trello/Asana/Notion：column 列表最右側永遠有 + 按鈕，不依賴卡片存在
-      html += '<div class="kanban-col-add" onclick="window._kbAddCol()">';
-      html += '<div style="display:flex;align-items:center;gap:8px;color:var(--ink-muted);font-size:14px">' + IC.plus + ' 新增欄位</div>';
-      html += '</div>';
+      // v1.0.6: + 新增欄位 button 從 board 尾端搬到 toolbar 右側（見 view-toggle 後方新增區塊）
+      //   理由：v1.0.5 flex-wrap 導致 + 按鈕被擠到下一行視覺斷裂；搬到 toolbar 跟其他 meta-action 同層，
+      //   也符合 Linear / Notion 新增模組的位置慣例
       html += '</div></div>'; // close kanban-board + kanban-board-wrap
 
       content.innerHTML = html;
@@ -14806,14 +15448,15 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       return _kbBuildTagChipsV2(catKey, selectedTags);
     }
 
-    // Helper v2: Build tag chips — always show all tags, clear toggle state
+    // v1.0.6: 用統一 .kb-chip class，無 ✓ 前綴（避免 layout shift）
+    // 選中態靠 filled bg + 粗字 + border 色達雙編碼
     function _kbBuildTagChipsV2(catKey, selectedTags) {
       var cat = TASK_CATEGORIES[catKey];
       if(!cat || !cat.tags || cat.tags.length === 0) return '<div style="font-size:12px;color:var(--ink-dim)">此分類無預設標籤</div>';
       var h = '<div style="display:flex;flex-wrap:wrap;gap:6px">';
       cat.tags.forEach(function(tag){
         var isSel = selectedTags.indexOf(tag) !== -1;
-        h += '<button type="button" class="kb-tag-chip' + (isSel?' sel':'') + '" data-tag="' + tag + '" style="padding:4px 10px;font-size:11px;font-weight:600;border-radius:20px;cursor:pointer;transition:all .15s;font-family:inherit;border:1.5px solid ' + (isSel ? cat.color : 'var(--border)') + ';background:' + (isSel ? cat.color+'14' : 'transparent') + ';color:' + (isSel ? cat.color : 'var(--ink-muted)') + '">' + (isSel ? '&#10003; ' : '') + tag + '</button>';
+        h += '<button type="button" class="kb-chip kb-chip-tag' + (isSel?' sel':'') + '" data-tag="' + tag + '" style="--_chip-c:' + cat.color + '">' + tag + '</button>';
       });
       h += '</div>';
       return h;
@@ -14892,7 +15535,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       m += '<div class="kb-section"><label class="kb-label">狀態</label>' + bpSelect({id:'kbF_col', options: cols.map(function(c){ return {value:c.id, label:c.label, selected: (card ? card.columnId : (defaultColId||cols[0].id)) === c.id}; })}) + '</div>';
       m += '<div class="kb-section"><label class="kb-label">優先度</label><div style="display:flex;gap:6px;flex-wrap:wrap" id="kbF_priority">';
       ['high','medium','low'].forEach(function(p){
-        m += '<button type="button" class="kb-priority-btn' + (priorityVal===p?' sel':'') + '" data-p="' + p + '" style="' + (priorityVal===p?'background:'+PRIORITY_COLORS[p]+';border-color:'+PRIORITY_COLORS[p]:'') + '">' + PRIORITY_LABELS[p] + '</button>';
+        m += '<button type="button" class="kb-chip kb-chip-pri' + (priorityVal===p?' sel':'') + '" data-p="' + p + '">';
+        m += '<span class="kb-chip-dot"></span>' + PRIORITY_LABELS[p] + '</button>';
       });
       m += '</div></div>';
       // v1.0.1: 負責人改 bpSelect（跟全站一致）
@@ -14914,8 +15558,24 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       if(_assigneeVal && !_memberNames.some(function(nm){return nm===_assigneeVal;})){
         _memberOpts.splice(1,0,{value:_assigneeVal, label:_assigneeVal, selected:true});
       }
-      m += '<div class="kb-section"><label class="kb-label">負責人</label>' + bpSelect({id:'kbF_assignee', options: _memberOpts}) + '</div>';
-      m += '<div class="kb-section"><label class="kb-label">到期日</label><input type="date" id="kbF_due" class="kb-input" value="' + (card?(card.dueDate||''):'') + '"></div>';
+      // v1.0.6: avatar prefix——預設圈圈虛線 / 選中顯示姓名首字；bpSelect trigger padding-left 42px 預留空間
+      var _assigneeInitial = _assigneeVal ? String(_assigneeVal).charAt(0).toUpperCase() : '';
+      var _avatarClass = _assigneeInitial ? '' : ' empty';
+      var _avatarContent = _assigneeInitial || '?';
+      m += '<div class="kb-section"><label class="kb-label">負責人</label>';
+      m += '<div class="kb-assignee-wrap">';
+      m += '<span class="kb-assignee-avatar' + _avatarClass + '" id="kbF_assigneeAvatar">' + _avatarContent + '</span>';
+      m += bpSelect({id:'kbF_assignee', options: _memberOpts, onChange:'_kbSyncAssigneeAvatar'});
+      m += '</div></div>';
+
+      // v1.0.6: Date input 包 wrap + PATH calendar SVG 取代瀏覽器預設 icon
+      m += '<div class="kb-section"><label class="kb-label">到期日</label>';
+      m += '<div class="kb-date-wrap">';
+      m += '<input type="date" id="kbF_due" value="' + (card?(card.dueDate||''):'') + '">';
+      m += '<svg class="kb-date-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">';
+      m += '<rect x="2" y="3" width="12" height="11" rx="1.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/>';
+      m += '<line x1="5.5" y1="1.5" x2="5.5" y2="4"/><line x1="10.5" y1="1.5" x2="10.5" y2="4"/>';
+      m += '</svg></div></div>';
       m += '</div>'; // end Section 1
 
       // ═══ Section 2: 分類與標籤 ═══
@@ -14923,14 +15583,13 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       m += '<div class="kb-rs-title">分類與標籤</div>';
       m += '<div class="kb-section"><label class="kb-label">分類</label>';
       m += '<div id="kbF_catGrid" style="display:flex;flex-wrap:wrap;gap:6px">';
+      // v1.0.6: 改用統一 .kb-chip class，色彩透過 --_chip-c 傳入
       var catKeys = ['product','dev','qa','marketing','sales','admin'];
       catKeys.forEach(function(k){
         var cat = TASK_CATEGORIES[k];
         var isSel = catVal === k;
-        m += '<button type="button" class="kb-cat-btn' + (isSel?' sel':'') + '" data-cat="' + k + '" style="padding:6px 12px;border:1.5px solid ' + (isSel ? cat.color : 'var(--border)') + ';background:' + (isSel ? cat.color+'14' : 'transparent') + ';border-radius:20px;cursor:pointer;transition:all .15s;font-family:inherit;display:flex;align-items:center;gap:6px">';
-        m += '<span style="width:7px;height:7px;border-radius:50%;background:' + cat.color + ';flex-shrink:0"></span>';
-        m += '<span style="font-size:12px;font-weight:600;color:' + (isSel ? cat.color : 'var(--ink-sec)') + '">' + cat.label + '</span>';
-        m += '</button>';
+        m += '<button type="button" class="kb-chip kb-chip-cat' + (isSel?' sel':'') + '" data-cat="' + k + '" style="--_chip-c:' + cat.color + '">';
+        m += '<span class="kb-chip-dot"></span>' + cat.label + '</button>';
       });
       m += '</div></div>';
       m += '<div class="kb-section"><label class="kb-label">標籤 <span style="font-weight:400;color:var(--ink-dim);font-size:10px">此分類下可選</span></label>';
@@ -14974,37 +15633,26 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       // Initialize attachment preview
       _kbRenderAttachmentPreview(ov, attachments);
 
-      // Priority toggle
-      ov.querySelectorAll('.kb-priority-btn').forEach(function(btn){
+      // v1.0.6: Priority toggle — 只切 class，顏色由 CSS 從 data-p 取得，不再 inline style 操作
+      ov.querySelectorAll('.kb-chip-pri').forEach(function(btn){
         btn.addEventListener('click',function(){
           priorityVal = btn.dataset.p===priorityVal ? 'none' : btn.dataset.p;
-          ov.querySelectorAll('.kb-priority-btn').forEach(function(b){
-            var isSel = b.dataset.p===priorityVal;
-            b.className = 'kb-priority-btn'+(isSel?' sel':'');
-            b.style.background = isSel ? PRIORITY_COLORS[b.dataset.p] : '';
-            b.style.borderColor = isSel ? PRIORITY_COLORS[b.dataset.p] : '';
+          ov.querySelectorAll('.kb-chip-pri').forEach(function(b){
+            b.classList.toggle('sel', b.dataset.p===priorityVal);
           });
         });
       });
 
-      // Category grid click handler
-      ov.querySelectorAll('.kb-cat-btn').forEach(function(btn){
+      // v1.0.6: Category chips click handler — class toggle only
+      ov.querySelectorAll('.kb-chip-cat').forEach(function(btn){
         btn.addEventListener('click', function(e){
           e.preventDefault();
           var newCat = btn.dataset.cat;
           catVal = newCat;
           tagsVal = []; // reset tags when category changes
 
-          // Update pill styles for new selection
-          ov.querySelectorAll('.kb-cat-btn').forEach(function(b){
-            var k = b.getAttribute('data-cat');
-            var c = TASK_CATEGORIES[k];
-            var s = k === catVal;
-            b.className = 'kb-cat-btn' + (s ? ' sel' : '');
-            b.style.borderColor = s ? c.color : 'var(--border)';
-            b.style.background = s ? c.color + '14' : 'transparent';
-            var labelSpan = b.querySelector('span:last-child');
-            if(labelSpan) labelSpan.style.color = s ? c.color : 'var(--ink-sec)';
+          ov.querySelectorAll('.kb-chip-cat').forEach(function(b){
+            b.classList.toggle('sel', b.getAttribute('data-cat') === catVal);
           });
 
           // Refresh tag chips
@@ -15050,9 +15698,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         });
       });
 
-      // Attach tag chip handlers
+      // v1.0.6: Tag chip handlers — querySelector 改 .kb-chip-tag（配合新統一 chip 系統）
       function _kbAttachTagChipHandlers(modal){
-        modal.querySelectorAll('.kb-tag-chip').forEach(function(chip){
+        modal.querySelectorAll('.kb-chip-tag').forEach(function(chip){
           chip.addEventListener('click', function(e){
             e.preventDefault();
             var tag = chip.dataset.tag;
@@ -15230,6 +15878,18 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     };
 
     // ── Expose to Window ──
+    // v1.0.6: bpSelect onChange hook — 負責人選擇變動時同步更新 avatar 顯示
+    window._kbSyncAssigneeAvatar = function(val){
+      var av = document.getElementById('kbF_assigneeAvatar');
+      if(!av) return;
+      if(val){
+        av.className = 'kb-assignee-avatar';
+        av.textContent = String(val).charAt(0).toUpperCase();
+      } else {
+        av.className = 'kb-assignee-avatar empty';
+        av.textContent = '?';
+      }
+    };
     window._kbAddCard = function(colId){window._kbShowCardEdit(null,colId);};
     window._kbEditCard = function(cardId){_kbShowCardView(cardId);};
     window._kbShowCardView = function(cardId){_kbShowCardView(cardId);};
@@ -29962,7 +30622,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.0.6 · 任務看板 toolbar + 編輯 modal 統一重構：(1) 新增欄位 button 從 board 陣列尾端搬到 toolbar 右側 view-toggle 旁，解決 v1.0.5 flex-wrap:wrap 把 + 擠到下一行的視覺斷裂；.kb-addcol-btn class 樣式與其他 toolbar chip 同層；(2) .kanban-board 從 flex-wrap:wrap 改 nowrap、永遠單列；.kanban-col 拿掉 max-width:420 改 flex:1 1 0 完全彈性、min-width:200 讓欄位自適應縮放不溢出；(3) 編輯 modal 右側欄統一 .kb-chip 系統——原 .kb-priority-btn / .kb-cat-btn / .kb-tag-chip 三套 chip 高度落差（28/43/25 px），整合為一套 32px 高度 pill，色彩透過 --_chip-c CSS var 傳入（priority via data-p、category via inline style）；選中態用 color-mix 14% bg + 同色 border + 粗字達雙編碼；(4) 標籤 chip 移除選中 ✓ 前綴（原本造成 27→38px 寬度跳動違反 layout stability），改用 filled bg + 粗字表示；(5) 負責人 bpSelect 加 avatar prefix（22×22 circle 姓名首字，未指派時虛線圈 + ? 字），font 從 17→14px 對齊 date input；_kbSyncAssigneeAvatar onChange hook 同步更新；(6) 到期日 input 包 .kb-date-wrap + PATH 規格 16×16 SVG calendar icon（取代瀏覽器預設灰色 picker），高度 40px 對齊 chip 節奏 · 版號 v1.0.5→v1.0.6 · tail cleanup: v1.0.3 搬進 CHANGELOG.md -->
 <!-- v1.0.5 · 任務看板中鍵拖移【核彈級結構修復】（v1.0.1/1.0.2/1.0.3/1.0.4 四版 JS 防禦失敗後的根因解）：放棄所有 JS 防禦策略，直接結構改動——.kanban-board 從 overflow-x:auto 改 overflow:hidden 永久關閉，flex-wrap 改 wrap；.kanban-col min-width 280→200、flex basis 1 1 240px，欄多時自動換行；如此 Chrome 原生 middle-click autoscroll 在 col-body 按下時，向上找任何 h-scrollable 祖先都找不到（col-body 本身 overflow-x:hidden、.kanban-board 永久 hidden），根本沒 anchor 可選，autoscroll 無法啟動橫向散逸；代價：5 欄且小螢幕時會換行（可接受，比橫向散逸好）；attachMidPan 極簡化去掉 rAF enforceLocks/wheel/scroll capture（結構修完已不需要）；保留 document-level mousedown capture hook + body.mid-panning cursor feedback · 版號 v1.0.4→v1.0.5 · tail cleanup: v1.0.2 搬進 CHANGELOG.md -->
 <!-- v1.0.4 · 任務看板中鍵拖移根因級修復（來回 3 版才抓到 root cause）：卡西法 Chrome 實測診斷確認——Chrome 原生 autoscroll 在 mousedown 瞬間走 native layer 選最近 h-scrollable 祖先（=.kanban-board）當 anchor，col-body 層級 capture listener 已太晚；v1.0.2 / 1.0.3 的 body.mid-panning CSS + rAF enforceLocks 只能被動拉回，每幀 16ms gap 讓 native pan 可散逸幾十 px。解：新增 document-level capture phase mousedown hook（window._midPanDocHook 單例），搶先於所有 element handler 先 preventDefault 掉 kanban-col-body 內部中鍵 mousedown，徹底阻止 Chrome 選定 anchor；移除 v1.0.3 過度防禦的 body.mid-panning *{pointer-events:none} 與雙層 overflow-hidden，簡化為單一 .kanban-board{overflow-x:hidden !important}；attachMidPan 本身維持 col-body 層級 JS 捲動邏輯不變 · 版號 v1.0.3→v1.0.4 · tail cleanup: v1.0.1 搬進 CHANGELOG.md -->
-<!-- v1.0.3 · 任務看板雙 UX 修復（Edward 回報）：(1) 卡片 hover 靜態化——移除 .kb-card-v2:hover 的 transform:translateY(-1px) 浮起 + box-shadow 放大 + description -webkit-line-clamp:1→2 展開動態，三項合併的動態效果在欄位塞滿 8+ 張卡時嚴重干擾視覺與閱讀；hover 只保留 border-color 淡紫提示，description 永遠 1 行 ellipsis；(2) 中鍵拖移強制鎖垂直（徹底版）——attachMidPan 重寫五層防禦：mousedown capture phase 搶先於 Windows autoscroll、collectLocked() 記錄所有祖先橫向 scrollable 的 scrollLeft、rAF loop 每幀 enforceLocks() 兜底、document scroll capture 即時拉回、wheel capture 吃掉意外滾輪；CSS 強化 body.mid-panning 期間 .kanban-board + .kanban-board-wrap 雙層 overflow-x:hidden + touch-action:none + .kanban-col-body 保留 pan-y；auxclick stopImmediatePropagation 防誤觸卡片 click · 版號 v1.0.2→v1.0.3 · tail cleanup: v1.0.0 搬進 CHANGELOG.md -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
