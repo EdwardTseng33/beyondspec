@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.0.9</div>
+        <div class="sidebar-version">v1.1.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6501,7 +6501,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         '<div class="sub-section-label">付款方式</div>' +
         '<div class="sub-pay-grid">' + payHTML + '</div>' +
         '<button class="sub-confirm-btn" onclick="app.confirmSubscribe(\'' + planId + '\')">' +
-          '立即訂閱' +
+          '加入早鳥申請' +
         '</button>' +
         '<div class="sub-fineprint">試用結束自動以 ' + (cycle === 'annual' ? '年付 NT$' + annualPrice.toLocaleString() : '月付 NT$' + monthlyPrice.toLocaleString()) + ' 續訂·可隨時於設定中取消</div>' +
       '</div>';
@@ -28015,7 +28015,7 @@ function loadHistory(){
             var ctaLabel, ctaClass, ctaAction;
             if (cur) { ctaLabel = '目前方案'; ctaClass = 'plan-cta-current'; ctaAction = ''; }
             else if (pid === 'enterprise') { ctaLabel = '聯絡業務'; ctaClass = 'plan-cta-outline'; ctaAction = "window.location.href='mailto:hello@beyondspec.tw'"; }
-            else if (rank > 0) { ctaLabel = '選擇 ' + PLAN_CATALOG[pid].name; ctaClass = isFeatured ? 'plan-cta-featured' : 'plan-cta-primary'; ctaAction = "app.openSubscribeFlow('" + pid + "')"; }
+            else if (rank > 0) { ctaLabel = '申請 ' + PLAN_CATALOG[pid].name + ' · 早鳥'; ctaClass = isFeatured ? 'plan-cta-featured' : 'plan-cta-primary'; ctaAction = "app.openSubscribeFlow('" + pid + "')"; }
             else { ctaLabel = '降級為 ' + p.name; ctaClass = 'plan-cta-outline'; ctaAction = "app.openSubscribeFlow('" + pid + "')"; }
 
             // Card
@@ -29528,7 +29528,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
             <a href="#methodology">方法論</a>
             <a href="#journal">期刊</a>
             <a href="#pricing">定價</a>
-            <button class="btn-login" onclick="app.showLoginModal()">登入</button>
+            <button class="btn-login" onclick="app.handleGoogleLogin()">登入</button>
           </div>
         </nav>
 
@@ -29538,7 +29538,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
             <h1><span class="line-white">你的生意，</span><span class="line-gradient">不該只靠你一個人撐。</span></h1>
             <p class="hero-sub">從驗證到營收，AI 幫你跑完每一步。<br>產品診斷 × 任務管理 × 客戶關係 × 報價收款——一個人也能跑出完整閉環。</p>
             <div class="hero-btns">
-              <button class="btn-primary" onclick="app.showLoginModal()">免費開始使用</button>
+              <button class="btn-primary" onclick="app.handleGoogleLogin()">免費開始使用</button>
               <button class="btn-outline" onclick="document.querySelector('#how-it-works').scrollIntoView({behavior:'smooth'})">看看怎麼運作 →</button>
             </div>
             <div class="hero-trust">
@@ -29853,7 +29853,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                   <li>任務看板 · 客戶管理（50 筆）</li>
                   <li>報價提案（3 份）</li>
                 </ul>
-                <button class="btn-price" onclick="app.showLoginModal()">免費開始</button>
+                <button class="btn-price" onclick="app.handleGoogleLogin()">免費開始</button>
               </div>
               <div class="price-card stagger-child d2">
                 <h3>Starter</h3>
@@ -29865,7 +29865,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                   <li>市場探測 · 報價提案</li>
                   <li>會議紀錄 · 客戶無上限</li>
                 </ul>
-                <button class="btn-price" onclick="app.openSubscribeFlow('starter')">選擇 Starter</button>
+                <button class="btn-price" onclick="app.openSubscribeFlow('starter')">申請 Starter</button>
               </div>
               <div class="price-card featured stagger-child d3">
                 <div class="price-badge">2-5 人小團隊</div>
@@ -29879,7 +29879,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                   <li>收款 · 文件庫 · AI 儀表板</li>
                   <li>團隊最多 5 人 + Claude MCP</li>
                 </ul>
-                <button class="btn-price featured" onclick="app.openSubscribeFlow('pro')">選擇 Pro</button>
+                <button class="btn-price featured" onclick="app.openSubscribeFlow('pro')">申請 Pro</button>
               </div>
               <div class="price-card stagger-child d4">
                 <h3>Enterprise</h3>
@@ -29903,7 +29903,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
         <section class="cta-section reveal">
           <h2>準備好讓 AI 幫你跑生意了嗎？</h2>
           <p>從驗證到營收，AI 幫你跑完每一步。免費開始，隨時升級。</p>
-          <button class="btn-primary" onclick="app.showLoginModal()">免費開始使用</button>
+          <button class="btn-primary" onclick="app.handleGoogleLogin()">免費開始使用</button>
         </section>
 
         <footer class="landing-footer">
@@ -30630,7 +30630,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.1.0 · 早鳥申請模式 + Google 登入一鍵化 + URL 結構升級：(1) Landing（beyondspec.tw/path/）定價區所有「選擇 X」CTA → 「申請 X」（申請 Starter / 申請 Pro），因金流尚未接上；加 early-bird 敘事「🚀 現階段早鳥申請中，付費方案尚未開放，搶先體驗 + 首月雙倍 credits」；(2) App 內部（/path/app/）所有升級按鈕 & 訂閱 modal CTA 同步改「申請 X · 早鳥名單」；(3) Google 登入一鍵化——原登入流程：按登入 → 跳 in-app modal → 再按 Google → 彈 popup（二段式）；改為按「登入/免費開始」直接觸發 handleGoogleLogin() → Google popup 一鍵進產品；4 處公開 CTA（nav 登入、hero 免費開始、pricing Free tier 免費開始、final CTA 免費開始）全部改走直通路；保留 in-app modal 的 Google 按鈕作為 fallback；(4) URL 結構升級——app.html 從 /path/app.html 遷移到 /path/app/index.html 資料夾形式（乾淨、可擴充 /path/app/dashboard 等子路徑）；landing CTA 全部更新 · 版號 v1.0.9→v1.1.0 · tail cleanup: v1.0.7 搬進 CHANGELOG.md -->
 <!-- v1.0.9 · 全面同步定價到新商業模型（與 landing 對齊）：(1) getCreditLimit() FREE 30→50、STARTER 500→600、PRO 保持 3000；(2) PLAN_CATALOG Free tagline 改「永久免費 · 任務/客戶/報價完整可用」、credits 30→50、加首次 PATH 診斷不計費 highlight；Starter monthly 390→290、annual 3900→2900、credits 500→600、tagline 改「個人接案者」；(3) PLAN_CATALOG 價格 card：STARTER 年繳從 325→242 並加「省 17%」敘事；(4) 所有「7 天免費試用」文案（6 處）全拔，改為「選擇方案名 / 立即訂閱 / credits 用多少付多少」；(5) upgrade CTA button 同步新價格；(6) settings 價格表 4 欄從 390→290；(7) feat landing price-card 區塊 FREE/STARTER/PRO 三卡 credit 數 + 按鈕 + 副標全同步 · 版號 v1.0.8→v1.0.9 · tail cleanup: v1.0.6 搬進 CHANGELOG.md -->
 <!-- v1.0.8 · 任務看板 3 題合併修復（愛德華回饋：最小欄寬 / 標題顯示 / 卡片 3 行化）：(1) 恢復 .kanban-board overflow-x:auto（v1.0.5 nuke 的反向操作）——橫向 scroll 重啟；col-body 中鍵 autoscroll 由既有 document-level mousedown hook（_midPanDocHook）擋；CSS 兜底加 body.mid-panning 時 overflow-x:hidden；(2) .kanban-col min-width 用 max(calc((100vw - 280px) / 4.5), 280px)——視窗寬時保證最多顯示 4.5 欄、視窗 <1440px 時下限 280px 保證 title 單行容得下 16 個中文字（14px × 16 ≈ 224 + priority dot 12 + gap 8 + padding 32 ≈ 276）；(3) 卡片從 4 行（title/desc/meta 上/meta 下）壓縮回 3 行——原 Row 4 的 checklist/due/avatar 合併進 Row 3 meta，加 .kb-v2-meta-spacer 用 flex:1 1 auto 把 avatar/due 推到最右端；meta row 從 flex-wrap:wrap 改 nowrap + overflow:hidden，不再發生 avatar 折到第 4 行；.kb-v2-tag 加 flex-shrink:1 + max-width:100px 讓標籤在窄欄下 ellipsis；.kb-v2-cat / checklist / due / ai-badge 全 flex-shrink:0 保證永遠可見 · 版號 v1.0.6→v1.0.7 · tail cleanup: v1.0.4 搬進 CHANGELOG.md -->
-<!-- v1.0.7 · Phase 0 shared store 前置：新增 BP namespace（~580 行）包含 window.BP.store + 18 selectors + BP.events pub/sub + BP.format + BP.lifecycle 個人里程碑 API + BP.ai stubs；read-through migration 統一 columnId/column 欄位名、統一逾期款項算法（status===overdue OR pending+dueDate<today）；backupOnce 首次啟動備份 5 核心 key 至 *_backup_preV1；feature flag bp_store_bypass 保留作為 Phase 1/2 降級旗標。零改動現有 5 模組 code，純上層 wrapper。Gate 1 卡西法 smoke：5/5 模組 PASS · 39/39 assertion · 26/26 unit · 0 console error · 0 side effect。為路徑 B 雙層敘事（個人句 × 業界對照）與連結偵測器儀表板鋪路 · 版號 v1.0.7→v1.0.8 · tail cleanup: v1.0.5 搬進 CHANGELOG.md -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
