@@ -508,45 +508,57 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 }
 #sidebar.expanded .sidebar-version{text-align:center;padding-left:0}
 
-/* v0.34.0: Global topbar — 全域右上角資訊區，credit + plan + avatar 統一在此
-   原 sidebar credit badge（v0.33.0–v0.33.2）移除，符合愛德華指示「跟首頁一樣放右上角」 */
+/* v1.0.1: Global topbar — 改為浮動右上角 pill（不再佔 56px 垂直空間推擠標題）
+   原 v0.34.0 是 full-width sticky bar，愛德華指正：credit 不該固定在頁面標題之上
+   修法：position:fixed 右上，pill 造型 + glass tint，content 可延伸至頁面頂緣 */
 .global-topbar{
-  display:flex;align-items:center;justify-content:flex-end;gap:14px;
-  padding:12px 24px;min-height:56px;
-  border-bottom:1px solid var(--border);
-  background:var(--bg);
-  position:sticky;top:0;z-index:50;
-  backdrop-filter:saturate(140%) blur(6px);
+  position:fixed;top:14px;right:20px;z-index:60;
+  display:flex;align-items:center;gap:8px;
+  padding:5px 6px 5px 14px;
+  background:color-mix(in srgb, var(--bg-card) 88%, transparent);
+  border:1px solid var(--border);
+  border-radius:999px;
+  box-shadow:0 2px 10px rgba(17,17,17,.04), 0 1px 3px rgba(17,17,17,.04);
+  backdrop-filter:saturate(180%) blur(14px);
+  -webkit-backdrop-filter:saturate(180%) blur(14px);
+  transition:box-shadow .2s, transform .2s;
 }
 .global-topbar:empty{display:none}
+.global-topbar:hover{box-shadow:0 4px 16px rgba(17,17,17,.08), 0 1px 4px rgba(17,17,17,.06)}
+[data-theme="dark"] .global-topbar{background:color-mix(in srgb, var(--bg-card) 85%, transparent)}
 .gtb-credit{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:5px 12px;border-radius:999px;
-  background:var(--bg-hover);cursor:pointer;
-  transition:all .18s var(--ease-out);
+  display:inline-flex;align-items:center;gap:5px;
+  padding:2px 2px 2px 0;cursor:pointer;
+  transition:color .18s;
   font-variant-numeric:tabular-nums;
 }
-.gtb-credit:hover{background:color-mix(in srgb,var(--primary) 10%,var(--bg-hover));transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.gtb-credit:hover .gtb-credit-num{color:var(--primary)}
 .gtb-credit svg{color:var(--primary);flex-shrink:0}
-.gtb-credit-num{font-size:13px;font-weight:700;color:var(--ink)}
-.gtb-credit-sep{font-size:12px;color:var(--ink-dim)}
+.gtb-credit-num{font-size:13px;font-weight:700;color:var(--ink);transition:color .18s}
+.gtb-credit-sep{font-size:12px;color:var(--ink-dim);margin:0 1px}
 .gtb-credit-lim{font-size:12px;color:var(--ink-muted)}
-.gtb-credit-unit{font-size:11px;color:var(--ink-muted);margin-left:2px}
+.gtb-credit-unit{font-size:10.5px;color:var(--ink-muted);margin-left:3px;letter-spacing:.02em}
 .gtb-credit.warn .gtb-credit-num{color:var(--gold)}
 .gtb-credit.danger .gtb-credit-num{color:var(--rose)}
+.global-topbar .plan-badge{
+  font-size:11px !important;padding:2px 9px !important;
+  border-radius:999px !important;font-weight:700;letter-spacing:.02em;
+}
+.gtb-divider{width:1px;height:16px;background:var(--border);margin:0 2px;flex-shrink:0}
 .gtb-avatar{
-  width:34px;height:34px;border-radius:50%;
+  width:28px;height:28px;border-radius:50%;
   background:var(--primary);color:#fff;
   display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:700;cursor:pointer;
-  transition:transform .18s;
+  font-size:12px;font-weight:700;cursor:pointer;
+  transition:transform .18s;flex-shrink:0;
 }
-.gtb-avatar:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(124,92,252,.3)}
-.gtb-name{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap}
+.gtb-avatar:hover{transform:scale(1.05);box-shadow:0 3px 10px rgba(124,92,252,.3)}
+/* v1.0.1: username 隱藏（avatar 已足夠身份辨識，節省空間讓 pill 緊湊） */
+.gtb-name{display:none}
 @media(max-width:640px){
-  .global-topbar{padding:10px 14px;gap:8px}
-  .gtb-name{display:none}
-  .gtb-credit-lim,.gtb-credit-sep{display:none}
+  .global-topbar{top:10px;right:12px;padding:4px 5px 4px 10px;gap:6px}
+  .gtb-credit-lim,.gtb-credit-sep,.gtb-divider{display:none}
+  .gtb-credit-unit{display:none}
 }
 .sidebar-user{
   padding:14px 0;border-top:1px solid rgba(255,255,255,.08);
@@ -2830,6 +2842,33 @@ canvas{display:block;margin:0 auto 24px}
 .kb-archive-btn.active{background:color-mix(in srgb,var(--primary) 8%,transparent);border-color:color-mix(in srgb,var(--primary) 38%,transparent);color:var(--primary)}
 .kb-archive-btn svg{stroke-width:1.75;flex-shrink:0}
 .kb-archive-btn-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:2px;background:color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink);border-radius:9px;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:0}
+
+/* v1.0.1: Archive menu dropdown */
+.kb-archive-menu-wrap{position:relative}
+.kb-archive-menu{
+  position:absolute;top:calc(100% + 6px);right:0;z-index:50;
+  min-width:280px;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--r-md);box-shadow:0 8px 24px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.06);
+  padding:6px;overflow:hidden;
+  animation:kb-archive-menu-in .15s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes kb-archive-menu-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.kb-archive-menu-item{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:10px 12px;background:transparent;border:none;cursor:pointer;
+  text-align:left;border-radius:var(--r-sm);
+  font-family:inherit;color:var(--ink);
+  transition:background .12s;
+}
+.kb-archive-menu-item:hover{background:var(--bg-hover)}
+.kb-archive-menu-item.is-active{background:color-mix(in srgb,var(--primary) 8%,transparent)}
+.kb-archive-menu-item svg{flex-shrink:0;color:var(--ink-muted)}
+.kb-archive-menu-item.is-active svg{color:var(--primary)}
+.kb-archive-menu-text{flex:1;min-width:0}
+.kb-archive-menu-label{font-size:13px;font-weight:600;color:var(--ink);line-height:1.3}
+.kb-archive-menu-desc{font-size:11px;color:var(--ink-muted);line-height:1.4;margin-top:2px}
+.kb-archive-menu-divider{height:1px;background:var(--border);margin:4px 2px}
 .kb-archive-btn.active .kb-archive-btn-count{background:color-mix(in srgb,var(--primary) 18%,transparent);color:var(--primary)}
 [data-theme="dark"] .kb-archive-btn-count{background:color-mix(in srgb,var(--ink) 22%,transparent)}
 
@@ -4795,17 +4834,34 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 .kb-card-v2.archived-card{opacity:.45}
 .kb-card-v2.drop-celebrate{animation:tc-celebrate .5s cubic-bezier(.34,1.56,.64,1)}
 @keyframes tc-celebrate{0%{transform:scale(.95)}40%{transform:scale(1.03)}100%{transform:scale(1)}}
-/* Title 行：dot + text，flex gap 8px */
-.kb-card-v2 .kb-v2-title{font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:8px;min-width:0}
+/* v1.0.1: Title 行重設計（P0-3 priority 分級 + P0-4 AI badge 搬離 title）*/
+.kb-card-v2 .kb-v2-title{font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;display:flex;align-items:center;gap:8px;min-width:0}
+.kb-card-v2.has-pri-high .kb-v2-title{font-weight:700}
 .kb-card-v2 .kb-v2-title-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-.kb-v2-pri-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px var(--bg-card)}
-.kb-v2-pri-dot.pri-high{background:var(--rose)}
+/* P0-3: Priority dot 分級 — high 8px 無 ring、medium 7px、low 僅 slate 6px + opacity */
+.kb-v2-pri-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.kb-v2-pri-dot.pri-high{width:8px;height:8px;background:var(--rose);box-shadow:0 0 0 3px color-mix(in srgb,var(--rose) 18%,transparent)}
 .kb-v2-pri-dot.pri-medium{background:var(--gold)}
-.kb-v2-pri-dot.pri-low{background:var(--teal)}
-.kb-card-v2 .kb-v2-desc{font-size:12px;color:var(--ink-muted);line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:-2px 0}
-.kb-card-v2 .kb-v2-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.kb-card-v2 .kb-v2-cat{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;white-space:nowrap}
-.kb-card-v2 .kb-v2-tag{font-size:10px;font-weight:500;padding:1px 6px;border-radius:4px;white-space:nowrap;color:var(--ink-muted);background:var(--bg-hover)}
+.kb-v2-pri-dot.pri-low{background:var(--slate,#94A3B8);opacity:.6}
+/* High 額外加文字 badge（雙編碼合規） */
+.kb-v2-pri-text{font-size:9px;font-weight:800;color:var(--rose);letter-spacing:.06em;
+  padding:0 5px;height:15px;display:inline-flex;align-items:center;
+  border:1px solid color-mix(in srgb,var(--rose) 40%,transparent);
+  border-radius:4px;flex-shrink:0}
+/* P0-2: Description 2-line clamp on hover，預設 1 行；去除 nowrap/HTML mismatch */
+.kb-card-v2 .kb-v2-desc{font-size:12px;color:var(--ink-muted);line-height:1.45;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;margin:-2px 0 0;
+  transition:-webkit-line-clamp .2s}
+.kb-card-v2:hover .kb-v2-desc{-webkit-line-clamp:2}
+.kb-card-v2 .kb-v2-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:18px}
+/* P0-1: Category 改中性 tag + 6px 色點（解色彩語義撞車：色彩保留給 status/priority） */
+.kb-card-v2 .kb-v2-cat{font-size:11px;font-weight:600;padding:2px 8px 2px 18px;border-radius:10px;white-space:nowrap;
+  color:var(--ink);background:var(--bg-hover);border:1px solid var(--border);
+  position:relative;letter-spacing:.01em}
+.kb-card-v2 .kb-v2-cat::before{content:'';position:absolute;left:7px;top:50%;transform:translateY(-50%);
+  width:6px;height:6px;border-radius:50%;background:var(--_cat, var(--ink-dim))}
+.kb-card-v2 .kb-v2-tag{font-size:10px;font-weight:500;padding:1px 7px;border-radius:4px;white-space:nowrap;
+  color:var(--ink-muted);background:transparent;border:1px solid var(--border)}
 .kb-card-v2 .kb-v2-avatar{width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
 .kb-card-v2 .kb-v2-avatar.agent{background:linear-gradient(135deg,#7C5CFC,#A78BFA)}
 .kb-card-v2 .kb-v2-avatar.human{background:var(--ink-dim)}
@@ -4815,10 +4871,42 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 .kb-card-v2 .kb-v2-checklist{font-size:10px;color:var(--ink-dim);display:inline-flex;align-items:center;gap:3px}
 .kb-card-v2 .kb-v2-ai-badge{font-size:9px;padding:1px 6px;border-radius:4px;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(167,139,250,.12));color:var(--primary);font-weight:700;letter-spacing:.3px}
 /* v0.31.0: Anti-Anxiety UX — AI Contribution Badge */
-.kb-ai-contrib{font-size:10px;padding:2px 8px;border-radius:9999px;font-weight:700;letter-spacing:.2px;white-space:nowrap;line-height:18px;height:18px;display:inline-flex;align-items:center;margin-left:auto;flex-shrink:0}
-.kb-ai-contrib.ai-badge-collab{background:linear-gradient(135deg,#7C5CFC,#A78BFA);color:#fff}
-.kb-ai-contrib.ai-badge-auto{background:linear-gradient(135deg,#1BA891,#34D399);color:#fff}
-.kb-ai-contrib.ai-badge-manual{background:var(--bg-hover);color:var(--ink-dim);font-weight:500}
+/* v1.0.1 P0-4: AI badge 去漸層 + 改 tonal chip（跟其他 meta chip 同語言），原 margin-left:auto 移除改由 meta row 控制 */
+.kb-ai-contrib{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:.02em;
+  white-space:nowrap;line-height:16px;height:18px;display:inline-flex;align-items:center;flex-shrink:0;gap:4px}
+.kb-ai-contrib::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.85}
+.kb-ai-contrib.ai-badge-collab{background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);
+  border:1px solid color-mix(in srgb,var(--primary) 26%,transparent)}
+.kb-ai-contrib.ai-badge-auto{background:color-mix(in srgb,var(--teal) 12%,transparent);color:var(--teal);
+  border:1px solid color-mix(in srgb,var(--teal) 26%,transparent)}
+.kb-ai-contrib.ai-badge-manual{display:none}
+
+/* v1.0.1: Edit modal 右欄 4-section 分組容器 */
+.kb-rs{
+  display:flex;flex-direction:column;gap:12px;
+  padding:14px 16px;background:var(--bg-app);
+  border-radius:var(--r-md);border:1px solid var(--border);
+}
+.kb-rs-title{
+  font-size:10.5px;font-weight:700;color:var(--ink-muted);
+  text-transform:uppercase;letter-spacing:.08em;
+  padding-bottom:2px;border-bottom:1px dashed var(--border);
+  display:flex;align-items:center;gap:6px;margin-bottom:2px;
+}
+.kb-rs-title svg{width:12px;height:12px;opacity:.7}
+.kb-rs .kb-section{margin-bottom:0}
+
+/* v1.0.1 P0-5: Column count chip 改 class 且呼應欄色 + 暗色模式相容 */
+.kanban-col-count{
+  font-size:11.5px;font-weight:700;
+  color:var(--_col, var(--ink-muted));
+  background:color-mix(in srgb, var(--_col, var(--ink-dim)) 14%, transparent);
+  padding:2px 9px;border-radius:10px;letter-spacing:.02em;
+  font-variant-numeric:tabular-nums;line-height:1.3;
+}
+[data-theme="dark"] .kanban-col-count{
+  background:color-mix(in srgb, var(--_col, var(--ink-dim)) 22%, transparent);
+}
 /* v0.31.0: Anti-Anxiety UX — Pulse View */
 @keyframes pulse-warm{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.03);opacity:1}}
 @keyframes pulse-neutral{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.05);opacity:1}}
@@ -4947,7 +5035,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.0.0</div>
+        <div class="sidebar-version">v1.0.1</div>
       </div>
     </aside>
     <main id="main">
@@ -7684,9 +7772,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     var planBadgeClass = plan === 'free' ? 'free' : (plan === 'starter' ? 'starter' : 'pro');
     topbar.innerHTML =
       creditHTML +
-      '<span class="plan-badge ' + planBadgeClass + '" style="font-size:12px;padding:3px 10px">' + planLabel + '</span>' +
-      '<div class="gtb-avatar" onclick="app.navigate(\'settings\')" title="' + userName + '">' + avatar + '</div>' +
-      '<span class="gtb-name">' + userName + '</span>';
+      '<span class="gtb-divider"></span>' +
+      '<span class="plan-badge ' + planBadgeClass + '">' + planLabel + '</span>' +
+      '<div class="gtb-avatar" onclick="app.navigate(\'settings\')" title="' + userName + '">' + avatar + '</div>';
   }
   window.updateCreditBadge = updateCreditBadge;
 
@@ -13453,31 +13541,52 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       html += '<button class="kb-view-seg-btn' + (viewMode==='list'?' active':'') + '" onclick="window._kbSetView(\'list\')" role="tab" aria-selected="' + (viewMode==='list') + '"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="3" x2="12" y2="3"/><line x1="2" y1="7" x2="12" y2="7"/><line x1="2" y1="11" x2="12" y2="11"/></svg>列表</button>';
       html += '</div>';
 
-      // 4. 分組 selector（list view only）
-      // v0.32.21：複用 PATH 既有 bpSelect 元件（line 5091），不自訂下拉——符合憲法「複用優先於新發明」
+      // 4. 分組 selector（list view only）— v1.0.1 清理：不再用外包 label+icon wrapper，直接用 bpSelect + icon prefix
       if(viewMode === 'list'){
-        var _gbVal = window._kbListGroupBy || 'status';
+        // v1.0.1: 從 localStorage 讀持久化值（跨 session 記住）
+        if(!window._kbListGroupBy){
+          try { window._kbListGroupBy = localStorage.getItem('bp.kbListGroupBy') || 'status'; } catch(e){ window._kbListGroupBy = 'status'; }
+        }
+        var _gbVal = window._kbListGroupBy;
+        // v1.0.1: 若當前 cat filter 鎖定單一類，隱藏「分類」選項避免冗餘（只剩一組 → 分組無意義）
+        var _catFCount = (window._kbCatFilter || []).length;
         var _gbBpOpts = [
-          {value:'status',label:'狀態',selected:_gbVal==='status'},
-          {value:'priority',label:'優先級',selected:_gbVal==='priority'},
-          {value:'category',label:'分類',selected:_gbVal==='category'},
-          {value:'assignee',label:'負責人',selected:_gbVal==='assignee'}
+          {value:'status',label:'依狀態分組',selected:_gbVal==='status'},
+          {value:'priority',label:'依優先級分組',selected:_gbVal==='priority'}
         ];
-        html += '<div class="kb-groupby-prefix">';
-        html += '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M4 8h8M6 12h4"/></svg>';
-        html += '<span class="kb-groupby-label">分組</span>';
-        html += bpSelect({id:'kbGroupBySel', options:_gbBpOpts, onChange:'_kbSetGroupBy'});
-        html += '</div>';
+        if(_catFCount !== 1) _gbBpOpts.push({value:'category',label:'依分類分組',selected:_gbVal==='category'});
+        _gbBpOpts.push({value:'assignee',label:'依負責人分組',selected:_gbVal==='assignee'});
+        html += bpSelect({id:'kbGroupBySel', options:_gbBpOpts, onChange:'_kbSetGroupBy', style:'min-width:148px'});
       }
 
-      // 6. 封存入口——v0.32.21：兩顆按鈕（長太像只差 badge 數字）改用既有 .kb-archive-btn 文字變體
-      //    對標憲法「複用優先於新發明」：不自訂新 popover，改以文字 label 差異化兩個動作
+      // 6. 封存入口（v1.0.1 合併：原兩顆 button「封存完成」+「已封存」視覺太像造成認知混淆
+      //    → 改用單一 button + dropdown menu，action vs toggle 明確分開）
       var _doneCountForArchive = cards.filter(function(c){ return c.cycleId === _cyc.id && c.columnId === 'done' && !c.archived; }).length;
-      if(_doneCountForArchive > 0){
-        html += '<button class="kb-archive-btn" onclick="window._kbArchiveCycleDone()" title="把本期已完成任務移入封存，清空工作區" aria-label="封存本期已完成"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3.5" width="12" height="3" rx="1"/><path d="M3 6.5v6a1 1 0 001 1h8a1 1 0 001-1v-6"/><polyline points="6,9 7.5,10.5 10,8"/></svg>封存完成<span class="kb-archive-btn-count">' + _doneCountForArchive + '</span></button>';
-      }
-      if(archivedCount > 0){
-        html += '<button class="kb-archive-btn' + (showArchived ? ' active' : '') + '" onclick="window._kbToggleArchived()" title="' + (showArchived ? '隱藏封存的任務' : '查看封存的任務') + '" aria-pressed="' + showArchived + '"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + (showArchived ? '<circle cx="8" cy="8" r="3.2"/><path d="M2.5 8c1.4-2.2 3.4-3.5 5.5-3.5S12 5.8 13.5 8" opacity=".75"/><path d="M13.5 8c-1.4 2.2-3.4 3.5-5.5 3.5S4 10.2 2.5 8" opacity=".75"/>' : '<rect x="2" y="3.5" width="12" height="3" rx="1"/><path d="M3 6.5v6a1 1 0 001 1h8a1 1 0 001-1v-6"/><line x1="6" y1="9.5" x2="10" y2="9.5"/>') + '</svg>' + (showArchived ? '隱藏封存' : '已封存') + '<span class="kb-archive-btn-count">' + archivedCount + '</span></button>';
+      var _totalArchive = _doneCountForArchive + archivedCount;
+      if(_totalArchive > 0){
+        html += '<div class="kb-archive-menu-wrap" style="position:relative;display:inline-block">';
+        html += '<button class="kb-archive-btn' + (showArchived ? ' active' : '') + '" onclick="window._kbToggleArchiveMenu()" aria-haspopup="menu" aria-expanded="false" id="kbArchiveMenuBtn" title="封存管理">';
+        html += '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3.5" width="12" height="3" rx="1"/><path d="M3 6.5v6a1 1 0 001 1h8a1 1 0 001-1v-6"/><line x1="6" y1="9.5" x2="10" y2="9.5"/></svg>';
+        html += '封存';
+        if(_totalArchive > 0) html += '<span class="kb-archive-btn-count">' + _totalArchive + '</span>';
+        html += '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="margin-left:2px;opacity:.6"><polyline points="4,6 8,10 12,6"/></svg>';
+        html += '</button>';
+        html += '<div class="kb-archive-menu" id="kbArchiveMenu" role="menu" style="display:none">';
+        if(_doneCountForArchive > 0){
+          html += '<button class="kb-archive-menu-item" role="menuitem" onclick="window._kbArchiveCycleDone();window._kbCloseArchiveMenu()">';
+          html += '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3.5" width="12" height="3" rx="1"/><path d="M3 6.5v6a1 1 0 001 1h8a1 1 0 001-1v-6"/><polyline points="6,9 7.5,10.5 10,8"/></svg>';
+          html += '<div class="kb-archive-menu-text"><div class="kb-archive-menu-label">封存本期完成</div><div class="kb-archive-menu-desc">把「已完成」欄 ' + _doneCountForArchive + ' 張卡移入封存</div></div>';
+          html += '</button>';
+        }
+        if(archivedCount > 0){
+          if(_doneCountForArchive > 0) html += '<div class="kb-archive-menu-divider"></div>';
+          html += '<button class="kb-archive-menu-item' + (showArchived ? ' is-active' : '') + '" role="menuitemcheckbox" aria-checked="' + showArchived + '" onclick="window._kbToggleArchived();window._kbCloseArchiveMenu()">';
+          html += '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + (showArchived ? '<circle cx="8" cy="8" r="3.2"/><path d="M2.5 8c1.4-2.2 3.4-3.5 5.5-3.5S12 5.8 13.5 8" opacity=".75"/><path d="M13.5 8c-1.4 2.2-3.4 3.5-5.5 3.5S4 10.2 2.5 8" opacity=".75"/>' : '<circle cx="8" cy="8" r="3.2" opacity=".4"/><path d="M2.5 8c1.4-2.2 3.4-3.5 5.5-3.5S12 5.8 13.5 8" opacity=".35"/><path d="M13.5 8c-1.4 2.2-3.4 3.5-5.5 3.5S4 10.2 2.5 8" opacity=".35"/>') + '</svg>';
+          html += '<div class="kb-archive-menu-text"><div class="kb-archive-menu-label">' + (showArchived ? '隱藏已封存卡片' : '顯示已封存卡片') + '</div><div class="kb-archive-menu-desc">' + archivedCount + ' 張卡片在封存庫</div></div>';
+          if(showArchived) html += '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" style="margin-left:auto"><polyline points="3,8 6.5,11.5 13,4.5"/></svg>';
+          html += '</button>';
+        }
+        html += '</div></div>';
       }
       html += '</div>';
 
@@ -13510,7 +13619,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           var _priDefs = [
             {key:'high',label:'高優先',color:'#D94462'},
             {key:'medium',label:'中優先',color:'#E08A3A'},
-            {key:'low',label:'低優先',color:'#3B82F6'},
+            {key:'low',label:'低優先',color:'#94A3B8'},
             {key:'none',label:'一般',color:'#9CA3AF'}
           ];
           _priDefs.forEach(function(p){
@@ -13719,7 +13828,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         }
         html += '<span style="font-size:14px;font-weight:700;color:var(--ink)">' + col.label + '</span>';
         // v0.26.0: 只在有卡片時才顯示計數
-        if(colCards.length > 0) html += '<span style="font-size:12px;color:var(--ink-dim);background:rgba(255,255,255,.6);padding:1px 8px;border-radius:10px">' + colCards.length + '</span>';
+        if(colCards.length > 0) html += '<span class="kanban-col-count" style="--_col:' + col.color + '">' + colCards.length + '</span>';
         html += '</div>';
         html += '<div style="display:flex;gap:2px;position:relative">';
         if(isInbox) html += '<button class="kanban-col-btn" onclick="event.stopPropagation();window._kbShowDecompose()" title="AI 拆解需求" style="color:var(--primary)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v4M8 10v4M2 8h4M10 8h4"/><circle cx="8" cy="8" r="2"/></svg></button>';
@@ -13750,14 +13859,15 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           var clTotal=(card.checklist||[]).length;
           var cat = TASK_CATEGORIES[card.category] || TASK_CATEGORIES.product;
 
-          // v0.16.1: priority 改用 6px dot + shadow elevation（移除 border-left 違規）
+          // v1.0.1 P0-3: priority 分級（high 粗字 + 「高」文字 badge 達憲法雙編碼；medium 7px dot；low 弱化）
           var priKey = card.priority === 'high' ? 'high' : card.priority === 'medium' ? 'medium' : card.priority === 'low' ? 'low' : '';
-          html += '<div class="kb-card-v2' + (card.archived?' archived-card':'') + '" draggable="true" data-card="' + card.id + '">';
+          var priCls = priKey ? ' has-pri-' + priKey : '';
+          html += '<div class="kb-card-v2' + priCls + (card.archived?' archived-card':'') + '" draggable="true" data-card="' + card.id + '">';
 
-          // Row 1: Title (priority dot + title text + AI contribution badge)
+          // Row 1: Title (priority dot + title text + high 文字 badge，AI badge 移到 meta row)
           var dotH = priKey ? '<span class="kb-v2-pri-dot pri-' + priKey + '" aria-label="優先級 ' + priKey + '"></span>' : '';
-          // v0.31.0: AI Contribution Badge — Anti-Anxiety UX
-          // v0.32.20：移除「手動」badge——手動建立是預設狀態，不需要貼標；AI 協作/全自動才有資訊價值
+          var priTextH = priKey === 'high' ? '<span class="kb-v2-pri-text" aria-hidden="true">高</span>' : '';
+          // v1.0.1 P0-4: AI badge 從 title 行搬到 meta row（去漸層降搶鏡）
           var aiBadgeH = '';
           if(card.aiContribution >= 0) {
             var aiPct = card.aiContribution;
@@ -13766,17 +13876,21 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
             var aiTooltip = card.aiSummary || (aiPct === 100 ? 'AI 全自動完成' : 'AI 協助完成了約 ' + aiPct + '% 的內容');
             aiBadgeH = '<span class="kb-ai-contrib ' + aiBadgeCls + '" title="' + aiTooltip + '">' + aiBadgeLabel + '</span>';
           }
-          html += '<div class="kb-v2-title">' + dotH + '<span class="kb-v2-title-text">' + (card.title||'未命名') + '</span>' + aiBadgeH + '</div>';
+          html += '<div class="kb-v2-title">' + dotH + '<span class="kb-v2-title-text">' + (card.title||'未命名') + '</span>' + priTextH + '</div>';
 
-          // Row 2: Description preview (1 line)
+          // v1.0.1 P0-2: Description 2-line on hover + 去重（不跟 title 文字重複）
           if(card.description){
-            var descPreview = card.description.replace(/<[^>]*>/g,'').substring(0,60);
-            html += '<div class="kb-v2-desc">' + descPreview + '</div>';
+            var descPreview = card.description.replace(/<[^>]*>/g,'').trim().substring(0,120);
+            if(descPreview && descPreview.toLowerCase() !== (card.title||'').toLowerCase()){
+              html += '<div class="kb-v2-desc">' + descPreview + '</div>';
+            }
           }
 
-          // Row 3: Category + Tags row
+          // Row 3: Meta row — AI badge 在首，Category + Tags
           html += '<div class="kb-v2-meta">';
-          html += '<span class="kb-v2-cat" style="background:' + cat.color + '14;color:' + cat.color + '">' + cat.label + '</span>';
+          if(aiBadgeH) html += aiBadgeH;
+          // v1.0.1 P0-1: Category 改中性 tag + 6px 色點（解色彩語義撞車）
+          html += '<span class="kb-v2-cat" style="--_cat:' + cat.color + '">' + cat.label + '</span>';
           if(card.tags && card.tags.length > 0){
             card.tags.slice(0,2).forEach(function(tag){
               html += '<span class="kb-v2-tag">' + tag + '</span>';
@@ -14737,16 +14851,45 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       m += '<div class="kb-section"><label class="kb-label">自訂欄位</label><div id="kbF_suggest"></div><div id="kbF_customFields">' + cfHtml + '</div>';
       m += '<button style="background:none;border:none;color:var(--primary);cursor:pointer;padding:6px 0;font-size:13px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:4px" id="kbF_addField">' + IC.plus + ' 新增欄位</button></div>';
       m += '</div>';
-      // RIGHT column
-      m += '<div style="display:flex;flex-direction:column;gap:14px">';
+      // RIGHT column (v1.0.1 四區塊分層：主要 / 分類 / 週期 / 紀錄)
+      m += '<div style="display:flex;flex-direction:column;gap:18px">';
+
+      // ═══ Section 1: 主要 metadata（高頻）═══
+      m += '<div class="kb-rs">';
+      m += '<div class="kb-rs-title">狀態與指派</div>';
       m += '<div class="kb-section"><label class="kb-label">狀態</label>' + bpSelect({id:'kbF_col', options: cols.map(function(c){ return {value:c.id, label:c.label, selected: (card ? card.columnId : (defaultColId||cols[0].id)) === c.id}; })}) + '</div>';
       m += '<div class="kb-section"><label class="kb-label">優先度</label><div style="display:flex;gap:6px;flex-wrap:wrap" id="kbF_priority">';
       ['high','medium','low'].forEach(function(p){
         m += '<button type="button" class="kb-priority-btn' + (priorityVal===p?' sel':'') + '" data-p="' + p + '" style="' + (priorityVal===p?'background:'+PRIORITY_COLORS[p]+';border-color:'+PRIORITY_COLORS[p]:'') + '">' + PRIORITY_LABELS[p] + '</button>';
       });
       m += '</div></div>';
+      // v1.0.1: 負責人改 bpSelect（跟全站一致）
+      var _assigneeVal = card ? (card.assignee || '') : '';
+      var _memberNames = [];
+      try {
+        if(typeof ensureDefaultMember === 'function') ensureDefaultMember();
+        if(typeof getMembers === 'function'){
+          (getMembers() || []).forEach(function(mm){
+            var nm = (typeof mm === 'string') ? mm : (mm && (mm.name || mm.id)) || '';
+            if(nm && _memberNames.indexOf(nm) === -1) _memberNames.push(nm);
+          });
+        }
+      } catch(e){}
+      var _memberOpts = [{value:'', label:'未指派', selected: !_assigneeVal}];
+      _memberNames.forEach(function(nm){
+        _memberOpts.push({value:nm, label:nm, selected:_assigneeVal===nm});
+      });
+      if(_assigneeVal && !_memberNames.some(function(nm){return nm===_assigneeVal;})){
+        _memberOpts.splice(1,0,{value:_assigneeVal, label:_assigneeVal, selected:true});
+      }
+      m += '<div class="kb-section"><label class="kb-label">負責人</label>' + bpSelect({id:'kbF_assignee', options: _memberOpts}) + '</div>';
+      m += '<div class="kb-section"><label class="kb-label">到期日</label><input type="date" id="kbF_due" class="kb-input" value="' + (card?(card.dueDate||''):'') + '"></div>';
+      m += '</div>'; // end Section 1
+
+      // ═══ Section 2: 分類與標籤 ═══
+      m += '<div class="kb-rs">';
+      m += '<div class="kb-rs-title">分類與標籤</div>';
       m += '<div class="kb-section"><label class="kb-label">分類</label>';
-      // Always-visible category selector — horizontal pills
       m += '<div id="kbF_catGrid" style="display:flex;flex-wrap:wrap;gap:6px">';
       var catKeys = ['product','dev','qa','marketing','sales','admin'];
       catKeys.forEach(function(k){
@@ -14758,22 +14901,30 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         m += '</button>';
       });
       m += '</div></div>';
-      m += '<div class="kb-section"><label class="kb-label">標籤 <span style="font-weight:400;color:var(--ink-dim);font-size:10px">點選切換</span></label>';
+      m += '<div class="kb-section"><label class="kb-label">標籤 <span style="font-weight:400;color:var(--ink-dim);font-size:10px">此分類下可選</span></label>';
       m += '<div id="kbF_tagArea">';
       m += _kbBuildTagChipsV2(catVal, tagsVal);
       m += '</div></div>';
-      m += '<div class="kb-section"><label class="kb-label">負責人</label><input type="text" id="kbF_assignee" class="kb-input" value="' + (card?(card.assignee||''):'') + '" placeholder="名稱"></div>';
-      m += '<div class="kb-section"><label class="kb-label">到期日</label><input type="date" id="kbF_due" class="kb-input" value="' + (card?(card.dueDate||''):'') + '"></div>';
-      // Cycle selector
+      m += '</div>'; // end Section 2
+
+      // ═══ Section 3: 週期歸屬 ═══
       var _editCycles = getCycles().sort(function(a,b){ return a.startDate > b.startDate ? -1 : 1; });
       var _cardCycleId = card ? (card.cycleId || '') : currentCycle.id;
+      m += '<div class="kb-rs">';
+      m += '<div class="kb-rs-title">週期</div>';
       m += '<div class="kb-section"><label class="kb-label">所屬週期</label><select id="kbF_cycle" class="kb-input" style="padding:8px 10px"><option value="">不指定</option>';
       _editCycles.forEach(function(cy){ m += '<option value="' + cy.id + '"' + (cy.id === _cardCycleId ? ' selected' : '') + '>' + cy.label + (cy.status === 'active' ? ' ●' : '') + '</option>'; });
       m += '</select></div>';
-      // v0.34.0: agentCanAct checkbox 整塊刪除 —— 女巫 2 稽核發現零下游實作（搜全檔無 consumer），
-      // 文案「Agent 會在 Cowork 對話中主動提供建議、追蹤進度、提醒到期」對用戶說謊，違反誠信原則
-      // Activity log (right column bottom in edit modal)
-      if(actHtml) m += '<div class="kb-section" style="margin-top:auto;padding-top:10px;border-top:1px solid var(--border)"><label class="kb-label" style="font-size:11px">' + IC.clock + ' 活動紀錄</label><div class="kb-activity" style="max-height:160px;overflow-y:auto">' + actHtml + '</div></div>';
+      m += '</div>'; // end Section 3
+
+      // ═══ Section 4: 活動紀錄 ═══
+      if(actHtml){
+        m += '<div class="kb-rs" style="margin-top:auto">';
+        m += '<div class="kb-rs-title">' + IC.clock + ' 活動紀錄</div>';
+        m += '<div class="kb-activity" style="max-height:160px;overflow-y:auto">' + actHtml + '</div>';
+        m += '</div>';
+      }
+
       m += '</div>'; // end right column
       m += '</div>'; // end kb-modal-2col
       m += '</div>'; // end kb-modal-body
@@ -15073,8 +15224,42 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     window._kbAddCol = _kbAddCol;
     window._kbMoveCol = _kbMoveCol;
     window._kbSetView = function(mode){ window._kbViewMode = mode; renderBoard(); };
-    window._kbSetGroupBy = function(val){ window._kbListGroupBy = val; renderBoard(); };
+    window._kbSetGroupBy = function(val){
+      window._kbListGroupBy = val;
+      // v1.0.1: 持久化到 localStorage
+      try { localStorage.setItem('bp.kbListGroupBy', val); } catch(e){}
+      renderBoard();
+    };
     window._kbToggleArchived = function(){window._kbShowArchived=!window._kbShowArchived;showArchived=window._kbShowArchived;renderBoard();};
+
+    // v1.0.1: 封存 menu toggle（合併原兩顆 button 為單一 dropdown）
+    window._kbToggleArchiveMenu = function(){
+      var menu = document.getElementById('kbArchiveMenu');
+      var btn = document.getElementById('kbArchiveMenuBtn');
+      if(!menu || !btn) return;
+      var isOpen = menu.style.display === 'block';
+      if(isOpen){
+        window._kbCloseArchiveMenu();
+      } else {
+        menu.style.display = 'block';
+        btn.setAttribute('aria-expanded', 'true');
+        // outside click closer — next tick 掛載避免當下 click 事件冒泡關掉自己
+        setTimeout(function(){
+          document.addEventListener('click', window._kbArchiveMenuOutsideClick);
+        }, 0);
+      }
+    };
+    window._kbCloseArchiveMenu = function(){
+      var menu = document.getElementById('kbArchiveMenu');
+      var btn = document.getElementById('kbArchiveMenuBtn');
+      if(menu) menu.style.display = 'none';
+      if(btn) btn.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('click', window._kbArchiveMenuOutsideClick);
+    };
+    window._kbArchiveMenuOutsideClick = function(e){
+      var wrap = e.target.closest('.kb-archive-menu-wrap');
+      if(!wrap) window._kbCloseArchiveMenu();
+    };
 
     // ── v0.32.13 分類 filter 多選 toggle + localStorage 持久化 ──
     (function(){
@@ -26664,22 +26849,22 @@ function loadHistory(){
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">';
         filtered.forEach(function(d){
           var typeObj = DOC_TYPES.find(function(t){ return t.id === d.type; }) || DOC_TYPES[4];
-          var hasFile = !!(d.fileName);
-          var hasLink = !!(d.linkUrl);
+          var linkDisplay = (d.linkLabel || d.linkUrl || '').substring(0, 46);
+          if(linkDisplay && (d.linkLabel||d.linkUrl||'').length > 46) linkDisplay += '…';
+          var linkDomain = '';
+          if(d.linkUrl){ try { linkDomain = new URL(d.linkUrl).hostname.replace(/^www\./,''); } catch(e){} }
           html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;cursor:pointer;transition:all .18s" onclick="window._dcShowModal(\'' + d.id + '\')" onmouseenter="this.style.borderColor=\'var(--primary)\';this.style.boxShadow=\'0 4px 12px rgba(124,92,252,.08)\'" onmouseleave="this.style.borderColor=\'var(--border)\';this.style.boxShadow=\'none\'">';
           html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
-          html += '<div style="width:36px;height:36px;border-radius:10px;background:' + typeObj.color + '15;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="' + typeObj.color + '" stroke-width="1.5" stroke-linecap="round"><path d="M4 4a2 2 0 012-2h5l5 5v9a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg></div>';
+          // v1.0.1: icon 改為 link（單一圖示語言，因文件庫只做連結）
+          html += '<div style="width:36px;height:36px;border-radius:10px;background:' + typeObj.color + '15;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="' + typeObj.color + '" stroke-width="1.5" stroke-linecap="round"><path d="M8 12l4-4"/><path d="M11 5l2-2a2.83 2.83 0 014 4l-2 2"/><path d="M9 15l-2 2a2.83 2.83 0 01-4-4l2-2"/></svg></div>';
           html += '<div style="flex:1;min-width:0">';
-          html += '<div style="font-size:14px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (d.name || '未命名文件') + '</div>';
-          html += '<div style="font-size:11px;color:var(--ink-muted)">' + typeObj.label + (d.client ? ' · ' + d.client : '') + '</div>';
+          html += '<div style="font-size:14px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (d.name || '未命名連結') + '</div>';
+          html += '<div style="font-size:11px;color:var(--ink-muted)">' + typeObj.label + (d.client ? ' · ' + d.client : '') + (linkDomain ? ' · ' + linkDomain : '') + '</div>';
           html += '</div></div>';
           if(d.notes) html += '<div style="font-size:12px;color:var(--ink-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + d.notes + '</div>';
-          // Attachment / link indicators
-          var indicators = [];
-          if(hasFile) indicators.push('<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14.5 11.5l-5 5a3.54 3.54 0 01-5-5l7-7a2.36 2.36 0 013.33 3.33l-7 7a1.18 1.18 0 01-1.67-1.67l5-5"/></svg> ' + d.fileName);
-          if(hasLink) indicators.push('<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 12l4-4"/><path d="M11 5l2-2a2.83 2.83 0 014 4l-2 2"/><path d="M9 15l-2 2a2.83 2.83 0 01-4-4l2-2"/></svg> 連結');
-          if(indicators.length){
-            html += '<div style="display:flex;gap:10px;margin-top:8px;font-size:11px;color:var(--ink-muted);align-items:center">' + indicators.join('<span style="color:var(--border)">·</span>') + '</div>';
+          // Link preview row (replaces old file/link indicators)
+          if(d.linkUrl){
+            html += '<div style="margin-top:8px"><a href="' + (d.linkUrl||'').replace(/"/g,'&quot;') + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--primary);text-decoration:none;font-weight:600"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 15L15 5M15 5H8M15 5v7"/></svg>' + (linkDisplay || '開啟連結') + '</a></div>';
           } else {
             html += '<div style="font-size:11px;color:var(--ink-dim);margin-top:8px">' + (d.createdAt ? new Date(d.createdAt).toLocaleDateString('zh-TW') : '') + '</div>';
           }
@@ -26739,38 +26924,20 @@ function loadHistory(){
         h += '</datalist></div>';
         // Notes
         h += '<div><label class="kb-label">備註</label><textarea class="kb-input" id="dcNotes" rows="4" style="height:auto;resize:vertical;min-height:80px" placeholder="關於此文件的備註…">' + (d.notes||'') + '</textarea></div>';
-        // ── Attachment section ──
+        // v1.0.1: 文件庫改 link-only（愛德華裁決：不做檔案儲存，只做連結書籤管理）
         h += '<div style="border-top:1px solid var(--border);padding-top:16px">';
-        h += '<label class="kb-label" style="margin-bottom:10px;display:block">附件 / 連結</label>';
-        // Tab toggle: file vs link
-        h += '<div style="display:flex;gap:0;margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;width:fit-content">';
-        h += '<button id="dcTabFile" style="padding:6px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:5px" class="dc-attach-tab">';
-        h += '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14.5 11.5l-5 5a3.54 3.54 0 01-5-5l7-7a2.36 2.36 0 013.33 3.33l-7 7a1.18 1.18 0 01-1.67-1.67l5-5"/></svg> 上傳檔案</button>';
-        h += '<button id="dcTabLink" style="padding:6px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:5px" class="dc-attach-tab">';
-        h += '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 12l4-4"/><path d="M11 5l2-2a2.83 2.83 0 014 4l-2 2"/><path d="M9 15l-2 2a2.83 2.83 0 01-4-4l2-2"/></svg> 外部連結</button>';
+        h += '<label class="kb-label" style="margin-bottom:10px;display:flex;align-items:center;gap:6px">';
+        h += '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round"><path d="M8 12l4-4"/><path d="M11 5l2-2a2.83 2.83 0 014 4l-2 2"/><path d="M9 15l-2 2a2.83 2.83 0 01-4-4l2-2"/></svg>';
+        h += '連結 <span style="color:var(--rose);font-weight:400">*</span>';
+        h += '</label>';
+        h += '<div style="display:grid;grid-template-columns:1fr 180px;gap:10px">';
+        h += '<div><input class="kb-input" id="dcLinkUrl" value="' + (d.linkUrl||'').replace(/"/g,'&quot;') + '" placeholder="https://drive.google.com/... 或 https://notion.so/..." style="font-size:13px"/></div>';
+        h += '<div><input class="kb-input" id="dcLinkLabel" value="' + (d.linkLabel||'').replace(/"/g,'&quot;') + '" placeholder="顯示名稱（選填）" style="font-size:13px"/></div>';
         h += '</div>';
-        // File panel
-        h += '<div id="dcPanelFile">';
-        if(d.fileName){
-          h += '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-hover);border-radius:var(--r-md);margin-bottom:8px">';
-          h += '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><path d="M14.5 11.5l-5 5a3.54 3.54 0 01-5-5l7-7a2.36 2.36 0 013.33 3.33l-7 7a1.18 1.18 0 01-1.67-1.67l5-5"/></svg>';
-          h += '<span style="flex:1;font-size:13px;color:var(--primary);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.fileName + '</span>';
-          h += '<button style="background:none;border:none;color:var(--ink-muted);cursor:pointer;padding:2px;font-size:14px;line-height:1" id="dcRemoveFile" title="移除檔案">&times;</button>';
-          h += '</div>';
-        }
-        h += '<input type="file" id="dcFile" style="font-size:13px"/>';
-        h += '</div>';
-        // Link panel
-        h += '<div id="dcPanelLink" style="display:none">';
-        h += '<div style="display:grid;grid-template-columns:1fr 140px;gap:10px">';
-        h += '<div><input class="kb-input" id="dcLinkUrl" value="' + (d.linkUrl||'').replace(/"/g,'&quot;') + '" placeholder="https://drive.google.com/…" style="font-size:13px"/></div>';
-        h += '<div><input class="kb-input" id="dcLinkLabel" value="' + (d.linkLabel||'').replace(/"/g,'&quot;') + '" placeholder="顯示名稱" style="font-size:13px"/></div>';
-        h += '</div>';
+        h += '<div style="margin-top:8px;font-size:11.5px;color:var(--ink-muted);line-height:1.5">貼 Google Drive / Notion / Dropbox / OneDrive 等雲端連結。文件庫只做連結管理，不上傳實體檔案。</div>';
         if(d.linkUrl){
-          h += '<div style="margin-top:6px;font-size:12px"><a href="' + (d.linkUrl||'').replace(/"/g,'&quot;') + '" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()"><svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 15L15 5M15 5H8M15 5v7"/></svg> ' + (d.linkLabel || d.linkUrl).substring(0,40) + '</a></div>';
+          h += '<div style="margin-top:10px;padding:10px 14px;background:color-mix(in srgb, var(--primary) 5%, var(--bg-app));border-radius:var(--r-md);font-size:12px"><a href="' + (d.linkUrl||'').replace(/"/g,'&quot;') + '" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:6px;font-weight:600" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 15L15 5M15 5H8M15 5v7"/></svg> ' + (d.linkLabel || d.linkUrl).substring(0,60) + (((d.linkLabel||d.linkUrl).length>60)?'…':'') + '</a></div>';
         }
-        h += '</div>';
-        h += '</div>';
         h += '</div>';
         // Footer
         h += '<div class="kb-modal-footer" style="justify-content:flex-end">';
@@ -26787,70 +26954,31 @@ function loadHistory(){
         ov.querySelector('#dcCancelBtn').addEventListener('click', function(){ ov.remove(); });
 
         // Tab toggle logic
-        var tabFile = ov.querySelector('#dcTabFile');
-        var tabLink = ov.querySelector('#dcTabLink');
-        var panelFile = ov.querySelector('#dcPanelFile');
-        var panelLink = ov.querySelector('#dcPanelLink');
-        function setTab(which){
-          var isFile = which === 'file';
-          tabFile.style.background = isFile ? 'var(--primary)' : 'var(--bg-card)';
-          tabFile.style.color = isFile ? '#fff' : 'var(--ink-muted)';
-          tabLink.style.background = isFile ? 'var(--bg-card)' : 'var(--primary)';
-          tabLink.style.color = isFile ? 'var(--ink-muted)' : '#fff';
-          panelFile.style.display = isFile ? '' : 'none';
-          panelLink.style.display = isFile ? 'none' : '';
-        }
-        // Default tab: if linkUrl exists show link tab, else file
-        setTab((d.linkUrl && !d.fileName) ? 'link' : 'file');
-        tabFile.addEventListener('click', function(){ setTab('file'); });
-        tabLink.addEventListener('click', function(){ setTab('link'); });
+        // v1.0.1: 文件庫改 link-only — 移除 tab 切換 + 檔案上傳邏輯
 
-        // Remove file button
-        var removeFileBtn = ov.querySelector('#dcRemoveFile');
-        if(removeFileBtn){
-          removeFileBtn.addEventListener('click', function(){
-            d.fileData = null;
-            d.fileName = '';
-            ov.innerHTML = buildModal();
-            wireModal();
-          });
-        }
-
-        // File upload
-        var fileInput = ov.querySelector('#dcFile');
-        if(fileInput){
-          fileInput.addEventListener('change', function(e){
-            if(!e.target.files || !e.target.files[0]) return;
-            var file = e.target.files[0];
-            if(file.size > 5000000){ showToast('檔案大小超過 5MB'); return; }
-            var reader = new FileReader();
-            reader.onload = function(evt){
-              d.fileData = evt.target.result;
-              d.fileName = file.name;
-              showToast('檔案已選取');
-              ov.innerHTML = buildModal();
-              wireModal();
-            };
-            reader.readAsDataURL(file);
-          });
-        }
-
-        // Save
+        // Save (v1.0.1: linkUrl 改必填，name 仍必填；fileData/fileName 欄位棄用)
         ov.querySelector('#dcSaveBtn').addEventListener('click', function(){
           var name = ov.querySelector('#dcName').value.trim();
-          if(!name){ ov.querySelector('#dcName').style.borderColor='var(--rose)'; return; }
+          var linkUrl = (ov.querySelector('#dcLinkUrl').value||'').trim();
+          var invalid = false;
+          if(!name){ ov.querySelector('#dcName').style.borderColor='var(--rose)'; invalid = true; }
+          if(!linkUrl){ ov.querySelector('#dcLinkUrl').style.borderColor='var(--rose)'; invalid = true; }
+          if(invalid){ showToast('請填寫文件名稱與連結'); return; }
           d.name = name;
           var typeInput = ov.querySelector('#dcType');
           d.type = typeInput ? typeInput.value : (d.type || 'other');
           d.client = ov.querySelector('#dcClient').value.trim();
           d.notes = ov.querySelector('#dcNotes').value;
-          d.linkUrl = (ov.querySelector('#dcLinkUrl').value||'').trim();
+          d.linkUrl = linkUrl;
           d.linkLabel = (ov.querySelector('#dcLinkLabel').value||'').trim();
+          // v1.0.1: 清除 legacy fileData/fileName（不再使用）
+          delete d.fileData;
+          delete d.fileName;
           if(!isEdit){
             docs.unshift(d);
           }
           saveDocs(docs);
-          showToast('文件已儲存');
+          showToast('連結已儲存');
           ov.remove();
           renderList();
         });
@@ -29797,7 +29925,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.0.1 · UIUX 打磨批次（愛德華 v1.0.0 部署後回饋 + 女巫雙輪稽核 apply）：(1) Global topbar 架構修正——原 v0.34.0 做成 full-width sticky bar 把所有頁面標題往下推，改成 position:fixed 右上浮動 pill（glass tint + backdrop-filter + box-shadow），不再佔用垂直空間；username 隱藏（avatar 足以身份辨識）；加 plan↔avatar divider；(2) 看板分組 button 簡化——移除 .kb-groupby-prefix 外包 wrapper（icon+「分組」label）直接用 bpSelect，option label 改「依 X 分組」更直觀，localStorage 持久化 bp.kbListGroupBy 跨 session 記住；cat filter 鎖定單一類時自動隱藏「分類」分組選項避免無意義分組；(3) 看板封存 button 合併——原「封存完成 N」+「已封存 N」兩顆視覺幾乎一樣造成認知混淆；合併為單一「封存 N ▾」按鈕 + dropdown menu，menu 內兩項分別是 action「封存本期完成」+ toggle「顯示/隱藏已封存」，含完整 outside-click closer + aria 屬性；(4) 看板 5 個 P0 視覺（女巫 1 稽核 62.5→目標 85）：P0-1 color 語義撞車解——category chip 改中性 bg-hover 背景 + 6px 色點前綴（--_cat CSS var 傳入），色彩保留給 status/priority/due，避免產品規劃紫跟待辦欄紫撞；P0-2 description 2-line clamp on hover（預設 1 行 ellipsis，展開 2 行）+ 去重檢查不跟 title 重複才渲染；P0-3 priority dot 分級——high 8px 無 shadow ring + 加「高」文字 badge 達憲法雙編碼、medium 7px gold、low slate 60% opacity；card 加 .has-pri-high class 讓 title 字重升 700；P0-4 AI badge 去漸層——從 title 行搬到 meta row，漸層紫/綠改 tonal chip（primary/teal 12% tint + 26% border + dot prefix），manual 類別隱藏；P0-5 column count chip 改 .kanban-col-count class 用 color-mix 呼應欄色 + dark mode 變體 .22 tint 相容；(5) 額外修補 list-priority low 違憲 #3B82F6 Tailwind blue → #94A3B8 slate；(6) Edit modal 右欄 4-section 分層——原所有 metadata 同一等級混亂，改 .kb-rs 容器分 4 區：主要（狀態/優先度/負責人/到期日）、分類（category/tags）、週期、紀錄；負責人從 text input 改 bpSelect 讀 getMembers() 跟全站一致；(7) 文件庫 link-only 化——愛德華定位明確「只做連結書籤管理、不做檔案儲存」，移除 .dc-attach-tab 切換 + fileData/fileName 欄位 + 檔案上傳邏輯，改純 linkUrl + linkLabel 必填；card 列表 icon 改 link 圖示、顯示 hostname + 連結預覽行；save 清除 legacy fileData/fileName 欄位 · 版號 v1.0.0→v1.0.1 · tail cleanup: v0.33.1 搬進 CHANGELOG.md -->
 <!-- v1.0.0 · 版本系統重置為 major.minor.patch 語意（愛德華憲法確立：major=重大更版、minor=新增模組、patch=功能優化或 bug 調整）；此版為 BeyondPath 首次里程碑正式版本，涵蓋 5 大 UI/UX 升級：(1) 全域 topbar——credit/plan/avatar 從 sidebar 搬到右上角，跟首頁 header 一致；#globalTopbar 元素 sticky + backdrop-filter；sidebar credit badge 整組 CSS 刪除；updateCreditBadge() 改渲染至 topbar；renderHome 移除冗餘 header-right；(2) 刪假 agentCanAct checkbox——女巫 2 稽核發現零下游實作（grep 全檔只 3 處寫、0 處讀），文案「Agent 會在 Cowork 對話中主動提供建議」對用戶說謊違反憲法誠信原則；kb-section 整塊刪除 + save logic 移除對應欄位；(3) Edit modal Esc 鍵可達性——新增 document.addEventListener('keydown') Escape 監聽 + MutationObserver 監看 ov remove 自動解除 listener 防 memory leak；外側 click 從 ov.remove() 改 closeModalAnimated(ov) 跟全站 33 處一致；(4) Settings 模組管理重設計——從 5-column grid（7 個團隊模組會產生 orphan 2-row）改 2-column 並排 list-row 佈局，每組 flex:1 min-width:280px，內層 module list 用 var(--bg-app) 容器包住 gap:2px 緊湊堆疊；每 row = 32px icon + 2 行 label+賦能問題 + toggle/plan chip；完全無 orphan row 問題；響應式 flex-wrap 自動堆疊；(5) Settings 方案與用量升級——hero credit bar 40px 大數字 + gradient primary 6% 背景 + 本月剩餘/已使用雙欄並排；AI 模型卡升級：Free plan 用 Sonnet 4.6 名片式顯示 + 升級引導文案；Starter+ 用 bpSelect + tagline + pricing info 卡（primary 6% tint + circle info icon）；Credit Cost 區加 hover 高亮 + credit 縮寫 cr；右上 Plan chip 跟 color 對齊 + dot；· 版號跳升 v0.33.2→v1.0.0 · tail cleanup: v0.33.0 搬進 CHANGELOG.md · 後續 v1.0.1+ 計畫：文件庫 link-only 化、封存/分組 button 簡化、看板 5 個 P0（色彩撞車/description/priority/AI badge/col count）、edit modal 右欄 4-section、首頁+AI 儀表板戰略級重構 -->
 <!-- v0.33.2 · 3 bug 修復（愛德華 v0.33.1 部署後截圖回饋）：(1) 時間軸 tooltip 雙渲染 bug——`_rmTipEl` closure 變數在 renderRoadmap 重複呼叫時會被重建，但 document.body 舊的 `.rm-tooltip` 元素不清除、新元素疊上去，造成同一任務出現 2 個幾乎一模一樣 tooltip；修法：`_rmShowTip` 建立新 tooltip 前先 `document.querySelectorAll('.rm-tooltip').forEach(el => el.remove())` 清光舊殘留，維持「body 內單一 tooltip 實例」原則；(2) 時間軸點擊 bar 跳頁問題——v0.32.22 短路到 `_rmOpenFullCard` 會 `navigate('biz-tasks')` 打斷「我正在瀏覽時間河流」的心流；修法：`_rmOpenCard` 改優先呼叫 `_kbEditCard(cardId)` 就地彈出 kb-modal-overlay（不跳頁），若 _kbEditCard 尚未掛載（使用者還沒進過任務看板）fallback 到舊 navigate 路徑確保能打開；hover = tooltip、click = 就地彈窗，兩者職責清晰分離；(3) Sidebar credit badge collapsed 態視覺違和——v0.33.0 設計在折疊側邊欄顯示「0」+「3,000」兩行大字，跟其他 icon-only 項目格格不入；修法：collapsed 態改成 44×44 圓形 badge（白 5% tint + 2px 環），內只顯示 used 數字（11px），sep/limit 隱藏、bar 改環狀 overflow 承接視覺語言；expanded 態保留完整 pill bar（used/sep/limit + 進度條）；額外加 title attribute 讓 collapsed hover 有完整 tooltip · 版號 v0.33.1→v0.33.2 · tail cleanup：v0.32.24 搬進 CHANGELOG.md -->
-<!-- v0.33.1 · 5 大工具全面接上 Claude AI（PATH 診斷 / Lab 研究 / 市場探測 / 市場報告 / 問卷引擎）：(1) Lab 研究 startResearch — 質性訪談 + 追問都走 window.PATH_AI.call('interview', ...) → Cloudflare Worker → Claude Sonnet/Opus；triggerAISummary 走 'report' node 生成三段式報告摘要；aiStats 標記 Claude 使用模型；(2) 市場探測 runMarketSignal 改 async — 優先呼叫 Claude 'market_sense' node 回 JSON（monthlySearch / competition / trend / relatedKeywords / demandGaps），fallback 到原 hash-based 模板；結果頁頂端顯示 AI/模板 badge；bp_market_{kw} 儲存 usingAI 旗標與 aiRaw 完整資料讓市場報告可取用；(3) 市場報告 generateMarketReport 改 async — 呼叫 'market_report' node 傳入 PATH diag + Lab data + Market Sense JSON，回 JSON 含 chapter1-5（TAM/SAM/SOM reasoning、competitors、audience、signals、strategy）；renderFullReport 讀 reportState.aiData 優先，fallback 保留 hash-based 模板；savedReports 記錄 usingAI；(4) 問卷引擎 generateSurvey 改 async — 呼叫 'survey_generate' node 回 JSON (questions, dimensions, estimatedTime)，Claude 題目 type 映射到既有渲染（likert5/open_text/multi_choice → 量表題/開放題/複選題），fallback 到 SURVEY_Q_TEMPLATES；auditSurvey 改 async — 呼叫 'survey_audit' node 回 JSON (overallScore, findings[], summary)，Claude severity high/medium/low → error/warning/info，fallback 到原 regex 檢測；(5) 每個工具結果頁頂都顯示 AI/模板 badge 維持誠信；(6) savedSurveys / savedReports / bp_market_{kw} 都儲存 usingAI 供歷史追溯 · 測試：首次實測 PATH 診斷 Sonnet 4.6 337 in / 351 out / 1 credit / $0.0063 ✅ · 部署：edwardt0303-281.workers.dev 已上線，worker.js v0.33.0 含 7 個 SYSTEM_PROMPTS -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
