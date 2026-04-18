@@ -2908,18 +2908,28 @@ canvas{display:block;margin:0 auto 24px}
 .kanban-board-wrap.has-scroll-left::before{opacity:1}
 .kanban-board-wrap.has-scroll-right::after{opacity:1}
 /* Dot indicator bar — removed by design decision, keep scrollbar + fade only */
-/* v1.0.6: 結構維持 overflow:hidden（擋 Chrome autoscroll），但單列不 wrap，欄位自適應縮放
+/* v1.0.7: 恢復橫向 scroll + 4.5 欄最小寬度規範
+   - overflow-x:auto：欄多時支援橫向捲動（col-body 內中鍵 autoscroll 由 document-level mousedown hook 擋）
    - flex-wrap:nowrap：永遠單列
-   - .kanban-col flex:1 1 0：完全彈性，從 min-width 200px 延伸至填滿容器
-   - 拿掉 max-width：高螢幕時欄位均等拉伸，不會一邊塞一邊留白 */
-.kanban-board{display:flex;gap:16px;overflow:hidden;padding-bottom:16px;min-height:calc(100vh - 220px);align-items:flex-start;flex-wrap:nowrap}
-.kanban-col{flex:1 1 0;min-width:200px;background:var(--bg-card);border-radius:var(--r-lg);display:flex;flex-direction:column;max-height:calc(100vh - 220px);box-shadow:var(--shadow-sm)}
+   - min-width 用 max(calc(視窗/4.5), 220px)：主流 1440+ 螢幕時保證最多只顯示 4.5 欄，<1024px 時下限 220px
+   - flex:1 1 0 + 無 max-width：欄少時均等拉伸填滿、欄多時從 min-width 觸發 overflow 捲動 */
+.kanban-board{display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;padding-bottom:16px;min-height:calc(100vh - 220px);align-items:flex-start;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+/* v1.0.7: min-width 下限 280px——保證 title 單行至少容納 16 個中文字（14px × 16 ≈ 224 + 卡片 padding 32 + priority dot 12 + gap 8 ≈ 276）*/
+.kanban-col{flex:1 1 0;min-width:max(calc((100vw - 280px) / 4.5), 280px);background:var(--bg-card);border-radius:var(--r-lg);display:flex;flex-direction:column;max-height:calc(100vh - 220px);box-shadow:var(--shadow-sm)}
+/* Custom scrollbar track（復原 v1.0.5 前樣式）*/
+.kanban-board::-webkit-scrollbar{height:6px}
+.kanban-board::-webkit-scrollbar-track{background:transparent;margin:0 8px}
+.kanban-board::-webkit-scrollbar-thumb{background:rgba(124,92,252,.2);border-radius:4px;transition:background .2s}
+.kanban-board::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.4)}
+.kanban-board{scrollbar-width:thin;scrollbar-color:rgba(124,92,252,.2) transparent}
 .kanban-col-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:var(--r-lg) var(--r-lg) 0 0}
 /* v0.32.20：col-body gap 12px 讓卡片上下有呼吸感（取代原 .kanban-card margin-bottom:8px 過密） */
 .kanban-col-body{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:12px;min-height:80px;transition:background .2s;display:flex;flex-direction:column;gap:12px}
-/* v1.0.5: 結構上 .kanban-board 已無 h-scroll 可能，mid-pan CSS 只剩 cursor feedback */
+/* v1.0.7: mid-pan 期間 cursor feedback + col-body pan-y（document-level mousedown hook 才是擋 autoscroll 的主力）*/
 body.mid-panning{cursor:grabbing !important;user-select:none !important}
 body.mid-panning .kanban-col-body{touch-action:pan-y !important;overscroll-behavior:contain !important}
+/* 橫向 scroll 重啟後，保留「col-body 中鍵防散逸」的 CSS 兜底（搭配 document hook）*/
+body.mid-panning .kanban-board{overflow-x:hidden !important}
 
 /* v1.0.2: 分組 bpSelect 在 toolbar 的 compact 版（縮高度 + 降 padding，視覺跟周圍 chips/buttons 齊平） */
 .kb-groupby-compact .bp-select-trigger{
@@ -4869,14 +4879,17 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 /* v1.0.3: Description 永遠 1 行 ellipsis，不再 hover 展開 2 行（Edward 回報動態干擾）*/
 .kb-card-v2 .kb-v2-desc{font-size:12px;color:var(--ink-muted);line-height:1.45;overflow:hidden;
   display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;margin:-2px 0 0}
-.kb-card-v2 .kb-v2-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:18px}
+/* v1.0.7: 卡片統一 3 行結構——meta row 禁止 wrap，avatar/due 靠右，tags 中段可 shrink
+   原 flex-wrap:wrap + 2 條 meta row，導致 assignee avatar 折到第 4 行；改單一 row 用 margin-left:auto 推 avatar 至右端 */
+.kb-card-v2 .kb-v2-meta{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;min-height:22px}
+.kb-card-v2 .kb-v2-meta-spacer{flex:1 1 auto;min-width:0}
 /* P0-1: Category 改中性 tag + 6px 色點（解色彩語義撞車：色彩保留給 status/priority） */
-.kb-card-v2 .kb-v2-cat{font-size:11px;font-weight:600;padding:2px 8px 2px 18px;border-radius:10px;white-space:nowrap;
+.kb-card-v2 .kb-v2-cat{font-size:11px;font-weight:600;padding:2px 8px 2px 18px;border-radius:10px;white-space:nowrap;flex-shrink:0;
   color:var(--ink);background:var(--bg-hover);border:1px solid var(--border);
   position:relative;letter-spacing:.01em}
 .kb-card-v2 .kb-v2-cat::before{content:'';position:absolute;left:7px;top:50%;transform:translateY(-50%);
   width:6px;height:6px;border-radius:50%;background:var(--_cat, var(--ink-dim))}
-.kb-card-v2 .kb-v2-tag{font-size:10px;font-weight:500;padding:1px 7px;border-radius:4px;white-space:nowrap;
+.kb-card-v2 .kb-v2-tag{font-size:10px;font-weight:500;padding:1px 7px;border-radius:4px;white-space:nowrap;flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:100px;
   color:var(--ink-muted);background:transparent;border:1px solid var(--border)}
 .kb-card-v2 .kb-v2-avatar{width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
 .kb-card-v2 .kb-v2-avatar.agent{background:linear-gradient(135deg,#7C5CFC,#A78BFA)}
@@ -5051,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.0.6</div>
+        <div class="sidebar-version">v1.0.8</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -5118,7 +5131,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     roadmap: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l-6 2v14l6-2 6 2 6-2V5l-6 2-6-2z"/><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="7" x2="15" y2="21"/></svg>'
   };
 
-  // ==================== BP NAMESPACE (Phase 0 · v1.0.4 · 2026-04-18) ====================
+  // ==================== BP NAMESPACE (Phase 0 · v1.0.7 · 2026-04-18) ====================
   // 統一 shared store + selectors + events + format + lifecycle + ai
   // 設計原則：
   //   1. 上層 wrapper，不取代現有 _get/getData/bizGet（向下相容）
@@ -5765,7 +5778,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       savedReports: JSON.parse(localStorage.getItem('bp_savedReports') || '[]')
     };
     Object.assign(state, saved);
-    // Phase 0 (v1.0.4): BP namespace lifecycle bootstrap
+    // Phase 0 (v1.0.7): BP namespace lifecycle bootstrap
     if (window.BP && BP.store && BP.store.backupOnce) BP.store.backupOnce();
     if (window.BP && BP.lifecycle && BP.lifecycle.bumpLoginStamp) BP.lifecycle.bumpLoginStamp();
   }
@@ -14563,38 +14576,32 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
             }
           }
 
-          // Row 3: Meta row — AI badge 在首，Category + Tags
+          // v1.0.7: 統一 meta row（Row 3）——原 Row 3 + Row 4 合併，avatar 不再折第 4 行
+          // 順序：[AI badge] [category] [tags (可 shrink)] [← spacer →] [checklist] [due] [avatar]
           html += '<div class="kb-v2-meta">';
           if(aiBadgeH) html += aiBadgeH;
-          // v1.0.1 P0-1: Category 改中性 tag + 6px 色點（解色彩語義撞車）
           html += '<span class="kb-v2-cat" style="--_cat:' + cat.color + '">' + cat.label + '</span>';
           if(card.tags && card.tags.length > 0){
             card.tags.slice(0,2).forEach(function(tag){
               html += '<span class="kb-v2-tag">' + tag + '</span>';
             });
-            if(card.tags.length > 2) html += '<span style="font-size:10px;color:var(--ink-dim)">+' + (card.tags.length - 2) + '</span>';
+            if(card.tags.length > 2) html += '<span style="font-size:10px;color:var(--ink-dim);flex-shrink:0">+' + (card.tags.length - 2) + '</span>';
           }
           if(card.source && (card.source === 'ai' || card.source === 'claude-mcp')) {
-            html += '<span class="kb-v2-ai-badge" data-ai-reason style="position:relative">AI<span class="ai-tooltip-reason">此任務由 AI 根據 PATH 診斷或市場研究自動建議</span></span>';
+            html += '<span class="kb-v2-ai-badge" data-ai-reason style="position:relative;flex-shrink:0">AI<span class="ai-tooltip-reason">此任務由 AI 根據 PATH 診斷或市場研究自動建議</span></span>';
+          }
+          // spacer 把右側 meta 推到最右
+          html += '<span class="kb-v2-meta-spacer"></span>';
+          if(clTotal > 0) html += '<span class="kb-v2-checklist" style="flex-shrink:0">' + IC.check + ' ' + clDone + '/' + clTotal + '</span>';
+          if(dueStr) html += '<span class="kb-v2-due ' + dueClass + '" style="flex-shrink:0">' + IC.cal + ' ' + dueStr + '</span>';
+          var _mem = (card.assigneeId) ? members.find(function(m){ return m.id === card.assigneeId; }) : null;
+          var _assigneeName = card.assignee || (_mem ? _mem.name : '');
+          var _assigneeType = card.assigneeType || 'human';
+          if(_assigneeName) {
+            var _initial = _assigneeType === 'agent' ? 'AI' : _assigneeName.charAt(0).toUpperCase();
+            html += '<div class="kb-v2-avatar ' + _assigneeType + '" title="' + _assigneeName + '">' + _initial + '</div>';
           }
           html += '</div>';
-
-          // Row 4: Bottom meta — checklist + due + assignee
-          var hasBottomMeta = clTotal > 0 || dueStr || card.assignee;
-          if(hasBottomMeta){
-            html += '<div style="display:flex;align-items:center;gap:6px;margin-top:2px">';
-            if(clTotal > 0) html += '<span class="kb-v2-checklist">' + IC.check + ' ' + clDone + '/' + clTotal + '</span>';
-            html += '<span style="flex:1"></span>';
-            if(dueStr) html += '<span class="kb-v2-due ' + dueClass + '">' + IC.cal + ' ' + dueStr + '</span>';
-            var _mem = (card.assigneeId) ? members.find(function(m){ return m.id === card.assigneeId; }) : null;
-            var _assigneeName = card.assignee || (_mem ? _mem.name : '');
-            var _assigneeType = card.assigneeType || 'human';
-            if(_assigneeName) {
-              var _initial = _assigneeType === 'agent' ? 'AI' : _assigneeName.charAt(0).toUpperCase();
-              html += '<div class="kb-v2-avatar ' + _assigneeType + '" title="' + _assigneeName + '">' + _initial + '</div>';
-            }
-            html += '</div>';
-          }
 
           html += '</div>';
         });
@@ -30622,7 +30629,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.0.8 · 任務看板 3 題合併修復（愛德華回饋：最小欄寬 / 標題顯示 / 卡片 3 行化）：(1) 恢復 .kanban-board overflow-x:auto（v1.0.5 nuke 的反向操作）——橫向 scroll 重啟；col-body 中鍵 autoscroll 由既有 document-level mousedown hook（_midPanDocHook）擋；CSS 兜底加 body.mid-panning 時 overflow-x:hidden；(2) .kanban-col min-width 用 max(calc((100vw - 280px) / 4.5), 280px)——視窗寬時保證最多顯示 4.5 欄、視窗 <1440px 時下限 280px 保證 title 單行容得下 16 個中文字（14px × 16 ≈ 224 + priority dot 12 + gap 8 + padding 32 ≈ 276）；(3) 卡片從 4 行（title/desc/meta 上/meta 下）壓縮回 3 行——原 Row 4 的 checklist/due/avatar 合併進 Row 3 meta，加 .kb-v2-meta-spacer 用 flex:1 1 auto 把 avatar/due 推到最右端；meta row 從 flex-wrap:wrap 改 nowrap + overflow:hidden，不再發生 avatar 折到第 4 行；.kb-v2-tag 加 flex-shrink:1 + max-width:100px 讓標籤在窄欄下 ellipsis；.kb-v2-cat / checklist / due / ai-badge 全 flex-shrink:0 保證永遠可見 · 版號 v1.0.6→v1.0.7 · tail cleanup: v1.0.4 搬進 CHANGELOG.md -->
+<!-- v1.0.7 · Phase 0 shared store 前置：新增 BP namespace（~580 行）包含 window.BP.store + 18 selectors + BP.events pub/sub + BP.format + BP.lifecycle 個人里程碑 API + BP.ai stubs；read-through migration 統一 columnId/column 欄位名、統一逾期款項算法（status===overdue OR pending+dueDate<today）；backupOnce 首次啟動備份 5 核心 key 至 *_backup_preV1；feature flag bp_store_bypass 保留作為 Phase 1/2 降級旗標。零改動現有 5 模組 code，純上層 wrapper。Gate 1 卡西法 smoke：5/5 模組 PASS · 39/39 assertion · 26/26 unit · 0 console error · 0 side effect。為路徑 B 雙層敘事（個人句 × 業界對照）與連結偵測器儀表板鋪路 · 版號 v1.0.7→v1.0.8 · tail cleanup: v1.0.5 搬進 CHANGELOG.md -->
 <!-- v1.0.6 · 任務看板 toolbar + 編輯 modal 統一重構：(1) 新增欄位 button 從 board 陣列尾端搬到 toolbar 右側 view-toggle 旁，解決 v1.0.5 flex-wrap:wrap 把 + 擠到下一行的視覺斷裂；.kb-addcol-btn class 樣式與其他 toolbar chip 同層；(2) .kanban-board 從 flex-wrap:wrap 改 nowrap、永遠單列；.kanban-col 拿掉 max-width:420 改 flex:1 1 0 完全彈性、min-width:200 讓欄位自適應縮放不溢出；(3) 編輯 modal 右側欄統一 .kb-chip 系統——原 .kb-priority-btn / .kb-cat-btn / .kb-tag-chip 三套 chip 高度落差（28/43/25 px），整合為一套 32px 高度 pill，色彩透過 --_chip-c CSS var 傳入（priority via data-p、category via inline style）；選中態用 color-mix 14% bg + 同色 border + 粗字達雙編碼；(4) 標籤 chip 移除選中 ✓ 前綴（原本造成 27→38px 寬度跳動違反 layout stability），改用 filled bg + 粗字表示；(5) 負責人 bpSelect 加 avatar prefix（22×22 circle 姓名首字，未指派時虛線圈 + ? 字），font 從 17→14px 對齊 date input；_kbSyncAssigneeAvatar onChange hook 同步更新；(6) 到期日 input 包 .kb-date-wrap + PATH 規格 16×16 SVG calendar icon（取代瀏覽器預設灰色 picker），高度 40px 對齊 chip 節奏 · 版號 v1.0.5→v1.0.6 · tail cleanup: v1.0.3 搬進 CHANGELOG.md -->
-<!-- v1.0.5 · 任務看板中鍵拖移【核彈級結構修復】（v1.0.1/1.0.2/1.0.3/1.0.4 四版 JS 防禦失敗後的根因解）：放棄所有 JS 防禦策略，直接結構改動——.kanban-board 從 overflow-x:auto 改 overflow:hidden 永久關閉，flex-wrap 改 wrap；.kanban-col min-width 280→200、flex basis 1 1 240px，欄多時自動換行；如此 Chrome 原生 middle-click autoscroll 在 col-body 按下時，向上找任何 h-scrollable 祖先都找不到（col-body 本身 overflow-x:hidden、.kanban-board 永久 hidden），根本沒 anchor 可選，autoscroll 無法啟動橫向散逸；代價：5 欄且小螢幕時會換行（可接受，比橫向散逸好）；attachMidPan 極簡化去掉 rAF enforceLocks/wheel/scroll capture（結構修完已不需要）；保留 document-level mousedown capture hook + body.mid-panning cursor feedback · 版號 v1.0.4→v1.0.5 · tail cleanup: v1.0.2 搬進 CHANGELOG.md -->
-<!-- v1.0.4 · 任務看板中鍵拖移根因級修復（來回 3 版才抓到 root cause）：卡西法 Chrome 實測診斷確認——Chrome 原生 autoscroll 在 mousedown 瞬間走 native layer 選最近 h-scrollable 祖先（=.kanban-board）當 anchor，col-body 層級 capture listener 已太晚；v1.0.2 / 1.0.3 的 body.mid-panning CSS + rAF enforceLocks 只能被動拉回，每幀 16ms gap 讓 native pan 可散逸幾十 px。解：新增 document-level capture phase mousedown hook（window._midPanDocHook 單例），搶先於所有 element handler 先 preventDefault 掉 kanban-col-body 內部中鍵 mousedown，徹底阻止 Chrome 選定 anchor；移除 v1.0.3 過度防禦的 body.mid-panning *{pointer-events:none} 與雙層 overflow-hidden，簡化為單一 .kanban-board{overflow-x:hidden !important}；attachMidPan 本身維持 col-body 層級 JS 捲動邏輯不變 · 版號 v1.0.3→v1.0.4 · tail cleanup: v1.0.1 搬進 CHANGELOG.md -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
