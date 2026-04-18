@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.0.7</div>
+        <div class="sidebar-version">v1.0.9</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -5975,7 +5975,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           升級方案解鎖更多 AI Credits、Lab 研究、問卷引擎、市場報告等進階功能。
         </div>
         <div class="modal-actions" style="display:flex;flex-direction:column;gap:8px">
-          <button style="flex:1;background-color:var(--primary);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade('starter')">升級到 Starter · NT$390/月（500 Credits）</button>
+          <button style="flex:1;background-color:var(--primary);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade('starter')">升級到 Starter · NT$290/月（600 Credits）</button>
           <button style="flex:1;background-color:var(--gold);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade('pro')">升級到 Pro · NT$990/月（3,000 Credits）</button>
         </div>
         <div style="text-align: center; margin-top: 12px;">
@@ -6154,11 +6154,12 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
   // We'll hook into this after defining it — see below
 
   // ── Credit System: deduction + monthly reset ──
+  // v1.0.9: 同步新定價模型（FREE 30→50, STARTER 500→600），與 landing 定價敘事對齊
   function getCreditLimit(plan) {
     if (plan === 'enterprise') return 99999;
     if (plan === 'pro') return 3000;
-    if (plan === 'starter') return 500;
-    return 30; // free
+    if (plan === 'starter') return 600;
+    return 50; // free
   }
 
   function _checkCreditReset() {
@@ -6261,21 +6262,21 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
   // 月價 → 年價：折 17%（送 2 個月）
   const PLAN_CATALOG = {
     free: {
-      id: 'free', name: 'Free', tagline: '永久免費',
+      id: 'free', name: 'Free', tagline: '永久免費 · 任務/客戶/報價完整可用',
       monthly: 0, annual: 0, color: 'var(--ink-muted)',
-      credits: 30,
+      credits: 50,
       defaultModel: 'claude-sonnet-4-6',
       allowedModels: ['claude-sonnet-4-6'],
-      highlights: ['每月 30 AI Credits', 'Claude Sonnet 4.6', 'PATH 四維診斷', '任務中心 · 客戶管理', '客戶上限 50 筆'],
+      highlights: ['每月 50 AI Credits', '首次 PATH 診斷不計費', 'Claude Sonnet 4.6', '任務中心 · 客戶管理', '客戶上限 50 筆'],
       modules: ['mod-diagnose','mod-tasks','mod-contacts']
     },
     starter: {
-      id: 'starter', name: 'Starter', tagline: '個人創業者最佳起點',
-      monthly: 390, annual: 3900, color: 'var(--gold)',
-      credits: 500,
+      id: 'starter', name: 'Starter', tagline: '個人接案者',
+      monthly: 290, annual: 2900, color: 'var(--gold)',
+      credits: 600,
       defaultModel: 'claude-sonnet-4-6',
       allowedModels: ['claude-sonnet-4-6', 'claude-opus-4-7'],
-      highlights: ['每月 500 AI Credits', 'Claude Sonnet 4.6 / Opus 4.7 切換', 'Lab 研究 · 問卷引擎 · 市場探測', '報價提案 · 會議紀錄', '客戶無上限'],
+      highlights: ['每月 600 AI Credits', 'Claude Sonnet 4.6 / Opus 4.7 切換', 'Lab 研究 · 問卷引擎 · 市場探測', '報價提案 · 會議紀錄', '客戶無上限'],
       modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-meetings']
     },
     pro: {
@@ -6412,8 +6413,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     if (annualBtn) annualBtn.classList.toggle('active', cycle === 'annual');
     var priceMap = {
       free: { monthly: '免費', annual: '免費', monthUnit: '永久免費', annualUnit: '永久免費' },
-      starter: { monthly: 'NT$390', annual: 'NT$325', monthUnit: '每月計費', annualUnit: '/月（年繳 NT$3,900）' },
-      pro: { monthly: 'NT$990', annual: 'NT$825', monthUnit: '每月計費', annualUnit: '/月（年繳 NT$9,900）' }
+      starter: { monthly: 'NT$290', annual: 'NT$242', monthUnit: '每月計費', annualUnit: '/月（年繳 NT$2,900 · 省 17%）' },
+      pro: { monthly: 'NT$990', annual: 'NT$822', monthUnit: '每月計費', annualUnit: '/月（年繳 NT$9,900 · 省 17%）' }
     };
     Object.keys(priceMap).forEach(function(pid){
       var pEl = document.querySelector('[data-lp-price="' + pid + '"]');
@@ -6489,7 +6490,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         '<div class="sub-modal-subtitle">' + plan.tagline + '</div>' +
         '<div class="sub-trial-badge">' +
           '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2"/></svg>' +
-          '7 天免費試用·隨時可取消' +
+          'credits 用多少付多少·隨時可取消' +
         '</div>' +
         cycleHTML +
         '<div class="sub-plan-summary">' +
@@ -6500,7 +6501,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         '<div class="sub-section-label">付款方式</div>' +
         '<div class="sub-pay-grid">' + payHTML + '</div>' +
         '<button class="sub-confirm-btn" onclick="app.confirmSubscribe(\'' + planId + '\')">' +
-          '開始 7 天免費試用' +
+          '立即訂閱' +
         '</button>' +
         '<div class="sub-fineprint">試用結束自動以 ' + (cycle === 'annual' ? '年付 NT$' + annualPrice.toLocaleString() : '月付 NT$' + monthlyPrice.toLocaleString()) + ' 續訂·可隨時於設定中取消</div>' +
       '</div>';
@@ -6528,7 +6529,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     // 模擬訂閱完成（金流串接 placeholder）
     changePlan(planId);
     closeSubscribeModal();
-    showToast('已啟動 ' + PLAN_CATALOG[planId].name + ' 方案 7 天免費試用（' + (cycle === 'annual' ? '年付' : '月付') + '·' + payName + '）');
+    showToast('已啟動 ' + PLAN_CATALOG[planId].name + ' 方案訂閱（' + (cycle === 'annual' ? '年付' : '月付') + '·' + payName + '）');
   }
 
   // ── Downgrade Flow ──
@@ -25451,7 +25452,7 @@ function loadHistory(){
           ${ICONS.lock}
           <span style="font-size:13px;color:var(--ink-sec)">此功能需要 <strong style="color:var(--primary)">Starter</strong> 以上方案</span>
         </div>
-        <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="app.handleUpgrade()">升級方案 · 從 NT$390/月起</button>
+        <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="app.handleUpgrade()">升級方案 · 從 NT$290/月起</button>
       </div>`;
   }
 
@@ -27974,7 +27975,7 @@ function loadHistory(){
         <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:24px">
           <div>
             <div style="font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.2px;margin-bottom:4px">選擇方案</div>
-            <div style="font-size:13px;color:var(--ink-muted)">7 天免費試用 · 隨時可取消 · 信用卡/Apple Pay/Google Pay</div>
+            <div style="font-size:13px;color:var(--ink-muted)">隨時可取消 · 信用卡/Apple Pay/Google Pay · 按 credits 計費</div>
           </div>
           <div class="sub-cycle-toggle" style="background:var(--bg-app)">
             <button class="sub-cycle-btn ${getBillingCycle()==='monthly'?'active':''}" onclick="app.setSettingsCycle('monthly')">月付</button>
@@ -28014,7 +28015,7 @@ function loadHistory(){
             var ctaLabel, ctaClass, ctaAction;
             if (cur) { ctaLabel = '目前方案'; ctaClass = 'plan-cta-current'; ctaAction = ''; }
             else if (pid === 'enterprise') { ctaLabel = '聯絡業務'; ctaClass = 'plan-cta-outline'; ctaAction = "window.location.href='mailto:hello@beyondspec.tw'"; }
-            else if (rank > 0) { ctaLabel = '7 天免費試用'; ctaClass = isFeatured ? 'plan-cta-featured' : 'plan-cta-primary'; ctaAction = "app.openSubscribeFlow('" + pid + "')"; }
+            else if (rank > 0) { ctaLabel = '選擇 ' + PLAN_CATALOG[pid].name; ctaClass = isFeatured ? 'plan-cta-featured' : 'plan-cta-primary'; ctaAction = "app.openSubscribeFlow('" + pid + "')"; }
             else { ctaLabel = '降級為 ' + p.name; ctaClass = 'plan-cta-outline'; ctaAction = "app.openSubscribeFlow('" + pid + "')"; }
 
             // Card
@@ -28077,7 +28078,7 @@ function loadHistory(){
             </thead>
             <tbody>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">基本資訊</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">價格</td><td style="text-align:center;padding:10px 6px">免費</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">NT$390/月</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">NT$990/月</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">洽談</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">價格</td><td style="text-align:center;padding:10px 6px">免費</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">NT$290/月</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">NT$990/月</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">洽談</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">每月 AI Credits</td><td style="text-align:center;padding:10px 6px">30</td><td style="text-align:center;padding:10px 6px;color:var(--gold);font-weight:700">500</td><td style="text-align:center;padding:10px 6px;color:var(--primary);font-weight:700">3,000</td><td style="text-align:center;padding:10px 6px;color:var(--teal);font-weight:700">無限</td></tr>
               <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">AI 模型</td><td style="text-align:center;padding:10px 6px">Sonnet</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">Sonnet</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">Sonnet / Opus</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">全模型</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">團隊營運模組</td></tr>
@@ -29830,7 +29831,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           <div class="section-center">
             <div class="section-header">
               <h2>簡單透明的定價</h2>
-              <p class="section-sub">選擇最適合你的方案 · 7 天免費試用 · 隨時可取消</p>
+              <p class="section-sub">選擇最適合你的方案 · credits 用多少付多少 · 年繳省 17%</p>
             </div>
 
             <!-- 月/年 切換 -->
@@ -29845,29 +29846,29 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
               <div class="price-card stagger-child d1">
                 <h3>Free</h3>
                 <div class="price-amount" data-lp-price="free">免費</div>
-                <small data-lp-unit="free">永久免費</small>
+                <small data-lp-unit="free">永久可用</small>
                 <ul>
-                  <li>每月 30 Credits</li>
-                  <li>PATH 四維診斷</li>
-                  <li>任務中心 · 客戶管理</li>
-                  <li>客戶上限 50 筆</li>
+                  <li>每月 50 Credits</li>
+                  <li>✦ 首次 PATH 診斷不計費</li>
+                  <li>任務看板 · 客戶管理（50 筆）</li>
+                  <li>報價提案（3 份）</li>
                 </ul>
                 <button class="btn-price" onclick="app.showLoginModal()">免費開始</button>
               </div>
               <div class="price-card stagger-child d2">
                 <h3>Starter</h3>
-                <div class="price-amount" data-lp-price="starter">NT$390</div>
-                <small data-lp-unit="starter">每月計費</small>
+                <div class="price-amount" data-lp-price="starter">NT$290</div>
+                <small data-lp-unit="starter">每月計費 · 個人接案者</small>
                 <ul>
-                  <li>每月 500 Credits</li>
+                  <li>每月 600 Credits</li>
                   <li>Lab 研究 · 問卷引擎</li>
                   <li>市場探測 · 報價提案</li>
                   <li>會議紀錄 · 客戶無上限</li>
                 </ul>
-                <button class="btn-price" onclick="app.openSubscribeFlow('starter')">7 天免費試用</button>
+                <button class="btn-price" onclick="app.openSubscribeFlow('starter')">選擇 Starter</button>
               </div>
               <div class="price-card featured stagger-child d3">
-                <div class="price-badge">推薦</div>
+                <div class="price-badge">2-5 人小團隊</div>
                 <h3>Pro</h3>
                 <div class="price-amount" data-lp-price="pro">NT$990</div>
                 <small data-lp-unit="pro">每月計費</small>
@@ -29878,7 +29879,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                   <li>收款 · 文件庫 · AI 儀表板</li>
                   <li>團隊最多 5 人 + Claude MCP</li>
                 </ul>
-                <button class="btn-price featured" onclick="app.openSubscribeFlow('pro')">7 天免費試用</button>
+                <button class="btn-price featured" onclick="app.openSubscribeFlow('pro')">選擇 Pro</button>
               </div>
               <div class="price-card stagger-child d4">
                 <h3>Enterprise</h3>
@@ -30629,7 +30630,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.0.9 · 全面同步定價到新商業模型（與 landing 對齊）：(1) getCreditLimit() FREE 30→50、STARTER 500→600、PRO 保持 3000；(2) PLAN_CATALOG Free tagline 改「永久免費 · 任務/客戶/報價完整可用」、credits 30→50、加首次 PATH 診斷不計費 highlight；Starter monthly 390→290、annual 3900→2900、credits 500→600、tagline 改「個人接案者」；(3) PLAN_CATALOG 價格 card：STARTER 年繳從 325→242 並加「省 17%」敘事；(4) 所有「7 天免費試用」文案（6 處）全拔，改為「選擇方案名 / 立即訂閱 / credits 用多少付多少」；(5) upgrade CTA button 同步新價格；(6) settings 價格表 4 欄從 390→290；(7) feat landing price-card 區塊 FREE/STARTER/PRO 三卡 credit 數 + 按鈕 + 副標全同步 · 版號 v1.0.8→v1.0.9 · tail cleanup: v1.0.6 搬進 CHANGELOG.md -->
 <!-- v1.0.8 · 任務看板 3 題合併修復（愛德華回饋：最小欄寬 / 標題顯示 / 卡片 3 行化）：(1) 恢復 .kanban-board overflow-x:auto（v1.0.5 nuke 的反向操作）——橫向 scroll 重啟；col-body 中鍵 autoscroll 由既有 document-level mousedown hook（_midPanDocHook）擋；CSS 兜底加 body.mid-panning 時 overflow-x:hidden；(2) .kanban-col min-width 用 max(calc((100vw - 280px) / 4.5), 280px)——視窗寬時保證最多顯示 4.5 欄、視窗 <1440px 時下限 280px 保證 title 單行容得下 16 個中文字（14px × 16 ≈ 224 + priority dot 12 + gap 8 + padding 32 ≈ 276）；(3) 卡片從 4 行（title/desc/meta 上/meta 下）壓縮回 3 行——原 Row 4 的 checklist/due/avatar 合併進 Row 3 meta，加 .kb-v2-meta-spacer 用 flex:1 1 auto 把 avatar/due 推到最右端；meta row 從 flex-wrap:wrap 改 nowrap + overflow:hidden，不再發生 avatar 折到第 4 行；.kb-v2-tag 加 flex-shrink:1 + max-width:100px 讓標籤在窄欄下 ellipsis；.kb-v2-cat / checklist / due / ai-badge 全 flex-shrink:0 保證永遠可見 · 版號 v1.0.6→v1.0.7 · tail cleanup: v1.0.4 搬進 CHANGELOG.md -->
 <!-- v1.0.7 · Phase 0 shared store 前置：新增 BP namespace（~580 行）包含 window.BP.store + 18 selectors + BP.events pub/sub + BP.format + BP.lifecycle 個人里程碑 API + BP.ai stubs；read-through migration 統一 columnId/column 欄位名、統一逾期款項算法（status===overdue OR pending+dueDate<today）；backupOnce 首次啟動備份 5 核心 key 至 *_backup_preV1；feature flag bp_store_bypass 保留作為 Phase 1/2 降級旗標。零改動現有 5 模組 code，純上層 wrapper。Gate 1 卡西法 smoke：5/5 模組 PASS · 39/39 assertion · 26/26 unit · 0 console error · 0 side effect。為路徑 B 雙層敘事（個人句 × 業界對照）與連結偵測器儀表板鋪路 · 版號 v1.0.7→v1.0.8 · tail cleanup: v1.0.5 搬進 CHANGELOG.md -->
-<!-- v1.0.6 · 任務看板 toolbar + 編輯 modal 統一重構：(1) 新增欄位 button 從 board 陣列尾端搬到 toolbar 右側 view-toggle 旁，解決 v1.0.5 flex-wrap:wrap 把 + 擠到下一行的視覺斷裂；.kb-addcol-btn class 樣式與其他 toolbar chip 同層；(2) .kanban-board 從 flex-wrap:wrap 改 nowrap、永遠單列；.kanban-col 拿掉 max-width:420 改 flex:1 1 0 完全彈性、min-width:200 讓欄位自適應縮放不溢出；(3) 編輯 modal 右側欄統一 .kb-chip 系統——原 .kb-priority-btn / .kb-cat-btn / .kb-tag-chip 三套 chip 高度落差（28/43/25 px），整合為一套 32px 高度 pill，色彩透過 --_chip-c CSS var 傳入（priority via data-p、category via inline style）；選中態用 color-mix 14% bg + 同色 border + 粗字達雙編碼；(4) 標籤 chip 移除選中 ✓ 前綴（原本造成 27→38px 寬度跳動違反 layout stability），改用 filled bg + 粗字表示；(5) 負責人 bpSelect 加 avatar prefix（22×22 circle 姓名首字，未指派時虛線圈 + ? 字），font 從 17→14px 對齊 date input；_kbSyncAssigneeAvatar onChange hook 同步更新；(6) 到期日 input 包 .kb-date-wrap + PATH 規格 16×16 SVG calendar icon（取代瀏覽器預設灰色 picker），高度 40px 對齊 chip 節奏 · 版號 v1.0.5→v1.0.6 · tail cleanup: v1.0.3 搬進 CHANGELOG.md -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
