@@ -158,7 +158,7 @@ body[data-dir="A"] .A{display:block}
 .A-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--primary);letter-spacing:1.8px;text-transform:uppercase;margin-bottom:18px}
 .A-eyebrow .bar{width:24px;height:1.5px;background:var(--primary)}
 .A-h2{font-size:clamp(32px,4vw,52px);font-weight:900;letter-spacing:-.025em;line-height:1.08;margin-bottom:16px;color:var(--ink)}
-.A-h2 .em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--primary);display:inline-block;margin:0 .25em;padding:0 .1em}
+.A-h2 .em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--primary);display:inline-block;margin:0 .18em 0 .12em;padding:0 .08em;line-height:.95;transform:translateY(.02em)}
 .A-h2 .em::before, .A-h2 .em::after{content:"\2060"}
 .A-lead{font-size:17.5px;color:var(--ink-sec);line-height:1.7;max-width:580px}
 .A-head.ctr .A-lead{margin-left:auto;margin-right:auto}
@@ -420,7 +420,7 @@ body[data-dir="A"] .A{display:block}
     <div class="A-inner">
       <div class="A-head">
         <div class="A-eyebrow"><span class="bar"></span>PATH 四維框架</div>
-        <h2 class="A-h2">一份 <span class="em">20 題</span>的診斷，<br>照出你產品最真實的樣子。</h2>
+        <h2 class="A-h2">一份 <span class="em">20 題</span>的結構化診斷，<br>照出你產品最真實的樣子。</h2>
         <p class="A-lead">PATH 的四個維度不是考試，是鏡子 —— 讓你看見產品最真實的樣子，而不是你希望它成為的樣子。</p>
       </div>
 
@@ -516,8 +516,8 @@ body[data-dir="A"] .A{display:block}
     <div class="A-inner">
       <div class="A-head ctr">
         <div class="A-eyebrow"><span class="bar"></span>Pricing<span class="bar"></span></div>
-        <h2 class="A-h2">簡單透明的定價。<br><span class="em">7 天免費試用，隨時取消。</span></h2>
-        <p class="A-lead">Credits 每月 1 日自動重置。使用 Claude Opus 模型消耗 3 倍。</p>
+        <h2 class="A-h2">按 credits 計費，<br>用多少 <span class="em">付多少</span>。</h2>
+        <p class="A-lead">Free tier 30 credits 永久可用，足以跑一次完整 PATH 診斷 + 任務管理試玩。升級隨時，每月 1 日自動重置；Claude Opus 模型消耗 3 倍 credits。</p>
       </div>
 
       <div class="A-price-grid">
@@ -543,7 +543,7 @@ body[data-dir="A"] .A{display:block}
             <li>報價提案 · 市場探測</li>
             <li>會議紀錄 · 客戶無上限</li>
           </ul>
-          <button class="p-cta">7 天試用</button>
+          <a href="/path/" class="p-cta" style="text-decoration:none">選擇 Starter</a>
         </div>
         <div class="A-price feat">
           <div class="pbadge">推薦</div>
@@ -557,7 +557,7 @@ body[data-dir="A"] .A{display:block}
             <li>收款 · 文件庫 · AI 儀表板</li>
             <li>團隊 5 人 + Claude MCP</li>
           </ul>
-          <button class="p-cta">7 天試用</button>
+          <a href="/path/" class="p-cta" style="text-decoration:none">選擇 Pro</a>
         </div>
         <div class="A-price">
           <h4>ENTERPRISE</h4>
