@@ -2913,8 +2913,14 @@ canvas{display:block;margin:0 auto 24px}
 /* v0.32.20：col-body gap 12px 讓卡片上下有呼吸感（取代原 .kanban-card margin-bottom:8px 過密） */
 .kanban-col-body{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:12px;min-height:80px;transition:background .2s;display:flex;flex-direction:column;gap:12px}
 /* v1.0.2: 中鍵拖移期間，強制鎖死所有可橫向 scroll 容器，擋 Windows autoscroll 散逸 */
-body.mid-panning .kanban-board{overflow-x:hidden !important}
+/* v1.0.3: mid-pan 進行中完全鎖 kanban-board 的橫向（雙層 hidden + 無 touch-action）
+   防 Windows autoscroll compass 驅動的橫向散逸 */
+body.mid-panning .kanban-board,
+body.mid-panning .kanban-board-wrap{overflow-x:hidden !important;overflow-y:hidden !important;touch-action:none !important}
+body.mid-panning .kanban-col-body{touch-action:pan-y !important;overscroll-behavior:contain !important}
 body.mid-panning{cursor:grabbing !important;user-select:none !important}
+body.mid-panning *{pointer-events:none !important}
+body.mid-panning .kanban-col-body,body.mid-panning .kanban-col-body *{pointer-events:auto !important}
 
 /* v1.0.2: 分組 bpSelect 在 toolbar 的 compact 版（縮高度 + 降 padding，視覺跟周圍 chips/buttons 齊平） */
 .kb-groupby-compact .bp-select-trigger{
@@ -4799,14 +4805,17 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 .kb-card-v2{
   background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);
   padding:12px 14px;cursor:grab;user-select:none;
-  transition:box-shadow .22s cubic-bezier(.22,1,.36,1),transform .22s cubic-bezier(.22,1,.36,1),background .22s;
+  /* v1.0.3: 簡化 transition，只留 border / background，不做浮起動作 */
+  transition:border-color .15s ease,background .15s ease;
   animation:tc-fadeUp .28s cubic-bezier(.22,1,.36,1) both;
   display:flex;flex-direction:column;gap:6px;
   box-shadow:0 1px 2px rgba(17,17,17,.03);
 }
-.kb-card-v2:hover{box-shadow:0 4px 18px rgba(17,17,17,.08);transform:translateY(-1px);background:var(--bg-card)}
+/* v1.0.3: Hover 靜態化——移除 translateY 浮起、移除描述展開動畫、shadow 維持原樣 */
+/* 理由：Edward 回報卡片 hover 時的展開/浮起干擾視覺、干擾閱讀（在一欄有 8+ 張卡時特別明顯）*/
+.kb-card-v2:hover{border-color:color-mix(in srgb,var(--primary) 35%,var(--border))}
 [data-theme="dark"] .kb-card-v2{box-shadow:0 1px 2px rgba(0,0,0,.25)}
-[data-theme="dark"] .kb-card-v2:hover{box-shadow:0 6px 22px rgba(0,0,0,.38)}
+[data-theme="dark"] .kb-card-v2:hover{border-color:color-mix(in srgb,var(--primary) 45%,var(--border))}
 .kb-card-v2:active{cursor:grabbing;transform:scale(.985)}
 .kb-card-v2.dragging{opacity:.35;transform:rotate(2deg) scale(.97);box-shadow:0 8px 32px rgba(0,0,0,.12)}
 .kb-card-v2.archived-card{opacity:.45}
@@ -4826,11 +4835,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
   padding:0 5px;height:15px;display:inline-flex;align-items:center;
   border:1px solid color-mix(in srgb,var(--rose) 40%,transparent);
   border-radius:4px;flex-shrink:0}
-/* P0-2: Description 2-line clamp on hover，預設 1 行；去除 nowrap/HTML mismatch */
+/* v1.0.3: Description 永遠 1 行 ellipsis，不再 hover 展開 2 行（Edward 回報動態干擾）*/
 .kb-card-v2 .kb-v2-desc{font-size:12px;color:var(--ink-muted);line-height:1.45;overflow:hidden;
-  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;margin:-2px 0 0;
-  transition:-webkit-line-clamp .2s}
-.kb-card-v2:hover .kb-v2-desc{-webkit-line-clamp:2}
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;margin:-2px 0 0}
 .kb-card-v2 .kb-v2-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:18px}
 /* P0-1: Category 改中性 tag + 6px 色點（解色彩語義撞車：色彩保留給 status/priority） */
 .kb-card-v2 .kb-v2-cat{font-size:11px;font-weight:600;padding:2px 8px 2px 18px;border-radius:10px;white-space:nowrap;
@@ -5013,7 +5020,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.0.2</div>
+        <div class="sidebar-version">v1.0.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7572,13 +7579,45 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
   //   - 中鍵 mouseup → 結束 pan、還原 cursor
   //   - auxclick capture phase: 若實際有拖移（dy > 3px）阻止後續 click handler
   //   - Idempotent：同一 el 重複呼叫不重複綁 listener
-  // v1.0.2: 強化防 Windows autoscroll 橫向散逸——中鍵拖移必 100% 鎖定垂直
-  // 修法：pan 啟動時全域 body 加 .mid-panning class，CSS 強制所有 .kanban-board 的 overflow-x:hidden
-  //       + mousemove 用 capture phase stopPropagation，阻止任何其他 wheel/scroll handler 被觸發
+  // v1.0.3: 徹底重寫 attachMidPan——卡片列表區（col-body）中鍵拖移 100% 鎖垂直
+  // 防禦層：
+  //   1. mousedown capture phase（先於所有其他 handler）+ preventDefault 擋 Windows autoscroll
+  //   2. 記錄所有「橫向可 scroll 的祖先容器」的 scrollLeft，panning 期間每個 scroll event 都把它們拉回原值
+  //   3. mousemove 只改 el.scrollTop（不碰 scrollLeft）
+  //   4. rAF loop：panning 期間每幀強制祖先 scrollLeft = locked（兜底擋原生 autoscroll）
+  //   5. auxclick capture: 若 moved，阻止 click bubble 到卡片上觸發編輯 modal
   window.attachMidPan = function(el){
     if(!el || el.__midPanAttached) return;
     el.__midPanAttached = true;
     var isPanning = false, startY = 0, startX = 0, startScrollTop = 0, moved = false;
+    var lockedAncestors = []; // {el, scrollLeft}
+    var rafId = null;
+
+    function collectLocked(){
+      lockedAncestors = [];
+      var p = el.parentElement;
+      while(p && p !== document.body){
+        if(p.scrollWidth > p.clientWidth){
+          lockedAncestors.push({el:p, x:p.scrollLeft});
+        }
+        p = p.parentElement;
+      }
+    }
+
+    function enforceLocks(){
+      for(var i=0; i<lockedAncestors.length; i++){
+        var a = lockedAncestors[i];
+        if(a.el.scrollLeft !== a.x){ a.el.scrollLeft = a.x; }
+      }
+    }
+
+    function rafLoop(){
+      if(!isPanning){ rafId = null; return; }
+      enforceLocks();
+      rafId = requestAnimationFrame(rafLoop);
+    }
+
+    // mousedown — 必須 capture phase 搶先於瀏覽器 autoscroll
     el.addEventListener('mousedown', function(e){
       if(e.button !== 1) return;
       e.preventDefault();
@@ -7589,44 +7628,53 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       startScrollTop = el.scrollTop;
       el.style.cursor = 'grabbing';
       el.style.userSelect = 'none';
-      document.body.classList.add('mid-panning'); // 全域 class 讓 CSS 能鎖橫向 overflow
-    });
+      document.body.classList.add('mid-panning');
+      collectLocked();
+      if(rafId == null) rafId = requestAnimationFrame(rafLoop);
+    }, true);
+
+    // mousemove — 只調 el.scrollTop，並額外 enforceLocks 搶先於瀏覽器下一幀
     window.addEventListener('mousemove', function(e){
       if(!isPanning) return;
       var dy = e.clientY - startY;
-      if(Math.abs(dy) > 3 || Math.abs(e.clientX - startX) > 3) moved = true;
+      var dx = e.clientX - startX;
+      if(Math.abs(dy) > 3 || Math.abs(dx) > 3) moved = true;
       el.scrollTop = startScrollTop - dy;
-      // v1.0.2: 強制鎖住外層父容器的橫向 scrollLeft，擋 Windows autoscroll 橫向散逸
-      var p = el.parentElement;
-      while(p && p !== document.body){
-        if(p.scrollWidth > p.clientWidth){ p.scrollLeft = p._midPanLockedScrollLeft != null ? p._midPanLockedScrollLeft : p.scrollLeft; }
-        p = p.parentElement;
-      }
-    }, true); // capture 先發制人
+      enforceLocks();
+    }, true);
+
+    // scroll capture on document — 祖先任何橫向 scroll 觸發時立刻拉回
+    document.addEventListener('scroll', function(){
+      if(!isPanning) return;
+      enforceLocks();
+    }, true);
+
+    // wheel — panning 期間吃掉所有 wheel（避免用戶滾輪意外介入）
+    window.addEventListener('wheel', function(e){
+      if(!isPanning) return;
+      e.preventDefault();
+    }, {passive:false, capture:true});
+
     window.addEventListener('mouseup', function(e){
       if(!isPanning) return;
       isPanning = false;
       el.style.cursor = '';
       el.style.userSelect = '';
       document.body.classList.remove('mid-panning');
-      // 清除父容器 lockedScrollLeft 記錄
-      var p = el.parentElement;
-      while(p && p !== document.body){ delete p._midPanLockedScrollLeft; p = p.parentElement; }
+      lockedAncestors = [];
+      if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
     });
-    el.addEventListener('mousedown', function(e){
-      if(e.button !== 1) return;
-      // 記錄 mousedown 當下外層所有可橫向 scroll 容器的 scrollLeft，mousemove 期間固定住
-      var p = el.parentElement;
-      while(p && p !== document.body){
-        if(p.scrollWidth > p.clientWidth){ p._midPanLockedScrollLeft = p.scrollLeft; }
-        p = p.parentElement;
-      }
-    }, true); // 第二個 mousedown capture 先執行抓取 scrollLeft
+
     el.addEventListener('auxclick', function(e){
       if(e.button === 1){
         e.preventDefault();
-        if(moved){ e.stopPropagation(); }
+        if(moved){ e.stopPropagation(); e.stopImmediatePropagation && e.stopImmediatePropagation(); }
       }
+    }, true);
+
+    // contextmenu capture on middle — some Chrome versions fire this
+    el.addEventListener('contextmenu', function(e){
+      if(e.button === 1){ e.preventDefault(); }
     }, true);
   };
 
@@ -29960,7 +30008,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.0.3 · 任務看板雙 UX 修復（Edward 回報）：(1) 卡片 hover 靜態化——移除 .kb-card-v2:hover 的 transform:translateY(-1px) 浮起 + box-shadow 放大 + description -webkit-line-clamp:1→2 展開動態，三項合併的動態效果在欄位塞滿 8+ 張卡時嚴重干擾視覺與閱讀；hover 只保留 border-color 淡紫提示，description 永遠 1 行 ellipsis；(2) 中鍵拖移強制鎖垂直（徹底版）——attachMidPan 重寫五層防禦：mousedown capture phase 搶先於 Windows autoscroll、collectLocked() 記錄所有祖先橫向 scrollable 的 scrollLeft、rAF loop 每幀 enforceLocks() 兜底、document scroll capture 即時拉回、wheel capture 吃掉意外滾輪；CSS 強化 body.mid-panning 期間 .kanban-board + .kanban-board-wrap 雙層 overflow-x:hidden + touch-action:none + .kanban-col-body 保留 pan-y；auxclick stopImmediatePropagation 防誤觸卡片 click · 版號 v1.0.2→v1.0.3 · tail cleanup: v1.0.0 搬進 CHANGELOG.md -->
 <!-- v1.0.2 · 緊急回退 + 3 個根源性 bug 修復：(1) 全域 topbar 整組移除——不論 v0.34.0 的 sticky bar 還是 v1.0.1 的 fixed pill，都跟頁面標題互斥（sticky 推下標題 / fixed 擋住標題），愛德華兩次明確要求「退回上一版設計」；#globalTopbar HTML element + global-topbar CSS 全刪；updateCreditBadge 改 no-op 保留 API 不爆；renderHome 恢復 inline credit pill + plan badge + avatar + 用戶名（跟 v0.33.2 一致）；credit 顯示改回 僅出現於首頁 + 設定頁；(2) renderModule 統一加 overflow safety reset——timeline/roadmap 會設 #main.overflow:hidden + height:100vh 鎖死外層捲動，過去 6 個 render fn（home/quotes/billing/diagnose/pmf/settings）沒自行 reset，導致用戶從 timeline 切到 Lab/PATH 診斷等頁「上下拖移失效」；在 renderModule 入口統一清除 #main + #app 的 overflow/height inline style，roadmap/timeline 自己會重新設定不受影響；額外在 renderLab 加 belt-and-suspenders reset；(3) 看板中鍵拖移強化鎖定垂直——attachMidPan 加多層防線：body.mid-panning class 觸發時 CSS 強制 .kanban-board{overflow-x:hidden !important}、mousemove capture phase 先發制人、外層可橫向 scroll 父容器的 scrollLeft 鎖死（記 _midPanLockedScrollLeft 隨 mousemove 復位）、mousedown 雙 listener（一般 + capture）分工抓 scrollLeft；.kanban-col-body 加 overflow-x:hidden 不再依靠預設；預期徹底封鎖 Windows autoscroll 橫向散逸 · 版號 v1.0.1→v1.0.2 · 「新增視覺」項目待愛德華指認具體位置再處理 -->
 <!-- v1.0.1 · UIUX 打磨批次（愛德華 v1.0.0 部署後回饋 + 女巫雙輪稽核 apply）：(1) Global topbar 架構修正——原 v0.34.0 做成 full-width sticky bar 把所有頁面標題往下推，改成 position:fixed 右上浮動 pill（glass tint + backdrop-filter + box-shadow），不再佔用垂直空間；username 隱藏（avatar 足以身份辨識）；加 plan↔avatar divider；(2) 看板分組 button 簡化——移除 .kb-groupby-prefix 外包 wrapper（icon+「分組」label）直接用 bpSelect，option label 改「依 X 分組」更直觀，localStorage 持久化 bp.kbListGroupBy 跨 session 記住；cat filter 鎖定單一類時自動隱藏「分類」分組選項避免無意義分組；(3) 看板封存 button 合併——原「封存完成 N」+「已封存 N」兩顆視覺幾乎一樣造成認知混淆；合併為單一「封存 N ▾」按鈕 + dropdown menu，menu 內兩項分別是 action「封存本期完成」+ toggle「顯示/隱藏已封存」，含完整 outside-click closer + aria 屬性；(4) 看板 5 個 P0 視覺（女巫 1 稽核 62.5→目標 85）：P0-1 color 語義撞車解——category chip 改中性 bg-hover 背景 + 6px 色點前綴（--_cat CSS var 傳入），色彩保留給 status/priority/due，避免產品規劃紫跟待辦欄紫撞；P0-2 description 2-line clamp on hover（預設 1 行 ellipsis，展開 2 行）+ 去重檢查不跟 title 重複才渲染；P0-3 priority dot 分級——high 8px 無 shadow ring + 加「高」文字 badge 達憲法雙編碼、medium 7px gold、low slate 60% opacity；card 加 .has-pri-high class 讓 title 字重升 700；P0-4 AI badge 去漸層——從 title 行搬到 meta row，漸層紫/綠改 tonal chip（primary/teal 12% tint + 26% border + dot prefix），manual 類別隱藏；P0-5 column count chip 改 .kanban-col-count class 用 color-mix 呼應欄色 + dark mode 變體 .22 tint 相容；(5) 額外修補 list-priority low 違憲 #3B82F6 Tailwind blue → #94A3B8 slate；(6) Edit modal 右欄 4-section 分層——原所有 metadata 同一等級混亂，改 .kb-rs 容器分 4 區：主要（狀態/優先度/負責人/到期日）、分類（category/tags）、週期、紀錄；負責人從 text input 改 bpSelect 讀 getMembers() 跟全站一致；(7) 文件庫 link-only 化——愛德華定位明確「只做連結書籤管理、不做檔案儲存」，移除 .dc-attach-tab 切換 + fileData/fileName 欄位 + 檔案上傳邏輯，改純 linkUrl + linkLabel 必填；card 列表 icon 改 link 圖示、顯示 hostname + 連結預覽行；save 清除 legacy fileData/fileName 欄位 · 版號 v1.0.0→v1.0.1 · tail cleanup: v0.33.1 搬進 CHANGELOG.md -->
-<!-- v1.0.0 · 版本系統重置為 major.minor.patch 語意（愛德華憲法確立：major=重大更版、minor=新增模組、patch=功能優化或 bug 調整）；此版為 BeyondPath 首次里程碑正式版本，涵蓋 5 大 UI/UX 升級：(1) 全域 topbar——credit/plan/avatar 從 sidebar 搬到右上角，跟首頁 header 一致；#globalTopbar 元素 sticky + backdrop-filter；sidebar credit badge 整組 CSS 刪除；updateCreditBadge() 改渲染至 topbar；renderHome 移除冗餘 header-right；(2) 刪假 agentCanAct checkbox——女巫 2 稽核發現零下游實作（grep 全檔只 3 處寫、0 處讀），文案「Agent 會在 Cowork 對話中主動提供建議」對用戶說謊違反憲法誠信原則；kb-section 整塊刪除 + save logic 移除對應欄位；(3) Edit modal Esc 鍵可達性——新增 document.addEventListener('keydown') Escape 監聽 + MutationObserver 監看 ov remove 自動解除 listener 防 memory leak；外側 click 從 ov.remove() 改 closeModalAnimated(ov) 跟全站 33 處一致；(4) Settings 模組管理重設計——從 5-column grid（7 個團隊模組會產生 orphan 2-row）改 2-column 並排 list-row 佈局，每組 flex:1 min-width:280px，內層 module list 用 var(--bg-app) 容器包住 gap:2px 緊湊堆疊；每 row = 32px icon + 2 行 label+賦能問題 + toggle/plan chip；完全無 orphan row 問題；響應式 flex-wrap 自動堆疊；(5) Settings 方案與用量升級——hero credit bar 40px 大數字 + gradient primary 6% 背景 + 本月剩餘/已使用雙欄並排；AI 模型卡升級：Free plan 用 Sonnet 4.6 名片式顯示 + 升級引導文案；Starter+ 用 bpSelect + tagline + pricing info 卡（primary 6% tint + circle info icon）；Credit Cost 區加 hover 高亮 + credit 縮寫 cr；右上 Plan chip 跟 color 對齊 + dot；· 版號跳升 v0.33.2→v1.0.0 · tail cleanup: v0.33.0 搬進 CHANGELOG.md · 後續 v1.0.1+ 計畫：文件庫 link-only 化、封存/分組 button 簡化、看板 5 個 P0（色彩撞車/description/priority/AI badge/col count）、edit modal 右欄 4-section、首頁+AI 儀表板戰略級重構 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
