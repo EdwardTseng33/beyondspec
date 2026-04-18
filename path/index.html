@@ -508,58 +508,8 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 }
 #sidebar.expanded .sidebar-version{text-align:center;padding-left:0}
 
-/* v1.0.1: Global topbar — 改為浮動右上角 pill（不再佔 56px 垂直空間推擠標題）
-   原 v0.34.0 是 full-width sticky bar，愛德華指正：credit 不該固定在頁面標題之上
-   修法：position:fixed 右上，pill 造型 + glass tint，content 可延伸至頁面頂緣 */
-.global-topbar{
-  position:fixed;top:14px;right:20px;z-index:60;
-  display:flex;align-items:center;gap:8px;
-  padding:5px 6px 5px 14px;
-  background:color-mix(in srgb, var(--bg-card) 88%, transparent);
-  border:1px solid var(--border);
-  border-radius:999px;
-  box-shadow:0 2px 10px rgba(17,17,17,.04), 0 1px 3px rgba(17,17,17,.04);
-  backdrop-filter:saturate(180%) blur(14px);
-  -webkit-backdrop-filter:saturate(180%) blur(14px);
-  transition:box-shadow .2s, transform .2s;
-}
-.global-topbar:empty{display:none}
-.global-topbar:hover{box-shadow:0 4px 16px rgba(17,17,17,.08), 0 1px 4px rgba(17,17,17,.06)}
-[data-theme="dark"] .global-topbar{background:color-mix(in srgb, var(--bg-card) 85%, transparent)}
-.gtb-credit{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:2px 2px 2px 0;cursor:pointer;
-  transition:color .18s;
-  font-variant-numeric:tabular-nums;
-}
-.gtb-credit:hover .gtb-credit-num{color:var(--primary)}
-.gtb-credit svg{color:var(--primary);flex-shrink:0}
-.gtb-credit-num{font-size:13px;font-weight:700;color:var(--ink);transition:color .18s}
-.gtb-credit-sep{font-size:12px;color:var(--ink-dim);margin:0 1px}
-.gtb-credit-lim{font-size:12px;color:var(--ink-muted)}
-.gtb-credit-unit{font-size:10.5px;color:var(--ink-muted);margin-left:3px;letter-spacing:.02em}
-.gtb-credit.warn .gtb-credit-num{color:var(--gold)}
-.gtb-credit.danger .gtb-credit-num{color:var(--rose)}
-.global-topbar .plan-badge{
-  font-size:11px !important;padding:2px 9px !important;
-  border-radius:999px !important;font-weight:700;letter-spacing:.02em;
-}
-.gtb-divider{width:1px;height:16px;background:var(--border);margin:0 2px;flex-shrink:0}
-.gtb-avatar{
-  width:28px;height:28px;border-radius:50%;
-  background:var(--primary);color:#fff;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;cursor:pointer;
-  transition:transform .18s;flex-shrink:0;
-}
-.gtb-avatar:hover{transform:scale(1.05);box-shadow:0 3px 10px rgba(124,92,252,.3)}
-/* v1.0.1: username 隱藏（avatar 已足夠身份辨識，節省空間讓 pill 緊湊） */
-.gtb-name{display:none}
-@media(max-width:640px){
-  .global-topbar{top:10px;right:12px;padding:4px 5px 4px 10px;gap:6px}
-  .gtb-credit-lim,.gtb-credit-sep,.gtb-divider{display:none}
-  .gtb-credit-unit{display:none}
-}
+/* v1.0.2: Global topbar 整組移除（愛德華回饋：無論 sticky 或 fixed 都干擾頁面標題）
+   credit 顯示改回首頁 inline pill + 設定頁 hero bar，其他頁不顯示全域徽章 */
 .sidebar-user{
   padding:14px 0;border-top:1px solid rgba(255,255,255,.08);
   width:100%;display:flex;align-items:center;justify-content:center;
@@ -2961,7 +2911,10 @@ canvas{display:block;margin:0 auto 24px}
 .kanban-col{flex:1 1 0;min-width:280px;max-width:420px;background:var(--bg-card);border-radius:var(--r-lg);display:flex;flex-direction:column;max-height:calc(100vh - 220px);box-shadow:var(--shadow-sm)}
 .kanban-col-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:var(--r-lg) var(--r-lg) 0 0}
 /* v0.32.20：col-body gap 12px 讓卡片上下有呼吸感（取代原 .kanban-card margin-bottom:8px 過密） */
-.kanban-col-body{flex:1;overflow-y:auto;overscroll-behavior-y:contain;padding:12px;min-height:80px;transition:background .2s;display:flex;flex-direction:column;gap:12px}
+.kanban-col-body{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:12px;min-height:80px;transition:background .2s;display:flex;flex-direction:column;gap:12px}
+/* v1.0.2: 中鍵拖移期間，強制鎖死所有可橫向 scroll 容器，擋 Windows autoscroll 散逸 */
+body.mid-panning .kanban-board{overflow-x:hidden !important}
+body.mid-panning{cursor:grabbing !important;user-select:none !important}
 .kanban-col-body.drag-over{background:rgba(124,92,252,.06);border-color:rgba(124,92,252,.25);box-shadow:inset 0 0 0 1px rgba(124,92,252,.15);transition:all .15s ease}
 .kanban-card{position:relative;background:transparent;border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;margin-bottom:8px;cursor:grab;transition:all .18s cubic-bezier(.4,0,.2,1);user-select:none;display:flex;flex-direction:column;gap:8px}
 .kanban-card[data-new]{animation:kbSlideIn .4s cubic-bezier(.34,.1,.64,1)}
@@ -5035,13 +4988,10 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.0.1</div>
+        <div class="sidebar-version">v1.0.2</div>
       </div>
     </aside>
-    <main id="main">
-      <header id="globalTopbar" class="global-topbar"></header>
-      <div id="content"></div>
-    </main>
+    <main id="main"><div id="content"></div></main>
   </div>
   <div id="loginModal"></div>
   <div id="toastContainer"></div>
@@ -6431,6 +6381,17 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
   }
 
   function renderModule(moduleId) {
+    // v1.0.2 safety reset：不論前一頁是誰（例如 timeline/roadmap 會設 #main overflow:hidden + height:100vh），
+    // 進入新模組前統一清除，避免「上下拖移失效」（Lab / PATH 診斷 / Settings 等未自行 reset 的頁）
+    var _navMain = document.getElementById('main');
+    if (_navMain) {
+      // 只 reset，roadmap/timeline 自己會重設
+      _navMain.style.overflow = '';
+      _navMain.style.height = '';
+    }
+    var _navApp = document.getElementById('app');
+    if (_navApp) _navApp.style.overflow = '';
+
     const plan = state.plan || 'free';
     const isPaid = plan === 'starter' || plan === 'pro' || plan === 'enterprise';
     // Locked modules for free users → show upgrade prompt
@@ -6888,7 +6849,20 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     }
 
     content.innerHTML = `
-      <!-- v0.34.0: page-header 已移除，credit/plan/avatar 統一由全域 #globalTopbar 渲染 -->
+      <!-- v1.0.2: 恢復首頁 inline credit pill（v0.34.0 global topbar 退場；credit 顯示仍在首頁 + 設定頁，其他頁不顯示） -->
+      <div class="page-header" style="justify-content:flex-end">
+        <div class="header-right">
+          <div onclick="app.navigate('settings')" style="display:flex;align-items:center;gap:6px;padding:4px 12px;background:var(--bg-hover);border-radius:var(--r-sm);cursor:pointer;transition:all .2s" title="AI Credits 餘額">
+            ${ICONS.zap}
+            <span style="font-size:13px;font-weight:600;color:var(--ink)">${(() => { const lim = getCreditLimit(state.plan||'free'); return Math.max(0,lim-(state.creditUsed||0)).toLocaleString(); })()}</span>
+            <span style="font-size:11px;color:var(--ink-muted)">credits</span>
+          </div>
+          <span class="plan-badge ${state.plan==='free'?'free':state.plan==='starter'?'starter':'pro'}" style="font-size:13px;padding:3px 10px">${planLabel}</span>
+          <div class="header-avatar" onclick="app.navigate('settings')">${state.user.avatar}</div>
+          <span class="header-name">${state.user.name}</span>
+        </div>
+      </div>
+
       <div class="home-grid">
         <div class="home-main">
           <div class="welcome-banner" style="position:relative;overflow:hidden">
@@ -7573,30 +7547,56 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
   //   - 中鍵 mouseup → 結束 pan、還原 cursor
   //   - auxclick capture phase: 若實際有拖移（dy > 3px）阻止後續 click handler
   //   - Idempotent：同一 el 重複呼叫不重複綁 listener
+  // v1.0.2: 強化防 Windows autoscroll 橫向散逸——中鍵拖移必 100% 鎖定垂直
+  // 修法：pan 啟動時全域 body 加 .mid-panning class，CSS 強制所有 .kanban-board 的 overflow-x:hidden
+  //       + mousemove 用 capture phase stopPropagation，阻止任何其他 wheel/scroll handler 被觸發
   window.attachMidPan = function(el){
     if(!el || el.__midPanAttached) return;
     el.__midPanAttached = true;
-    var isPanning = false, startY = 0, startScrollTop = 0, moved = false;
+    var isPanning = false, startY = 0, startX = 0, startScrollTop = 0, moved = false;
     el.addEventListener('mousedown', function(e){
       if(e.button !== 1) return;
       e.preventDefault();
+      e.stopPropagation();
       isPanning = true; moved = false;
-      startY = e.clientY; startScrollTop = el.scrollTop;
+      startY = e.clientY;
+      startX = e.clientX;
+      startScrollTop = el.scrollTop;
       el.style.cursor = 'grabbing';
       el.style.userSelect = 'none';
+      document.body.classList.add('mid-panning'); // 全域 class 讓 CSS 能鎖橫向 overflow
     });
     window.addEventListener('mousemove', function(e){
       if(!isPanning) return;
       var dy = e.clientY - startY;
-      if(Math.abs(dy) > 3) moved = true;
+      if(Math.abs(dy) > 3 || Math.abs(e.clientX - startX) > 3) moved = true;
       el.scrollTop = startScrollTop - dy;
-    });
+      // v1.0.2: 強制鎖住外層父容器的橫向 scrollLeft，擋 Windows autoscroll 橫向散逸
+      var p = el.parentElement;
+      while(p && p !== document.body){
+        if(p.scrollWidth > p.clientWidth){ p.scrollLeft = p._midPanLockedScrollLeft != null ? p._midPanLockedScrollLeft : p.scrollLeft; }
+        p = p.parentElement;
+      }
+    }, true); // capture 先發制人
     window.addEventListener('mouseup', function(e){
       if(!isPanning) return;
       isPanning = false;
       el.style.cursor = '';
       el.style.userSelect = '';
+      document.body.classList.remove('mid-panning');
+      // 清除父容器 lockedScrollLeft 記錄
+      var p = el.parentElement;
+      while(p && p !== document.body){ delete p._midPanLockedScrollLeft; p = p.parentElement; }
     });
+    el.addEventListener('mousedown', function(e){
+      if(e.button !== 1) return;
+      // 記錄 mousedown 當下外層所有可橫向 scroll 容器的 scrollLeft，mousemove 期間固定住
+      var p = el.parentElement;
+      while(p && p !== document.body){
+        if(p.scrollWidth > p.clientWidth){ p._midPanLockedScrollLeft = p.scrollLeft; }
+        p = p.parentElement;
+      }
+    }, true); // 第二個 mousedown capture 先執行抓取 scrollLeft
     el.addEventListener('auxclick', function(e){
       if(e.button === 1){
         e.preventDefault();
@@ -7734,8 +7734,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
   }
   window.checkCreditReset = checkCreditReset;
 
-  // v0.34.0: 全域 topbar render — credit + plan + avatar（跟首頁右上一致，現在每頁都有）
-  function updateCreditBadge() {
+  // v1.0.2: updateCreditBadge 保留為 no-op（globalTopbar 已移除），避免舊呼叫點 JS 報錯
+  // credit 顯示改由首頁 renderHome inline pill + 設定頁 hero bar 承擔
+  function _unused_updateCreditBadge() {
     var topbar = document.getElementById('globalTopbar');
     if (!topbar) return;
     // Landing 不顯示（尚未登入）
@@ -7776,6 +7777,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       '<span class="plan-badge ' + planBadgeClass + '">' + planLabel + '</span>' +
       '<div class="gtb-avatar" onclick="app.navigate(\'settings\')" title="' + userName + '">' + avatar + '</div>';
   }
+  // v1.0.2: updateCreditBadge 改 no-op（#globalTopbar 已移除）—— 舊呼叫點（renderSidebar 尾、showDashboard、PATH_AI 扣費後）保留 API 不爆，但實際不做事
+  function updateCreditBadge(){ /* v1.0.2 no-op: 全域 topbar 已移除，credit 僅出現在首頁 + 設定頁 */ }
   window.updateCreditBadge = updateCreditBadge;
 
   // ==================== AI PM BAR — REMOVED (v0.17.0) ====================
@@ -21249,6 +21252,11 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 
   function renderLab() {
     const content = document.getElementById('content');
+    // v1.0.2 fix: timeline/roadmap 設的 #main.overflow:hidden + height:100vh 會延續到 Lab，阻斷上下捲動
+    var _labMain = document.getElementById('main');
+    if (_labMain) { _labMain.style.overflow = ''; _labMain.style.height = ''; }
+    var _labApp = document.getElementById('app');
+    if (_labApp) _labApp.style.overflow = '';
     content.innerHTML = `<div id="labContainer">
       <div class="page-title-area no-border">
         <h1>${ICONS.flask} 受眾研究室</h1>
@@ -29925,7 +29933,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.0.2 · 緊急回退 + 3 個根源性 bug 修復：(1) 全域 topbar 整組移除——不論 v0.34.0 的 sticky bar 還是 v1.0.1 的 fixed pill，都跟頁面標題互斥（sticky 推下標題 / fixed 擋住標題），愛德華兩次明確要求「退回上一版設計」；#globalTopbar HTML element + global-topbar CSS 全刪；updateCreditBadge 改 no-op 保留 API 不爆；renderHome 恢復 inline credit pill + plan badge + avatar + 用戶名（跟 v0.33.2 一致）；credit 顯示改回 僅出現於首頁 + 設定頁；(2) renderModule 統一加 overflow safety reset——timeline/roadmap 會設 #main.overflow:hidden + height:100vh 鎖死外層捲動，過去 6 個 render fn（home/quotes/billing/diagnose/pmf/settings）沒自行 reset，導致用戶從 timeline 切到 Lab/PATH 診斷等頁「上下拖移失效」；在 renderModule 入口統一清除 #main + #app 的 overflow/height inline style，roadmap/timeline 自己會重新設定不受影響；額外在 renderLab 加 belt-and-suspenders reset；(3) 看板中鍵拖移強化鎖定垂直——attachMidPan 加多層防線：body.mid-panning class 觸發時 CSS 強制 .kanban-board{overflow-x:hidden !important}、mousemove capture phase 先發制人、外層可橫向 scroll 父容器的 scrollLeft 鎖死（記 _midPanLockedScrollLeft 隨 mousemove 復位）、mousedown 雙 listener（一般 + capture）分工抓 scrollLeft；.kanban-col-body 加 overflow-x:hidden 不再依靠預設；預期徹底封鎖 Windows autoscroll 橫向散逸 · 版號 v1.0.1→v1.0.2 · 「新增視覺」項目待愛德華指認具體位置再處理 -->
 <!-- v1.0.1 · UIUX 打磨批次（愛德華 v1.0.0 部署後回饋 + 女巫雙輪稽核 apply）：(1) Global topbar 架構修正——原 v0.34.0 做成 full-width sticky bar 把所有頁面標題往下推，改成 position:fixed 右上浮動 pill（glass tint + backdrop-filter + box-shadow），不再佔用垂直空間；username 隱藏（avatar 足以身份辨識）；加 plan↔avatar divider；(2) 看板分組 button 簡化——移除 .kb-groupby-prefix 外包 wrapper（icon+「分組」label）直接用 bpSelect，option label 改「依 X 分組」更直觀，localStorage 持久化 bp.kbListGroupBy 跨 session 記住；cat filter 鎖定單一類時自動隱藏「分類」分組選項避免無意義分組；(3) 看板封存 button 合併——原「封存完成 N」+「已封存 N」兩顆視覺幾乎一樣造成認知混淆；合併為單一「封存 N ▾」按鈕 + dropdown menu，menu 內兩項分別是 action「封存本期完成」+ toggle「顯示/隱藏已封存」，含完整 outside-click closer + aria 屬性；(4) 看板 5 個 P0 視覺（女巫 1 稽核 62.5→目標 85）：P0-1 color 語義撞車解——category chip 改中性 bg-hover 背景 + 6px 色點前綴（--_cat CSS var 傳入），色彩保留給 status/priority/due，避免產品規劃紫跟待辦欄紫撞；P0-2 description 2-line clamp on hover（預設 1 行 ellipsis，展開 2 行）+ 去重檢查不跟 title 重複才渲染；P0-3 priority dot 分級——high 8px 無 shadow ring + 加「高」文字 badge 達憲法雙編碼、medium 7px gold、low slate 60% opacity；card 加 .has-pri-high class 讓 title 字重升 700；P0-4 AI badge 去漸層——從 title 行搬到 meta row，漸層紫/綠改 tonal chip（primary/teal 12% tint + 26% border + dot prefix），manual 類別隱藏；P0-5 column count chip 改 .kanban-col-count class 用 color-mix 呼應欄色 + dark mode 變體 .22 tint 相容；(5) 額外修補 list-priority low 違憲 #3B82F6 Tailwind blue → #94A3B8 slate；(6) Edit modal 右欄 4-section 分層——原所有 metadata 同一等級混亂，改 .kb-rs 容器分 4 區：主要（狀態/優先度/負責人/到期日）、分類（category/tags）、週期、紀錄；負責人從 text input 改 bpSelect 讀 getMembers() 跟全站一致；(7) 文件庫 link-only 化——愛德華定位明確「只做連結書籤管理、不做檔案儲存」，移除 .dc-attach-tab 切換 + fileData/fileName 欄位 + 檔案上傳邏輯，改純 linkUrl + linkLabel 必填；card 列表 icon 改 link 圖示、顯示 hostname + 連結預覽行；save 清除 legacy fileData/fileName 欄位 · 版號 v1.0.0→v1.0.1 · tail cleanup: v0.33.1 搬進 CHANGELOG.md -->
 <!-- v1.0.0 · 版本系統重置為 major.minor.patch 語意（愛德華憲法確立：major=重大更版、minor=新增模組、patch=功能優化或 bug 調整）；此版為 BeyondPath 首次里程碑正式版本，涵蓋 5 大 UI/UX 升級：(1) 全域 topbar——credit/plan/avatar 從 sidebar 搬到右上角，跟首頁 header 一致；#globalTopbar 元素 sticky + backdrop-filter；sidebar credit badge 整組 CSS 刪除；updateCreditBadge() 改渲染至 topbar；renderHome 移除冗餘 header-right；(2) 刪假 agentCanAct checkbox——女巫 2 稽核發現零下游實作（grep 全檔只 3 處寫、0 處讀），文案「Agent 會在 Cowork 對話中主動提供建議」對用戶說謊違反憲法誠信原則；kb-section 整塊刪除 + save logic 移除對應欄位；(3) Edit modal Esc 鍵可達性——新增 document.addEventListener('keydown') Escape 監聽 + MutationObserver 監看 ov remove 自動解除 listener 防 memory leak；外側 click 從 ov.remove() 改 closeModalAnimated(ov) 跟全站 33 處一致；(4) Settings 模組管理重設計——從 5-column grid（7 個團隊模組會產生 orphan 2-row）改 2-column 並排 list-row 佈局，每組 flex:1 min-width:280px，內層 module list 用 var(--bg-app) 容器包住 gap:2px 緊湊堆疊；每 row = 32px icon + 2 行 label+賦能問題 + toggle/plan chip；完全無 orphan row 問題；響應式 flex-wrap 自動堆疊；(5) Settings 方案與用量升級——hero credit bar 40px 大數字 + gradient primary 6% 背景 + 本月剩餘/已使用雙欄並排；AI 模型卡升級：Free plan 用 Sonnet 4.6 名片式顯示 + 升級引導文案；Starter+ 用 bpSelect + tagline + pricing info 卡（primary 6% tint + circle info icon）；Credit Cost 區加 hover 高亮 + credit 縮寫 cr；右上 Plan chip 跟 color 對齊 + dot；· 版號跳升 v0.33.2→v1.0.0 · tail cleanup: v0.33.0 搬進 CHANGELOG.md · 後續 v1.0.1+ 計畫：文件庫 link-only 化、封存/分組 button 簡化、看板 5 個 P0（色彩撞車/description/priority/AI badge/col count）、edit modal 右欄 4-section、首頁+AI 儀表板戰略級重構 -->
-<!-- v0.33.2 · 3 bug 修復（愛德華 v0.33.1 部署後截圖回饋）：(1) 時間軸 tooltip 雙渲染 bug——`_rmTipEl` closure 變數在 renderRoadmap 重複呼叫時會被重建，但 document.body 舊的 `.rm-tooltip` 元素不清除、新元素疊上去，造成同一任務出現 2 個幾乎一模一樣 tooltip；修法：`_rmShowTip` 建立新 tooltip 前先 `document.querySelectorAll('.rm-tooltip').forEach(el => el.remove())` 清光舊殘留，維持「body 內單一 tooltip 實例」原則；(2) 時間軸點擊 bar 跳頁問題——v0.32.22 短路到 `_rmOpenFullCard` 會 `navigate('biz-tasks')` 打斷「我正在瀏覽時間河流」的心流；修法：`_rmOpenCard` 改優先呼叫 `_kbEditCard(cardId)` 就地彈出 kb-modal-overlay（不跳頁），若 _kbEditCard 尚未掛載（使用者還沒進過任務看板）fallback 到舊 navigate 路徑確保能打開；hover = tooltip、click = 就地彈窗，兩者職責清晰分離；(3) Sidebar credit badge collapsed 態視覺違和——v0.33.0 設計在折疊側邊欄顯示「0」+「3,000」兩行大字，跟其他 icon-only 項目格格不入；修法：collapsed 態改成 44×44 圓形 badge（白 5% tint + 2px 環），內只顯示 used 數字（11px），sep/limit 隱藏、bar 改環狀 overflow 承接視覺語言；expanded 態保留完整 pill bar（used/sep/limit + 進度條）；額外加 title attribute 讓 collapsed hover 有完整 tooltip · 版號 v0.33.1→v0.33.2 · tail cleanup：v0.32.24 搬進 CHANGELOG.md -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
