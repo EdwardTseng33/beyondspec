@@ -4934,7 +4934,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.33.0</div>
+        <div class="sidebar-version">v0.33.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -23339,8 +23339,8 @@ async function startResearch(){
     return match?{q:match.q,t:'qual',d:match.d,isFollowUp:true}:null;
   }
 
-  // AI 引擎上下文
-  const aiAvailable = window.PATH_AI && (window.PATH_AI.getState().isAvailable || window.PATH_AI.getConfig().devMode);
+  // v0.33.0: AI 引擎上下文 — 改用 window.PATH_AI.isAvailable()（Cloudflare Worker proxy 已配置即 true）
+  const aiAvailable = window.PATH_AI && window.PATH_AI.isAvailable();
   let aiUsedCount = 0, aiFallbackCount = 0;
 
   // 逐 persona 進行對話
@@ -23364,15 +23364,20 @@ async function startResearch(){
       let isAIGenerated = false;
 
       if(aiAvailable && q.t === 'qual'){
-        // 質性題用 AI 生成
+        // v0.33.0: 質性題用 Claude（走 ai-proxy worker interview node）
         try {
-          const aiResult = await window.PATH_AI.interviewAI(aiCtx, q.q);
-          if(aiResult.text){
-            ans = { text: aiResult.text, t: 'qual', culture: '' };
+          const aiText = await window.PATH_AI.call('interview', aiCtx, q.q);
+          if(aiText){
+            ans = { text: aiText, t: 'qual', culture: '' };
             isAIGenerated = true;
             aiUsedCount++;
           }
-        } catch(e) { /* fallback below */ }
+        } catch(e) {
+          // credits 不足或網路錯誤 → 靜默 fallback（不打斷 16 人訪談流程）
+          if(e.message && e.message.indexOf('INSUFFICIENT_CREDITS') !== -1){
+            // 前兩次已顯示過升級 prompt 就不再顯示
+          }
+        }
       }
 
       if(!ans){
@@ -23402,9 +23407,9 @@ async function startResearch(){
 
           if(aiAvailable){
             try {
-              const fuAiResult = await window.PATH_AI.interviewAI(aiCtx, fu.q);
-              if(fuAiResult.text){
-                fuAns = { text: fuAiResult.text, t: 'qual', culture: '' };
+              const fuAiText = await window.PATH_AI.call('interview', aiCtx, fu.q);
+              if(fuAiText){
+                fuAns = { text: fuAiText, t: 'qual', culture: '' };
                 fuIsAI = true;
                 aiUsedCount++;
               }
@@ -23923,7 +23928,10 @@ async function triggerAISummary(Q, entries, overallAvg) {
   const section = document.getElementById('aiSummarySection');
   const loadingEl = document.getElementById('aiSummaryLoading');
   const textEl = document.getElementById('aiSummaryText');
-  if (!section || !window.PATH_AI) return;
+  if (!section || !window.PATH_AI || !window.PATH_AI.isAvailable()) {
+    if (section) section.style.display = 'none';
+    return;
+  }
 
   // 顯示 loading
   section.style.display = 'block';
@@ -23938,7 +23946,8 @@ async function triggerAISummary(Q, entries, overallAvg) {
   const rtLabel = {concept:'概念驗證',pain:'痛點深掘',pricing:'定價測試',compete:'競品比較',retain:'留存驗證',custom:'自定義'};
 
   try {
-    const aiResult = await window.PATH_AI.reportAI({
+    // v0.33.0: 走 window.PATH_AI.call('report', ...) → Cloudflare Worker → Claude
+    const reportCtx = {
       product: S.product,
       researchType: rtLabel[S.rt] || S.rt,
       region: S.region?.name || '台灣',
@@ -23947,20 +23956,21 @@ async function triggerAISummary(Q, entries, overallAvg) {
       quant: Q,
       qualSamples: qualSamples,
       overallAvg: overallAvg,
-    });
+    };
+    const userMsg = `請依以上研究概覽、量化數據、質性樣本產出三段式報告：【一句話結論】+【核心發現】+【行動建議】`;
+    const aiText = await window.PATH_AI.call('report', reportCtx, userMsg);
 
-    if (aiResult.text) {
+    if (aiText) {
       loadingEl.style.display = 'none';
-      textEl.textContent = aiResult.text;
+      textEl.textContent = aiText;
       textEl.style.display = 'block';
 
       // AI 使用統計標記
       if (S.aiStats) {
         const statsTag = document.createElement('div');
         statsTag.style.cssText = 'margin-top:12px;font-size:13px;color:var(--ink-dim);display:flex;align-items:center;gap:6px;flex-wrap:wrap';
-        const mode = aiResult.source === 'dev-sim' ? 'AI 模擬模式' : 'LLM 生成';
-        statsTag.innerHTML = `<span style="background:rgba(124,92,252,.18);color:var(--primary);padding:2px 6px;border-radius:3px;font-weight:600">${mode}</span>`;
-        if (S.aiStats.used > 0) statsTag.innerHTML += `<span>${S.aiStats.used} 則 AI 回覆</span>`;
+        statsTag.innerHTML = `<span style="background:rgba(124,92,252,.18);color:var(--primary);padding:2px 6px;border-radius:3px;font-weight:600">Claude ${window.PATH_AI.getActiveModel().replace('claude-','').replace(/-/g,' ')}</span>`;
+        if (S.aiStats.used > 0) statsTag.innerHTML += `<span>${S.aiStats.used} 則 AI 訪談</span>`;
         if (S.aiStats.fallback > 0) statsTag.innerHTML += `<span>${S.aiStats.fallback} 則規則引擎回覆</span>`;
         textEl.appendChild(statsTag);
       }
@@ -24542,17 +24552,18 @@ function loadHistory(){
       </div>`;
   }
 
-  function runMarketSignal() {
+  async function runMarketSignal() {
     const kw1 = document.getElementById('mkKw1')?.value?.trim();
     if (!kw1) { showToast('請輸入至少一個關鍵字'); return; }
     const kw2 = document.getElementById('mkKw2')?.value?.trim();
     const kw3 = document.getElementById('mkKw3')?.value?.trim();
     const region = document.getElementById('mkRegion')?.value || 'tw';
     const regionNames = { tw: '台灣', hk: '香港', sg: '新加坡', global: '全球' };
+    const keywords = [kw1, kw2, kw3].filter(Boolean);
 
     const btn = document.getElementById('mkRunBtn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px;vertical-align:middle"></span> 探測中...';
+    btn.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px;vertical-align:middle"></span> ' + (window.PATH_AI && window.PATH_AI.isAvailable() ? 'Claude 分析中...' : '探測中...');
 
     const resultsEl = document.getElementById('mkResults');
     resultsEl.innerHTML = `<div style="text-align:center;padding:48px;color:var(--ink-muted)">
@@ -24560,31 +24571,60 @@ function loadHistory(){
       <div>正在分析「${kw1}」的市場數據...</div>
     </div>`;
 
-    setTimeout(() => {
-      // Generate mock market data based on keyword
-      const keywords = [kw1, kw2, kw3].filter(Boolean);
+    // v0.33.0: 嘗試走 Claude（market_sense node 回 JSON）
+    let aiData = null;
+    let usingAI = false;
+    if (window.PATH_AI && window.PATH_AI.isAvailable()) {
+      try {
+        const ctx = {
+          keywords: keywords,
+          region: regionNames[region] || region,
+          productContext: '無'
+        };
+        const userMsg = `請針對「${kw1}」（地區：${regionNames[region]}）進行市場訊號分析，回傳指定 JSON 結構。`;
+        const aiText = await window.PATH_AI.call('market_sense', ctx, userMsg);
+        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          aiData = JSON.parse(jsonMatch[0]);
+          usingAI = true;
+        }
+      } catch (e) {
+        console.warn('[Market Sense] Claude unavailable, fallback to mock:', e.message);
+      }
+    }
+
+    // Map data from AI OR mock
+    let monthlyVol, competition, trend, cpc, relatedKws, gaps;
+    if (usingAI && aiData) {
+      monthlyVol = aiData.metrics?.monthlySearch || 0;
+      competition = aiData.metrics?.competition || '中';
+      trend = aiData.metrics?.trend || '平穩';
+      // 正規化：'平穩' → '持平' 以對齊既有 UI colormap
+      if (trend === '平穩') trend = '持平';
+      cpc = '—'; // Claude 暫不估 CPC
+      relatedKws = (aiData.relatedKeywords || []).slice(0, 10).map(r => ({
+        kw: r.kw, vol: r.volume || 0, diff: competition, trend: '持平'
+      })).sort((a,b) => b.vol - a.vol);
+      gaps = (aiData.demandGaps || []).map(g => ({
+        gap: g.gap,
+        opportunity: g.opportunity === '高' ? '高' : (g.opportunity === '低' ? '低' : '中'),
+        type: g.reasoning ? g.reasoning.substring(0, 6) : '需求缺口'
+      }));
+    } else {
+      // Legacy mock fallback
       const hash = kw1.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
-
-      // Primary keyword metrics
-      const monthlyVol = Math.floor((hash % 50 + 10) * 100);
-      const competition = ['低', '中', '高'][hash % 3];
-      const compColor = { '低': 'var(--teal)', '中': '#D97706', '高': '#EF4444' }[competition];
+      monthlyVol = Math.floor((hash % 50 + 10) * 100);
+      competition = ['低', '中', '高'][hash % 3];
       const trends = ['上升', '持平', '下降'];
-      const trend = trends[hash % 3];
-      const trendColor = { '上升': 'var(--teal)', '持平': 'var(--ink)', '下降': '#EF4444' }[trend];
-      const trendArrow = { '上升': '↑', '持平': '→', '下降': '↓' }[trend];
-      const cpc = ((hash % 30) + 5) + '.00';
-
-      // Generate related keywords
+      trend = trends[hash % 3];
+      cpc = ((hash % 30) + 5) + '.00';
       const relatedSuffixes = ['推薦', '比較', '評價', '價格', '教學', '怎麼選', '品牌', 'PTT', '2025', '開箱', '缺點', '替代方案'];
-      const relatedKws = relatedSuffixes.slice(0, 8).map((suf, i) => {
+      relatedKws = relatedSuffixes.slice(0, 8).map((suf, i) => {
         const vol = Math.floor(monthlyVol * (0.8 - i * 0.08) + Math.random() * 200);
         const diff = ['低', '低', '中', '中', '高'][Math.floor(Math.random() * 5)];
         const t = trends[Math.floor(Math.random() * 3)];
         return { kw: kw1 + ' ' + suf, vol, diff, trend: t };
       }).sort((a, b) => b.vol - a.vol);
-
-      // Generate demand gaps
       const gapTemplates = [
         { gap: `「${kw1} + 免費試用」搜尋量上升 ${Math.floor(Math.random()*80+40)}%，但市場上少有提供試用的產品`, opportunity: '高', type: '未滿足需求' },
         { gap: `「${kw1} 比較」搜尋量高但相關內容品質低，用戶決策資訊不足`, opportunity: '中', type: '內容缺口' },
@@ -24592,9 +24632,18 @@ function loadHistory(){
         { gap: `${regionNames[region]}地區「${kw1}」的搜尋需求高於供給，競爭尚未白熱化`, opportunity: '高', type: '市場空白' },
         { gap: `相關搜尋中「便宜」「CP值」出現頻率高，價格敏感度明顯`, opportunity: '中', type: '定價洞察' }
       ];
-      const gaps = gapTemplates.slice(0, Math.floor(Math.random() * 2) + 3);
+      gaps = gapTemplates.slice(0, Math.floor(Math.random() * 2) + 3);
+    }
 
-      // (Cross-validation removed — will implement properly with Claude API)
+    // 共用的 color / arrow mapping
+    const compColor = { '低': 'var(--teal)', '中': '#D97706', '高': '#EF4444' }[competition] || 'var(--ink-muted)';
+    const trendColor = { '上升': 'var(--teal)', '持平': 'var(--ink)', '下降': '#EF4444' }[trend] || 'var(--ink)';
+    const trendArrow = { '上升': '↑', '持平': '→', '下降': '↓' }[trend] || '→';
+
+    // AI / Mock source indicator
+    const aiBadge = usingAI
+      ? '<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:color-mix(in srgb, var(--primary) 12%, transparent);border-radius:var(--r-sm);font-size:11px;font-weight:600;color:var(--primary);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary)"></span> Claude ' + window.PATH_AI.getActiveModel().replace('claude-','').replace(/-/g,' ') + '</div>'
+      : '<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-hover);border-radius:var(--r-sm);font-size:11px;font-weight:500;color:var(--ink-muted);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--ink-muted)"></span> 模板估算（AI 未啟用）</div>';
 
       let relatedHTML = relatedKws.map(rk => {
         const tColor = { '上升': 'var(--teal)', '持平': 'var(--ink-muted)', '下降': '#EF4444' }[rk.trend];
@@ -24620,6 +24669,7 @@ function loadHistory(){
       let crossHTML = '';
 
       resultsEl.innerHTML = `
+        ${aiBadge}
         <!-- Summary Cards -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
           <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:20px;text-align:center">
@@ -24674,12 +24724,22 @@ function loadHistory(){
 
         `;
 
-      // Save market data so report can detect it
-      try { localStorage.setItem('bp_market_' + kw1, JSON.stringify({ kw: keywords, region, date: new Date().toISOString() })); } catch(e) {}
+      // v0.33.0: 儲存時帶上 aiData 讓市場報告可以讀到（不只是 metadata，還有實際數據）
+      try {
+        localStorage.setItem('bp_market_' + kw1, JSON.stringify({
+          kw: keywords,
+          region,
+          date: new Date().toISOString(),
+          usingAI: usingAI,
+          metrics: { monthlyVol, competition, trend, cpc },
+          relatedKws: relatedKws.slice(0, 10),
+          gaps: gaps,
+          aiRaw: aiData || null
+        }));
+      } catch(e) {}
 
       btn.disabled = false;
       btn.innerHTML = `${ICONS.search} <span style="margin-left:6px">重新探測</span>`;
-    }, 2000);
   }
 
   // ==================== MODULE: PMF 儀表板 ====================
@@ -24943,58 +25003,100 @@ function loadHistory(){
     }
   };
 
-  function generateSurvey() {
+  async function generateSurvey() {
     const goal = document.getElementById('svGoal')?.value?.trim();
     if (!goal) { showToast('請輸入研究目的'); return; }
 
     const type = document.getElementById('svType')?.value || 'market';
     const length = document.getElementById('svLength')?.value || 'short';
     const btn = document.getElementById('svGenBtn');
+    const aiAvail = window.PATH_AI && window.PATH_AI.isAvailable();
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px;vertical-align:middle"></span> AI 生成中...';
+    btn.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px;vertical-align:middle"></span> ' + (aiAvail ? 'Claude 生成中...' : 'AI 生成中...');
 
-    // Simulate AI generation delay
-    setTimeout(() => {
-      const template = SURVEY_Q_TEMPLATES[type] || SURVEY_Q_TEMPLATES.market;
+    const template = SURVEY_Q_TEMPLATES[type] || SURVEY_Q_TEMPLATES.market;
+    let questions = null;
+    let usingAI = false;
+
+    // v0.33.0: Claude 生成問卷（node='survey_generate' 回 JSON）
+    if (aiAvail) {
+      try {
+        const ctx = {
+          goal: goal,
+          type: type,
+          length: length === 'short' ? '短' : (length === 'medium' ? '中' : '長'),
+          audience: '一般消費者'
+        };
+        const userMsg = `請依輸入需求設計問卷，回傳 JSON 結構。`;
+        const aiText = await window.PATH_AI.call('survey_generate', ctx, userMsg);
+        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const aiSurvey = JSON.parse(jsonMatch[0]);
+          if (Array.isArray(aiSurvey.questions) && aiSurvey.questions.length > 0) {
+            // Normalize Claude schema → renderSurveyResults schema
+            const typeMap = {
+              likert5: '量表題', rating_10: '量表題',
+              multi_choice: '複選題', single_choice: '單選題',
+              open_text: '開放題', ranking: '排序題'
+            };
+            questions = aiSurvey.questions.map((aq, i) => ({
+              id: i + 1,
+              q: aq.text,
+              type: typeMap[aq.type] || '開放題',
+              options: Array.isArray(aq.options) && aq.options.length > 0 ? aq.options : null,
+              scale: aq.type === 'likert5' ? '1-5' : (aq.type === 'rating_10' ? '1-10' : null),
+              section: aq.rationale ? aq.rationale.substring(0, 8) : (aiSurvey.dimensions?.[0] || '一般')
+            }));
+            usingAI = true;
+          }
+        }
+      } catch(e) {
+        console.warn('[Survey Engine] Claude unavailable, fallback to template:', e.message);
+      }
+    }
+
+    // Fallback to template
+    if (!questions) {
       const maxQ = length === 'short' ? 10 : length === 'medium' ? 14 : 18;
       const topic = goal.length > 20 ? goal.substring(0, 20) + '...' : goal;
-
-      // Pick questions up to maxQ
-      const questions = template.questions.slice(0, maxQ).map((q, i) => ({
+      questions = template.questions.slice(0, maxQ).map((q, i) => ({
         ...q,
         q: q.q.replace(/\{topic\}/g, topic),
         id: i + 1
       }));
+    }
 
-      generatedSurvey = { goal, type, typeName: template.label, questions, length };
+    generatedSurvey = { goal, type, typeName: template.label, questions, length, usingAI };
 
-      // Save to state for homepage listing
-      const surveyRecord = {
-        id: Date.now().toString(),
-        date: new Date().toISOString(),
-        typeName: template.label,
-        goal: goal,
-        questionCount: questions.length,
-        type: type
-      };
-      if (!state.savedSurveys) state.savedSurveys = [];
-      state.savedSurveys.push(surveyRecord);
-      useCredits(10, '問卷生成');
-      try { localStorage.setItem('bp_savedSurveys', JSON.stringify(state.savedSurveys)); } catch(e) {}
+    // Save to state for homepage listing
+    const surveyRecord = {
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      typeName: template.label,
+      goal: goal,
+      questionCount: questions.length,
+      type: type,
+      usingAI: usingAI
+    };
+    if (!state.savedSurveys) state.savedSurveys = [];
+    state.savedSurveys.push(surveyRecord);
+    try { localStorage.setItem('bp_savedSurveys', JSON.stringify(state.savedSurveys)); } catch(e) {}
 
-      // Render results
-      renderSurveyResults(questions, template.label, goal);
+    // Render results
+    renderSurveyResults(questions, template.label, goal, usingAI);
 
-      btn.disabled = false;
-      btn.innerHTML = `${ICONS.zap} <span style="margin-left:6px">重新生成</span>`;
-    }, 1500);
+    btn.disabled = false;
+    btn.innerHTML = `${ICONS.zap} <span style="margin-left:6px">重新生成</span>`;
   }
 
-  function renderSurveyResults(questions, typeName, goal) {
+  function renderSurveyResults(questions, typeName, goal, usingAI) {
     const resultsEl = document.getElementById('svResults');
     if (!resultsEl) return;
 
     const typeColors = { '開放題': 'var(--primary)', '單選題': 'var(--teal)', '複選題': '#E8590C', '量表題': '#D946EF', '排序題': '#0EA5E9' };
+    const aiBadge = usingAI
+      ? `<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:color-mix(in srgb, var(--primary) 12%, transparent);border-radius:var(--r-sm);font-size:11px;font-weight:600;color:var(--primary);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary)"></span> Claude ${window.PATH_AI.getActiveModel().replace('claude-','').replace(/-/g,' ')}</div>`
+      : `<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-hover);border-radius:var(--r-sm);font-size:11px;font-weight:500;color:var(--ink-muted);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--ink-muted)"></span> 模板生成（AI 未啟用）</div>`;
 
     let qHTML = questions.map((q, i) => {
       const color = typeColors[q.type] || 'var(--ink-muted)';
@@ -25027,6 +25129,7 @@ function loadHistory(){
     const completion = Math.floor(Math.random() * 8) + 88;
 
     resultsEl.innerHTML = `
+      ${aiBadge}
       <!-- Quality Score Cards -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
         <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
@@ -25061,20 +25164,54 @@ function loadHistory(){
       </div>`;
   }
 
-  function auditSurvey() {
+  async function auditSurvey() {
     const input = document.getElementById('svAuditInput')?.value?.trim();
     if (!input) { showToast('請貼上問卷內容'); return; }
 
     const btn = document.getElementById('svAuditBtn');
+    const aiAvail = window.PATH_AI && window.PATH_AI.isAvailable();
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px;vertical-align:middle"></span> 檢測中...';
+    btn.innerHTML = '<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin-right:8px;vertical-align:middle"></span> ' + (aiAvail ? 'Claude 檢測中...' : '檢測中...');
 
-    setTimeout(() => {
-      const lines = input.split('\n').filter(l => l.trim().length > 3);
-      const totalQ = lines.length;
+    const lines = input.split('\n').filter(l => l.trim().length > 3);
+    const totalQ = lines.length;
+    let findings = null;
+    let score = null;
+    let usingAI = false;
+    let summary = '';
 
-      // Simulate audit findings
-      const findings = [];
+    // v0.33.0: Claude 檢測（回 JSON）
+    if (aiAvail) {
+      try {
+        const ctx = { surveyText: input.substring(0, 8000) };
+        const userMsg = '請檢測此問卷品質，回傳指定 JSON 結構。';
+        const aiText = await window.PATH_AI.call('survey_audit', ctx, userMsg);
+        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const aiAudit = JSON.parse(jsonMatch[0]);
+          score = aiAudit.overallScore || 70;
+          summary = aiAudit.summary || '';
+          findings = (aiAudit.findings || []).map(f => {
+            const typeMap = { high: 'error', medium: 'warning', low: 'info' };
+            const sevMap = { high: '需要修正', medium: '建議改善', low: '小建議' };
+            return {
+              qNum: f.questionRef || '-',
+              text: '',
+              type: typeMap[f.severity] || 'info',
+              issue: f.issue + (f.suggestion ? ' · 建議：' + f.suggestion : ''),
+              severity: sevMap[f.severity] || '小建議'
+            };
+          });
+          usingAI = true;
+        }
+      } catch(e) {
+        console.warn('[Survey Audit] Claude unavailable, fallback regex:', e.message);
+      }
+    }
+
+    // Fallback: regex-based detection
+    if (!findings) {
+      findings = [];
       lines.forEach((line, i) => {
         const qNum = i + 1;
         const text = line.replace(/^\d+[\.\、\)\s]+/, '').trim();
@@ -25090,20 +25227,21 @@ function loadHistory(){
         if (text.includes('和') && text.includes('與') || (text.match(/[，,]/g) || []).length >= 3) {
           findings.push({ qNum, text, type: 'error', issue: '一題問多件事（Double-Barreled Question），建議拆成獨立題目', severity: '需要修正' });
         }
-        if (i > 0 && Math.random() > 0.7) {
-          findings.push({ qNum, text, type: 'info', issue: '可考慮加入「其他」選項以捕捉未預期回答', severity: '小建議' });
-        }
       });
 
-      // If no issues found, add generic feedback
       if (findings.length === 0 && totalQ > 0) {
         findings.push({ qNum: '-', text: '整體', type: 'info', issue: '問卷結構基本合理，建議增加一題開放式問題來捕捉受訪者的自由意見', severity: '小建議' });
       }
+    }
 
-      const errorCount = findings.filter(f => f.type === 'error').length;
-      const warnCount = findings.filter(f => f.type === 'warning').length;
-      const infoCount = findings.filter(f => f.type === 'info').length;
-      const score = Math.max(40, 100 - errorCount * 15 - warnCount * 8 - infoCount * 2);
+    const errorCount = findings.filter(f => f.type === 'error').length;
+    const warnCount = findings.filter(f => f.type === 'warning').length;
+    const infoCount = findings.filter(f => f.type === 'info').length;
+    if (score === null) score = Math.max(40, 100 - errorCount * 15 - warnCount * 8 - infoCount * 2);
+
+    const auditAiBadge = usingAI
+      ? `<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:color-mix(in srgb, var(--primary) 12%, transparent);border-radius:var(--r-sm);font-size:11px;font-weight:600;color:var(--primary);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary)"></span> Claude 分析</div>`
+      : `<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-hover);border-radius:var(--r-sm);font-size:11px;font-weight:500;color:var(--ink-muted);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--ink-muted)"></span> 規則檢測（AI 未啟用）</div>`;
 
       const colorMap = { error: '#EF4444', warning: '#D97706', info: 'var(--primary)' };
       const bgMap = { error: '#FEF2F2', warning: '#FEF3C7', info: 'var(--primary-light)' };
@@ -25121,6 +25259,8 @@ function loadHistory(){
 
       const container = document.getElementById('svAuditResults');
       container.innerHTML = `
+        ${auditAiBadge}
+        ${summary ? `<div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px 20px;margin-bottom:16px;font-size:13px;color:var(--ink);line-height:1.7">${summary}</div>` : ''}
         <!-- Audit Score -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
           <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
@@ -25149,9 +25289,8 @@ function loadHistory(){
           ${findingsHTML}
         </div>`;
 
-      btn.disabled = false;
-      btn.innerHTML = `${ICONS.search} <span style="margin-left:6px">重新檢測</span>`;
-    }, 1800);
+    btn.disabled = false;
+    btn.innerHTML = `${ICONS.search} <span style="margin-left:6px">重新檢測</span>`;
   }
 
   // ---- Survey Audit File Import ----
@@ -25442,34 +25581,74 @@ function loadHistory(){
     renderMarketReport();
   }
 
-  function generateMarketReport() {
+  async function generateMarketReport() {
     const content = document.getElementById('content');
+    const aiAvail = window.PATH_AI && window.PATH_AI.isAvailable();
     content.innerHTML = `<div style="text-align:center;padding:80px 0;color:var(--ink-muted)">
       <span class="spinner" style="display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite;margin-bottom:16px"></span>
-      <div style="font-size:16px;font-weight:600">正在生成完整市場報告...</div>
+      <div style="font-size:16px;font-weight:600">${aiAvail ? 'Claude 正在生成完整市場報告...' : '正在生成完整市場報告...'}</div>
       <div style="font-size:13px;margin-top:8px">整合 PATH 診斷 · Lab 研究 · 市場探測數據</div>
     </div>`;
 
-    setTimeout(() => {
-      reportState.generated = true;
+    // v0.33.0: Claude 生成 — 並行執行，失敗則 fallback 到模板
+    reportState.aiData = null;
+    if (aiAvail) {
+      try {
+        const diag = reportState.selectedDiag || {};
+        const prodName = diag.productName || '未命名';
+        const marketRaw = localStorage.getItem('bp_market_' + prodName);
+        let marketSense = null;
+        try { marketSense = marketRaw ? JSON.parse(marketRaw) : null; } catch(e){}
+        const labEntry = (state.researches || []).filter(r => r.productName === prodName)[0];
 
-      // Save report record for homepage listing
-      const typeLabels = { toc: '消費市場報告', tob: '企業市場報告', feature: '功能可行性報告' };
-      const reportRecord = {
-        id: Date.now().toString(),
-        date: new Date().toISOString(),
-        reportType: reportState.reportType,
-        typeName: typeLabels[reportState.reportType] || '市場報告',
-        productName: reportState.selectedDiag?.productName || '未命名',
-        diagTotal: reportState.selectedDiag?.total || 0,
-        verdict: reportState.selectedDiag?.verdict || ''
-      };
-      if (!state.savedReports) state.savedReports = [];
-      state.savedReports.push(reportRecord);
-      try { localStorage.setItem('bp_savedReports', JSON.stringify(state.savedReports)); } catch(e) {}
+        const ctx = {
+          product: { name: prodName, desc: diag.docText || '' },
+          path: {
+            P: diag.scores?.P || 0,
+            A: diag.scores?.A || 0,
+            T: diag.scores?.T || 0,
+            H: diag.scores?.H || 0,
+            total: diag.total || 0
+          },
+          lab: labEntry ? {
+            score: labEntry.score,
+            type: labEntry.type,
+            quant: labEntry.quant,
+            qualSamples: (labEntry.qual || []).slice(0, 3)
+          } : null,
+          marketSense: marketSense,
+          reportType: reportState.reportType
+        };
+        const userMsg = `請依輸入資料生成完整市場報告 JSON。報告類型：${reportState.reportType}。`;
+        const aiText = await window.PATH_AI.call('market_report', ctx, userMsg);
+        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          reportState.aiData = JSON.parse(jsonMatch[0]);
+        }
+      } catch(e) {
+        console.warn('[Market Report] Claude unavailable, using template:', e.message);
+      }
+    }
 
-      renderFullReport();
-    }, 2500);
+    reportState.generated = true;
+
+    // Save report record for homepage listing
+    const typeLabels = { toc: '消費市場報告', tob: '企業市場報告', feature: '功能可行性報告' };
+    const reportRecord = {
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      reportType: reportState.reportType,
+      typeName: typeLabels[reportState.reportType] || '市場報告',
+      productName: reportState.selectedDiag?.productName || '未命名',
+      diagTotal: reportState.selectedDiag?.total || 0,
+      verdict: reportState.selectedDiag?.verdict || '',
+      usingAI: !!reportState.aiData
+    };
+    if (!state.savedReports) state.savedReports = [];
+    state.savedReports.push(reportRecord);
+    try { localStorage.setItem('bp_savedReports', JSON.stringify(state.savedReports)); } catch(e) {}
+
+    renderFullReport();
   }
 
   function renderFullReport() {
@@ -25488,12 +25667,15 @@ function loadHistory(){
     const isFeature = rType === 'feature';
     const isToB = rType === 'tob';
 
-    // Generate mock market data based on product name
+    // v0.33.0: Claude AI 數據優先，fallback 到 hash-based 模板
     const hash = prodName.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
-    const tamBase = isFeature ? 0 : ((hash % 50) + 20);
-    const sam = isFeature ? 0 : Math.floor(tamBase * 0.3);
-    const som = isFeature ? 0 : Math.floor(tamBase * 0.08);
+    const aiData = reportState.aiData;
+    const usingAI = !!aiData;
+    const tamBase = isFeature ? 0 : (aiData?.chapter1_overview?.tam_usd_billion ? Math.round(aiData.chapter1_overview.tam_usd_billion * 31) : ((hash % 50) + 20));
+    const sam = isFeature ? 0 : (aiData?.chapter1_overview?.sam_usd_billion ? Math.round(aiData.chapter1_overview.sam_usd_billion * 31) : Math.floor(tamBase * 0.3));
+    const som = isFeature ? 0 : (aiData?.chapter1_overview?.som_usd_billion ? Math.round(aiData.chapter1_overview.som_usd_billion * 31) : Math.floor(tamBase * 0.08));
     const growthRate = ((hash % 20) + 8).toFixed(1);
+    const marketReasoning = aiData?.chapter1_overview?.reasoning || '';
 
     // Scores from PATH
     const P = diag.scores?.P || 50, A = diag.scores?.A || 50, T = diag.scores?.T || 50, H = diag.scores?.H || 50;
@@ -25503,8 +25685,10 @@ function loadHistory(){
     const labType = latestLab?.type || '';
     const labQuant = latestLab?.quant || {};
 
-    // Generate competitors based on type
-    const competitorTemplates = isToB ? [
+    // v0.33.0: Claude 競品分析優先 → fallback templates
+    const competitorTemplates = (aiData?.chapter2_competitors && aiData.chapter2_competitors.length >= 2) ? aiData.chapter2_competitors.map(c => ({
+      name: c.name, pos: c.positioning, price: c.pricing || '', strength: c.strength, weakness: c.weakness
+    })) : (isToB ? [
       { name: 'CompetitorA SaaS', pos: '企業級全功能平台', price: 'US$99-499/月', strength: '品牌知名度高、客戶基礎大', weakness: '價格偏高、在地化不足' },
       { name: 'CompetitorB Cloud', pos: '中小企業入門方案', price: 'US$29-99/月', strength: '價格有競爭力、易上手', weakness: '功能有限、客製化不足' },
       { name: 'Local Player', pos: '台灣本土解決方案', price: 'NT$500-2000/月', strength: '在地服務好、中文支援', weakness: '技術架構老舊、規模受限' }
@@ -25516,7 +25700,7 @@ function loadHistory(){
       { name: '品牌 A', pos: '市場領導者', price: 'NT$300-800/月', strength: '品牌信任度高、通路廣', weakness: '創新速度慢、價格偏高' },
       { name: '品牌 B', pos: '新進挑戰者', price: 'NT$150-400/月', strength: '社群聲量高、CP值好', weakness: '品質不穩定、售後弱' },
       { name: '品牌 C', pos: '利基市場玩家', price: 'NT$500-1200/月', strength: '專業度高、忠誠度強', weakness: '市場小、成長有限' }
-    ];
+    ]);
 
     // Feature matrix
     const features = ['核心功能', '進階功能', '客服支援', isToB ? 'API 整合' : '社群功能', isToB ? 'SLA 保證' : 'App 體驗', '定價彈性'];
@@ -29531,7 +29715,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v0.33.1 · 5 大工具全面接上 Claude AI（PATH 診斷 / Lab 研究 / 市場探測 / 市場報告 / 問卷引擎）：(1) Lab 研究 startResearch — 質性訪談 + 追問都走 window.PATH_AI.call('interview', ...) → Cloudflare Worker → Claude Sonnet/Opus；triggerAISummary 走 'report' node 生成三段式報告摘要；aiStats 標記 Claude 使用模型；(2) 市場探測 runMarketSignal 改 async — 優先呼叫 Claude 'market_sense' node 回 JSON（monthlySearch / competition / trend / relatedKeywords / demandGaps），fallback 到原 hash-based 模板；結果頁頂端顯示 AI/模板 badge；bp_market_{kw} 儲存 usingAI 旗標與 aiRaw 完整資料讓市場報告可取用；(3) 市場報告 generateMarketReport 改 async — 呼叫 'market_report' node 傳入 PATH diag + Lab data + Market Sense JSON，回 JSON 含 chapter1-5（TAM/SAM/SOM reasoning、competitors、audience、signals、strategy）；renderFullReport 讀 reportState.aiData 優先，fallback 保留 hash-based 模板；savedReports 記錄 usingAI；(4) 問卷引擎 generateSurvey 改 async — 呼叫 'survey_generate' node 回 JSON (questions, dimensions, estimatedTime)，Claude 題目 type 映射到既有渲染（likert5/open_text/multi_choice → 量表題/開放題/複選題），fallback 到 SURVEY_Q_TEMPLATES；auditSurvey 改 async — 呼叫 'survey_audit' node 回 JSON (overallScore, findings[], summary)，Claude severity high/medium/low → error/warning/info，fallback 到原 regex 檢測；(5) 每個工具結果頁頂都顯示 AI/模板 badge 維持誠信；(6) savedSurveys / savedReports / bp_market_{kw} 都儲存 usingAI 供歷史追溯 · 測試：首次實測 PATH 診斷 Sonnet 4.6 337 in / 351 out / 1 credit / $0.0063 ✅ · 部署：edwardt0303-281.workers.dev 已上線，worker.js v0.33.0 含 7 個 SYSTEM_PROMPTS -->
 <!-- v0.33.0 · Claude AI 整合骨架上線（等 Anthropic key + Cloudflare 部署）：(1) PLAN_CATALOG 擴充 defaultModel + allowedModels——Free 固定 Sonnet 4.6、Starter 可選 Sonnet/Opus、Pro 預設 Opus 4.7 可切 Sonnet、Enterprise 預設 Opus；Starter highlights 補「Sonnet/Opus 切換」；(2) 新增 MODEL_CATALOG（Opus 4.7 $5/$25、Sonnet 4.6 $3/$15、Haiku 4.5 $1/$5 per MTok）+ `tokensToCredits(inputTokens, outputTokens, modelId)` 換算函式（1 credit = $0.015 成本對齊 Pro 95% 毛利率）+ NODE_TOKEN_ESTIMATES（7 個 AI 節點預估 token：diagnose/interview/lab_run/market_sense/market_report/survey_generate/survey_audit）+ `estimateCreditsFor()` pre-check 函式；(3) 新增 `window.PATH_AI` 統一 AI 呼叫入口——pre-check 剩餘 credits 不足推升級、fetch 到 ai-proxy Cloudflare Worker、讀 usage.input_tokens/output_tokens 算 credits 寫 state.creditUsed + state.creditStats（node 分類統計 + _lastCall 歷史）、未設 PROXY_URL 時 throw AI_UNAVAILABLE 讓工具 fallback；(4) checkCreditReset() 每月自動重置 credit + stats、在 renderSidebar 尾呼叫；(5) Sidebar 新增 #sidebarCreditBadge HTML 元素 + 完整 CSS（collapsed=純數字、expanded=進度條 + 70%/90% gold/rose warn）、updateCreditBadge() 即時渲染；(6) Settings 頁 AI 模型選單改用 PLAN_CATALOG.allowedModels 動態 filter、creditCosts 從 NODE_TOKEN_ESTIMATES 動態計算跟 pre-check 一致、setAIModel() 加 plan 範圍驗證；(7) 市場報告 footer 誠信修復——原文案「此報告由 BeyondPath AI 引擎生成」在 AI 未接時是虛假聲明，改依 window.PATH_AI.isAvailable() 條件顯示「Claude AI 生成」或「模板生成・AI 深度分析待啟用」；MD 匯出文末同步；(8) ai-proxy/worker.js v0.33.0 重寫——預設 LLM_PROVIDER=anthropic、預設 model claude-sonnet-4-6、PLAN_ALLOWED_MODELS server-side 驗證、新增 4 個 system prompts（market_sense/market_report/survey_generate/survey_audit 皆回 JSON 結構）、max_tokens 依節點分級、回傳 usage{input_tokens, output_tokens, model, cost_usd, credits_used}；(9) wrangler.toml 切 anthropic + claude-sonnet-4-6 · 待部署流程：wrangler login → wrangler secret put LLM_API_KEY → wrangler deploy → app.html localStorage.bp_ai_proxy_url 填 workers.dev URL → 5 個工具切接 window.PATH_AI.call() -->
 <!-- v0.32.24 · 規劃頁中鍵拖移 + 下週期視覺分離 + tz bug 修補：(1) 新增 window.attachMidPan(el) 通用 helper——中鍵 mousedown 啟動 pan、mousemove 反向 scrollTop、mouseup 結束、capture-phase auxclick block 防誤觸（dy > 3px threshold），idempotent（__midPanAttached flag）；(2) renderBacklog 右 pane 包 #tpRightScroll overflow-y:auto scroll container，左 pane #tpDropBacklog 同步掛 pan，兩欄獨立捲動；(3) 本週期↔下週期分隔帶升級：原 1px border-top + 8/14px margin 改為 .tp-cycle-divider 漸層線 + pill label「下週期規劃」，margin 擴大 24/16px，暗色模式走 var(--bg-card)；(4) 下週期 opacity .75→.92，empty state 加 icon + 副提示文字「本週需求過多或預先規劃時可使用」+ 3% primary tint 背景；(5) renderBacklog 下週期 startDate/endDate 計算 .toISOString().split('T')[0] → fmtLocalYMD()，修補 v0.32.23 遷移遺漏的 tz bug；(6) CSS 新增 .cp-dropzone/.cp-drag-over/.tp-cycle-divider/.tp-cycle-divider-label + dark mode 變體；(7) 既有 DnD 三區互拖（_tpInitDragDrop）不動，中鍵 pan + 左鍵 DnD 不同按鈕零衝突 -->
-<!-- v0.32.23 · 時區安全日期格式化（ensureCurrentCycle off-by-one 根除）+ 資料遷移：(1) 根本問題——cycleStart 用 new Date() + setHours(0,0,0,0) 建立 local 00:00（例 2026-04-13 Mon TW local 00:00），再呼叫 .toISOString().slice(0,10) 轉成 UTC「2026-04-12」，UTC+8 TW 凌晨 08:00 前 local date 與 UTC date 差一天，於是 startStr = "2026-04-12" 與卡片實際 cycleId 對不上，13 張卡片掛在 cycle_mnzooqhvze7o7 但 kanban 用 cycle_next_2026-04-12 找不到——愛德華 4/16 截圖只看到 4 張；(2) 新增 fmtLocalYMD(d) helper at line 7220：getFullYear + getMonth+1 padded + getDate padded 組 YYYY-MM-DD 走 local time 不踩 UTC 偏移；(3) 14 個 .toISOString().slice(0,10) 呼叫點全面遷移——generatePmInsights 當日比對（7055）、ensureCurrentCycle startStr/endStr（7255-7256）、_cycleCarryOver find + 新 cycle startDate/endDate（9982, 9998-9999）、demo 注入 _ds helper（10058）、timeline drag/resize 四處（12646, 12650, 12660, 12666）、cycle next move find + startDate/endDate（14926, 14931-14932）、txn 表單日期預設（15640）、quote.created 預設（15939）、pulse view _todayISO（18266）、meeting.date 預設（25719）；(4) 保留 3 個檔名產出呼叫點不動（23543 Lab report / 24716 survey / 26931 backup）——檔名 UTC 無害且反而有跨時區一致性；(5) 一次性 data migration 腳本：ensureCurrentCycle 修好後會產生新正確 cycle（startDate=2026-04-13），同時 cycle_next_2026-04-12（bug 產物）孤兒化，腳本把裡面 21 張卡片搬到新 cycle 再刪除孤兒；(6) CLAUDE.md 新增「資料操作安全規則」（禁止硬編碼 cycleId 或 columnId）+「HTML 尾部 Comment 憲法」（changelog 必須完整包 HTML comment，尾頁後禁裸文字，Gate 4 加 grep 自動檢查）——回應愛德華「累犯」指正（footer 裸文字問題）· 對應 scripts/v0_32_23_tz_fix.md 完整調研文件 · 下一步 Gate 1 實測 / Gate 2 視覺 / Gate 4 版控 + beyondspec.tw/path/ 部署 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
