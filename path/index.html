@@ -2900,22 +2900,17 @@ canvas{display:block;margin:0 auto 24px}
 .kanban-board-wrap.has-scroll-left::before{opacity:1}
 .kanban-board-wrap.has-scroll-right::after{opacity:1}
 /* Dot indicator bar — removed by design decision, keep scrollbar + fade only */
-.kanban-board{display:flex;gap:16px;overflow-x:auto;padding-bottom:16px;min-height:calc(100vh - 220px);align-items:flex-start;-webkit-overflow-scrolling:touch}
-/* Custom scrollbar track */
-.kanban-board::-webkit-scrollbar{height:5px}
-.kanban-board::-webkit-scrollbar-track{background:transparent;margin:0 8px}
-.kanban-board::-webkit-scrollbar-thumb{background:rgba(124,92,252,.2);border-radius:4px;transition:background .2s}
-.kanban-board::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.4)}
-/* Firefox scrollbar */
-.kanban-board{scrollbar-width:thin;scrollbar-color:rgba(124,92,252,.2) transparent}
-.kanban-col{flex:1 1 0;min-width:280px;max-width:420px;background:var(--bg-card);border-radius:var(--r-lg);display:flex;flex-direction:column;max-height:calc(100vh - 220px);box-shadow:var(--shadow-sm)}
+/* v1.0.5: 核彈級結構修復——橫向 overflow 永久關閉，Chrome 原生 autoscroll 找不到 h-scrollable 祖先
+   = 在 col-body 中鍵 100% 不可能觸發橫向散逸，從根本消除問題。
+   代價：欄多時在小螢幕會擠；透過 .kanban-col 降 min-width 到 200px + flex-wrap:wrap 緩解 */
+.kanban-board{display:flex;gap:16px;overflow:hidden;padding-bottom:16px;min-height:calc(100vh - 220px);align-items:flex-start;flex-wrap:wrap}
+.kanban-col{flex:1 1 240px;min-width:200px;max-width:420px;background:var(--bg-card);border-radius:var(--r-lg);display:flex;flex-direction:column;max-height:calc(100vh - 220px);box-shadow:var(--shadow-sm)}
 .kanban-col-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:var(--r-lg) var(--r-lg) 0 0}
 /* v0.32.20：col-body gap 12px 讓卡片上下有呼吸感（取代原 .kanban-card margin-bottom:8px 過密） */
 .kanban-col-body{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:12px;min-height:80px;transition:background .2s;display:flex;flex-direction:column;gap:12px}
-/* v1.0.4: mid-pan 期間僅鎖 .kanban-board 橫向散逸；document-level mousedown hook 才是主力防線 */
-body.mid-panning .kanban-board{overflow-x:hidden !important}
-body.mid-panning .kanban-col-body{touch-action:pan-y !important;overscroll-behavior:contain !important}
+/* v1.0.5: 結構上 .kanban-board 已無 h-scroll 可能，mid-pan CSS 只剩 cursor feedback */
 body.mid-panning{cursor:grabbing !important;user-select:none !important}
+body.mid-panning .kanban-col-body{touch-action:pan-y !important;overscroll-behavior:contain !important}
 
 /* v1.0.2: 分組 bpSelect 在 toolbar 的 compact 版（縮高度 + 降 padding，視覺跟周圍 chips/buttons 齊平） */
 .kb-groupby-compact .bp-select-trigger{
@@ -5015,7 +5010,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.0.4</div>
+        <div class="sidebar-version">v1.0.5</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7595,75 +7590,31 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     }, {capture: true, passive: false});
   }
 
-  // v1.0.4: attachMidPan — col-body 層級維持 JS 端的 scroll 動畫；document-level hook 負責擋 autoscroll
+  // v1.0.5: attachMidPan 極簡版——因為結構修復（.kanban-board overflow:hidden）已消除 Chrome autoscroll
+  // 橫向散逸的可能性，這個 helper 只需乖乖處理垂直捲動。
   window.attachMidPan = function(el){
     if(!el || el.__midPanAttached) return;
     el.__midPanAttached = true;
-    var isPanning = false, startY = 0, startX = 0, startScrollTop = 0, moved = false;
-    var lockedAncestors = []; // {el, scrollLeft}
-    var rafId = null;
+    var isPanning = false, startY = 0, startScrollTop = 0, moved = false;
 
-    function collectLocked(){
-      lockedAncestors = [];
-      var p = el.parentElement;
-      while(p && p !== document.body){
-        if(p.scrollWidth > p.clientWidth){
-          lockedAncestors.push({el:p, x:p.scrollLeft});
-        }
-        p = p.parentElement;
-      }
-    }
-
-    function enforceLocks(){
-      for(var i=0; i<lockedAncestors.length; i++){
-        var a = lockedAncestors[i];
-        if(a.el.scrollLeft !== a.x){ a.el.scrollLeft = a.x; }
-      }
-    }
-
-    function rafLoop(){
-      if(!isPanning){ rafId = null; return; }
-      enforceLocks();
-      rafId = requestAnimationFrame(rafLoop);
-    }
-
-    // mousedown — 必須 capture phase 搶先於瀏覽器 autoscroll
     el.addEventListener('mousedown', function(e){
       if(e.button !== 1) return;
       e.preventDefault();
       e.stopPropagation();
       isPanning = true; moved = false;
       startY = e.clientY;
-      startX = e.clientX;
       startScrollTop = el.scrollTop;
       el.style.cursor = 'grabbing';
       el.style.userSelect = 'none';
       document.body.classList.add('mid-panning');
-      collectLocked();
-      if(rafId == null) rafId = requestAnimationFrame(rafLoop);
     }, true);
 
-    // mousemove — 只調 el.scrollTop，並額外 enforceLocks 搶先於瀏覽器下一幀
     window.addEventListener('mousemove', function(e){
       if(!isPanning) return;
       var dy = e.clientY - startY;
-      var dx = e.clientX - startX;
-      if(Math.abs(dy) > 3 || Math.abs(dx) > 3) moved = true;
+      if(Math.abs(dy) > 3) moved = true;
       el.scrollTop = startScrollTop - dy;
-      enforceLocks();
     }, true);
-
-    // scroll capture on document — 祖先任何橫向 scroll 觸發時立刻拉回
-    document.addEventListener('scroll', function(){
-      if(!isPanning) return;
-      enforceLocks();
-    }, true);
-
-    // wheel — panning 期間吃掉所有 wheel（避免用戶滾輪意外介入）
-    window.addEventListener('wheel', function(e){
-      if(!isPanning) return;
-      e.preventDefault();
-    }, {passive:false, capture:true});
 
     window.addEventListener('mouseup', function(e){
       if(!isPanning) return;
@@ -7671,8 +7622,6 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       el.style.cursor = '';
       el.style.userSelect = '';
       document.body.classList.remove('mid-panning');
-      lockedAncestors = [];
-      if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
     });
 
     el.addEventListener('auxclick', function(e){
@@ -7680,11 +7629,6 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         e.preventDefault();
         if(moved){ e.stopPropagation(); e.stopImmediatePropagation && e.stopImmediatePropagation(); }
       }
-    }, true);
-
-    // contextmenu capture on middle — some Chrome versions fire this
-    el.addEventListener('contextmenu', function(e){
-      if(e.button === 1){ e.preventDefault(); }
     }, true);
   };
 
@@ -30018,7 +29962,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.0.5 · 任務看板中鍵拖移【核彈級結構修復】（v1.0.1/1.0.2/1.0.3/1.0.4 四版 JS 防禦失敗後的根因解）：放棄所有 JS 防禦策略，直接結構改動——.kanban-board 從 overflow-x:auto 改 overflow:hidden 永久關閉，flex-wrap 改 wrap；.kanban-col min-width 280→200、flex basis 1 1 240px，欄多時自動換行；如此 Chrome 原生 middle-click autoscroll 在 col-body 按下時，向上找任何 h-scrollable 祖先都找不到（col-body 本身 overflow-x:hidden、.kanban-board 永久 hidden），根本沒 anchor 可選，autoscroll 無法啟動橫向散逸；代價：5 欄且小螢幕時會換行（可接受，比橫向散逸好）；attachMidPan 極簡化去掉 rAF enforceLocks/wheel/scroll capture（結構修完已不需要）；保留 document-level mousedown capture hook + body.mid-panning cursor feedback · 版號 v1.0.4→v1.0.5 · tail cleanup: v1.0.2 搬進 CHANGELOG.md -->
 <!-- v1.0.4 · 任務看板中鍵拖移根因級修復（來回 3 版才抓到 root cause）：卡西法 Chrome 實測診斷確認——Chrome 原生 autoscroll 在 mousedown 瞬間走 native layer 選最近 h-scrollable 祖先（=.kanban-board）當 anchor，col-body 層級 capture listener 已太晚；v1.0.2 / 1.0.3 的 body.mid-panning CSS + rAF enforceLocks 只能被動拉回，每幀 16ms gap 讓 native pan 可散逸幾十 px。解：新增 document-level capture phase mousedown hook（window._midPanDocHook 單例），搶先於所有 element handler 先 preventDefault 掉 kanban-col-body 內部中鍵 mousedown，徹底阻止 Chrome 選定 anchor；移除 v1.0.3 過度防禦的 body.mid-panning *{pointer-events:none} 與雙層 overflow-hidden，簡化為單一 .kanban-board{overflow-x:hidden !important}；attachMidPan 本身維持 col-body 層級 JS 捲動邏輯不變 · 版號 v1.0.3→v1.0.4 · tail cleanup: v1.0.1 搬進 CHANGELOG.md -->
 <!-- v1.0.3 · 任務看板雙 UX 修復（Edward 回報）：(1) 卡片 hover 靜態化——移除 .kb-card-v2:hover 的 transform:translateY(-1px) 浮起 + box-shadow 放大 + description -webkit-line-clamp:1→2 展開動態，三項合併的動態效果在欄位塞滿 8+ 張卡時嚴重干擾視覺與閱讀；hover 只保留 border-color 淡紫提示，description 永遠 1 行 ellipsis；(2) 中鍵拖移強制鎖垂直（徹底版）——attachMidPan 重寫五層防禦：mousedown capture phase 搶先於 Windows autoscroll、collectLocked() 記錄所有祖先橫向 scrollable 的 scrollLeft、rAF loop 每幀 enforceLocks() 兜底、document scroll capture 即時拉回、wheel capture 吃掉意外滾輪；CSS 強化 body.mid-panning 期間 .kanban-board + .kanban-board-wrap 雙層 overflow-x:hidden + touch-action:none + .kanban-col-body 保留 pan-y；auxclick stopImmediatePropagation 防誤觸卡片 click · 版號 v1.0.2→v1.0.3 · tail cleanup: v1.0.0 搬進 CHANGELOG.md -->
-<!-- v1.0.2 · 緊急回退 + 3 個根源性 bug 修復：(1) 全域 topbar 整組移除——不論 v0.34.0 的 sticky bar 還是 v1.0.1 的 fixed pill，都跟頁面標題互斥（sticky 推下標題 / fixed 擋住標題），愛德華兩次明確要求「退回上一版設計」；#globalTopbar HTML element + global-topbar CSS 全刪；updateCreditBadge 改 no-op 保留 API 不爆；renderHome 恢復 inline credit pill + plan badge + avatar + 用戶名（跟 v0.33.2 一致）；credit 顯示改回 僅出現於首頁 + 設定頁；(2) renderModule 統一加 overflow safety reset——timeline/roadmap 會設 #main.overflow:hidden + height:100vh 鎖死外層捲動，過去 6 個 render fn（home/quotes/billing/diagnose/pmf/settings）沒自行 reset，導致用戶從 timeline 切到 Lab/PATH 診斷等頁「上下拖移失效」；在 renderModule 入口統一清除 #main + #app 的 overflow/height inline style，roadmap/timeline 自己會重新設定不受影響；額外在 renderLab 加 belt-and-suspenders reset；(3) 看板中鍵拖移強化鎖定垂直——attachMidPan 加多層防線：body.mid-panning class 觸發時 CSS 強制 .kanban-board{overflow-x:hidden !important}、mousemove capture phase 先發制人、外層可橫向 scroll 父容器的 scrollLeft 鎖死（記 _midPanLockedScrollLeft 隨 mousemove 復位）、mousedown 雙 listener（一般 + capture）分工抓 scrollLeft；.kanban-col-body 加 overflow-x:hidden 不再依靠預設；預期徹底封鎖 Windows autoscroll 橫向散逸 · 版號 v1.0.1→v1.0.2 · 「新增視覺」項目待愛德華指認具體位置再處理 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
