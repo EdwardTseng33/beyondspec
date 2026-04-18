@@ -508,32 +508,63 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 }
 #sidebar.expanded .sidebar-version{text-align:center;padding-left:0}
 
-/* v0.33.0: Sidebar credit badge */
+/* v0.33.0 → v0.33.2: Sidebar credit badge
+   collapsed 態：圖示化為 4px 細進度環，僅 hover 時 tooltip 顯示數字（極簡，不污染 icon-only 視覺）
+   expanded 態：完整 bar + 數字 + 月重置提示 */
 .sidebar-credit-badge{
-  font-size:11px;color:rgba(255,255,255,.55);padding:4px 0;cursor:pointer;
-  text-align:center;letter-spacing:.2px;line-height:1.4;
-  transition:color .18s;
+  cursor:pointer;transition:opacity .18s;
+  font-variant-numeric:tabular-nums;
 }
 .sidebar-credit-badge:empty{display:none}
-.sidebar-credit-badge:hover{color:rgba(255,255,255,.85)}
-#sidebar.expanded .sidebar-credit-badge{padding:6px 10px;width:100%;border-radius:8px;background:rgba(255,255,255,.04)}
-#sidebar.expanded .sidebar-credit-badge:hover{background:rgba(255,255,255,.08)}
-.sidebar-credit-badge .cb-row{display:flex;align-items:baseline;justify-content:center;gap:3px;font-variant-numeric:tabular-nums}
-.sidebar-credit-badge .cb-used{font-weight:700;color:rgba(255,255,255,.9);font-size:12px}
-.sidebar-credit-badge .cb-sep{color:rgba(255,255,255,.3)}
-.sidebar-credit-badge .cb-limit{color:rgba(255,255,255,.5)}
-.sidebar-credit-badge .cb-bar{
-  width:100%;height:3px;border-radius:2px;background:rgba(255,255,255,.08);
-  margin-top:6px;overflow:hidden;
+/* collapsed 態 — 僅顯示小型圖示 + 進度環 */
+#sidebar:not(.expanded) .sidebar-credit-badge{
+  display:flex;align-items:center;justify-content:center;
+  width:44px;height:44px;margin:2px auto;padding:0;
+  border-radius:50%;position:relative;
+  background:rgba(255,255,255,.05);
 }
-#sidebar:not(.expanded) .sidebar-credit-badge .cb-bar{display:none}
-#sidebar:not(.expanded) .sidebar-credit-badge .cb-row{flex-direction:column;gap:0;line-height:1.2}
-#sidebar:not(.expanded) .sidebar-credit-badge .cb-sep{display:none}
-.sidebar-credit-badge .cb-bar-fill{
+#sidebar:not(.expanded) .sidebar-credit-badge:hover{background:rgba(255,255,255,.12)}
+#sidebar:not(.expanded) .sidebar-credit-badge .cb-row{
+  display:flex;align-items:center;justify-content:center;gap:0;line-height:1;
+}
+#sidebar:not(.expanded) .sidebar-credit-badge .cb-sep,
+#sidebar:not(.expanded) .sidebar-credit-badge .cb-limit{display:none}
+#sidebar:not(.expanded) .sidebar-credit-badge .cb-used{
+  font-size:11px;font-weight:700;color:rgba(255,255,255,.85);line-height:1;
+}
+#sidebar:not(.expanded) .sidebar-credit-badge .cb-bar{
+  position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;
+  width:auto;height:auto;border-radius:50%;
+  background:transparent;
+  border:2px solid rgba(255,255,255,.1);
+  overflow:hidden;margin:0;
+}
+#sidebar:not(.expanded) .sidebar-credit-badge .cb-bar-fill{
+  /* Collapsed mode: 轉成環形光暈提示，不用條形 */
+  display:none;
+}
+/* expanded 態 — 完整 pill bar */
+#sidebar.expanded .sidebar-credit-badge{
+  padding:8px 12px;width:100%;border-radius:10px;
+  background:rgba(255,255,255,.04);
+}
+#sidebar.expanded .sidebar-credit-badge:hover{background:rgba(255,255,255,.08)}
+#sidebar.expanded .sidebar-credit-badge .cb-row{
+  display:flex;align-items:baseline;justify-content:space-between;gap:4px;
+  font-size:11px;color:rgba(255,255,255,.55);line-height:1.3;
+}
+#sidebar.expanded .sidebar-credit-badge .cb-used{font-weight:700;color:rgba(255,255,255,.9);font-size:13px}
+#sidebar.expanded .sidebar-credit-badge .cb-sep{color:rgba(255,255,255,.3);font-size:11px}
+#sidebar.expanded .sidebar-credit-badge .cb-limit{color:rgba(255,255,255,.5);font-size:11px}
+#sidebar.expanded .sidebar-credit-badge .cb-bar{
+  width:100%;height:3px;border-radius:2px;background:rgba(255,255,255,.08);
+  margin-top:7px;overflow:hidden;
+}
+#sidebar.expanded .sidebar-credit-badge .cb-bar-fill{
   height:100%;border-radius:2px;background:var(--primary);transition:width .3s ease;
 }
-.sidebar-credit-badge .cb-bar-fill.cb-warn{background:var(--gold)}
-.sidebar-credit-badge .cb-bar-fill.cb-danger{background:var(--rose)}
+#sidebar.expanded .sidebar-credit-badge .cb-bar-fill.cb-warn{background:var(--gold)}
+#sidebar.expanded .sidebar-credit-badge .cb-bar-fill.cb-danger{background:var(--rose)}
 .sidebar-user{
   padding:14px 0;border-top:1px solid rgba(255,255,255,.08);
   width:100%;display:flex;align-items:center;justify-content:center;
@@ -4934,7 +4965,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.33.1</div>
+        <div class="sidebar-version">v0.33.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7650,11 +7681,15 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     var planCfg = PLAN_CATALOG[plan] || PLAN_CATALOG.free;
     var used = state.creditUsed || 0;
     if (planCfg.credits === 'unlimited') {
-      el.innerHTML = '<span class="cb-used">' + used.toLocaleString() + '</span> <span class="cb-sep">/</span> <span class="cb-limit">∞</span>';
+      el.title = 'AI Credits: ' + used.toLocaleString() + ' / 無限';
+      el.innerHTML = '<div class="cb-row"><span class="cb-used">' + used.toLocaleString() + '</span> <span class="cb-sep">/</span> <span class="cb-limit">∞</span></div>';
       return;
     }
+    var remaining = Math.max(0, planCfg.credits - used);
     var pct = Math.min(100, Math.round(used / planCfg.credits * 100));
     var toneClass = pct >= 90 ? ' cb-danger' : pct >= 70 ? ' cb-warn' : '';
+    // v0.33.2: title attr 讓 collapsed 態也能 hover 看到完整資訊
+    el.title = '本月 AI Credits：已用 ' + used.toLocaleString() + ' / 上限 ' + planCfg.credits.toLocaleString() + '（剩 ' + remaining.toLocaleString() + '）';
     el.innerHTML =
       '<div class="cb-row"><span class="cb-used">' + used.toLocaleString() + '</span> <span class="cb-sep">/</span> <span class="cb-limit">' + planCfg.credits.toLocaleString() + '</span></div>' +
       '<div class="cb-bar"><div class="cb-bar-fill' + toneClass + '" style="width:' + pct + '%"></div></div>';
@@ -12217,10 +12252,14 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       if(window._rmDragJustEnded){ return; }
       var evt = window.event;
       if(evt){ evt.stopPropagation(); }
-      // v0.32.22 DEPRECATED：愛德華要求時間軸 bar 點擊直接開完整編輯 modal，跳過 preview drawer
-      // 原流程：點 bar → 側邊 rmInlineDrawer preview → 按「前往完整編輯」再跳頁 + 開 modal（兩步）
-      // 新流程：點 bar 直接轉導 _rmOpenFullCard（navigate 到 biz-tasks + 開 kb-modal-overlay）一步到位
-      // 與任務看板點卡的 UX 完全一致；drawer 渲染邏輯保留為 unreachable dead code 供歷史參考
+      // v0.33.2：改成就地開 kb-modal-overlay（不跳到任務看板頁）
+      // 原 v0.32.22 行為：跳頁 + 開 modal，打斷「瀏覽時間河流」心流
+      // 新行為：直接呼叫 _kbEditCard 在時間軸頁就地彈出編輯 modal；若 _kbEditCard 未初始化（用戶尚未進過任務看板），fallback 到 navigate+_kbEditCard 路徑
+      if(typeof window._kbEditCard === 'function'){
+        window._kbEditCard(cardId);
+        return;
+      }
+      // Fallback: _kbEditCard 尚未掛到 window（renderBoard 未跑過）→ 走舊 navigate 路徑確保能打開
       if(typeof window._rmOpenFullCard === 'function'){
         window._rmOpenFullCard(cardId);
         return;
@@ -12474,6 +12513,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       var card = cards.find(function(c){ return c.id === cardId; });
       if(!card) return;
       if(!_rmTipEl){
+        // v0.33.2 bug fix: renderRoadmap 再次呼叫時，舊 closure 的 tooltip DOM 會殘留在 body 造成雙 tooltip 疊圖
+        // 建立前先清掉所有舊的 .rm-tooltip（單一實例原則）
+        document.querySelectorAll('.rm-tooltip').forEach(function(el){ el.remove(); });
         _rmTipEl = document.createElement('div');
         _rmTipEl.className = 'rm-tooltip';
         document.body.appendChild(_rmTipEl);
@@ -13827,6 +13869,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         el.addEventListener('mouseup',function(e){if(Math.abs(e.clientX-startX)<5&&Math.abs(e.clientY-startY)<5) window._kbEditCard(el.dataset.card);});
       });
       colBodies.forEach(function(body){
+        // v0.33.2: 中鍵拖移捲動鎖定在該欄位內（防止觸發 Windows autoscroll 導致橫向滾動到其他欄）
+        if (window.attachMidPan) window.attachMidPan(body);
         body.addEventListener('dragover',function(e){
           // v0.32.4: 欄位拖曳中時，跳過卡片 drop 視覺
           if(content.querySelector('.kanban-col.col-dragging')) return;
@@ -29715,7 +29759,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v0.33.2 · 3 bug 修復（愛德華 v0.33.1 部署後截圖回饋）：(1) 時間軸 tooltip 雙渲染 bug——`_rmTipEl` closure 變數在 renderRoadmap 重複呼叫時會被重建，但 document.body 舊的 `.rm-tooltip` 元素不清除、新元素疊上去，造成同一任務出現 2 個幾乎一模一樣 tooltip；修法：`_rmShowTip` 建立新 tooltip 前先 `document.querySelectorAll('.rm-tooltip').forEach(el => el.remove())` 清光舊殘留，維持「body 內單一 tooltip 實例」原則；(2) 時間軸點擊 bar 跳頁問題——v0.32.22 短路到 `_rmOpenFullCard` 會 `navigate('biz-tasks')` 打斷「我正在瀏覽時間河流」的心流；修法：`_rmOpenCard` 改優先呼叫 `_kbEditCard(cardId)` 就地彈出 kb-modal-overlay（不跳頁），若 _kbEditCard 尚未掛載（使用者還沒進過任務看板）fallback 到舊 navigate 路徑確保能打開；hover = tooltip、click = 就地彈窗，兩者職責清晰分離；(3) Sidebar credit badge collapsed 態視覺違和——v0.33.0 設計在折疊側邊欄顯示「0」+「3,000」兩行大字，跟其他 icon-only 項目格格不入；修法：collapsed 態改成 44×44 圓形 badge（白 5% tint + 2px 環），內只顯示 used 數字（11px），sep/limit 隱藏、bar 改環狀 overflow 承接視覺語言；expanded 態保留完整 pill bar（used/sep/limit + 進度條）；額外加 title attribute 讓 collapsed hover 有完整 tooltip · 版號 v0.33.1→v0.33.2 · tail cleanup：v0.32.24 搬進 CHANGELOG.md -->
 <!-- v0.33.1 · 5 大工具全面接上 Claude AI（PATH 診斷 / Lab 研究 / 市場探測 / 市場報告 / 問卷引擎）：(1) Lab 研究 startResearch — 質性訪談 + 追問都走 window.PATH_AI.call('interview', ...) → Cloudflare Worker → Claude Sonnet/Opus；triggerAISummary 走 'report' node 生成三段式報告摘要；aiStats 標記 Claude 使用模型；(2) 市場探測 runMarketSignal 改 async — 優先呼叫 Claude 'market_sense' node 回 JSON（monthlySearch / competition / trend / relatedKeywords / demandGaps），fallback 到原 hash-based 模板；結果頁頂端顯示 AI/模板 badge；bp_market_{kw} 儲存 usingAI 旗標與 aiRaw 完整資料讓市場報告可取用；(3) 市場報告 generateMarketReport 改 async — 呼叫 'market_report' node 傳入 PATH diag + Lab data + Market Sense JSON，回 JSON 含 chapter1-5（TAM/SAM/SOM reasoning、competitors、audience、signals、strategy）；renderFullReport 讀 reportState.aiData 優先，fallback 保留 hash-based 模板；savedReports 記錄 usingAI；(4) 問卷引擎 generateSurvey 改 async — 呼叫 'survey_generate' node 回 JSON (questions, dimensions, estimatedTime)，Claude 題目 type 映射到既有渲染（likert5/open_text/multi_choice → 量表題/開放題/複選題），fallback 到 SURVEY_Q_TEMPLATES；auditSurvey 改 async — 呼叫 'survey_audit' node 回 JSON (overallScore, findings[], summary)，Claude severity high/medium/low → error/warning/info，fallback 到原 regex 檢測；(5) 每個工具結果頁頂都顯示 AI/模板 badge 維持誠信；(6) savedSurveys / savedReports / bp_market_{kw} 都儲存 usingAI 供歷史追溯 · 測試：首次實測 PATH 診斷 Sonnet 4.6 337 in / 351 out / 1 credit / $0.0063 ✅ · 部署：edwardt0303-281.workers.dev 已上線，worker.js v0.33.0 含 7 個 SYSTEM_PROMPTS -->
 <!-- v0.33.0 · Claude AI 整合骨架上線（等 Anthropic key + Cloudflare 部署）：(1) PLAN_CATALOG 擴充 defaultModel + allowedModels——Free 固定 Sonnet 4.6、Starter 可選 Sonnet/Opus、Pro 預設 Opus 4.7 可切 Sonnet、Enterprise 預設 Opus；Starter highlights 補「Sonnet/Opus 切換」；(2) 新增 MODEL_CATALOG（Opus 4.7 $5/$25、Sonnet 4.6 $3/$15、Haiku 4.5 $1/$5 per MTok）+ `tokensToCredits(inputTokens, outputTokens, modelId)` 換算函式（1 credit = $0.015 成本對齊 Pro 95% 毛利率）+ NODE_TOKEN_ESTIMATES（7 個 AI 節點預估 token：diagnose/interview/lab_run/market_sense/market_report/survey_generate/survey_audit）+ `estimateCreditsFor()` pre-check 函式；(3) 新增 `window.PATH_AI` 統一 AI 呼叫入口——pre-check 剩餘 credits 不足推升級、fetch 到 ai-proxy Cloudflare Worker、讀 usage.input_tokens/output_tokens 算 credits 寫 state.creditUsed + state.creditStats（node 分類統計 + _lastCall 歷史）、未設 PROXY_URL 時 throw AI_UNAVAILABLE 讓工具 fallback；(4) checkCreditReset() 每月自動重置 credit + stats、在 renderSidebar 尾呼叫；(5) Sidebar 新增 #sidebarCreditBadge HTML 元素 + 完整 CSS（collapsed=純數字、expanded=進度條 + 70%/90% gold/rose warn）、updateCreditBadge() 即時渲染；(6) Settings 頁 AI 模型選單改用 PLAN_CATALOG.allowedModels 動態 filter、creditCosts 從 NODE_TOKEN_ESTIMATES 動態計算跟 pre-check 一致、setAIModel() 加 plan 範圍驗證；(7) 市場報告 footer 誠信修復——原文案「此報告由 BeyondPath AI 引擎生成」在 AI 未接時是虛假聲明，改依 window.PATH_AI.isAvailable() 條件顯示「Claude AI 生成」或「模板生成・AI 深度分析待啟用」；MD 匯出文末同步；(8) ai-proxy/worker.js v0.33.0 重寫——預設 LLM_PROVIDER=anthropic、預設 model claude-sonnet-4-6、PLAN_ALLOWED_MODELS server-side 驗證、新增 4 個 system prompts（market_sense/market_report/survey_generate/survey_audit 皆回 JSON 結構）、max_tokens 依節點分級、回傳 usage{input_tokens, output_tokens, model, cost_usd, credits_used}；(9) wrangler.toml 切 anthropic + claude-sonnet-4-6 · 待部署流程：wrangler login → wrangler secret put LLM_API_KEY → wrangler deploy → app.html localStorage.bp_ai_proxy_url 填 workers.dev URL → 5 個工具切接 window.PATH_AI.call() -->
-<!-- v0.32.24 · 規劃頁中鍵拖移 + 下週期視覺分離 + tz bug 修補：(1) 新增 window.attachMidPan(el) 通用 helper——中鍵 mousedown 啟動 pan、mousemove 反向 scrollTop、mouseup 結束、capture-phase auxclick block 防誤觸（dy > 3px threshold），idempotent（__midPanAttached flag）；(2) renderBacklog 右 pane 包 #tpRightScroll overflow-y:auto scroll container，左 pane #tpDropBacklog 同步掛 pan，兩欄獨立捲動；(3) 本週期↔下週期分隔帶升級：原 1px border-top + 8/14px margin 改為 .tp-cycle-divider 漸層線 + pill label「下週期規劃」，margin 擴大 24/16px，暗色模式走 var(--bg-card)；(4) 下週期 opacity .75→.92，empty state 加 icon + 副提示文字「本週需求過多或預先規劃時可使用」+ 3% primary tint 背景；(5) renderBacklog 下週期 startDate/endDate 計算 .toISOString().split('T')[0] → fmtLocalYMD()，修補 v0.32.23 遷移遺漏的 tz bug；(6) CSS 新增 .cp-dropzone/.cp-drag-over/.tp-cycle-divider/.tp-cycle-divider-label + dark mode 變體；(7) 既有 DnD 三區互拖（_tpInitDragDrop）不動，中鍵 pan + 左鍵 DnD 不同按鈕零衝突 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
