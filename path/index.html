@@ -508,63 +508,46 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 }
 #sidebar.expanded .sidebar-version{text-align:center;padding-left:0}
 
-/* v0.33.0 → v0.33.2: Sidebar credit badge
-   collapsed 態：圖示化為 4px 細進度環，僅 hover 時 tooltip 顯示數字（極簡，不污染 icon-only 視覺）
-   expanded 態：完整 bar + 數字 + 月重置提示 */
-.sidebar-credit-badge{
-  cursor:pointer;transition:opacity .18s;
+/* v0.34.0: Global topbar — 全域右上角資訊區，credit + plan + avatar 統一在此
+   原 sidebar credit badge（v0.33.0–v0.33.2）移除，符合愛德華指示「跟首頁一樣放右上角」 */
+.global-topbar{
+  display:flex;align-items:center;justify-content:flex-end;gap:14px;
+  padding:12px 24px;min-height:56px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:saturate(140%) blur(6px);
+}
+.global-topbar:empty{display:none}
+.gtb-credit{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:999px;
+  background:var(--bg-hover);cursor:pointer;
+  transition:all .18s var(--ease-out);
   font-variant-numeric:tabular-nums;
 }
-.sidebar-credit-badge:empty{display:none}
-/* collapsed 態 — 僅顯示小型圖示 + 進度環 */
-#sidebar:not(.expanded) .sidebar-credit-badge{
+.gtb-credit:hover{background:color-mix(in srgb,var(--primary) 10%,var(--bg-hover));transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.gtb-credit svg{color:var(--primary);flex-shrink:0}
+.gtb-credit-num{font-size:13px;font-weight:700;color:var(--ink)}
+.gtb-credit-sep{font-size:12px;color:var(--ink-dim)}
+.gtb-credit-lim{font-size:12px;color:var(--ink-muted)}
+.gtb-credit-unit{font-size:11px;color:var(--ink-muted);margin-left:2px}
+.gtb-credit.warn .gtb-credit-num{color:var(--gold)}
+.gtb-credit.danger .gtb-credit-num{color:var(--rose)}
+.gtb-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--primary);color:#fff;
   display:flex;align-items:center;justify-content:center;
-  width:44px;height:44px;margin:2px auto;padding:0;
-  border-radius:50%;position:relative;
-  background:rgba(255,255,255,.05);
+  font-size:14px;font-weight:700;cursor:pointer;
+  transition:transform .18s;
 }
-#sidebar:not(.expanded) .sidebar-credit-badge:hover{background:rgba(255,255,255,.12)}
-#sidebar:not(.expanded) .sidebar-credit-badge .cb-row{
-  display:flex;align-items:center;justify-content:center;gap:0;line-height:1;
+.gtb-avatar:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(124,92,252,.3)}
+.gtb-name{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap}
+@media(max-width:640px){
+  .global-topbar{padding:10px 14px;gap:8px}
+  .gtb-name{display:none}
+  .gtb-credit-lim,.gtb-credit-sep{display:none}
 }
-#sidebar:not(.expanded) .sidebar-credit-badge .cb-sep,
-#sidebar:not(.expanded) .sidebar-credit-badge .cb-limit{display:none}
-#sidebar:not(.expanded) .sidebar-credit-badge .cb-used{
-  font-size:11px;font-weight:700;color:rgba(255,255,255,.85);line-height:1;
-}
-#sidebar:not(.expanded) .sidebar-credit-badge .cb-bar{
-  position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;
-  width:auto;height:auto;border-radius:50%;
-  background:transparent;
-  border:2px solid rgba(255,255,255,.1);
-  overflow:hidden;margin:0;
-}
-#sidebar:not(.expanded) .sidebar-credit-badge .cb-bar-fill{
-  /* Collapsed mode: 轉成環形光暈提示，不用條形 */
-  display:none;
-}
-/* expanded 態 — 完整 pill bar */
-#sidebar.expanded .sidebar-credit-badge{
-  padding:8px 12px;width:100%;border-radius:10px;
-  background:rgba(255,255,255,.04);
-}
-#sidebar.expanded .sidebar-credit-badge:hover{background:rgba(255,255,255,.08)}
-#sidebar.expanded .sidebar-credit-badge .cb-row{
-  display:flex;align-items:baseline;justify-content:space-between;gap:4px;
-  font-size:11px;color:rgba(255,255,255,.55);line-height:1.3;
-}
-#sidebar.expanded .sidebar-credit-badge .cb-used{font-weight:700;color:rgba(255,255,255,.9);font-size:13px}
-#sidebar.expanded .sidebar-credit-badge .cb-sep{color:rgba(255,255,255,.3);font-size:11px}
-#sidebar.expanded .sidebar-credit-badge .cb-limit{color:rgba(255,255,255,.5);font-size:11px}
-#sidebar.expanded .sidebar-credit-badge .cb-bar{
-  width:100%;height:3px;border-radius:2px;background:rgba(255,255,255,.08);
-  margin-top:7px;overflow:hidden;
-}
-#sidebar.expanded .sidebar-credit-badge .cb-bar-fill{
-  height:100%;border-radius:2px;background:var(--primary);transition:width .3s ease;
-}
-#sidebar.expanded .sidebar-credit-badge .cb-bar-fill.cb-warn{background:var(--gold)}
-#sidebar.expanded .sidebar-credit-badge .cb-bar-fill.cb-danger{background:var(--rose)}
 .sidebar-user{
   padding:14px 0;border-top:1px solid rgba(255,255,255,.08);
   width:100%;display:flex;align-items:center;justify-content:center;
@@ -4959,16 +4942,18 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     <aside id="sidebar">
       <nav class="sidebar-nav" id="nav"></nav>
       <div class="sidebar-bottom">
-        <div id="sidebarCreditBadge" class="sidebar-credit-badge" title="本月 AI Credits 使用量" onclick="if(typeof window._openCreditPanel==='function')window._openCreditPanel()"></div>
         <div id="themeToggle"></div>
         <button class="sidebar-toggle-btn" onclick="app.toggleSidebar()" title="展開/收合選單">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.33.2</div>
+        <div class="sidebar-version">v1.0.0</div>
       </div>
     </aside>
-    <main id="main"><div id="content"></div></main>
+    <main id="main">
+      <header id="globalTopbar" class="global-topbar"></header>
+      <div id="content"></div>
+    </main>
   </div>
   <div id="loginModal"></div>
   <div id="toastContainer"></div>
@@ -6815,19 +6800,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     }
 
     content.innerHTML = `
-      <div class="page-header" style="justify-content:flex-end">
-        <div class="header-right">
-          <div onclick="app.navigate('settings')" style="display:flex;align-items:center;gap:6px;padding:4px 12px;background:var(--bg-hover);border-radius:var(--r-sm);cursor:pointer;transition:all .2s" title="AI Credits 餘額">
-            ${ICONS.zap}
-            <span style="font-size:13px;font-weight:600;color:var(--ink)">${(() => { const lim = getCreditLimit(state.plan||'free'); return Math.max(0,lim-(state.creditUsed||0)).toLocaleString(); })()}</span>
-            <span style="font-size:11px;color:var(--ink-muted)">credits</span>
-          </div>
-          <span class="plan-badge ${state.plan==='free'?'free':state.plan==='starter'?'starter':'pro'}" style="font-size:13px;padding:3px 10px">${planLabel}</span>
-          <div class="header-avatar" onclick="app.navigate('settings')">${state.user.avatar}</div>
-          <span class="header-name">${state.user.name}</span>
-        </div>
-      </div>
-
+      <!-- v0.34.0: page-header 已移除，credit/plan/avatar 統一由全域 #globalTopbar 渲染 -->
       <div class="home-grid">
         <div class="home-main">
           <div class="welcome-banner" style="position:relative;overflow:hidden">
@@ -7673,26 +7646,47 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
   }
   window.checkCreditReset = checkCreditReset;
 
-  // v0.33.0: 即時更新 sidebar credit badge
+  // v0.34.0: 全域 topbar render — credit + plan + avatar（跟首頁右上一致，現在每頁都有）
   function updateCreditBadge() {
-    var el = document.getElementById('sidebarCreditBadge');
-    if (!el) return;
-    var plan = (state && state.plan) || 'free';
+    var topbar = document.getElementById('globalTopbar');
+    if (!topbar) return;
+    // Landing 不顯示（尚未登入）
+    if (!state || !state.isLoggedIn) { topbar.innerHTML = ''; return; }
+
+    var plan = state.plan || 'free';
     var planCfg = PLAN_CATALOG[plan] || PLAN_CATALOG.free;
     var used = state.creditUsed || 0;
+    var planLabel = plan === 'enterprise' ? 'Enterprise' : plan === 'pro' ? 'Pro' : plan === 'starter' ? 'Starter' : 'Free';
+    var avatar = (state.user && state.user.avatar) || 'U';
+    var userName = (state.user && state.user.name) || '';
+
+    var creditHTML = '';
     if (planCfg.credits === 'unlimited') {
-      el.title = 'AI Credits: ' + used.toLocaleString() + ' / 無限';
-      el.innerHTML = '<div class="cb-row"><span class="cb-used">' + used.toLocaleString() + '</span> <span class="cb-sep">/</span> <span class="cb-limit">∞</span></div>';
-      return;
+      creditHTML =
+        '<div class="gtb-credit" title="AI Credits: ' + used.toLocaleString() + ' / 無限" onclick="app.navigate(\'settings\')">' +
+          '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="11 2 4 12 10 12 9 18 16 8 10 8 11 2"/></svg>' +
+          '<span class="gtb-credit-num">' + used.toLocaleString() + '</span>' +
+          '<span class="gtb-credit-sep">/</span>' +
+          '<span class="gtb-credit-lim">∞</span>' +
+          '<span class="gtb-credit-unit">credits</span>' +
+        '</div>';
+    } else {
+      var remaining = Math.max(0, planCfg.credits - used);
+      var pct = Math.min(100, Math.round(used / planCfg.credits * 100));
+      var toneClass = pct >= 90 ? ' danger' : pct >= 70 ? ' warn' : '';
+      creditHTML =
+        '<div class="gtb-credit' + toneClass + '" title="本月 AI Credits：已用 ' + used.toLocaleString() + ' / 上限 ' + planCfg.credits.toLocaleString() + '（剩 ' + remaining.toLocaleString() + '）· 點擊進設定查看使用明細" onclick="app.navigate(\'settings\')">' +
+          '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="11 2 4 12 10 12 9 18 16 8 10 8 11 2"/></svg>' +
+          '<span class="gtb-credit-num">' + remaining.toLocaleString() + '</span>' +
+          '<span class="gtb-credit-unit">credits</span>' +
+        '</div>';
     }
-    var remaining = Math.max(0, planCfg.credits - used);
-    var pct = Math.min(100, Math.round(used / planCfg.credits * 100));
-    var toneClass = pct >= 90 ? ' cb-danger' : pct >= 70 ? ' cb-warn' : '';
-    // v0.33.2: title attr 讓 collapsed 態也能 hover 看到完整資訊
-    el.title = '本月 AI Credits：已用 ' + used.toLocaleString() + ' / 上限 ' + planCfg.credits.toLocaleString() + '（剩 ' + remaining.toLocaleString() + '）';
-    el.innerHTML =
-      '<div class="cb-row"><span class="cb-used">' + used.toLocaleString() + '</span> <span class="cb-sep">/</span> <span class="cb-limit">' + planCfg.credits.toLocaleString() + '</span></div>' +
-      '<div class="cb-bar"><div class="cb-bar-fill' + toneClass + '" style="width:' + pct + '%"></div></div>';
+    var planBadgeClass = plan === 'free' ? 'free' : (plan === 'starter' ? 'starter' : 'pro');
+    topbar.innerHTML =
+      creditHTML +
+      '<span class="plan-badge ' + planBadgeClass + '" style="font-size:12px;padding:3px 10px">' + planLabel + '</span>' +
+      '<div class="gtb-avatar" onclick="app.navigate(\'settings\')" title="' + userName + '">' + avatar + '</div>' +
+      '<span class="gtb-name">' + userName + '</span>';
   }
   window.updateCreditBadge = updateCreditBadge;
 
@@ -14388,7 +14382,23 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 
       var ov = document.createElement('div');
       ov.className = 'kb-modal-overlay';
-      ov.onclick = function(e){if(e.target===ov)ov.remove();};
+      // v0.34.0: 統一 modal 關閉 — closeModalAnimated 出場動畫 + Escape 全域監聽（女巫 2 痛點 1）
+      ov.onclick = function(e){if(e.target===ov) (typeof closeModalAnimated==='function' ? closeModalAnimated(ov) : ov.remove());};
+      var _kbEscHandler = function(e){
+        if(e.key==='Escape' && document.body.contains(ov)){
+          (typeof closeModalAnimated==='function' ? closeModalAnimated(ov) : ov.remove());
+          document.removeEventListener('keydown', _kbEscHandler);
+        }
+      };
+      document.addEventListener('keydown', _kbEscHandler);
+      // Observer：ov 被 remove 時也解除 Esc listener（避免 memory leak）
+      var _kbRemoveObs = new MutationObserver(function(){
+        if(!document.body.contains(ov)){
+          document.removeEventListener('keydown', _kbEscHandler);
+          _kbRemoveObs.disconnect();
+        }
+      });
+      _kbRemoveObs.observe(document.body, {childList:true, subtree:false});
 
       var col = cols.find(function(c){return c.id===card.columnId;});
       var colLabel = col ? col.label : card.columnId;
@@ -14760,10 +14770,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       m += '<div class="kb-section"><label class="kb-label">所屬週期</label><select id="kbF_cycle" class="kb-input" style="padding:8px 10px"><option value="">不指定</option>';
       _editCycles.forEach(function(cy){ m += '<option value="' + cy.id + '"' + (cy.id === _cardCycleId ? ' selected' : '') + '>' + cy.label + (cy.status === 'active' ? ' ●' : '') + '</option>'; });
       m += '</select></div>';
-      // Agent toggle
-      var _agentOn = card ? !!card.agentCanAct : false;
-      m += '<div class="kb-section"><label class="kb-label">AI Agent</label><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--ink-sec)"><input type="checkbox" id="kbF_agentToggle"' + (_agentOn ? ' checked' : '') + ' style="accent-color:var(--primary)"> 允許 Agent 協助此任務</label>';
-      m += '<div style="font-size:11px;color:var(--ink-dim);line-height:1.5;margin-top:6px;padding-left:2px">開啟後，Agent 會在 Cowork 對話中主動提供建議、追蹤進度、提醒到期，但不會自動修改任務內容。</div></div>';
+      // v0.34.0: agentCanAct checkbox 整塊刪除 —— 女巫 2 稽核發現零下游實作（搜全檔無 consumer），
+      // 文案「Agent 會在 Cowork 對話中主動提供建議、追蹤進度、提醒到期」對用戶說謊，違反誠信原則
       // Activity log (right column bottom in edit modal)
       if(actHtml) m += '<div class="kb-section" style="margin-top:auto;padding-top:10px;border-top:1px solid var(--border)"><label class="kb-label" style="font-size:11px">' + IC.clock + ' 活動紀錄</label><div class="kb-activity" style="max-height:160px;overflow-y:auto">' + actHtml + '</div></div>';
       m += '</div>'; // end right column
@@ -14958,7 +14966,6 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           customFields:customFields,
           attachments:attachments,
           cycleId:(ov.querySelector('#kbF_cycle')&&ov.querySelector('#kbF_cycle').value?ov.querySelector('#kbF_cycle').value:currentCycle.id),
-          agentCanAct:!!(ov.querySelector('#kbF_agentToggle')&&ov.querySelector('#kbF_agentToggle').checked),
           updatedAt:new Date().toISOString()
         };
         if(isEdit){
@@ -26972,113 +26979,142 @@ function loadHistory(){
             return planRank[curPlan] < planRank[mod.minPlan];
           }
 
-          /* ── 渲染單一模組卡片 v2：兩行式，賦能問題永遠可見 ── */
-          function renderModCard(m, visibility) {
+          /* ── v0.34.0 重設計：單列 list row，取代 grid orphan-row 問題 ── */
+          function renderModRow(m, visibility) {
             var on = em[m.key];
             var locked = isLocked(m);
             var accent = visibility === 'personal' ? 'var(--primary)' : 'var(--teal)';
-            var accentBg = visibility === 'personal' ? 'rgba(124,92,252,.08)' : 'rgba(27,168,145,.08)';
+            var accentBg = visibility === 'personal' ? 'color-mix(in srgb,var(--primary) 10%,transparent)' : 'color-mix(in srgb,var(--teal) 10%,transparent)';
 
-            var card = '<div style="background:var(--bg-app);border-radius:var(--r-md);padding:14px;display:flex;align-items:flex-start;gap:12px;transition:all .15s;border:1.5px solid ' + (locked ? 'transparent' : on ? 'rgba(124,92,252,.2)' : 'transparent') + ';' + (locked ? 'opacity:.65' : '') + ';min-height:72px">';
+            var rowStyle = 'display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r-md);transition:background .15s;' + (locked ? 'opacity:.55;' : '');
+            var row = '<div class="sm-mod-row" style="' + rowStyle + '">';
 
-            /* icon 36×36（兩行版面，icon 放大保持視覺平衡） */
-            card += '<div style="width:36px;height:36px;border-radius:var(--r-sm);background:' + (locked ? 'var(--bg-hover)' : on ? accentBg : 'var(--bg-hover)') + ';color:' + (locked ? 'var(--ink-dim)' : on ? accent : 'var(--ink-muted)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">' + ICONS[m.icon] + '</div>';
+            // 32×32 icon
+            row += '<div style="width:32px;height:32px;border-radius:var(--r-sm);background:' + (locked ? 'var(--bg-hover)' : on ? accentBg : 'var(--bg-hover)') + ';color:' + (locked ? 'var(--ink-dim)' : on ? accent : 'var(--ink-muted)') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s">' + ICONS[m.icon] + '</div>';
 
-            /* 兩行：名稱 + 賦能問題（賦能問題永遠可見） */
-            card += '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding-top:1px">';
-            card += '<div style="display:flex;align-items:center;gap:6px">';
-            card += '<span style="font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + m.label + '</span>';
+            // Label + 賦能問題（inline 單行，優先 title，ellipsis 溢出）
+            row += '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">';
+            row += '<div style="display:flex;align-items:center;gap:6px;min-width:0">';
+            row += '<span style="font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap">' + m.label + '</span>';
             if (m.sensitive) {
-              card += '<svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><title>金額限管理員</title><rect x="5" y="9" width="10" height="8" rx="1.5"/><path d="M7 9V7a3 3 0 0 1 6 0v2"/></svg>';
+              row += '<svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><title>金額限管理員</title><rect x="5" y="9" width="10" height="8" rx="1.5"/><path d="M7 9V7a3 3 0 0 1 6 0v2"/></svg>';
             }
-            card += '</div>';
+            row += '</div>';
             if (m.q) {
-              card += '<span style="font-size:11.5px;color:var(--ink-muted);line-height:1.4;font-weight:500">' + m.q + '</span>';
+              row += '<span style="font-size:11.5px;color:var(--ink-muted);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + m.q + '</span>';
             }
-            card += '</div>';
+            row += '</div>';
 
-            /* toggle / lock chip */
+            // Toggle / Lock chip
             if (locked) {
-              card += '<span style="font-size:10px;font-weight:700;color:' + planColorMap[m.minPlan] + ';background:' + (m.minPlan === 'starter' ? 'rgba(224,138,58,.1)' : m.minPlan === 'pro' ? 'rgba(124,92,252,.08)' : 'rgba(27,168,145,.08)') + ';padding:3px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0">' + planLabelMap[m.minPlan] + '</span>';
+              var chipBg = m.minPlan === 'starter' ? 'color-mix(in srgb,var(--gold) 14%,transparent)' : m.minPlan === 'pro' ? 'color-mix(in srgb,var(--primary) 12%,transparent)' : 'color-mix(in srgb,var(--teal) 12%,transparent)';
+              row += '<span style="font-size:10px;font-weight:700;color:' + planColorMap[m.minPlan] + ';background:' + chipBg + ';padding:3px 9px;border-radius:10px;white-space:nowrap;flex-shrink:0;letter-spacing:.02em">' + planLabelMap[m.minPlan] + '</span>';
             } else {
-              card += '<button onclick="app.toggleModule(\'' + m.key + '\')" style="width:34px;height:20px;border-radius:10px;border:none;cursor:pointer;position:relative;transition:all .25s cubic-bezier(.4,0,.2,1);background:' + (on ? 'var(--primary)' : 'var(--bg-hover)') + ';flex-shrink:0" title="' + (on ? m.label + ' · 點擊隱藏' : m.label + ' · 點擊啟用') + '">';
-              card += '<div style="width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:3px;left:' + (on ? '17px' : '3px') + ';transition:left .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>';
-              card += '</button>';
+              row += '<button onclick="app.toggleModule(\'' + m.key + '\')" style="width:34px;height:20px;border-radius:10px;border:none;cursor:pointer;position:relative;transition:all .25s cubic-bezier(.4,0,.2,1);background:' + (on ? 'var(--primary)' : 'var(--bg-hover)') + ';flex-shrink:0" title="' + (on ? m.label + ' · 點擊隱藏' : m.label + ' · 點擊啟用') + '" aria-label="' + m.label + '" aria-pressed="' + on + '">';
+              row += '<div style="width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:3px;left:' + (on ? '17px' : '3px') + ';transition:left .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>';
+              row += '</button>';
             }
-            card += '</div>';
-            return card;
+            row += '</div>';
+            return row;
           }
 
-          /* ── 組裝兩個分組 ── */
-          var html = '';
+          /* ── 組裝：兩欄並排（workspace | team），每欄是 vertical list ── */
+          function renderSection(title, desc, icon, accentVar, accentBg, mods, visibility) {
+            var s = '<div class="sm-mod-group" style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:6px">';
+            s += '<div style="display:flex;align-items:center;gap:10px;padding:4px 12px 10px;margin-bottom:2px">';
+            s += '<div style="width:28px;height:28px;border-radius:8px;background:' + accentBg + ';color:' + accentVar + ';display:flex;align-items:center;justify-content:center">' + icon + '</div>';
+            s += '<div style="display:flex;flex-direction:column;gap:1px;min-width:0">';
+            s += '<div style="font-size:14px;font-weight:700;color:var(--ink);line-height:1.2">' + title + '</div>';
+            s += '<div style="font-size:11px;color:var(--ink-muted);line-height:1.3">' + desc + '</div>';
+            s += '</div>';
+            s += '</div>';
+            s += '<div class="sm-mod-list" style="display:flex;flex-direction:column;gap:2px;background:var(--bg-app);border-radius:var(--r-lg);padding:6px">';
+            mods.forEach(function(m){ s += renderModRow(m, visibility); });
+            s += '</div>';
+            s += '</div>';
+            return s;
+          }
 
-          /* 個人工作台 */
-          html += '<div style="margin-bottom:20px">';
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">';
-          html += '<div style="width:24px;height:24px;border-radius:6px;background:rgba(124,92,252,.1);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M3 18v-1a7 7 0 0 1 14 0v1"/></svg></div>';
-          html += '<div style="font-size:14px;font-weight:700;color:var(--ink)">你的工作台</div>';
-          html += '<span style="font-size:11px;color:var(--ink-muted)">僅自己可見的驗證工具</span>';
-          html += '</div>';
-          html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">';
-          personalMods.forEach(function(m) { html += renderModCard(m, 'personal'); });
-          html += '</div></div>';
+          var personalIcon = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="7" r="4"/><path d="M3 18v-1a7 7 0 0 1 14 0v1"/></svg>';
+          var teamIcon = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="7" cy="7" r="3"/><circle cx="14" cy="9" r="3"/><path d="M1 17v-1a5 5 0 0 1 8 0"/><path d="M11 17v-1a5 5 0 0 1 6 0"/></svg>';
 
-          /* 團隊營運 */
-          html += '<div>';
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">';
-          html += '<div style="width:24px;height:24px;border-radius:6px;background:rgba(27,168,145,.1);display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><circle cx="7" cy="7" r="3"/><circle cx="14" cy="9" r="3"/><path d="M1 17v-1a5 5 0 0 1 8 0"/><path d="M11 17v-1a5 5 0 0 1 6 0"/></svg></div>';
-          html += '<div style="font-size:14px;font-weight:700;color:var(--ink)">團隊營運</div>';
-          html += '<span style="font-size:11px;color:var(--ink-muted)">團隊成員皆可存取</span>';
+          var html = '<div class="sm-mod-layout" style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">';
+          html += renderSection('你的工作台', '僅自己可見的驗證工具', personalIcon, 'var(--primary)', 'color-mix(in srgb,var(--primary) 14%,transparent)', personalMods, 'personal');
+          html += renderSection('團隊營運', '團隊成員皆可存取', teamIcon, 'var(--teal)', 'color-mix(in srgb,var(--teal) 14%,transparent)', teamMods, 'team');
           html += '</div>';
-          html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">';
-          teamMods.forEach(function(m) { html += renderModCard(m, 'team'); });
-          html += '</div></div>';
 
           return html;
         })()}
       </div>
 
-      <!-- ═══ 方案與用量 ═══ -->
+      <!-- ═══ 方案與用量（v0.34.0 重設計）═══ -->
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
-        <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">方案與用量</div>
-
-        <!-- Unified Credit Bar -->
-        <div style="background:var(--bg-app);border-radius:var(--r-md);padding:20px;margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
-            <div style="font-size:14px;font-weight:700;color:var(--ink)">AI Credits</div>
-            <div style="font-size:13px;color:var(--ink-muted)">
-              <span style="font-weight:700;color:${creditPercent > 80 ? 'var(--rose)' : creditPercent > 50 ? 'var(--gold)' : 'var(--primary)'}">${creditUsed.toLocaleString()}</span> / ${creditLimit.toLocaleString()} credits
-            </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px">方案與用量</div>
+            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">AI 消耗依模型與任務而異，<span style="font-weight:600">每月 1 號自動重置</span></div>
           </div>
-          <div class="usage-bar" style="height:8px;margin-bottom:8px"><div class="usage-fill" style="width:${creditPercent}%;background:${creditPercent > 80 ? 'var(--rose)' : creditPercent > 50 ? 'var(--gold)' : 'var(--primary)'}"></div></div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-size:12px;color:var(--ink-muted)">剩餘 ${creditRemain.toLocaleString()} credits · 每月重置</div>
-            <div style="font-size:12px;color:var(--ink-muted)">${Math.round(creditPercent)}% 已使用</div>
+          <div style="display:flex;align-items:center;gap:10px;padding:6px 14px;background:${plan === 'free' ? 'var(--bg-hover)' : plan === 'starter' ? 'color-mix(in srgb,var(--gold) 12%,transparent)' : plan === 'enterprise' ? 'color-mix(in srgb,var(--teal) 12%,transparent)' : 'color-mix(in srgb,var(--primary) 12%,transparent)'};border-radius:999px">
+            <span style="width:8px;height:8px;border-radius:50%;background:${planColor}"></span>
+            <span style="font-size:13px;font-weight:700;color:${planColor}">${planLabel}</span>
           </div>
         </div>
 
+        <!-- Unified Credit Bar — 升級：大數字 hero + 更柔和進度條 -->
+        <div style="background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 6%,var(--bg-app)),var(--bg-app));border-radius:var(--r-lg);padding:24px;margin-bottom:20px;position:relative;overflow:hidden">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;gap:16px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:6px;letter-spacing:.04em">本月剩餘</div>
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-size:40px;font-weight:800;color:${creditPercent > 80 ? 'var(--rose)' : creditPercent > 50 ? 'var(--gold)' : 'var(--primary)'};line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums">${creditRemain.toLocaleString()}</span>
+                <span style="font-size:14px;color:var(--ink-muted)">/ ${creditLimit.toLocaleString()} credits</span>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--ink-muted);margin-bottom:4px">已使用</div>
+              <div style="font-size:24px;font-weight:700;color:var(--ink-sec);line-height:1;font-variant-numeric:tabular-nums">${creditUsed.toLocaleString()} <span style="font-size:13px;color:var(--ink-muted);font-weight:500">(${Math.round(creditPercent)}%)</span></div>
+            </div>
+          </div>
+          <div class="usage-bar" style="height:6px;border-radius:3px;background:color-mix(in srgb,var(--ink) 6%,transparent);overflow:hidden"><div class="usage-fill" style="width:${creditPercent}%;height:100%;background:${creditPercent > 80 ? 'var(--rose)' : creditPercent > 50 ? 'var(--gold)' : 'var(--primary)'};border-radius:3px;transition:width .4s cubic-bezier(.22,1,.36,1)"></div></div>
+        </div>
+
         <!-- AI Model + Credit Cost side by side -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
-          <!-- AI Model Selector -->
-          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">
-            <div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px">AI 模型</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px">
+          <!-- AI Model Selector (v0.34.0 更豐富) -->
+          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:18px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 2 4 12 10 12 9 18 16 8 10 8 11 2"/></svg>
+              <div style="font-size:12px;font-weight:700;color:var(--ink-muted);letter-spacing:.04em">AI 模型</div>
+            </div>
             ${plan === 'free' ? `
-              <div style="font-size:13px;font-weight:700;color:var(--ink)">Claude Sonnet 4.6</div>
-              <div style="font-size:11px;color:var(--ink-muted);margin-top:4px">Free 方案固定使用 Sonnet</div>
+              <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg-card);border-radius:var(--r-sm);border:1px solid var(--border)">
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--primary)"></div>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:700;color:var(--ink)">${MODEL_CATALOG['claude-sonnet-4-6'].name}</div>
+                  <div style="font-size:11px;color:var(--ink-muted);margin-top:1px">${MODEL_CATALOG['claude-sonnet-4-6'].tagline}</div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--ink-muted);margin-top:8px;padding:0 2px;line-height:1.5">升級 Starter / Pro 可切換至 Opus 4.7（最強推理）</div>
             ` : `
               ${bpSelect({id:'aiModelSelect', style:'width:100%;font-size:14px', onChange:'setAIModel', options: modelOptions.map(m => ({value:m.id, label:m.label, selected: aiModel===m.id}))})}
-              <div style="font-size:11px;color:var(--ink-muted);margin-top:6px">${currentModel.desc}</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:color-mix(in srgb,var(--primary) 6%,transparent);border-radius:var(--r-sm);border:1px solid color-mix(in srgb,var(--primary) 18%,transparent)">
+                <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 7v4M10 13h.01"/></svg>
+                <div style="font-size:11px;color:var(--ink-sec);line-height:1.4">${currentModel.desc}</div>
+              </div>
             `}
           </div>
 
           <!-- Credit Costs Reference -->
-          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:16px">
-            <div style="font-size:12px;font-weight:600;color:var(--ink-muted);margin-bottom:8px">各功能消耗</div>
-            <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="background:var(--bg-app);border-radius:var(--r-md);padding:18px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--ink-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="12" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="8" y1="12" x2="12" y2="12"/></svg>
+              <div style="font-size:12px;font-weight:700;color:var(--ink-muted);letter-spacing:.04em">各功能消耗（依當前模型）</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px">
               ${creditCosts.map(c => `
-                <div style="display:flex;justify-content:space-between;font-size:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:var(--r-sm);font-size:12.5px;transition:background .15s" onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='transparent'">
                   <span style="color:var(--ink-sec)">${c.action}</span>
-                  <span style="color:var(--primary);font-weight:600">${c.cost} credits</span>
+                  <span style="color:var(--primary);font-weight:700;font-variant-numeric:tabular-nums">${c.cost} <span style="color:var(--ink-muted);font-weight:500;font-size:11px">cr</span></span>
                 </div>
               `).join('')}
             </div>
@@ -29160,6 +29196,8 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     document.getElementById('app').style.display = 'flex';
     document.getElementById('loginModal').className = 'modal-overlay';
     renderSidebar();
+    // v0.34.0: 每次進入 dashboard 渲染全域 topbar
+    if (typeof updateCreditBadge === 'function') updateCreditBadge();
     renderModule('home');
   }
   // v0.32.24: dev hook — 讓 smoke test 可繞過 Firebase auth 直接進 dashboard
@@ -29759,7 +29797,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.0.0 · 版本系統重置為 major.minor.patch 語意（愛德華憲法確立：major=重大更版、minor=新增模組、patch=功能優化或 bug 調整）；此版為 BeyondPath 首次里程碑正式版本，涵蓋 5 大 UI/UX 升級：(1) 全域 topbar——credit/plan/avatar 從 sidebar 搬到右上角，跟首頁 header 一致；#globalTopbar 元素 sticky + backdrop-filter；sidebar credit badge 整組 CSS 刪除；updateCreditBadge() 改渲染至 topbar；renderHome 移除冗餘 header-right；(2) 刪假 agentCanAct checkbox——女巫 2 稽核發現零下游實作（grep 全檔只 3 處寫、0 處讀），文案「Agent 會在 Cowork 對話中主動提供建議」對用戶說謊違反憲法誠信原則；kb-section 整塊刪除 + save logic 移除對應欄位；(3) Edit modal Esc 鍵可達性——新增 document.addEventListener('keydown') Escape 監聽 + MutationObserver 監看 ov remove 自動解除 listener 防 memory leak；外側 click 從 ov.remove() 改 closeModalAnimated(ov) 跟全站 33 處一致；(4) Settings 模組管理重設計——從 5-column grid（7 個團隊模組會產生 orphan 2-row）改 2-column 並排 list-row 佈局，每組 flex:1 min-width:280px，內層 module list 用 var(--bg-app) 容器包住 gap:2px 緊湊堆疊；每 row = 32px icon + 2 行 label+賦能問題 + toggle/plan chip；完全無 orphan row 問題；響應式 flex-wrap 自動堆疊；(5) Settings 方案與用量升級——hero credit bar 40px 大數字 + gradient primary 6% 背景 + 本月剩餘/已使用雙欄並排；AI 模型卡升級：Free plan 用 Sonnet 4.6 名片式顯示 + 升級引導文案；Starter+ 用 bpSelect + tagline + pricing info 卡（primary 6% tint + circle info icon）；Credit Cost 區加 hover 高亮 + credit 縮寫 cr；右上 Plan chip 跟 color 對齊 + dot；· 版號跳升 v0.33.2→v1.0.0 · tail cleanup: v0.33.0 搬進 CHANGELOG.md · 後續 v1.0.1+ 計畫：文件庫 link-only 化、封存/分組 button 簡化、看板 5 個 P0（色彩撞車/description/priority/AI badge/col count）、edit modal 右欄 4-section、首頁+AI 儀表板戰略級重構 -->
 <!-- v0.33.2 · 3 bug 修復（愛德華 v0.33.1 部署後截圖回饋）：(1) 時間軸 tooltip 雙渲染 bug——`_rmTipEl` closure 變數在 renderRoadmap 重複呼叫時會被重建，但 document.body 舊的 `.rm-tooltip` 元素不清除、新元素疊上去，造成同一任務出現 2 個幾乎一模一樣 tooltip；修法：`_rmShowTip` 建立新 tooltip 前先 `document.querySelectorAll('.rm-tooltip').forEach(el => el.remove())` 清光舊殘留，維持「body 內單一 tooltip 實例」原則；(2) 時間軸點擊 bar 跳頁問題——v0.32.22 短路到 `_rmOpenFullCard` 會 `navigate('biz-tasks')` 打斷「我正在瀏覽時間河流」的心流；修法：`_rmOpenCard` 改優先呼叫 `_kbEditCard(cardId)` 就地彈出 kb-modal-overlay（不跳頁），若 _kbEditCard 尚未掛載（使用者還沒進過任務看板）fallback 到舊 navigate 路徑確保能打開；hover = tooltip、click = 就地彈窗，兩者職責清晰分離；(3) Sidebar credit badge collapsed 態視覺違和——v0.33.0 設計在折疊側邊欄顯示「0」+「3,000」兩行大字，跟其他 icon-only 項目格格不入；修法：collapsed 態改成 44×44 圓形 badge（白 5% tint + 2px 環），內只顯示 used 數字（11px），sep/limit 隱藏、bar 改環狀 overflow 承接視覺語言；expanded 態保留完整 pill bar（used/sep/limit + 進度條）；額外加 title attribute 讓 collapsed hover 有完整 tooltip · 版號 v0.33.1→v0.33.2 · tail cleanup：v0.32.24 搬進 CHANGELOG.md -->
 <!-- v0.33.1 · 5 大工具全面接上 Claude AI（PATH 診斷 / Lab 研究 / 市場探測 / 市場報告 / 問卷引擎）：(1) Lab 研究 startResearch — 質性訪談 + 追問都走 window.PATH_AI.call('interview', ...) → Cloudflare Worker → Claude Sonnet/Opus；triggerAISummary 走 'report' node 生成三段式報告摘要；aiStats 標記 Claude 使用模型；(2) 市場探測 runMarketSignal 改 async — 優先呼叫 Claude 'market_sense' node 回 JSON（monthlySearch / competition / trend / relatedKeywords / demandGaps），fallback 到原 hash-based 模板；結果頁頂端顯示 AI/模板 badge；bp_market_{kw} 儲存 usingAI 旗標與 aiRaw 完整資料讓市場報告可取用；(3) 市場報告 generateMarketReport 改 async — 呼叫 'market_report' node 傳入 PATH diag + Lab data + Market Sense JSON，回 JSON 含 chapter1-5（TAM/SAM/SOM reasoning、competitors、audience、signals、strategy）；renderFullReport 讀 reportState.aiData 優先，fallback 保留 hash-based 模板；savedReports 記錄 usingAI；(4) 問卷引擎 generateSurvey 改 async — 呼叫 'survey_generate' node 回 JSON (questions, dimensions, estimatedTime)，Claude 題目 type 映射到既有渲染（likert5/open_text/multi_choice → 量表題/開放題/複選題），fallback 到 SURVEY_Q_TEMPLATES；auditSurvey 改 async — 呼叫 'survey_audit' node 回 JSON (overallScore, findings[], summary)，Claude severity high/medium/low → error/warning/info，fallback 到原 regex 檢測；(5) 每個工具結果頁頂都顯示 AI/模板 badge 維持誠信；(6) savedSurveys / savedReports / bp_market_{kw} 都儲存 usingAI 供歷史追溯 · 測試：首次實測 PATH 診斷 Sonnet 4.6 337 in / 351 out / 1 credit / $0.0063 ✅ · 部署：edwardt0303-281.workers.dev 已上線，worker.js v0.33.0 含 7 個 SYSTEM_PROMPTS -->
-<!-- v0.33.0 · Claude AI 整合骨架上線（等 Anthropic key + Cloudflare 部署）：(1) PLAN_CATALOG 擴充 defaultModel + allowedModels——Free 固定 Sonnet 4.6、Starter 可選 Sonnet/Opus、Pro 預設 Opus 4.7 可切 Sonnet、Enterprise 預設 Opus；Starter highlights 補「Sonnet/Opus 切換」；(2) 新增 MODEL_CATALOG（Opus 4.7 $5/$25、Sonnet 4.6 $3/$15、Haiku 4.5 $1/$5 per MTok）+ `tokensToCredits(inputTokens, outputTokens, modelId)` 換算函式（1 credit = $0.015 成本對齊 Pro 95% 毛利率）+ NODE_TOKEN_ESTIMATES（7 個 AI 節點預估 token：diagnose/interview/lab_run/market_sense/market_report/survey_generate/survey_audit）+ `estimateCreditsFor()` pre-check 函式；(3) 新增 `window.PATH_AI` 統一 AI 呼叫入口——pre-check 剩餘 credits 不足推升級、fetch 到 ai-proxy Cloudflare Worker、讀 usage.input_tokens/output_tokens 算 credits 寫 state.creditUsed + state.creditStats（node 分類統計 + _lastCall 歷史）、未設 PROXY_URL 時 throw AI_UNAVAILABLE 讓工具 fallback；(4) checkCreditReset() 每月自動重置 credit + stats、在 renderSidebar 尾呼叫；(5) Sidebar 新增 #sidebarCreditBadge HTML 元素 + 完整 CSS（collapsed=純數字、expanded=進度條 + 70%/90% gold/rose warn）、updateCreditBadge() 即時渲染；(6) Settings 頁 AI 模型選單改用 PLAN_CATALOG.allowedModels 動態 filter、creditCosts 從 NODE_TOKEN_ESTIMATES 動態計算跟 pre-check 一致、setAIModel() 加 plan 範圍驗證；(7) 市場報告 footer 誠信修復——原文案「此報告由 BeyondPath AI 引擎生成」在 AI 未接時是虛假聲明，改依 window.PATH_AI.isAvailable() 條件顯示「Claude AI 生成」或「模板生成・AI 深度分析待啟用」；MD 匯出文末同步；(8) ai-proxy/worker.js v0.33.0 重寫——預設 LLM_PROVIDER=anthropic、預設 model claude-sonnet-4-6、PLAN_ALLOWED_MODELS server-side 驗證、新增 4 個 system prompts（market_sense/market_report/survey_generate/survey_audit 皆回 JSON 結構）、max_tokens 依節點分級、回傳 usage{input_tokens, output_tokens, model, cost_usd, credits_used}；(9) wrangler.toml 切 anthropic + claude-sonnet-4-6 · 待部署流程：wrangler login → wrangler secret put LLM_API_KEY → wrangler deploy → app.html localStorage.bp_ai_proxy_url 填 workers.dev URL → 5 個工具切接 window.PATH_AI.call() -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
