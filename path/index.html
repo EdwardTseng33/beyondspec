@@ -2915,6 +2915,31 @@ canvas{display:block;margin:0 auto 24px}
 /* v1.0.2: 中鍵拖移期間，強制鎖死所有可橫向 scroll 容器，擋 Windows autoscroll 散逸 */
 body.mid-panning .kanban-board{overflow-x:hidden !important}
 body.mid-panning{cursor:grabbing !important;user-select:none !important}
+
+/* v1.0.2: 分組 bpSelect 在 toolbar 的 compact 版（縮高度 + 降 padding，視覺跟周圍 chips/buttons 齊平） */
+.kb-groupby-compact .bp-select-trigger{
+  height:32px !important;padding:6px 10px 6px 12px !important;
+  font-size:12.5px !important;font-weight:600 !important;
+  border-width:1px !important;
+  background:var(--bg-card) !important;
+}
+.kb-groupby-compact .bp-select-trigger:hover{
+  border-color:var(--primary) !important;
+  box-shadow:0 2px 6px rgba(124,92,252,.1) !important;
+}
+.kb-groupby-compact .bp-select-trigger.open{
+  box-shadow:0 0 0 2px var(--primary-light) !important;
+}
+.kb-groupby-compact .bp-chev{width:12px !important;height:12px !important}
+.kb-groupby-compact .bp-select-list{
+  font-size:12.5px;
+  padding:4px;
+  border-width:1px !important;
+  border-top:none !important;
+}
+.kb-groupby-compact .bp-select-option{
+  padding:8px 10px;border-radius:var(--r-sm);
+}
 .kanban-col-body.drag-over{background:rgba(124,92,252,.06);border-color:rgba(124,92,252,.25);box-shadow:inset 0 0 0 1px rgba(124,92,252,.15);transition:all .15s ease}
 .kanban-card{position:relative;background:transparent;border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;margin-bottom:8px;cursor:grab;transition:all .18s cubic-bezier(.4,0,.2,1);user-select:none;display:flex;flex-direction:column;gap:8px}
 .kanban-card[data-new]{animation:kbSlideIn .4s cubic-bezier(.34,.1,.64,1)}
@@ -13551,7 +13576,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           try { window._kbListGroupBy = localStorage.getItem('bp.kbListGroupBy') || 'status'; } catch(e){ window._kbListGroupBy = 'status'; }
         }
         var _gbVal = window._kbListGroupBy;
-        // v1.0.1: 若當前 cat filter 鎖定單一類，隱藏「分類」選項避免冗餘（只剩一組 → 分組無意義）
+        // v1.0.1: 若當前 cat filter 鎖定單一類，隱藏「分類」選項避免冗餘
         var _catFCount = (window._kbCatFilter || []).length;
         var _gbBpOpts = [
           {value:'status',label:'依狀態分組',selected:_gbVal==='status'},
@@ -13559,7 +13584,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         ];
         if(_catFCount !== 1) _gbBpOpts.push({value:'category',label:'依分類分組',selected:_gbVal==='category'});
         _gbBpOpts.push({value:'assignee',label:'依負責人分組',selected:_gbVal==='assignee'});
-        html += bpSelect({id:'kbGroupBySel', options:_gbBpOpts, onChange:'_kbSetGroupBy', style:'min-width:148px'});
+        // v1.0.2 fix: 包一個 fixed-width wrapper 避免 bpSelect 的 width:100% 在 flex 中撐滿
+        // 加 .kb-groupby-compact class 縮小 trigger 高度（toolbar 32px 而非 form 44px）
+        html += '<div class="kb-groupby-compact" style="width:152px;flex-shrink:0">' + bpSelect({id:'kbGroupBySel', options:_gbBpOpts, onChange:'_kbSetGroupBy'}) + '</div>';
       }
 
       // 6. 封存入口（v1.0.1 合併：原兩顆 button「封存完成」+「已封存」視覺太像造成認知混淆
