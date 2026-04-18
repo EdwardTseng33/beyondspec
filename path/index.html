@@ -507,6 +507,33 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
   padding:6px 0 0;letter-spacing:.3px;font-weight:600;
 }
 #sidebar.expanded .sidebar-version{text-align:center;padding-left:0}
+
+/* v0.33.0: Sidebar credit badge */
+.sidebar-credit-badge{
+  font-size:11px;color:rgba(255,255,255,.55);padding:4px 0;cursor:pointer;
+  text-align:center;letter-spacing:.2px;line-height:1.4;
+  transition:color .18s;
+}
+.sidebar-credit-badge:empty{display:none}
+.sidebar-credit-badge:hover{color:rgba(255,255,255,.85)}
+#sidebar.expanded .sidebar-credit-badge{padding:6px 10px;width:100%;border-radius:8px;background:rgba(255,255,255,.04)}
+#sidebar.expanded .sidebar-credit-badge:hover{background:rgba(255,255,255,.08)}
+.sidebar-credit-badge .cb-row{display:flex;align-items:baseline;justify-content:center;gap:3px;font-variant-numeric:tabular-nums}
+.sidebar-credit-badge .cb-used{font-weight:700;color:rgba(255,255,255,.9);font-size:12px}
+.sidebar-credit-badge .cb-sep{color:rgba(255,255,255,.3)}
+.sidebar-credit-badge .cb-limit{color:rgba(255,255,255,.5)}
+.sidebar-credit-badge .cb-bar{
+  width:100%;height:3px;border-radius:2px;background:rgba(255,255,255,.08);
+  margin-top:6px;overflow:hidden;
+}
+#sidebar:not(.expanded) .sidebar-credit-badge .cb-bar{display:none}
+#sidebar:not(.expanded) .sidebar-credit-badge .cb-row{flex-direction:column;gap:0;line-height:1.2}
+#sidebar:not(.expanded) .sidebar-credit-badge .cb-sep{display:none}
+.sidebar-credit-badge .cb-bar-fill{
+  height:100%;border-radius:2px;background:var(--primary);transition:width .3s ease;
+}
+.sidebar-credit-badge .cb-bar-fill.cb-warn{background:var(--gold)}
+.sidebar-credit-badge .cb-bar-fill.cb-danger{background:var(--rose)}
 .sidebar-user{
   padding:14px 0;border-top:1px solid rgba(255,255,255,.08);
   width:100%;display:flex;align-items:center;justify-content:center;
@@ -4901,12 +4928,13 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     <aside id="sidebar">
       <nav class="sidebar-nav" id="nav"></nav>
       <div class="sidebar-bottom">
+        <div id="sidebarCreditBadge" class="sidebar-credit-badge" title="本月 AI Credits 使用量" onclick="if(typeof window._openCreditPanel==='function')window._openCreditPanel()"></div>
         <div id="themeToggle"></div>
         <button class="sidebar-toggle-btn" onclick="app.toggleSidebar()" title="展開/收合選單">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v0.32.24</div>
+        <div class="sidebar-version">v0.33.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -5509,21 +5537,27 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       id: 'free', name: 'Free', tagline: '永久免費',
       monthly: 0, annual: 0, color: 'var(--ink-muted)',
       credits: 30,
-      highlights: ['每月 30 AI Credits', 'PATH 四維診斷', '任務中心 · 客戶管理', '客戶上限 50 筆'],
+      defaultModel: 'claude-sonnet-4-6',
+      allowedModels: ['claude-sonnet-4-6'],
+      highlights: ['每月 30 AI Credits', 'Claude Sonnet 4.6', 'PATH 四維診斷', '任務中心 · 客戶管理', '客戶上限 50 筆'],
       modules: ['mod-diagnose','mod-tasks','mod-contacts']
     },
     starter: {
       id: 'starter', name: 'Starter', tagline: '個人創業者最佳起點',
       monthly: 390, annual: 3900, color: 'var(--gold)',
       credits: 500,
-      highlights: ['每月 500 AI Credits', 'Lab 研究 · 問卷引擎 · 市場探測', '報價提案 · 會議紀錄', '客戶無上限'],
+      defaultModel: 'claude-sonnet-4-6',
+      allowedModels: ['claude-sonnet-4-6', 'claude-opus-4-7'],
+      highlights: ['每月 500 AI Credits', 'Claude Sonnet 4.6 / Opus 4.7 切換', 'Lab 研究 · 問卷引擎 · 市場探測', '報價提案 · 會議紀錄', '客戶無上限'],
       modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-meetings']
     },
     pro: {
       id: 'pro', name: 'Pro', tagline: '小團隊全功能旗艦',
       monthly: 990, annual: 9900, color: 'var(--primary)',
       credits: 3000,
-      highlights: ['每月 3,000 AI Credits', 'AI 模型切換（Sonnet / Opus）', '收款管理 · AI 儀表板 · 文件庫', '團隊最多 5 人 + Claude MCP'],
+      defaultModel: 'claude-opus-4-7',
+      allowedModels: ['claude-opus-4-7', 'claude-sonnet-4-6'],
+      highlights: ['每月 3,000 AI Credits', 'Claude Opus 4.7 預設（可切 Sonnet）', '收款管理 · AI 儀表板 · 文件庫', '團隊最多 5 人 + Claude MCP'],
       modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-meetings','mod-insights','mod-docs'],
       featured: true
     },
@@ -5531,10 +5565,68 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       id: 'enterprise', name: 'Enterprise', tagline: '20 人以上組織',
       monthly: null, annual: null, color: 'var(--teal)',
       credits: 'unlimited',
-      highlights: ['無限 AI Credits', 'Pro 全部功能', '團隊最多 20 人 · 管理員角色', 'API 整合 · 專屬客戶經理'],
+      defaultModel: 'claude-opus-4-7',
+      allowedModels: ['claude-opus-4-7', 'claude-sonnet-4-6'],
+      highlights: ['無限 AI Credits', 'Claude Opus 4.7 預設', 'Pro 全部功能', '團隊最多 20 人 · 管理員角色', 'API 整合 · 專屬客戶經理'],
       modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-meetings','mod-insights','mod-docs']
     }
   };
+
+  // v0.33.0: Claude 模型資訊 + credit 換算系統
+  const MODEL_CATALOG = {
+    'claude-sonnet-4-6': {
+      id: 'claude-sonnet-4-6',
+      name: 'Claude Sonnet 4.6',
+      tagline: '速度與智力平衡',
+      pricing: { input: 3, output: 15 }, // USD per 1M tokens
+      contextWindow: 1000000,
+      maxOutput: 64000
+    },
+    'claude-opus-4-7': {
+      id: 'claude-opus-4-7',
+      name: 'Claude Opus 4.7',
+      tagline: '最強推理，複雜任務首選',
+      pricing: { input: 5, output: 25 },
+      contextWindow: 1000000,
+      maxOutput: 128000
+    },
+    'claude-haiku-4-5': {
+      id: 'claude-haiku-4-5',
+      name: 'Claude Haiku 4.5',
+      tagline: '最快最便宜（保留）',
+      pricing: { input: 1, output: 5 },
+      contextWindow: 200000,
+      maxOutput: 64000
+    }
+  };
+
+  // 1 credit = $0.015 美金 API 成本（對齊 Pro 3000 credits = $45 成本，95% 毛利）
+  const CREDIT_USD_VALUE = 0.015;
+
+  // Token 數 → Credit 數（進位到整數，保留給用戶的消耗絕不少算）
+  function tokensToCredits(inputTokens, outputTokens, modelId) {
+    var model = MODEL_CATALOG[modelId];
+    if (!model) model = MODEL_CATALOG['claude-sonnet-4-6'];
+    var costUSD = (inputTokens * model.pricing.input + outputTokens * model.pricing.output) / 1e6;
+    return Math.ceil(costUSD / CREDIT_USD_VALUE);
+  }
+
+  // 各工具的預估 token 範圍（給 pre-check 用）
+  const NODE_TOKEN_ESTIMATES = {
+    diagnose:       { input: 2000,  output: 500  },  // PATH 診斷
+    interview:      { input: 5000,  output: 1500 },  // 單次訪談問答
+    lab_run:        { input: 80000, output: 20000 }, // Lab 整輪（16 人 × 10 題估算）
+    market_sense:   { input: 1500,  output: 800  },  // 市場探測
+    market_report:  { input: 8000,  output: 4000 },  // 市場報告
+    survey_generate:{ input: 1500,  output: 2000 },  // 問卷生成
+    survey_audit:   { input: 2500,  output: 1500 }   // 問卷檢測
+  };
+
+  function estimateCreditsFor(node, modelId) {
+    var est = NODE_TOKEN_ESTIMATES[node];
+    if (!est) return 1;
+    return tokensToCredits(est.input, est.output, modelId);
+  }
 
   // 訂閱狀態（month / annual / null=未訂閱）
   function getBillingCycle() {
@@ -5994,6 +6086,10 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     nav.innerHTML = navHtml;
 
     renderThemeToggle();
+
+    // v0.33.0: 每次 sidebar render 時檢查月度 credit reset + 更新 badge
+    if (typeof checkCreditReset === 'function') checkCreditReset();
+    if (typeof updateCreditBadge === 'function') updateCreditBadge();
   }
 
   function navClick(e, moduleId) {
@@ -7416,6 +7512,154 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       }
     }, true);
   };
+
+  // ==================== v0.33.0: window.PATH_AI — 統一 AI 呼叫入口 ====================
+  // 所有 5 個工具（PATH 診斷 / Lab 研究 / 市場探測 / 市場報告 / 問卷引擎）都走這個 helper
+  // 功能：
+  //   1. pre-check 剩餘 credits，不夠直接推升級
+  //   2. 轉接 ai-proxy Cloudflare Worker
+  //   3. 讀回 usage.input_tokens / output_tokens
+  //   4. 算出 credits_used → 寫入 state.creditUsed + state.creditStats
+  //   5. 更新 sidebar credit bar
+  //   6. fallback：若 proxy URL 未設定或 proxy 回錯，throw AI_UNAVAILABLE 讓工具自己 fallback 到 rules-based
+  //
+  // 使用方式：
+  //   const text = await window.PATH_AI.call('diagnose', { scores, pathType, weakest }, userMessage);
+  //
+  // node 對應 ai-proxy/worker.js 的 SYSTEM_PROMPTS：
+  //   'diagnose' / 'interview' / 'report' / 'market_sense' / 'market_report' / 'survey_generate' / 'survey_audit'
+  (function(){
+    // v0.33.0 deployed: Cloudflare Worker at edwardt0303-281.workers.dev
+    // localStorage override 可讓用戶設自己的 proxy；預設走官方 proxy
+    var DEFAULT_PROXY_URL = 'https://path-ai-proxy.edwardt0303-281.workers.dev';
+    var PROXY_URL = (typeof localStorage !== 'undefined' && localStorage.getItem('bp_ai_proxy_url')) || DEFAULT_PROXY_URL;
+
+    function getActiveModel() {
+      var plan = (state && state.plan) || 'free';
+      var planCfg = PLAN_CATALOG[plan] || PLAN_CATALOG.free;
+      var userChoice = (state && state.aiModel) || null;
+      // 驗證用戶選的模型是否在 plan 允許範圍內
+      if (userChoice && planCfg.allowedModels.indexOf(userChoice) !== -1) return userChoice;
+      return planCfg.defaultModel;
+    }
+
+    function getRemainingCredits() {
+      var plan = (state && state.plan) || 'free';
+      var planCfg = PLAN_CATALOG[plan] || PLAN_CATALOG.free;
+      if (planCfg.credits === 'unlimited') return Infinity;
+      return Math.max(0, planCfg.credits - (state.creditUsed || 0));
+    }
+
+    async function call(node, context, userMessage) {
+      var model = getActiveModel();
+      var estimated = estimateCreditsFor(node, model);
+      var remaining = getRemainingCredits();
+
+      if (remaining !== Infinity && estimated > remaining) {
+        if (typeof showToast === 'function') {
+          showToast('AI Credits 不足（預估需 ' + estimated + '，剩餘 ' + remaining + '）→ 升級方案');
+        }
+        if (typeof openSubscribeFlow === 'function') openSubscribeFlow('starter');
+        throw new Error('INSUFFICIENT_CREDITS:' + estimated + '/' + remaining);
+      }
+
+      if (!PROXY_URL) {
+        throw new Error('AI_UNAVAILABLE:proxy-not-configured');
+      }
+
+      var resp;
+      try {
+        resp = await fetch(PROXY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            node: node,
+            context: context,
+            userMessage: userMessage,
+            model: model,
+            userPlan: (state && state.plan) || 'free'
+          })
+        });
+      } catch (err) {
+        throw new Error('AI_UNAVAILABLE:network-error');
+      }
+
+      if (!resp.ok) {
+        if (resp.status === 429) throw new Error('AI_RATE_LIMITED');
+        throw new Error('AI_UNAVAILABLE:' + resp.status);
+      }
+
+      var data;
+      try { data = await resp.json(); } catch (e) { throw new Error('AI_UNAVAILABLE:parse-error'); }
+      if (!data.ok) throw new Error('AI_UNAVAILABLE:' + (data.error || 'unknown'));
+
+      // 寫入 credits 消耗
+      if (data.usage && typeof data.usage.input_tokens === 'number') {
+        var credits = data.usage.credits_used || tokensToCredits(data.usage.input_tokens, data.usage.output_tokens, model);
+        state.creditUsed = (state.creditUsed || 0) + credits;
+        state.creditStats = state.creditStats || {};
+        state.creditStats[node] = (state.creditStats[node] || 0) + credits;
+        state.creditStats._lastCall = {
+          node: node,
+          model: data.usage.model || model,
+          inputTokens: data.usage.input_tokens,
+          outputTokens: data.usage.output_tokens,
+          credits: credits,
+          at: Date.now()
+        };
+        if (typeof saveState === 'function') saveState();
+        if (typeof updateCreditBadge === 'function') updateCreditBadge();
+      }
+
+      return data.text;
+    }
+
+    window.PATH_AI = {
+      call: call,
+      getActiveModel: getActiveModel,
+      getRemainingCredits: getRemainingCredits,
+      estimateCreditsFor: estimateCreditsFor,
+      isAvailable: function(){ return !!PROXY_URL; },
+      getProxyUrl: function(){ return PROXY_URL; },
+      setProxyUrl: function(url){
+        PROXY_URL = url;
+        localStorage.setItem('bp_ai_proxy_url', url);
+      }
+    };
+  })();
+
+  // v0.33.0: 每月 credit 自動 reset —— 在 app init / saveState 前呼叫
+  function checkCreditReset() {
+    if (!state) return;
+    var now = new Date();
+    var periodStart = state.creditPeriodStart ? new Date(state.creditPeriodStart) : null;
+    if (!periodStart || now.getMonth() !== periodStart.getMonth() || now.getFullYear() !== periodStart.getFullYear()) {
+      state.creditUsed = 0;
+      state.creditStats = {};
+      state.creditPeriodStart = now.toISOString();
+      if (typeof saveState === 'function') saveState();
+    }
+  }
+  window.checkCreditReset = checkCreditReset;
+
+  // v0.33.0: 即時更新 sidebar credit badge
+  function updateCreditBadge() {
+    var el = document.getElementById('sidebarCreditBadge');
+    if (!el) return;
+    var plan = (state && state.plan) || 'free';
+    var planCfg = PLAN_CATALOG[plan] || PLAN_CATALOG.free;
+    var used = state.creditUsed || 0;
+    if (planCfg.credits === 'unlimited') {
+      el.innerHTML = '<span class="cb-used">' + used.toLocaleString() + '</span> <span class="cb-sep">/</span> <span class="cb-limit">∞</span>';
+      return;
+    }
+    var pct = Math.min(100, Math.round(used / planCfg.credits * 100));
+    var toneClass = pct >= 90 ? ' cb-danger' : pct >= 70 ? ' cb-warn' : '';
+    el.innerHTML =
+      '<div class="cb-row"><span class="cb-used">' + used.toLocaleString() + '</span> <span class="cb-sep">/</span> <span class="cb-limit">' + planCfg.credits.toLocaleString() + '</span></div>' +
+      '<div class="cb-bar"><div class="cb-bar-fill' + toneClass + '" style="width:' + pct + '%"></div></div>';
+  }
+  window.updateCreditBadge = updateCreditBadge;
 
   // ==================== AI PM BAR — REMOVED (v0.17.0) ====================
   // v0.17.0: AI PM 功能移除（愛德華裁決：很雞肋，實際上不知道有什麼作用）
@@ -25679,9 +25923,12 @@ function loadHistory(){
 
       ${ch5HTML}
 
-      <!-- Report Footer -->
+      <!-- Report Footer (v0.33.0: 依 AI 是否可用顯示不同 disclaimer 保誠信) -->
       <div style="background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(45,189,168,.04));border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;text-align:center">
-        <div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">此報告由 BeyondPath AI 引擎根據 PATH 診斷、Lab 研究及市場探測數據整合生成</div>
+        ${(window.PATH_AI && window.PATH_AI.isAvailable())
+          ? `<div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">此報告由 BeyondPath × Claude AI 根據 PATH 診斷、Lab 研究及市場探測數據整合生成</div>`
+          : `<div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">此報告基於 PATH 四維框架結合模板生成・<span style="color:var(--gold);font-weight:600">AI 深度分析待啟用</span>（設定 → AI 模型）</div>`
+        }
         <div style="font-size:11px;color:var(--ink-muted);margin-bottom:16px">${today}</div>
         <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap">
           <button class="btn btn-accent" style="padding:10px 24px;font-size:14px" onclick="app.exportMarketReportMD()">
@@ -25739,7 +25986,7 @@ function loadHistory(){
       });
     }
 
-    md += `\n---\n\n*此報告由 BeyondPath AI 引擎生成 · ${today}*\n`;
+    md += `\n---\n\n*${(window.PATH_AI && window.PATH_AI.isAvailable()) ? '此報告由 BeyondPath × Claude AI 生成' : '此報告基於 PATH 四維框架結合模板生成 · AI 深度分析待啟用'} · ${today}*\n`;
 
     const blob = new Blob([md], {type: 'text/markdown;charset=utf-8'});
     const url = URL.createObjectURL(blob);
@@ -26412,23 +26659,29 @@ function loadHistory(){
     const creditPercent = Math.min((creditUsed / creditLimit) * 100, 100);
     const creditRemain = Math.max(0, creditLimit - creditUsed);
 
-    // AI model config
-    const aiModel = state.aiModel || 'sonnet';
-    const modelOptions = [
-      { id: 'sonnet', label: 'Claude Sonnet 4.6', desc: '均衡品質・推薦', cost: '1x' },
-      { id: 'opus', label: 'Claude Opus 4.6', desc: '最高品質・深度分析', cost: '3x' }
-    ];
+    // v0.33.0: AI model — 只允許 plan 範圍內的 model；若 state.aiModel 不在範圍，fallback 到 defaultModel
+    const planCfg = PLAN_CATALOG[plan] || PLAN_CATALOG.free;
+    let aiModel = state.aiModel || planCfg.defaultModel;
+    if (planCfg.allowedModels.indexOf(aiModel) === -1) aiModel = planCfg.defaultModel;
+    const modelOptions = planCfg.allowedModels.map(function(mid){
+      var m = MODEL_CATALOG[mid];
+      return {
+        id: mid,
+        label: m.name,
+        desc: m.tagline + '（$' + m.pricing.input + '/$' + m.pricing.output + ' per MTok）'
+      };
+    });
     const currentModel = modelOptions.find(m => m.id === aiModel) || modelOptions[0];
 
-    // Credit cost reference (filtered by plan)
+    // v0.33.0: Credit cost reference — 從 NODE_TOKEN_ESTIMATES 動態計算（跟實際 pre-check 一致）
     const allCreditCosts = [
-      { action: 'PATH 診斷', cost: '5', free: true },
-      { action: '文件匯入評分', cost: '8', free: true },
-      { action: 'Lab AI 研究', cost: '20', free: false },
-      { action: '問卷生成', cost: '10', free: false },
-      { action: '市場探測', cost: '15', free: false },
-      { action: '市場報告', cost: '25', free: false }
-    ];
+      { action: 'PATH 診斷',    node: 'diagnose',        free: true },
+      { action: '市場探測',     node: 'market_sense',    free: false },
+      { action: '問卷生成',     node: 'survey_generate', free: false },
+      { action: '問卷檢測',     node: 'survey_audit',    free: false },
+      { action: '市場報告',     node: 'market_report',   free: false },
+      { action: 'Lab 研究（整輪）', node: 'lab_run',     free: false }
+    ].map(function(c){ return { ...c, cost: String(estimateCreditsFor(c.node, aiModel)) }; });
     const creditCosts = plan === 'free' ? allCreditCosts.filter(c => c.free) : allCreditCosts;
 
     content.innerHTML = `
@@ -26585,7 +26838,7 @@ function loadHistory(){
               <div style="font-size:13px;font-weight:700;color:var(--ink)">Claude Sonnet 4.6</div>
               <div style="font-size:11px;color:var(--ink-muted);margin-top:4px">Free 方案固定使用 Sonnet</div>
             ` : `
-              ${bpSelect({id:'aiModelSelect', style:'width:100%;font-size:14px', onChange:'setAIModel', options: modelOptions.map(m => ({value:m.id, label:m.label+'（'+m.cost+' credit）', selected: aiModel===m.id}))})}
+              ${bpSelect({id:'aiModelSelect', style:'width:100%;font-size:14px', onChange:'setAIModel', options: modelOptions.map(m => ({value:m.id, label:m.label, selected: aiModel===m.id}))})}
               <div style="font-size:11px;color:var(--ink-muted);margin-top:6px">${currentModel.desc}</div>
             `}
           </div>
@@ -26958,14 +27211,19 @@ function loadHistory(){
   }
 
   function setAIModel(modelId) {
-    if (state.plan === 'free') {
-      showToast('升級到 Pro 方案即可選擇 AI 模型');
+    // v0.33.0: 依 plan 允許的 model 列表驗證
+    var plan = state.plan || 'free';
+    var planCfg = PLAN_CATALOG[plan] || PLAN_CATALOG.free;
+    if (planCfg.allowedModels.indexOf(modelId) === -1) {
+      showToast('此模型需升級方案才能使用');
       return;
     }
-    const models = { sonnet: 'Claude Sonnet 4.6', opus: 'Claude Opus 4.6' };
     state.aiModel = modelId;
+    localStorage.setItem('bp_aiModel', modelId);
     saveState();
-    showToast('已切換至 ' + (models[modelId] || modelId));
+    var m = MODEL_CATALOG[modelId];
+    showToast('已切換至 ' + (m ? m.name : modelId));
+    if (typeof updateCreditBadge === 'function') updateCreditBadge();
     renderSettings();
   }
 
@@ -27737,32 +27995,22 @@ function loadHistory(){
     const scoringPrompt = buildPathScoringPrompt(prodName, docText);
 
     try {
-      // Call OpenAI-compatible API (uses the same API key as lab)
-      const apiKey = localStorage.getItem('bp_api_key') || state.apiKey || '';
-      if (!apiKey) {
-        // No API key — use template-based scoring
+      // v0.33.0: 走 window.PATH_AI → Cloudflare Worker → Claude API（不再直連 OpenAI）
+      if (!window.PATH_AI || !window.PATH_AI.isAvailable()) {
+        // Proxy 未設或未配置 → fallback 到 template
         const scores = templateBasedScoring(docText);
         finishDocDiagnosis(prodName, scores, docText);
         return;
       }
 
-      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: 'You are a product validation expert. You evaluate products using the PATH framework (Problem, Audience, Traction, How). Return ONLY valid JSON.' },
-            { role: 'user', content: scoringPrompt }
-          ],
-          temperature: 0.3,
-          max_tokens: 1500
-        })
-      });
-
-      if (!resp.ok) throw new Error('API 請求失敗');
-      const data = await resp.json();
-      const content = data.choices?.[0]?.message?.content || '';
+      // 呼叫 Claude（node='diagnose' 會由 worker 套入 SYSTEM_PROMPTS.diagnose）
+      // 但診斷的 scoring prompt 需要 LLM 回 JSON，所以我們透過 userMessage 直接傳 scoringPrompt
+      const content = await window.PATH_AI.call('diagnose', {
+        isAI: isAIProduct(docText),
+        scores: { P: 0, A: 0, T: 0, H: 0, total: 0 }, // 文件匯入時尚未有分數
+        pathType: 'importing',
+        weakest: 'N/A'
+      }, scoringPrompt);
 
       // Parse JSON from response
       const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -27779,8 +28027,13 @@ function loadHistory(){
       finishDocDiagnosis(prodName, scores, docText, result.summary || '');
 
     } catch (err) {
-      console.warn('AI scoring failed, using template:', err);
+      console.warn('AI scoring failed, using template:', err.message || err);
       // Fallback to template-based scoring
+      if (err.message && err.message.indexOf('INSUFFICIENT_CREDITS') !== -1) {
+        // Credit 不足已有 showToast + openSubscribeFlow，不再額外 toast
+      } else if (typeof showToast === 'function') {
+        showToast('AI 暫時無法使用，改用模板評分');
+      }
       const scores = templateBasedScoring(docText);
       finishDocDiagnosis(prodName, scores, docText);
     }
@@ -29278,7 +29531,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v0.33.0 · Claude AI 整合骨架上線（等 Anthropic key + Cloudflare 部署）：(1) PLAN_CATALOG 擴充 defaultModel + allowedModels——Free 固定 Sonnet 4.6、Starter 可選 Sonnet/Opus、Pro 預設 Opus 4.7 可切 Sonnet、Enterprise 預設 Opus；Starter highlights 補「Sonnet/Opus 切換」；(2) 新增 MODEL_CATALOG（Opus 4.7 $5/$25、Sonnet 4.6 $3/$15、Haiku 4.5 $1/$5 per MTok）+ `tokensToCredits(inputTokens, outputTokens, modelId)` 換算函式（1 credit = $0.015 成本對齊 Pro 95% 毛利率）+ NODE_TOKEN_ESTIMATES（7 個 AI 節點預估 token：diagnose/interview/lab_run/market_sense/market_report/survey_generate/survey_audit）+ `estimateCreditsFor()` pre-check 函式；(3) 新增 `window.PATH_AI` 統一 AI 呼叫入口——pre-check 剩餘 credits 不足推升級、fetch 到 ai-proxy Cloudflare Worker、讀 usage.input_tokens/output_tokens 算 credits 寫 state.creditUsed + state.creditStats（node 分類統計 + _lastCall 歷史）、未設 PROXY_URL 時 throw AI_UNAVAILABLE 讓工具 fallback；(4) checkCreditReset() 每月自動重置 credit + stats、在 renderSidebar 尾呼叫；(5) Sidebar 新增 #sidebarCreditBadge HTML 元素 + 完整 CSS（collapsed=純數字、expanded=進度條 + 70%/90% gold/rose warn）、updateCreditBadge() 即時渲染；(6) Settings 頁 AI 模型選單改用 PLAN_CATALOG.allowedModels 動態 filter、creditCosts 從 NODE_TOKEN_ESTIMATES 動態計算跟 pre-check 一致、setAIModel() 加 plan 範圍驗證；(7) 市場報告 footer 誠信修復——原文案「此報告由 BeyondPath AI 引擎生成」在 AI 未接時是虛假聲明，改依 window.PATH_AI.isAvailable() 條件顯示「Claude AI 生成」或「模板生成・AI 深度分析待啟用」；MD 匯出文末同步；(8) ai-proxy/worker.js v0.33.0 重寫——預設 LLM_PROVIDER=anthropic、預設 model claude-sonnet-4-6、PLAN_ALLOWED_MODELS server-side 驗證、新增 4 個 system prompts（market_sense/market_report/survey_generate/survey_audit 皆回 JSON 結構）、max_tokens 依節點分級、回傳 usage{input_tokens, output_tokens, model, cost_usd, credits_used}；(9) wrangler.toml 切 anthropic + claude-sonnet-4-6 · 待部署流程：wrangler login → wrangler secret put LLM_API_KEY → wrangler deploy → app.html localStorage.bp_ai_proxy_url 填 workers.dev URL → 5 個工具切接 window.PATH_AI.call() -->
 <!-- v0.32.24 · 規劃頁中鍵拖移 + 下週期視覺分離 + tz bug 修補：(1) 新增 window.attachMidPan(el) 通用 helper——中鍵 mousedown 啟動 pan、mousemove 反向 scrollTop、mouseup 結束、capture-phase auxclick block 防誤觸（dy > 3px threshold），idempotent（__midPanAttached flag）；(2) renderBacklog 右 pane 包 #tpRightScroll overflow-y:auto scroll container，左 pane #tpDropBacklog 同步掛 pan，兩欄獨立捲動；(3) 本週期↔下週期分隔帶升級：原 1px border-top + 8/14px margin 改為 .tp-cycle-divider 漸層線 + pill label「下週期規劃」，margin 擴大 24/16px，暗色模式走 var(--bg-card)；(4) 下週期 opacity .75→.92，empty state 加 icon + 副提示文字「本週需求過多或預先規劃時可使用」+ 3% primary tint 背景；(5) renderBacklog 下週期 startDate/endDate 計算 .toISOString().split('T')[0] → fmtLocalYMD()，修補 v0.32.23 遷移遺漏的 tz bug；(6) CSS 新增 .cp-dropzone/.cp-drag-over/.tp-cycle-divider/.tp-cycle-divider-label + dark mode 變體；(7) 既有 DnD 三區互拖（_tpInitDragDrop）不動，中鍵 pan + 左鍵 DnD 不同按鈕零衝突 -->
 <!-- v0.32.23 · 時區安全日期格式化（ensureCurrentCycle off-by-one 根除）+ 資料遷移：(1) 根本問題——cycleStart 用 new Date() + setHours(0,0,0,0) 建立 local 00:00（例 2026-04-13 Mon TW local 00:00），再呼叫 .toISOString().slice(0,10) 轉成 UTC「2026-04-12」，UTC+8 TW 凌晨 08:00 前 local date 與 UTC date 差一天，於是 startStr = "2026-04-12" 與卡片實際 cycleId 對不上，13 張卡片掛在 cycle_mnzooqhvze7o7 但 kanban 用 cycle_next_2026-04-12 找不到——愛德華 4/16 截圖只看到 4 張；(2) 新增 fmtLocalYMD(d) helper at line 7220：getFullYear + getMonth+1 padded + getDate padded 組 YYYY-MM-DD 走 local time 不踩 UTC 偏移；(3) 14 個 .toISOString().slice(0,10) 呼叫點全面遷移——generatePmInsights 當日比對（7055）、ensureCurrentCycle startStr/endStr（7255-7256）、_cycleCarryOver find + 新 cycle startDate/endDate（9982, 9998-9999）、demo 注入 _ds helper（10058）、timeline drag/resize 四處（12646, 12650, 12660, 12666）、cycle next move find + startDate/endDate（14926, 14931-14932）、txn 表單日期預設（15640）、quote.created 預設（15939）、pulse view _todayISO（18266）、meeting.date 預設（25719）；(4) 保留 3 個檔名產出呼叫點不動（23543 Lab report / 24716 survey / 26931 backup）——檔名 UTC 無害且反而有跨時區一致性；(5) 一次性 data migration 腳本：ensureCurrentCycle 修好後會產生新正確 cycle（startDate=2026-04-13），同時 cycle_next_2026-04-12（bug 產物）孤兒化，腳本把裡面 21 張卡片搬到新 cycle 再刪除孤兒；(6) CLAUDE.md 新增「資料操作安全規則」（禁止硬編碼 cycleId 或 columnId）+「HTML 尾部 Comment 憲法」（changelog 必須完整包 HTML comment，尾頁後禁裸文字，Gate 4 加 grep 自動檢查）——回應愛德華「累犯」指正（footer 裸文字問題）· 對應 scripts/v0_32_23_tz_fix.md 完整調研文件 · 下一步 Gate 1 實測 / Gate 2 視覺 / Gate 4 版控 + beyondspec.tw/path/ 部署 -->
-<!-- v0.32.22 · 城堡 subagent 並行調研後兩題綜合修正（愛德華第二輪截圖怒火回饋 + 城堡三人並行調研 Explore×2 + general-purpose×1）：(1) 空狀態「新增欄位」入口消失 bug——愛德華截圖只看到 3 欄（待辦/進行中/已完成），質疑「用戶怎麼新增新的狀態列」；卡西法 A 盤點發現：`.kanban-col-add` 按鈕在 line 13262 存在但被 v0.15.4 加了 `if(_totalBoardCards > 0)` 條件鎖——空看板時完全不渲染，用戶永無入口；空狀態正是用戶最需要自訂欄位的時機（刪掉不用的驗收中、加擱置中等），這是產品結構錯誤不是樣式問題；對標 Trello/Asana/Notion：column 列表最右側永遠有 + 按鈕，不依賴卡片存在；修法：移除 `_totalBoardCards > 0` 條件 gate，`.kanban-col-add` 無論空狀態一律渲染；(2) 核心三欄（todo/doing/done）誤刪回復機制——愛德華 localStorage 可能曾誤刪「驗收中」或其他欄，導致現在只剩 3 欄且無法回復；`getCols()` 加 migration 邏輯：讀取 localStorage 後若發現 todo/doing/done 其一缺失，從 DEFAULT_COLS 補回並 silent save（不刪用戶自訂欄位，僅補核心三角）；同步修正 review 欄歷史違憲色 #3B82F6（Tailwind blue 違反 PATH 封閉五色）→ #5B3FC9（primary-deep 同家族，形成「入流程→深化→完成」視覺梯度）；兩處 DEFAULT_COLS 定義（_taskShared line 6957 + biz-tasks scope line 12693）同步更新；(3) _kbDeleteCol 核心欄位刪除保護——憲法「對齊小團隊使用情境，todo/doing/done 是任務流最小三角」，加前置判斷：刪核心三欄彈 alert 提示「這是核心欄位無法刪除，可留空不放卡片」，其餘欄位（收件匣/驗收中/用戶自訂）刪除流程不變；(4) 時間軸 bar 點擊跳 preview drawer 問題——愛德華第二張截圖：點時間軸 bar 跳出「任務詳情」drawer 要再按「前往完整編輯」才開 modal，跟任務看板相同的兩步預覽 UX 糾紛；卡西法 B 定位：`_rmOpenCard` at line 11694 是入口，drawer 內「前往完整編輯」呼叫 `_rmOpenFullCard` at line 11927（會關 drawer + navigate('biz-tasks') + 呼叫 _kbEditCard）；修法：`_rmOpenCard` function 第 5 行短路——若 `window._rmOpenFullCard` 存在則直接轉導並 return，原 drawer 渲染邏輯（~200 行）保留為 unreachable dead code 供歷史參考；所有 4 個呼叫點（未排程 bar line 10590、已排程 bar line 10618、keyboard Enter/Space line 10619、週期 drawer 需求列表 line 11081）自動繼承一步到位行為；霍爾警告：此改動會失去「Roadmap 頁內預覽」的原始設計理念，但愛德華明確需求 > 設計理念；(5) 城堡 subagent 實戰首次正式出動——並行派 3 個 agent：卡西法 A（Explore mode）盤點 column 資料結構、卡西法 B（Explore mode）定位 roadmap drawer 實現、霍爾（general-purpose）做競品對標策略分析；總 tokens 100K+ / duration 102 秒 parallel；主對話僅負責整合調研 + 決策 + 執行 edit；驗證 subagent 真實價值——三份回報各自獨立深入、不佔主 context；此版是「AI 協作流程」里程碑，後續大範圍修正將默認採用多 agent 並行調研 · 後續 v0.32.23 計畫：rmdrw CSS / HTML dead code 清理、欄位拖曳重排 UI、空狀態引導提示（非 banner 的輕量 hint）、Chrome MCP 恢復後 Gate 1/2 Chrome 視覺回補 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
