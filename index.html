@@ -177,6 +177,15 @@ body[data-dir="A"] .A{display:block}
 .A-feat p{font-size:13.5px;color:var(--ink-sec);line-height:1.65}
 
 /* PATH quadrant — detailed */
+
+/* v2: PATH path-banner inline illustration — witch suggestion B (scaled-down) */
+.A-path-banner{max-width:900px;margin:0 auto 56px;padding:24px 20px 16px;background:linear-gradient(180deg,#FAFAFF 0%,#F5F0FF 100%);border:1px solid var(--line);border-radius:20px;position:relative;overflow:hidden}
+.A-path-banner::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(124,92,252,.045) 1px,transparent 1px);background-size:16px 16px;pointer-events:none;mask:radial-gradient(ellipse 100% 60% at 50% 40%,#000 40%,transparent 85%);-webkit-mask:radial-gradient(ellipse 100% 60% at 50% 40%,#000 40%,transparent 85%)}
+.A-path-banner svg{display:block;width:100%;height:auto;position:relative;z-index:1}
+@media(max-width:640px){
+  .A-path-banner{padding:12px}
+}
+
 .A-path-wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center}
 .A-path-board{background:#fff;border-radius:20px;padding:28px;border:1px solid var(--line);box-shadow:var(--shadow-card);position:relative}
 .A-path-board-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px}
@@ -205,24 +214,44 @@ body[data-dir="A"] .A{display:block}
 .A-path-text h4{font-size:15.5px;font-weight:750;margin-bottom:4px}
 .A-path-text p{font-size:13.5px;color:var(--ink-sec);line-height:1.6}
 
-/* comparison tables */
-.A-cmp-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.A-cmp{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-card)}
-.A-cmp-head{padding:28px 28px 18px;border-bottom:1px solid var(--line)}
-.A-cmp-head h4{font-size:18px;font-weight:800;letter-spacing:-.2px;margin-bottom:4px}
-.A-cmp-head p{font-size:13px;color:var(--ink-muted)}
-.A-cmp-table{width:100%;border-collapse:collapse}
-.A-cmp-table tr{border-bottom:1px solid var(--line)}
-.A-cmp-table tr:last-child{border-bottom:none}
-.A-cmp-table th{font-size:10.5px;text-transform:uppercase;letter-spacing:1.3px;color:var(--ink-dim);font-weight:700;padding:14px 20px;text-align:left;background:#FAFAFC}
-.A-cmp-table th.hl{color:var(--primary)}
-.A-cmp-table td{padding:16px 20px;font-size:13.5px;vertical-align:top}
-.A-cmp-table td:first-child{font-weight:650;color:var(--ink);width:32%;border-right:1px solid var(--line)}
-.A-cmp-table td.neg{color:var(--ink-muted)}
-.A-cmp-table td.pos{background:rgba(124,92,252,.04);color:var(--ink);font-weight:500}
-.A-cmp-table .x{color:var(--ink-dim);margin-right:6px;font-weight:700}
-.A-cmp-table .v{color:var(--teal);margin-right:6px;font-weight:800}
-.A-cmp-table .big{font-family:var(--mono);font-weight:800;color:var(--primary)}
+/* v2: merged 3-col comparison table — witch P0-3 */
+.A-cmp-v2{max-width:1160px;margin:0 auto;overflow-x:auto}
+.A-cmp3-table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-card)}
+.A-cmp3-table th{padding:22px 20px 18px;text-align:left;vertical-align:bottom;background:#FAFAFC;border-bottom:1px solid var(--line);font-weight:500}
+.A-cmp3-table th.hl{background:linear-gradient(180deg,rgba(124,92,252,.06),rgba(124,92,252,.10));border-left:1px solid rgba(124,92,252,.16);border-right:1px solid rgba(124,92,252,.16)}
+.A-cmp-h{display:block;font-family:var(--sans);font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:4px}
+.A-cmp3-table th.hl .A-cmp-h{color:var(--primary)}
+.A-cmp-sub{display:block;font-size:11.5px;color:var(--ink-muted);font-weight:500}
+.A-cmp3-table td{padding:18px 20px;font-size:13.5px;line-height:1.55;vertical-align:middle;border-bottom:1px solid var(--line)}
+.A-cmp3-table tr:last-child td{border-bottom:none}
+.A-cmp-dim{font-family:var(--sans);font-size:12.5px;font-weight:700;color:var(--ink-sec);letter-spacing:.02em;background:#FAFAFC;width:18%;min-width:140px}
+.A-cmp3-table td.neg{color:var(--ink-muted)}
+.A-cmp3-table td.pos{color:var(--ink);background:rgba(124,92,252,.03);border-left:1px solid rgba(124,92,252,.12);border-right:1px solid rgba(124,92,252,.12);font-weight:500}
+.A-cmp3-table td.neg, .A-cmp3-table td.pos{display:flex;align-items:flex-start;gap:10px;min-height:56px}
+.A-cmp3-table td .A-ico-chk{color:var(--primary);flex-shrink:0;margin-top:2px}
+.A-cmp3-table td .A-ico-x{color:var(--ink-dim);flex-shrink:0;margin-top:2px}
+.A-cmp3-table td b{color:var(--primary);font-weight:700}
+.A-cmp3-table tr:hover td.pos{background:rgba(124,92,252,.055)}
+@media(max-width:920px){
+  .A-cmp3-table, .A-cmp3-table tbody, .A-cmp3-table thead, .A-cmp3-table tr{display:block}
+  .A-cmp3-table td, .A-cmp3-table th{display:block;border:none}
+  .A-cmp3-table td.pos, .A-cmp3-table td.neg{border-bottom:1px solid var(--line)}
+  .A-cmp-dim{background:#F5F2FF;color:var(--primary);padding:12px 20px 8px;margin-top:14px;font-size:11px;text-transform:uppercase;letter-spacing:.12em}
+}
+
+/* v2: 'Credits 能做什麼' action chip row — Howl S3 */
+.A-price-actions{max-width:1100px;margin:0 auto 32px;padding:24px 32px;background:linear-gradient(180deg,#FAFAFF 0%,#F5F0FF 100%);border:1px solid var(--line);border-radius:16px;text-align:center}
+.A-actions-title{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--primary);letter-spacing:.15em;text-transform:uppercase;margin-bottom:18px}
+.A-actions-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.A-action{padding:14px 12px;background:#fff;border:1px solid var(--line);border-radius:12px;transition:all .2s}
+.A-action:hover{transform:translateY(-2px);border-color:var(--primary);box-shadow:0 8px 24px rgba(124,92,252,.1)}
+.A-action-n{font-family:var(--mono);font-size:28px;font-weight:800;color:var(--primary);letter-spacing:-.025em;line-height:1;margin-bottom:4px}
+.A-action-l{font-size:12px;color:var(--ink-sec);font-weight:500}
+.A-actions-note{font-size:12.5px;color:var(--ink-muted)}
+.A-actions-note strong{color:var(--ink);font-weight:700}
+@media(max-width:720px){
+  .A-actions-grid{grid-template-columns:repeat(2,1fr)}
+}
 
 /* pricing */
 .A-price-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:36px}
@@ -244,15 +273,20 @@ body[data-dir="A"] .A{display:block}
 .A-price.feat .p-cta:hover{background:var(--primary-deep);border-color:var(--primary-deep)}
 
 /* final CTA */
-.A-cta{background:linear-gradient(135deg,#1C1C2E 0%,#0E0E1A 70%);color:#fff;text-align:center;padding:100px 32px;border-radius:28px;max-width:1160px;margin:0 auto 80px;position:relative;overflow:hidden}
-.A-cta::before{content:'';position:absolute;inset:-50% -20% auto auto;width:80%;height:200%;background:radial-gradient(circle,rgba(124,92,252,.35),transparent 60%);pointer-events:none}
-.A-cta::after{content:'';position:absolute;inset:auto auto -40% -20%;width:70%;height:100%;background:radial-gradient(circle,rgba(27,168,145,.25),transparent 60%);pointer-events:none}
+.A-cta{background:linear-gradient(135deg,#1C1C2E 0%,#0E0E1A 70%);color:#fff;text-align:center;padding:110px 32px 100px;border-radius:28px;max-width:1160px;margin:0 auto 80px;position:relative;overflow:hidden}
+.A-cta::before{content:'';position:absolute;inset:-50% -20% auto auto;width:80%;height:200%;background:radial-gradient(circle,rgba(124,92,252,.38),transparent 60%);pointer-events:none;animation:ctaOrb1 12s ease-in-out infinite alternate}
+.A-cta::after{content:'';position:absolute;inset:auto auto -40% -20%;width:70%;height:100%;background:radial-gradient(circle,rgba(27,168,145,.28),transparent 60%);pointer-events:none;animation:ctaOrb2 14s ease-in-out infinite alternate}
+@keyframes ctaOrb1{0%{transform:translate(0,0) scale(1)}100%{transform:translate(40px,-20px) scale(1.08)}}
+@keyframes ctaOrb2{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-30px,30px) scale(1.1)}}
 .A-cta > *{position:relative;z-index:1}
 .A-cta h2{font-size:clamp(32px,4vw,54px);font-weight:900;letter-spacing:-.025em;line-height:1.05;margin-bottom:16px}
 .A-cta h2 .em{font-family:var(--serif);font-style:italic;font-weight:400;color:#B49CFF}
 .A-cta p{font-size:17px;color:rgba(255,255,255,.7);max-width:520px;margin:0 auto 32px}
 .A-cta .A-btn-primary{background:#fff;color:var(--ink)}
 .A-cta .A-btn-primary:hover{background:var(--primary);color:#fff}
+.A-cta .A-btn-secondary{background:transparent;color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.22);padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:all .2s;font-family:inherit;cursor:pointer}
+.A-cta .A-btn-secondary:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.4);color:#fff}
+.A-cta .A-btn-secondary.lg{padding:16px 32px;font-size:16px}
 
 /* footer */
 .A-foot{border-top:1px solid var(--line);padding:48px 32px 32px;background:#fff}
@@ -424,6 +458,54 @@ body[data-dir="A"] .A{display:block}
         <p class="A-lead">PATH 的四個維度不是考試，是鏡子 —— 讓你看見產品最真實的樣子，而不是你希望它成為的樣子。</p>
       </div>
 
+
+      <div class="A-path-banner">
+        <svg viewBox="0 0 840 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- 虛線路徑 -->
+          <path d="M 60 110 C 180 110, 220 60, 320 80 S 500 140, 600 90 S 740 60, 800 100" fill="none" stroke="rgba(124,92,252,.35)" stroke-width="1.5" stroke-dasharray="5 6" stroke-linecap="round"/>
+
+          <!-- 起點 -->
+          <circle cx="60" cy="110" r="5" fill="var(--ink-dim, #9999AA)"/>
+          <text x="60" y="140" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" font-weight="600" fill="var(--ink-muted, #66667A)">START</text>
+
+          <!-- P 節點 -->
+          <g transform="translate(200,80)">
+            <circle cx="0" cy="0" r="20" fill="#fff" stroke="#7C5CFC" stroke-width="2"/>
+            <text x="0" y="5" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" font-weight="800" fill="#7C5CFC">P</text>
+            <text x="0" y="46" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" fill="#0E0E1A">Problem</text>
+            <text x="0" y="60" text-anchor="middle" font-family="'Noto Sans TC', sans-serif" font-size="10" fill="#66667A">問題驗證</text>
+          </g>
+
+          <!-- A 節點 -->
+          <g transform="translate(380,110)">
+            <circle cx="0" cy="0" r="20" fill="#fff" stroke="#1BA891" stroke-width="2"/>
+            <text x="0" y="5" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" font-weight="800" fill="#1BA891">A</text>
+            <text x="0" y="46" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" fill="#0E0E1A">Audience</text>
+            <text x="0" y="60" text-anchor="middle" font-family="'Noto Sans TC', sans-serif" font-size="10" fill="#66667A">受眾輪廓</text>
+          </g>
+
+          <!-- T 節點 -->
+          <g transform="translate(560,100)">
+            <circle cx="0" cy="0" r="20" fill="#fff" stroke="#E08A3A" stroke-width="2"/>
+            <text x="0" y="5" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" font-weight="800" fill="#E08A3A">T</text>
+            <text x="0" y="46" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" fill="#0E0E1A">Traction</text>
+            <text x="0" y="60" text-anchor="middle" font-family="'Noto Sans TC', sans-serif" font-size="10" fill="#66667A">牽引力</text>
+          </g>
+
+          <!-- H 節點 -->
+          <g transform="translate(720,80)">
+            <circle cx="0" cy="0" r="20" fill="#fff" stroke="#D94462" stroke-width="2"/>
+            <text x="0" y="5" text-anchor="middle" font-family="Inter, sans-serif" font-size="15" font-weight="800" fill="#D94462">H</text>
+            <text x="0" y="46" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" fill="#0E0E1A">Hustle</text>
+            <text x="0" y="60" text-anchor="middle" font-family="'Noto Sans TC', sans-serif" font-size="10" fill="#66667A">執行力</text>
+          </g>
+
+          <!-- 終點 箭頭 -->
+          <path d="M 790 94 L 802 100 L 790 106" fill="none" stroke="#7C5CFC" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="810" y="133" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" font-weight="600" fill="var(--ink-muted, #66667A)">GO</text>
+        </svg>
+      </div>
+
       <div class="A-path-wrap">
         <div class="A-path-board">
           <div class="A-path-board-head">
@@ -477,36 +559,59 @@ body[data-dir="A"] .A{display:block}
     <div class="A-inner">
       <div class="A-head ctr">
         <div class="A-eyebrow"><span class="bar"></span>為什麼不直接問 ChatGPT？<span class="bar"></span></div>
-        <h2 class="A-h2">我們不是 AI 包裝的表單，<br>是 <span class="em">結構化</span>的研究方法論。</h2>
+        <h2 class="A-h2">不是 AI 包裝的表單，<br>是 <span class="em">結構化</span>的研究方法論。</h2>
+        <p class="A-lead">把 ChatGPT 的 "聊天式驗證" 和傳統訪談的 "重金深度" 放一起看——你會發現差異不是程度，是方法。</p>
       </div>
 
-      <div class="A-cmp-wrap">
-        <div class="A-cmp">
-          <div class="A-cmp-head"><h4>vs. ChatGPT</h4><p>通用 AI 聊天 vs. 結構化驗證</p></div>
-          <table class="A-cmp-table">
-            <tr><th></th><th>ChatGPT</th><th class="hl">BeyondPath</th></tr>
-            <tr><td>受訪者人格</td><td class="neg"><span class="x">✗</span>自己編 prompt</td><td class="pos"><span class="v">✓</span>自動生成多元人格</td></tr>
-            <tr><td>訪談深度</td><td class="neg"><span class="x">✗</span>淺層探討</td><td class="pos"><span class="v">✓</span>PATH 四維深掘</td></tr>
-            <tr><td>數據結構</td><td class="neg"><span class="x">✗</span>自由文字</td><td class="pos"><span class="v">✓</span>NPS · 痛點矩陣 · 轉換率</td></tr>
-            <tr><td>分析深度</td><td class="neg"><span class="x">✗</span>單次對話</td><td class="pos"><span class="v">✓</span>多人格交叉分析</td></tr>
-            <tr><td>研究報告</td><td class="neg"><span class="x">✗</span>需自行整理</td><td class="pos"><span class="v">✓</span>結構化報告 · 可匯出</td></tr>
-          </table>
-        </div>
-        <div class="A-cmp">
-          <div class="A-cmp-head"><h4>vs. 傳統用戶訪談</h4><p>數週數萬 vs. 分鐘級、反覆迭代</p></div>
-          <table class="A-cmp-table">
-            <tr><th></th><th>傳統訪談</th><th class="hl">BeyondPath</th></tr>
-            <tr><td>所需時間</td><td class="neg"><span class="x">✗</span>數週至數月</td><td class="pos"><span class="v">✓</span><span class="big">5</span> 分鐘完成</td></tr>
-            <tr><td>費用</td><td class="neg"><span class="x">✗</span>NT$ 15–90 萬</td><td class="pos"><span class="v">✓</span>免費 ~ <span class="big">NT$990</span>/月</td></tr>
-            <tr><td>樣本規模</td><td class="neg"><span class="x">✗</span>5–15 人</td><td class="pos"><span class="v">✓</span><span class="big">16–128</span> 多元人格</td></tr>
-            <tr><td>可重複性</td><td class="neg"><span class="x">✗</span>一次性</td><td class="pos"><span class="v">✓</span>無限迭代</td></tr>
-            <tr><td>量化程度</td><td class="neg"><span class="x">✗</span>定性難以比較</td><td class="pos"><span class="v">✓</span>完全量化可視化</td></tr>
-          </table>
-        </div>
-      </div>
-
-      <div style="margin-top:40px;text-align:center;font-size:14px;color:var(--ink-sec);max-width:780px;margin-left:auto;margin-right:auto;line-height:1.8">
-        <b style="color:var(--ink)">我們的定位：</b>BeyondPath 是產品假設的快速驗證工具，不是傳統市調的替代品。在你投入 15–90 萬做大規模研究之前，先用 AI 低成本驗證方向是否正確。
+      <div class="A-cmp-v2">
+        <table class="A-cmp3-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th><span class="A-cmp-h">ChatGPT</span><span class="A-cmp-sub">通用 AI 聊天</span></th>
+              <th><span class="A-cmp-h">傳統用戶訪談</span><span class="A-cmp-sub">數週 · 數萬元</span></th>
+              <th class="hl"><span class="A-cmp-h">BeyondPath</span><span class="A-cmp-sub">結構化 · 分鐘級</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="A-cmp-dim">研究方法</td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>自由對話，靠自己編 prompt</span></td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>淺層問卷 + 一次性訪談</span></td>
+              <td class="pos"><svg class="A-ico-chk" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5 8.2l2.2 2 3.8-4.2"/></svg><span>PATH 四維 · 20 題結構化診斷</span></td>
+            </tr>
+            <tr>
+              <td class="A-cmp-dim">受訪 / 數據來源</td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>單一 AI 對答</span></td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>5–15 人</span></td>
+              <td class="pos"><svg class="A-ico-chk" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5 8.2l2.2 2 3.8-4.2"/></svg><span>16–128 多元人格交叉</span></td>
+            </tr>
+            <tr>
+              <td class="A-cmp-dim">所需時間</td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>即問即答，無系統追蹤</span></td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>數週至數月</span></td>
+              <td class="pos"><svg class="A-ico-chk" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5 8.2l2.2 2 3.8-4.2"/></svg><span><b>5 分鐘</b>拿到完整報告</span></td>
+            </tr>
+            <tr>
+              <td class="A-cmp-dim">費用</td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>US$ 20 / 月</span></td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>NT$ 15–90 萬</span></td>
+              <td class="pos"><svg class="A-ico-chk" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5 8.2l2.2 2 3.8-4.2"/></svg><span>免費 ~ <b>NT$ 990 / 月</b></span></td>
+            </tr>
+            <tr>
+              <td class="A-cmp-dim">輸出物</td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>自由文字，需自行彙整</span></td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>一次性紀錄，難以量化</span></td>
+              <td class="pos"><svg class="A-ico-chk" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5 8.2l2.2 2 3.8-4.2"/></svg><span>NPS · 痛點矩陣 · 量化報告 · 可匯出</span></td>
+            </tr>
+            <tr>
+              <td class="A-cmp-dim">可迭代性</td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>每次重起爐灶</span></td>
+              <td class="neg"><svg class="A-ico-x" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg><span>一次性</span></td>
+              <td class="pos"><svg class="A-ico-chk" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5 8.2l2.2 2 3.8-4.2"/></svg><span>無限次 A/B 驗證</span></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -516,29 +621,42 @@ body[data-dir="A"] .A{display:block}
     <div class="A-inner">
       <div class="A-head ctr">
         <div class="A-eyebrow"><span class="bar"></span>Pricing<span class="bar"></span></div>
-        <h2 class="A-h2">按 credits 計費，<br>用多少 <span class="em">付多少</span>。</h2>
-        <p class="A-lead">Free tier 30 credits 永久可用，足以跑一次完整 PATH 診斷 + 任務管理試玩。升級隨時，每月 1 日自動重置；Claude Opus 模型消耗 3 倍 credits。</p>
+        <h2 class="A-h2">任務看板、客戶、報價<br><span class="em">永久免費</span>。</h2>
+        <p class="A-lead">Credits 只用在 AI 環節（診斷、報告、摘要）——用多少付多少。任務管理、CRM、報價收款的核心工具無論哪一階都是完整可用，<strong>不是試用期版本</strong>。</p>
+      </div>
+
+
+      <div class="A-price-actions">
+        <div class="A-actions-title">500 credits 可以做什麼？</div>
+        <div class="A-actions-grid">
+          <div class="A-action"><div class="A-action-n">8</div><div class="A-action-l">次 PATH 診斷</div></div>
+          <div class="A-action"><div class="A-action-n">50</div><div class="A-action-l">次 AI 任務整理</div></div>
+          <div class="A-action"><div class="A-action-n">20</div><div class="A-action-l">份 AI 報價草擬</div></div>
+          <div class="A-action"><div class="A-action-n">100</div><div class="A-action-l">次會議摘要</div></div>
+        </div>
+        <div class="A-actions-note">Claude Opus 模型消耗 3 倍 credits · 年繳省 <strong>17%</strong>（等於送你 2 個月）</div>
       </div>
 
       <div class="A-price-grid">
         <div class="A-price">
           <h4>FREE</h4>
           <div class="amt">免費</div>
-          <div class="unit">永久</div>
+          <div class="unit">永久可用</div>
           <ul>
-            <li>30 Credits / 月</li>
-            <li>PATH 四維診斷</li>
-            <li>任務 · 客戶（50 筆）</li>
+            <li><strong>50 Credits / 月</strong></li>
+            <li>✦ 首次 PATH 診斷不計費</li>
+            <li>任務看板 · 客戶管理（50 筆）</li>
+            <li>報價提案（3 份）</li>
             <li>Claude Sonnet 4.6</li>
           </ul>
-          <a href="/path/" class="p-cta" style="text-decoration:none">免費開始</a>
+          <a href="/path/" class="p-cta" style="text-decoration:none">免費開始 →</a>
         </div>
         <div class="A-price">
           <h4>STARTER</h4>
-          <div class="amt"><span class="p">NT$</span>390</div>
-          <div class="unit">/ 月</div>
+          <div class="amt"><span class="p">NT$</span>290</div>
+          <div class="unit">/ 月 · 個人接案者</div>
           <ul>
-            <li>500 Credits / 月</li>
+            <li><strong>600 Credits / 月</strong></li>
             <li>Lab 研究 · 問卷引擎</li>
             <li>報價提案 · 市場探測</li>
             <li>會議紀錄 · 客戶無上限</li>
@@ -546,14 +664,14 @@ body[data-dir="A"] .A{display:block}
           <a href="/path/" class="p-cta" style="text-decoration:none">選擇 Starter</a>
         </div>
         <div class="A-price feat">
-          <div class="pbadge">推薦</div>
+          <div class="pbadge">2-5 人小團隊</div>
           <h4>PRO</h4>
           <div class="amt"><span class="p">NT$</span>990</div>
           <div class="unit">/ 月</div>
           <ul>
-            <li>3,000 Credits / 月</li>
+            <li><strong>3,000 Credits / 月</strong></li>
             <li>Starter 所有功能</li>
-            <li>AI 模型切換 · Opus</li>
+            <li>AI 模型切換 · Claude Opus</li>
             <li>收款 · 文件庫 · AI 儀表板</li>
             <li>團隊 5 人 + Claude MCP</li>
           </ul>
@@ -581,6 +699,7 @@ body[data-dir="A"] .A{display:block}
       <h2>準備好讓 AI，<br><span class="em">幫你跑生意了嗎？</span></h2>
       <p>從驗證到營收，AI 幫你跑完每一步。免費開始，隨時升級。</p>
       <a href="/path/" class="A-btn-primary lg" style="text-decoration:none">免費開始使用 <span>→</span></a>
+      <a href="#path" class="A-btn-secondary lg" style="text-decoration:none;margin-left:12px">先看看 PATH 框架</a>
     </div>
   </section>
 
