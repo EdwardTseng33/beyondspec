@@ -2912,15 +2912,10 @@ canvas{display:block;margin:0 auto 24px}
 .kanban-col-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:var(--r-lg) var(--r-lg) 0 0}
 /* v0.32.20：col-body gap 12px 讓卡片上下有呼吸感（取代原 .kanban-card margin-bottom:8px 過密） */
 .kanban-col-body{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:12px;min-height:80px;transition:background .2s;display:flex;flex-direction:column;gap:12px}
-/* v1.0.2: 中鍵拖移期間，強制鎖死所有可橫向 scroll 容器，擋 Windows autoscroll 散逸 */
-/* v1.0.3: mid-pan 進行中完全鎖 kanban-board 的橫向（雙層 hidden + 無 touch-action）
-   防 Windows autoscroll compass 驅動的橫向散逸 */
-body.mid-panning .kanban-board,
-body.mid-panning .kanban-board-wrap{overflow-x:hidden !important;overflow-y:hidden !important;touch-action:none !important}
+/* v1.0.4: mid-pan 期間僅鎖 .kanban-board 橫向散逸；document-level mousedown hook 才是主力防線 */
+body.mid-panning .kanban-board{overflow-x:hidden !important}
 body.mid-panning .kanban-col-body{touch-action:pan-y !important;overscroll-behavior:contain !important}
 body.mid-panning{cursor:grabbing !important;user-select:none !important}
-body.mid-panning *{pointer-events:none !important}
-body.mid-panning .kanban-col-body,body.mid-panning .kanban-col-body *{pointer-events:auto !important}
 
 /* v1.0.2: 分組 bpSelect 在 toolbar 的 compact 版（縮高度 + 降 padding，視覺跟周圍 chips/buttons 齊平） */
 .kb-groupby-compact .bp-select-trigger{
@@ -5020,7 +5015,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.0.3</div>
+        <div class="sidebar-version">v1.0.4</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7579,13 +7574,28 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
   //   - 中鍵 mouseup → 結束 pan、還原 cursor
   //   - auxclick capture phase: 若實際有拖移（dy > 3px）阻止後續 click handler
   //   - Idempotent：同一 el 重複呼叫不重複綁 listener
-  // v1.0.3: 徹底重寫 attachMidPan——卡片列表區（col-body）中鍵拖移 100% 鎖垂直
-  // 防禦層：
-  //   1. mousedown capture phase（先於所有其他 handler）+ preventDefault 擋 Windows autoscroll
-  //   2. 記錄所有「橫向可 scroll 的祖先容器」的 scrollLeft，panning 期間每個 scroll event 都把它們拉回原值
-  //   3. mousemove 只改 el.scrollTop（不碰 scrollLeft）
-  //   4. rAF loop：panning 期間每幀強制祖先 scrollLeft = locked（兜底擋原生 autoscroll）
-  //   5. auxclick capture: 若 moved，阻止 click bubble 到卡片上觸發編輯 modal
+  // v1.0.4: Document-level 捕獲階段守門員 —— 必須在 Chrome 原生 autoscroll 選定 anchor 前就 preventDefault
+  // 根因分析（卡西法實測）：Chrome 中鍵 autoscroll 在 mousedown 瞬間走 native layer 選最近 h-scrollable 祖先
+  //   = .kanban-board。col-body 層級的 capture listener 已經太晚。
+  // 解法：在 document 層 capture phase 一次性註冊，所有 kanban-col-body 內部的中鍵 mousedown
+  //       統一 preventDefault，搶先於所有 element-level handler。
+  if(!window._midPanDocHook){
+    window._midPanDocHook = true;
+    document.addEventListener('mousedown', function(e){
+      if(e.button !== 1) return; // 只攔中鍵
+      var t = e.target;
+      while(t && t.nodeType === 1){
+        if(t.classList && t.classList.contains('kanban-col-body')){
+          e.preventDefault(); // 關鍵：在 Chrome autoscroll 選錨前先砍掉 default
+          return;
+        }
+        if(t === document.body) return;
+        t = t.parentNode;
+      }
+    }, {capture: true, passive: false});
+  }
+
+  // v1.0.4: attachMidPan — col-body 層級維持 JS 端的 scroll 動畫；document-level hook 負責擋 autoscroll
   window.attachMidPan = function(el){
     if(!el || el.__midPanAttached) return;
     el.__midPanAttached = true;
@@ -30008,7 +30018,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.0.4 · 任務看板中鍵拖移根因級修復（來回 3 版才抓到 root cause）：卡西法 Chrome 實測診斷確認——Chrome 原生 autoscroll 在 mousedown 瞬間走 native layer 選最近 h-scrollable 祖先（=.kanban-board）當 anchor，col-body 層級 capture listener 已太晚；v1.0.2 / 1.0.3 的 body.mid-panning CSS + rAF enforceLocks 只能被動拉回，每幀 16ms gap 讓 native pan 可散逸幾十 px。解：新增 document-level capture phase mousedown hook（window._midPanDocHook 單例），搶先於所有 element handler 先 preventDefault 掉 kanban-col-body 內部中鍵 mousedown，徹底阻止 Chrome 選定 anchor；移除 v1.0.3 過度防禦的 body.mid-panning *{pointer-events:none} 與雙層 overflow-hidden，簡化為單一 .kanban-board{overflow-x:hidden !important}；attachMidPan 本身維持 col-body 層級 JS 捲動邏輯不變 · 版號 v1.0.3→v1.0.4 · tail cleanup: v1.0.1 搬進 CHANGELOG.md -->
 <!-- v1.0.3 · 任務看板雙 UX 修復（Edward 回報）：(1) 卡片 hover 靜態化——移除 .kb-card-v2:hover 的 transform:translateY(-1px) 浮起 + box-shadow 放大 + description -webkit-line-clamp:1→2 展開動態，三項合併的動態效果在欄位塞滿 8+ 張卡時嚴重干擾視覺與閱讀；hover 只保留 border-color 淡紫提示，description 永遠 1 行 ellipsis；(2) 中鍵拖移強制鎖垂直（徹底版）——attachMidPan 重寫五層防禦：mousedown capture phase 搶先於 Windows autoscroll、collectLocked() 記錄所有祖先橫向 scrollable 的 scrollLeft、rAF loop 每幀 enforceLocks() 兜底、document scroll capture 即時拉回、wheel capture 吃掉意外滾輪；CSS 強化 body.mid-panning 期間 .kanban-board + .kanban-board-wrap 雙層 overflow-x:hidden + touch-action:none + .kanban-col-body 保留 pan-y；auxclick stopImmediatePropagation 防誤觸卡片 click · 版號 v1.0.2→v1.0.3 · tail cleanup: v1.0.0 搬進 CHANGELOG.md -->
 <!-- v1.0.2 · 緊急回退 + 3 個根源性 bug 修復：(1) 全域 topbar 整組移除——不論 v0.34.0 的 sticky bar 還是 v1.0.1 的 fixed pill，都跟頁面標題互斥（sticky 推下標題 / fixed 擋住標題），愛德華兩次明確要求「退回上一版設計」；#globalTopbar HTML element + global-topbar CSS 全刪；updateCreditBadge 改 no-op 保留 API 不爆；renderHome 恢復 inline credit pill + plan badge + avatar + 用戶名（跟 v0.33.2 一致）；credit 顯示改回 僅出現於首頁 + 設定頁；(2) renderModule 統一加 overflow safety reset——timeline/roadmap 會設 #main.overflow:hidden + height:100vh 鎖死外層捲動，過去 6 個 render fn（home/quotes/billing/diagnose/pmf/settings）沒自行 reset，導致用戶從 timeline 切到 Lab/PATH 診斷等頁「上下拖移失效」；在 renderModule 入口統一清除 #main + #app 的 overflow/height inline style，roadmap/timeline 自己會重新設定不受影響；額外在 renderLab 加 belt-and-suspenders reset；(3) 看板中鍵拖移強化鎖定垂直——attachMidPan 加多層防線：body.mid-panning class 觸發時 CSS 強制 .kanban-board{overflow-x:hidden !important}、mousemove capture phase 先發制人、外層可橫向 scroll 父容器的 scrollLeft 鎖死（記 _midPanLockedScrollLeft 隨 mousemove 復位）、mousedown 雙 listener（一般 + capture）分工抓 scrollLeft；.kanban-col-body 加 overflow-x:hidden 不再依靠預設；預期徹底封鎖 Windows autoscroll 橫向散逸 · 版號 v1.0.1→v1.0.2 · 「新增視覺」項目待愛德華指認具體位置再處理 -->
-<!-- v1.0.1 · UIUX 打磨批次（愛德華 v1.0.0 部署後回饋 + 女巫雙輪稽核 apply）：(1) Global topbar 架構修正——原 v0.34.0 做成 full-width sticky bar 把所有頁面標題往下推，改成 position:fixed 右上浮動 pill（glass tint + backdrop-filter + box-shadow），不再佔用垂直空間；username 隱藏（avatar 足以身份辨識）；加 plan↔avatar divider；(2) 看板分組 button 簡化——移除 .kb-groupby-prefix 外包 wrapper（icon+「分組」label）直接用 bpSelect，option label 改「依 X 分組」更直觀，localStorage 持久化 bp.kbListGroupBy 跨 session 記住；cat filter 鎖定單一類時自動隱藏「分類」分組選項避免無意義分組；(3) 看板封存 button 合併——原「封存完成 N」+「已封存 N」兩顆視覺幾乎一樣造成認知混淆；合併為單一「封存 N ▾」按鈕 + dropdown menu，menu 內兩項分別是 action「封存本期完成」+ toggle「顯示/隱藏已封存」，含完整 outside-click closer + aria 屬性；(4) 看板 5 個 P0 視覺（女巫 1 稽核 62.5→目標 85）：P0-1 color 語義撞車解——category chip 改中性 bg-hover 背景 + 6px 色點前綴（--_cat CSS var 傳入），色彩保留給 status/priority/due，避免產品規劃紫跟待辦欄紫撞；P0-2 description 2-line clamp on hover（預設 1 行 ellipsis，展開 2 行）+ 去重檢查不跟 title 重複才渲染；P0-3 priority dot 分級——high 8px 無 shadow ring + 加「高」文字 badge 達憲法雙編碼、medium 7px gold、low slate 60% opacity；card 加 .has-pri-high class 讓 title 字重升 700；P0-4 AI badge 去漸層——從 title 行搬到 meta row，漸層紫/綠改 tonal chip（primary/teal 12% tint + 26% border + dot prefix），manual 類別隱藏；P0-5 column count chip 改 .kanban-col-count class 用 color-mix 呼應欄色 + dark mode 變體 .22 tint 相容；(5) 額外修補 list-priority low 違憲 #3B82F6 Tailwind blue → #94A3B8 slate；(6) Edit modal 右欄 4-section 分層——原所有 metadata 同一等級混亂，改 .kb-rs 容器分 4 區：主要（狀態/優先度/負責人/到期日）、分類（category/tags）、週期、紀錄；負責人從 text input 改 bpSelect 讀 getMembers() 跟全站一致；(7) 文件庫 link-only 化——愛德華定位明確「只做連結書籤管理、不做檔案儲存」，移除 .dc-attach-tab 切換 + fileData/fileName 欄位 + 檔案上傳邏輯，改純 linkUrl + linkLabel 必填；card 列表 icon 改 link 圖示、顯示 hostname + 連結預覽行；save 清除 legacy fileData/fileName 欄位 · 版號 v1.0.0→v1.0.1 · tail cleanup: v0.33.1 搬進 CHANGELOG.md -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
