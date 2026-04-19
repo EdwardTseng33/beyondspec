@@ -7651,73 +7651,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 
           ${reportsHTML}
 
-          <!-- ═══ Recent Activity (v0.8.2) ═══ -->
-          <div class="aside-card" style="margin-top:16px">
-            <div class="aside-header">
-              <h3>近期動態</h3>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0">
-              ${(() => {
-                const bizGet = (key, fb) => { try { const uid = (() => { try { const u = JSON.parse(localStorage.getItem('castle_user')); return u?.email ? u.email.replace(/[^a-zA-Z0-9]/g,'_') : 'guest'; } catch { return 'guest'; } })(); const v = localStorage.getItem('castle_' + uid + '_' + key); return v ? JSON.parse(v) : fb; } catch { return fb; } };
-                const deals = bizGet('deals', []);
-                const tasks = bizGet('tasks', []);
-                const invoices = bizGet('invoices', []);
-                const diagHistory = JSON.parse(localStorage.getItem('bp_diagnose_history') || '[]');
-
-                // Build activity feed from all sources
-                const activities = [];
-                const timeAgo = (ts) => {
-                  const diff = Date.now() - new Date(ts).getTime();
-                  const mins = Math.floor(diff / 60000);
-                  if (mins < 1) return '剛剛';
-                  if (mins < 60) return mins + ' 分鐘前';
-                  const hrs = Math.floor(mins / 60);
-                  if (hrs < 24) return hrs + ' 小時前';
-                  const days = Math.floor(hrs / 24);
-                  if (days < 7) return days + ' 天前';
-                  return new Date(ts).toLocaleDateString('zh-TW', {month:'short', day:'numeric'});
-                };
-
-                // Deal activities
-                deals.filter(d => d.updatedAt || d.createdAt).forEach(d => {
-                  activities.push({ ts: d.updatedAt || d.createdAt, type: 'deal', icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="6" width="16" height="10" rx="2"/><polyline points="2,8 10,13 18,8"/></svg>', text: '案件 <b>' + (d.company || d.title || '未命名') + '</b> ' + (d.stage === 'won' ? '已成交' : d.stage === 'lost' ? '已流失' : '更新至 ' + (d.stage || '進行中')), color: 'var(--primary)' });
-                });
-
-                // Task activities
-                tasks.filter(t => t.updatedAt || t.createdAt).forEach(t => {
-                  activities.push({ ts: t.updatedAt || t.createdAt, type: 'task', icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><polyline points="7,10 9,12 13,8"/></svg>', text: '任務 <b>' + (t.title || '未命名') + '</b> ' + (t.status === 'done' ? '已完成' : '更新'), color: 'var(--gold)' });
-                });
-
-                // Invoice activities
-                invoices.filter(i => i.updatedAt || i.createdAt).forEach(i => {
-                  activities.push({ ts: i.updatedAt || i.createdAt, type: 'invoice', icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round"><path d="M10 2v16M6 6l4-4 4 4M6 14l4 4 4-4"/></svg>', text: '發票 <b>' + (i.invoiceNumber || '#' + (i.id||'').slice(0,4)) + '</b> ' + (i.status === 'paid' ? '已收款' : i.status === 'sent' ? '已寄出' : '更新'), color: 'var(--teal)' });
-                });
-
-                // PATH diagnose activities
-                diagHistory.slice(-5).forEach(d => {
-                  activities.push({ ts: d.date || d.createdAt, type: 'diagnose', icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--violet)" stroke-width="1.5" stroke-linecap="round"><polyline points="2,10 6,10 8,4 12,16 14,10 18,10"/></svg>', text: 'PATH 診斷 <b>' + (d.productName || '產品') + '</b> 完成', color: 'var(--violet)' });
-                });
-
-                // Sort by timestamp desc, take latest 8
-                activities.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
-                const latest = activities.slice(0, 8);
-
-                if (latest.length === 0) {
-                  return '<div class="bp-empty" style="padding:36px 16px"><div class="bp-empty-icon" style="width:48px;height:48px"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2v4M10 14v4M4.93 4.93l2.83 2.83M12.24 12.24l2.83 2.83M2 10h4M14 10h4M4.93 15.07l2.83-2.83M12.24 7.76l2.83-2.83"/></svg></div><div class="bp-empty-title" style="font-size:14px">還沒有動態紀錄</div><div class="bp-empty-desc" style="font-size:12px">開始使用任務、客戶、報價等模組<br>操作紀錄會自動出現在這裡</div></div>';
-                }
-
-                return latest.map(a =>
-                  '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px">' +
-                    '<span style="margin-top:2px;flex-shrink:0">' + a.icon + '</span>' +
-                    '<div style="flex:1;min-width:0">' +
-                      '<div style="color:var(--ink-sec);line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + a.text + '</div>' +
-                      '<div style="font-size:11px;color:var(--ink-dim);margin-top:2px">' + timeAgo(a.ts) + '</div>' +
-                    '</div>' +
-                  '</div>'
-                ).join('');
-              })()}
-            </div>
-          </div>
+          <!-- v1.2.3: 近期動態區塊移除 — 愛德華回饋「報告生產多了會被壓下去看不到，UX 有問題」 -->
         </div>
 
         <div class="home-aside">
