@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.1.0</div>
+        <div class="sidebar-version">v1.1.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6820,75 +6820,6 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     if (typeof updateCreditBadge === 'function') updateCreditBadge();
   }
 
-  // ==================== URL ROUTER (Batch 1, 2026-04-19) ====================
-  // Hash-based router: #/slug -> moduleId; aliases via replaceState.
-  var Router = (function() {
-    var routes = {
-      home: "home", diagnose: "diagnose", lab: "lab",
-      survey: "survey", market: "market", report: "report",
-      roadmap: "biz-roadmap", planning: "biz-planning",
-      mission: "biz-tasks", crm: "biz-contacts",
-      quote: "biz-quotes", payment: "biz-billing",
-      meeting: "biz-meetings", insights: "biz-insights",
-      vault: "biz-docs", settings: "settings"
-    };
-    var aliases = {
-      dashboard: "home", spec: "planning", inbox: "planning",
-      timeline: "roadmap", tasks: "mission", contacts: "crm",
-      quotes: "quote", billing: "payment",
-      meetings: "meeting", docs: "vault"
-    };
-    var slugByModule = {};
-    Object.keys(routes).forEach(function(slug) { slugByModule[routes[slug]] = slug; });
-
-    function parseHash() {
-      var h = (window.location.hash || "").replace(/^#\/?/, "");
-      var slug = (h.split("/")[0] || "").split("?")[0];
-      if (aliases[slug]) {
-        var canon = aliases[slug];
-        try { history.replaceState(null, "", window.location.pathname + window.location.search + "#/" + canon); } catch(e) {}
-        slug = canon;
-      }
-      if (!slug || !routes[slug]) {
-        try { history.replaceState(null, '', window.location.pathname + window.location.search + '#/home'); } catch(e) {}
-        return routes.home;
-      }
-      return routes[slug];
-    }
-
-    function slugForModule(moduleId) { return slugByModule[moduleId] || "home"; }
-
-    function navigateTo(moduleId, opts) {
-      opts = opts || {};
-      var slug = slugForModule(moduleId);
-      var newHash = "#/" + slug;
-      if (window.location.hash !== newHash) {
-        if (opts.replace) { try { history.replaceState(null, "", newHash); } catch(e) { window.location.hash = newHash; } }
-        else { window.location.hash = newHash; }
-      }
-    }
-
-    function init() {
-      window.addEventListener("hashchange", function() {
-        var moduleId = parseHash();
-        if (window.app && window.app.navigate) window.app.navigate(moduleId, { fromRouter: true });
-      });
-      var hasPathQuery = /[?&]pathP=/.test(window.location.search);
-      var hasHash = !!window.location.hash;
-      if (hasPathQuery && !hasHash) {
-        // Preserve query string in location.search; only rewrite hash to canonical slug
-        try { history.replaceState(null, "", window.location.pathname + window.location.search + "#/lab"); } catch(e) {}
-      }
-      var moduleId = parseHash();
-      if (window.app && window.app.navigate) window.app.navigate(moduleId, { fromRouter: true });
-    }
-
-    return { parseHash: parseHash, slugForModule: slugForModule, navigateTo: navigateTo, init: init };
-  })();
-  // Expose Router to global scope (IIFE-escapes) so inline handlers + navigate() see it
-  window.Router = Router;
-
-
   function navClick(e, moduleId) {
     e.preventDefault();
     // Remove focus to prevent caret flash
@@ -6896,12 +6827,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     navigate(moduleId);
   }
 
-  function navigate(moduleId, opts) {
-    opts = opts || {};
-    if (!opts.fromRouter && window.Router) {
-      Router.navigateTo(moduleId, { replace: false });
-      return;
-    }
+  function navigate(moduleId) {
     // Clear soul text timer when leaving home
     if(window._soulTimer) { clearInterval(window._soulTimer); window._soulTimer = null; }
     state.currentModule = moduleId;
@@ -30105,15 +30031,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     renderSidebar();
     // v0.34.0: 每次進入 dashboard 渲染全域 topbar
     if (typeof updateCreditBadge === 'function') updateCreditBadge();
-    // Batch 1 Router: consume pending deep-link hash
-    try {
-      var pending = sessionStorage.getItem('_pendingHash');
-      if (pending && !window.location.hash) {
-        history.replaceState(null, '', pending);
-      }
-      if (pending) sessionStorage.removeItem('_pendingHash');
-    } catch(e) {}
-    if (window.Router) { Router.init(); } else { renderModule('home'); }
+    renderModule('home');
   }
   // v0.32.24: dev hook — 讓 smoke test 可繞過 Firebase auth 直接進 dashboard
   // 使用：console 打 `window._devShowDashboard()` → 進 dashboard；再 `window._devRenderModule('biz-roadmap')` 跳時間軸
@@ -30124,11 +30042,9 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     state.currentView = 'landing';
     state.isLoggedIn = false;
     saveState();
-    try { if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash); } catch(e) {}
-    document.getElementById('landingPage').style.display = 'block';
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('loginModal').className = 'modal-overlay';
-    renderLanding();
+    // v1.0.9: 登出後直接 redirect 回 marketing 首頁（不在 SPA 內重複渲染 landing）
+    // 修掉 /path/app/#/settings 殘留 hash + 兩個登入介紹頁的問題
+    window.location.replace('../');
   }
 
   function logout() {
@@ -30195,15 +30111,15 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
         // localStorage says logged in but Firebase says no — show dashboard anyway (offline)
         showDashboard();
       } else {
-        try { if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash); } catch(e){}
-        renderLanding();
+        // v1.0.9: 未登入時檢查是否從 marketing 登入按鈕帶來（?login=1 或 ?apply=*）
+        _handleUnauthed();
       }
     });
     // Fallback if onAuthStateChanged doesn't fire within 3s (e.g. CDN slow)
     setTimeout(function() {
       if (!_authHandled) {
         _authHandled = true;
-        if (state.isLoggedIn) { showDashboard(); } else { try { if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash); } catch(e){} renderLanding(); }
+        if (state.isLoggedIn) { showDashboard(); } else { _handleUnauthed(); }
       }
     }, 3000);
   } else {
@@ -30211,9 +30127,25 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     if (state.isLoggedIn) {
       showDashboard();
     } else {
-      try { if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash); } catch(e){}
-      renderLanding();
+      _handleUnauthed();
     }
+  }
+
+  // v1.0.9: 統一未登入處理——沒 query 送回 marketing；有 query 渲染 + 自動彈 Google 登入
+  function _handleUnauthed() {
+    var _qstr = window.location.search;
+    if (!_qstr || _qstr === '?') {
+      // 直接打 /path/app/ 或登出後殘留 URL → redirect 回 marketing 首頁
+      window.location.replace('../');
+      return;
+    }
+    // 從 /path/ marketing 點「登入 / 免費開始使用」帶 ?login=1 或 ?apply=* 過來
+    renderLanding();
+    setTimeout(function(){
+      if (typeof handleGoogleLogin === 'function') {
+        try { handleGoogleLogin(); } catch (e) { console.warn('[Auth] auto-open failed:', e); }
+      }
+    }, 300);
   }
 })();
   </script>
@@ -30715,6 +30647,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.1.1 · 登入/登出 routing 修正（愛德華 prod 回報：`/path/` 和 `/path/app/` 兩個登入介紹頁重複 + 登出後 URL 殘留 `#/settings` 卻顯示 landing）：(1) `showLanding()` 改為 `window.location.replace('../')`——登出直接 redirect 回 marketing 首頁，不在 SPA 內重複渲染 landing 也不殘留 hash；(2) 新增 `_handleUnauthed()` 統一處理未登入情境——沒 query string 時 redirect 回 `/path/`；有 `?login=1` 或 `?apply=*` 時渲染 landing + 自動觸發 Google OAuth popup（用戶從 marketing 點「登入/免費開始」→ 300ms 後 Google 登入框自動彈出，不再需要看到第二個介紹頁再手動點一次）；(3) auth `onAuthStateChanged` callback + 3 秒 timeout fallback + firebase-unavailable fallback 三條路徑統一走 `_handleUnauthed()`；(4) `/path/index.html`（marketing landing）4 處 `href="/path/app/"` 改為 `href="/path/app/?login=1"`（登入 button ×1、免費開始使用 button ×2、免費開始 CTA ×1），`?apply=starter` / `?apply=pro` 已有 query 不動（自然被識別為 login intent）· 版號 v1.1.0→v1.1.1 -->
 <!-- v1.1.0 · 早鳥申請模式 + Google 登入一鍵化 + URL 結構升級：(1) Landing（beyondspec.tw/path/）定價區所有「選擇 X」CTA → 「申請 X」（申請 Starter / 申請 Pro），因金流尚未接上；加 early-bird 敘事「🚀 現階段早鳥申請中，付費方案尚未開放，搶先體驗 + 首月雙倍 credits」；(2) App 內部（/path/app/）所有升級按鈕 & 訂閱 modal CTA 同步改「申請 X · 早鳥名單」；(3) Google 登入一鍵化——原登入流程：按登入 → 跳 in-app modal → 再按 Google → 彈 popup（二段式）；改為按「登入/免費開始」直接觸發 handleGoogleLogin() → Google popup 一鍵進產品；4 處公開 CTA（nav 登入、hero 免費開始、pricing Free tier 免費開始、final CTA 免費開始）全部改走直通路；保留 in-app modal 的 Google 按鈕作為 fallback；(4) URL 結構升級——app.html 從 /path/app.html 遷移到 /path/app/index.html 資料夾形式（乾淨、可擴充 /path/app/dashboard 等子路徑）；landing CTA 全部更新 · 版號 v1.0.9→v1.1.0 · tail cleanup: v1.0.7 搬進 CHANGELOG.md -->
 <!-- v1.0.9 · 全面同步定價到新商業模型（與 landing 對齊）：(1) getCreditLimit() FREE 30→50、STARTER 500→600、PRO 保持 3000；(2) PLAN_CATALOG Free tagline 改「永久免費 · 任務/客戶/報價完整可用」、credits 30→50、加首次 PATH 診斷不計費 highlight；Starter monthly 390→290、annual 3900→2900、credits 500→600、tagline 改「個人接案者」；(3) PLAN_CATALOG 價格 card：STARTER 年繳從 325→242 並加「省 17%」敘事；(4) 所有「7 天免費試用」文案（6 處）全拔，改為「選擇方案名 / 立即訂閱 / credits 用多少付多少」；(5) upgrade CTA button 同步新價格；(6) settings 價格表 4 欄從 390→290；(7) feat landing price-card 區塊 FREE/STARTER/PRO 三卡 credit 數 + 按鈕 + 副標全同步 · 版號 v1.0.8→v1.0.9 · tail cleanup: v1.0.6 搬進 CHANGELOG.md -->
 <!-- v1.0.8 · 任務看板 3 題合併修復（愛德華回饋：最小欄寬 / 標題顯示 / 卡片 3 行化）：(1) 恢復 .kanban-board overflow-x:auto（v1.0.5 nuke 的反向操作）——橫向 scroll 重啟；col-body 中鍵 autoscroll 由既有 document-level mousedown hook（_midPanDocHook）擋；CSS 兜底加 body.mid-panning 時 overflow-x:hidden；(2) .kanban-col min-width 用 max(calc((100vw - 280px) / 4.5), 280px)——視窗寬時保證最多顯示 4.5 欄、視窗 <1440px 時下限 280px 保證 title 單行容得下 16 個中文字（14px × 16 ≈ 224 + priority dot 12 + gap 8 + padding 32 ≈ 276）；(3) 卡片從 4 行（title/desc/meta 上/meta 下）壓縮回 3 行——原 Row 4 的 checklist/due/avatar 合併進 Row 3 meta，加 .kb-v2-meta-spacer 用 flex:1 1 auto 把 avatar/due 推到最右端；meta row 從 flex-wrap:wrap 改 nowrap + overflow:hidden，不再發生 avatar 折到第 4 行；.kb-v2-tag 加 flex-shrink:1 + max-width:100px 讓標籤在窄欄下 ellipsis；.kb-v2-cat / checklist / due / ai-badge 全 flex-shrink:0 保證永遠可見 · 版號 v1.0.6→v1.0.7 · tail cleanup: v1.0.4 搬進 CHANGELOG.md -->
