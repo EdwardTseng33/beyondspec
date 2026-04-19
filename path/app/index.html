@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.1.3</div>
+        <div class="sidebar-version">v1.1.4</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7792,59 +7792,10 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
             </div>
           </div>
 
-          <!-- ═══ 待辦提醒 (v0.8.2) ═══ -->
-          <div class="aside-card">
-            <div class="aside-header">
-              <h3>待辦提醒</h3>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              ${(() => {
-                const bizGet = (key, fb) => { try { const uid = (() => { try { const u = JSON.parse(localStorage.getItem('castle_user')); return u?.email ? u.email.replace(/[^a-zA-Z0-9]/g,'_') : 'guest'; } catch { return 'guest'; } })(); const v = localStorage.getItem('castle_' + uid + '_' + key); return v ? JSON.parse(v) : fb; } catch { return fb; } };
-                const tasks = bizGet('tasks', []);
-                const invoices = bizGet('invoices', []);
-                const deals = bizGet('deals', []);
-                const now = Date.now();
-                const reminders = [];
-
-                // Overdue tasks
-                const overdueTasks = tasks.filter(t => !t.archived && t.status !== 'done' && t.dueDate && new Date(t.dueDate).getTime() < now);
-                if (overdueTasks.length > 0) {
-                  reminders.push({ icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><polyline points="10,6 10,10 13,12"/></svg>', color: 'var(--rose)', label: overdueTasks.length + ' 項任務已逾期', action: "app.navigate('biz-tasks')" });
-                }
-
-                // Pending invoices
-                const pendingInv = invoices.filter(i => i.status === 'sent');
-                if (pendingInv.length > 0) {
-                  const total = pendingInv.reduce((s, i) => s + ((i.items||[]).reduce((a,x) => a + (x.qty||0)*(x.unitPrice||0), 0)), 0);
-                  reminders.push({ icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="2" x2="10" y2="14"/><circle cx="10" cy="17" r="0.5" fill="currentColor"/></svg>', color: 'var(--gold)', label: pendingInv.length + ' 筆待收款 NT$ ' + total.toLocaleString(), action: "app.navigate('biz-billing')" });
-                }
-
-                // Active deals with no recent update (7+ days)
-                const staleDays = 7;
-                const staleDeals = deals.filter(d => !d.archived && d.stage !== 'won' && d.stage !== 'lost' && d.updatedAt && (now - new Date(d.updatedAt).getTime()) > staleDays * 86400000);
-                if (staleDeals.length > 0) {
-                  reminders.push({ icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 10a7 7 0 1 1 14 0 7 7 0 0 1-14 0z"/><path d="M10 6v4"/></svg>', color: 'var(--primary)', label: staleDeals.length + ' 件案件超過 7 天未更新', action: "app.navigate('biz-tasks')" });
-                }
-
-                // Upcoming tasks (due within 3 days)
-                const soonTasks = tasks.filter(t => !t.archived && t.status !== 'done' && t.dueDate && new Date(t.dueDate).getTime() > now && new Date(t.dueDate).getTime() - now < 3 * 86400000);
-                if (soonTasks.length > 0) {
-                  reminders.push({ icon: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="5"/><line x1="13" y1="2" x2="13" y2="5"/></svg>', color: 'var(--teal)', label: soonTasks.length + ' 項任務即將到期（3 天內）', action: "app.navigate('biz-tasks')" });
-                }
-
-                if (reminders.length === 0) {
-                  return '<div style="padding:16px 12px;text-align:center;color:var(--ink-dim);font-size:13px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round" style="display:block;margin:0 auto 8px"><circle cx="10" cy="10" r="8"/><polyline points="7,10 9.5,12.5 13.5,7.5"/></svg>目前沒有緊急事項，一切順利！</div>';
-                }
-
-                return reminders.map(r =>
-                  '<div onclick="' + r.action + '" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-sm);cursor:pointer;transition:background .15s;font-size:13px" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'transparent\'">' +
-                    '<span style="color:' + r.color + ';flex-shrink:0">' + r.icon + '</span>' +
-                    '<span style="color:' + r.color + ';font-weight:500">' + r.label + '</span>' +
-                  '</div>'
-                ).join('');
-              })()}
-            </div>
-          </div>
+          <!-- v1.1.4: 「待辦提醒」區塊移除 — 左側 Today's Action Panel 為單一 urgent items source of truth
+               原因：右側 reminders 讀 castle_xxx_* 舊 key，跟左側 bp_* 兩套資料源會矛盾
+               （愛德華 prod 回報：左「2 筆款項逾期」vs 右「一切順利」同頁矛盾）
+               愛德華 Q3 決議：融合至單一位置，不要兩處重複 -->
 
         </div>
       </div>
@@ -30734,6 +30685,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.1.4 · 首頁訊息融合（Q3 愛德華決議：不要兩個代辦清單）：移除右側 aside「待辦提醒」整塊（原 line 7795-7847），左側 welcome-banner 下的 Today's Action Panel 成為唯一 urgent items source of truth。理由：右側 reminders 讀 `castle_xxx_*` 舊 key（來自 biz 模組殘留），左側 urgentItems 讀 `bp_*`（任務看板/報價/收款/會議的實際 key），兩套資料源會產生「左 2 筆款項逾期 vs 右一切順利」的矛盾訊息，直接破壞用戶信任。此修復後：只在左側統一顯示逾期任務、到期報價、逾期款項、會議待辦，同頁再無矛盾訊息；右側 home-aside 保留「快速操作」4 按鈕。後續 v1.2 會把整個首頁 layout 重構成「今日聚焦 hero + PATH/任務/報告摺疊區」 · 版號 v1.1.3→v1.1.4 -->
 <!-- v1.1.3 · P0 信任修復 + 憲法封閉五色清理（蕪菁頭 UX 盤點 + 女巫視覺 rubric 共同指出的信任殺手）：(1) 戰情室簽回率「懲罰新用戶」bug 修復——`closeRate` 在 `sentCount + acceptedCount === 0` 時改回 null（不再回 0），卡片顯示「—」slate 色 + 「尚無報價資料」說明，不再用 rose 紅色把沒用過的新用戶當業務失敗標示；(2) 憲法違憲色全面清理——11 處非封閉五色改為 `var(--gold)` / `var(--rose)` / `var(--slate)`：市場探測 compColor / trendColor / dColor / oppColor（`#D97706` / `#EF4444`）、問卷 typeColors（`#E8590C` / `#D946EF` / `#0EA5E9`）、問卷 bias 色、問卷 audit score / error / warn 色、colorMap、PMF scoreBar、PATH bar、landing gradient（`#D97706` → `#E08A3A` 直接 hex 因 gradient 不支援 var）；(3) PRESET_COLORS 用戶自訂色盤保留不動（那是用戶權利）· 版號 v1.1.2→v1.1.3 -->
 <!-- v1.1.2 · 登入/登出 routing 修正（愛德華 prod 回報：兩個登入介紹頁重複 + 登出殘留 hash）：(1) showLanding 直接 window.location.replace('../') 送回 marketing 首頁；(2) 新增 _handleUnauthed — 沒 query 送回 /path/，有 ?login=1 或 ?apply=* 渲染 landing + 300ms 後自動彈 Google OAuth；(3) onAuthStateChanged + timeout fallback + firebase-unavailable 三路徑統一；(4) /path/index.html 4 處登入 CTA 加 ?login=1；(5) 修復 v1.1.1 race condition 誤砍 v1.2.0 Router — base 從 b9abd20 重新 apply，Router 和 _pendingHash 完整保留 · 版號 v1.1.0→v1.1.2 -->
 <!-- v1.1.0 · 早鳥申請模式 + Google 登入一鍵化 + URL 結構升級：(1) Landing（beyondspec.tw/path/）定價區所有「選擇 X」CTA → 「申請 X」（申請 Starter / 申請 Pro），因金流尚未接上；加 early-bird 敘事「🚀 現階段早鳥申請中，付費方案尚未開放，搶先體驗 + 首月雙倍 credits」；(2) App 內部（/path/app/）所有升級按鈕 & 訂閱 modal CTA 同步改「申請 X · 早鳥名單」；(3) Google 登入一鍵化——原登入流程：按登入 → 跳 in-app modal → 再按 Google → 彈 popup（二段式）；改為按「登入/免費開始」直接觸發 handleGoogleLogin() → Google popup 一鍵進產品；4 處公開 CTA（nav 登入、hero 免費開始、pricing Free tier 免費開始、final CTA 免費開始）全部改走直通路；保留 in-app modal 的 Google 按鈕作為 fallback；(4) URL 結構升級——app.html 從 /path/app.html 遷移到 /path/app/index.html 資料夾形式（乾淨、可擴充 /path/app/dashboard 等子路徑）；landing CTA 全部更新 · 版號 v1.0.9→v1.1.0 · tail cleanup: v1.0.7 搬進 CHANGELOG.md -->
