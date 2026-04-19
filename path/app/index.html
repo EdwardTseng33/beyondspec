@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.2.1</div>
+        <div class="sidebar-version">v1.2.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7638,39 +7638,14 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
             const todayMeetings = _meetings.filter(m => m.date === _today).length;
             const pendingActions = _meetings.reduce((sum, m) => sum + ((m.actionItems||[]).filter(a => !a.done).length), 0);
 
-            const urgentItems = [];
-            if (overdueTasks > 0) urgentItems.push({icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--rose)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="10" y1="7" x2="10" y2="11"/><circle cx="10" cy="13.5" r=".5" fill="var(--rose)"/></svg>',text:overdueTasks+' 個任務逾期',color:'var(--rose)',action:"app.navigate('biz-tasks')"});
-            if (expiringQuotes > 0) urgentItems.push({icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><polyline points="10,6 10,10 13,12"/></svg>',text:expiringQuotes+' 筆報價即將到期',color:'var(--gold)',action:"app.navigate('biz-quotes')"});
-            if (overduePayments > 0) urgentItems.push({icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--rose)" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="2" x2="10" y2="18"/><path d="M14 6c0-1.7-1.8-3-4-3S6 4.3 6 6s1.8 3 4 3"/></svg>',text:overduePayments+' 筆款項逾期',color:'var(--rose)',action:"app.navigate('biz-billing')"});
-            if (pendingActions > 0) urgentItems.push({icon:'<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round"><polyline points="4 10 8 14 16 6"/></svg>',text:pendingActions+' 項會議待辦未完成',color:'var(--gold)',action:"app.navigate('biz-meetings')"});
-
-            let actionPanel = '<div style="margin-bottom:20px">';
-            // Date + Quick stats row
-            actionPanel += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">';
+            // v1.2.2: 左側只保留日期 + 快速統計 row；urgent items 整批搬到右側「今日聚焦」aside-card
+            let actionPanel = '<div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">';
             actionPanel += '<div style="font-size:13px;color:var(--ink-muted);font-weight:500">' + _todayLabel + '</div>';
             actionPanel += '<div style="display:flex;gap:16px;font-size:12px">';
             if (doingTasks > 0) actionPanel += '<span style="color:var(--primary);font-weight:600;cursor:pointer" onclick="app.navigate(\'biz-tasks\')">' + doingTasks + ' 進行中</span>';
             if (pendingQuotes > 0) actionPanel += '<span style="color:var(--gold);font-weight:600;cursor:pointer" onclick="app.navigate(\'biz-quotes\')">' + pendingQuotes + ' 待簽回</span>';
             if (todayMeetings > 0) actionPanel += '<span style="color:var(--teal);font-weight:600;cursor:pointer" onclick="app.navigate(\'biz-meetings\')">' + todayMeetings + ' 今日會議</span>';
             actionPanel += '</div></div>';
-
-            // Urgent items
-            if (urgentItems.length > 0) {
-              actionPanel += '<div style="display:flex;flex-direction:column;gap:6px">';
-              urgentItems.forEach(item => {
-                actionPanel += '<div onclick="' + item.action + '" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;transition:all .15s" onmouseenter="this.style.borderColor=\'' + item.color + '\'" onmouseleave="this.style.borderColor=\'var(--border)\'">';
-                actionPanel += '<span style="flex-shrink:0">' + item.icon + '</span>';
-                actionPanel += '<span style="font-size:13px;color:' + item.color + ';font-weight:600">' + item.text + '</span>';
-                actionPanel += '<svg style="margin-left:auto;opacity:.4" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="7 4 13 10 7 16"/></svg>';
-                actionPanel += '</div>';
-              });
-              actionPanel += '</div>';
-            } else {
-              actionPanel += '<div style="padding:12px 14px;background:rgba(27,168,145,.06);border:1px solid rgba(27,168,145,.12);border-radius:var(--r-md);font-size:13px;color:var(--teal);font-weight:500;display:flex;align-items:center;gap:8px">';
-              actionPanel += '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 10 8 14 16 6"/></svg>';
-              actionPanel += '目前沒有緊急待處理事項</div>';
-            }
-            actionPanel += '</div>';
             return actionPanel;
           })()}
 
@@ -7792,10 +7767,112 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
             </div>
           </div>
 
-          <!-- v1.1.4: 「待辦提醒」區塊移除 — 左側 Today's Action Panel 為單一 urgent items source of truth
-               原因：右側 reminders 讀 castle_xxx_* 舊 key，跟左側 bp_* 兩套資料源會矛盾
-               （愛德華 prod 回報：左「2 筆款項逾期」vs 右「一切順利」同頁矛盾）
-               愛德華 Q3 決議：融合至單一位置，不要兩處重複 -->
+          <!-- ═══ 今日聚焦 (v1.2.2) ═══ 愛德華指令：逾期提示與右下代辦融合 -->
+          <div class="aside-card">
+            <div class="aside-header">
+              <h3>今日聚焦</h3>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;padding:4px 0">
+              ${(() => {
+                const _get = (k, fb) => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : fb; } catch { return fb; } };
+                const _tasks = _get('bp_kanban_cards', []);
+                const _quotes = _get('bp_quotes', []).filter(q => !q.archived);
+                const _meetings = _get('bp_meetings', []);
+                const _billing = _get('bp_billing', []);
+                const _today = new Date().toISOString().split('T')[0];
+
+                const overdueTasks = _tasks.filter(t => t.column !== 'done' && t.due && t.due < _today).length;
+                const expiringQuotes = _quotes.filter(q => q.status === 'sent' && q.validUntil && (() => { const d = Math.ceil((new Date(q.validUntil) - new Date()) / 86400000); return d >= 0 && d <= 3; })()).length;
+                const overduePayments = _billing.filter(b => b.status !== 'paid' && b.dueDate && b.dueDate < _today).length;
+                const pendingActions = _meetings.reduce((sum, m) => sum + ((m.actionItems||[]).filter(a => !a.done).length), 0);
+                const soonTasks = _tasks.filter(t => t.column !== 'done' && t.due && t.due >= _today && (() => { const d = Math.ceil((new Date(t.due) - new Date()) / 86400000); return d >= 0 && d <= 3; })()).length;
+
+                const items = [];
+                if (overduePayments > 0) items.push({color:'var(--rose)', icon:'money', text:overduePayments+' 筆款項逾期', nav:'biz-billing', weight:1});
+                if (overdueTasks > 0) items.push({color:'var(--rose)', icon:'task', text:overdueTasks+' 個任務逾期', nav:'biz-tasks', weight:1});
+                if (expiringQuotes > 0) items.push({color:'var(--gold)', icon:'clock', text:expiringQuotes+' 筆報價即將到期', nav:'biz-quotes', weight:2});
+                if (pendingActions > 0) items.push({color:'var(--gold)', icon:'check', text:pendingActions+' 項會議待辦未完成', nav:'biz-meetings', weight:2});
+                if (soonTasks > 0) items.push({color:'var(--primary)', icon:'calendar', text:soonTasks+' 個任務 3 天內到期', nav:'biz-tasks', weight:3});
+
+                if (items.length === 0) {
+                  return '<div style="padding:20px 12px;text-align:center"><div style="width:40px;height:40px;border-radius:50%;background:color-mix(in srgb,var(--teal) 12%,transparent);display:flex;align-items:center;justify-content:center;margin:0 auto 10px"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linecap="round"><polyline points="4,10 8,14 16,6"/></svg></div><div style="font-size:13px;color:var(--teal);font-weight:600;margin-bottom:4px">今天沒有緊急事項</div><div style="font-size:12px;color:var(--ink-muted)">可以專注在重要的事</div></div>';
+                }
+
+                items.sort((a, b) => a.weight - b.weight);
+
+                const iconMap = {
+                  task: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="10" y1="7" x2="10" y2="11"/><circle cx="10" cy="13.5" r=".5" fill="currentColor"/></svg>',
+                  money: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="2" x2="10" y2="18"/><path d="M14 6c0-1.7-1.8-3-4-3S6 4.3 6 6s1.8 3 4 3c2.2 0 4 1.3 4 3s-1.8 3-4 3"/></svg>',
+                  clock: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="8"/><polyline points="10,6 10,10 13,12"/></svg>',
+                  check: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4,10 8,14 16,6"/></svg>',
+                  calendar: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="14" height="14" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="5"/><line x1="13" y1="2" x2="13" y2="5"/></svg>'
+                };
+
+                return items.map(item =>
+                  '<div onclick="app.navigate(\'' + item.nav + '\')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);cursor:pointer;transition:background .15s" onmouseover="this.style.background=\'var(--bg-hover)\'" onmouseout="this.style.background=\'transparent\'">' +
+                    '<span style="color:' + item.color + ';flex-shrink:0;display:flex;align-items:center">' + iconMap[item.icon] + '</span>' +
+                    '<span style="color:' + item.color + ';font-weight:500;font-size:13px;flex:1">' + item.text + '</span>' +
+                    '<svg style="opacity:.3;flex-shrink:0" width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="7,4 13,10 7,16"/></svg>' +
+                  '</div>'
+                ).join('');
+              })()}
+            </div>
+          </div>
+
+          <!-- ═══ 本週脈搏 (v1.2.2) ═══ 擴充右下內容：完成率 + 營收快照 -->
+          <div class="aside-card">
+            <div class="aside-header">
+              <h3>本週脈搏</h3>
+            </div>
+            <div style="padding:4px 0">
+              ${(() => {
+                const _get = (k, fb) => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : fb; } catch { return fb; } };
+                const _tasks = _get('bp_kanban_cards', []);
+                const _quotes = _get('bp_quotes', []).filter(q => !q.archived);
+                const _billing = _get('bp_billing', []);
+                const _now = new Date();
+                const _weekStart = new Date(_now); _weekStart.setDate(_now.getDate() - _now.getDay());
+                const _weekStartStr = _weekStart.toISOString().split('T')[0];
+                const _monthStart = new Date(_now.getFullYear(), _now.getMonth(), 1).toISOString().split('T')[0];
+
+                const doneThisWeek = _tasks.filter(t => t.column === 'done' && t.updatedAt && t.updatedAt >= _weekStartStr).length;
+                const activeTasks = _tasks.filter(t => t.column !== 'done').length;
+                const completionRate = (doneThisWeek + activeTasks) > 0 ? Math.round(doneThisWeek * 100 / (doneThisWeek + activeTasks)) : null;
+
+                const quotedMonth = _quotes.filter(q => q.createdAt && q.createdAt >= _monthStart).reduce((s, q) => s + (q.total || 0), 0);
+                const receivedMonth = _billing.filter(b => b.status === 'paid' && b.paidAt && b.paidAt >= _monthStart).reduce((s, b) => s + (b.amount || 0), 0);
+
+                let html = '';
+                // Completion ring + stats
+                html += '<div style="display:flex;align-items:center;gap:14px;padding:8px 12px 14px">';
+                if (completionRate !== null) {
+                  const r = 22, c = 2 * Math.PI * r, pct = Math.max(0, Math.min(100, completionRate));
+                  const dash = c * (1 - pct / 100);
+                  const ringColor = pct >= 70 ? 'var(--teal)' : pct >= 40 ? 'var(--gold)' : 'var(--rose)';
+                  html += '<svg width="56" height="56" viewBox="0 0 56 56" style="flex-shrink:0"><circle cx="28" cy="28" r="' + r + '" fill="none" stroke="var(--border)" stroke-width="4"/><circle cx="28" cy="28" r="' + r + '" fill="none" stroke="' + ringColor + '" stroke-width="4" stroke-linecap="round" stroke-dasharray="' + c.toFixed(2) + '" stroke-dashoffset="' + dash.toFixed(2) + '" transform="rotate(-90 28 28)"/><text x="28" y="33" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">' + pct + '%</text></svg>';
+                } else {
+                  html += '<div style="width:56px;height:56px;border-radius:50%;border:2px dashed var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--ink-dim);font-size:13px">—</div>';
+                }
+                html += '<div style="flex:1;min-width:0">';
+                html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:2px">本週任務完成率</div>';
+                html += '<div style="font-size:13px;color:var(--ink);font-weight:500">';
+                if (completionRate !== null) html += '已完成 <strong>' + doneThisWeek + '</strong> · 進行中 <strong>' + activeTasks + '</strong>';
+                else html += '尚無任務資料';
+                html += '</div></div></div>';
+
+                // Revenue snapshot mini-row
+                html += '<div style="border-top:1px solid var(--border);padding:12px">';
+                html += '<div style="display:flex;gap:12px">';
+                html += '<div style="flex:1"><div style="font-size:11px;color:var(--ink-muted);margin-bottom:2px">本月報價</div><div style="font-size:15px;font-weight:700;color:var(--primary)">' + (quotedMonth > 0 ? 'NT$ ' + (quotedMonth / 1000).toFixed(quotedMonth >= 10000 ? 0 : 1) + 'k' : '—') + '</div></div>';
+                html += '<div style="flex:1"><div style="font-size:11px;color:var(--ink-muted);margin-bottom:2px">本月已收</div><div style="font-size:15px;font-weight:700;color:var(--teal)">' + (receivedMonth > 0 ? 'NT$ ' + (receivedMonth / 1000).toFixed(receivedMonth >= 10000 ? 0 : 1) + 'k' : '—') + '</div></div>';
+                html += '</div>';
+                html += '<div style="margin-top:10px"><a onclick="app.navigate(\'biz-insights\')" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--primary);cursor:pointer;font-weight:500">查看完整營運戰情室 <svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="7,4 13,10 7,16"/></svg></a></div>';
+                html += '</div>';
+
+                return html;
+              })()}
+            </div>
+          </div>
 
         </div>
       </div>
@@ -30683,6 +30760,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.2.2 · 首頁「逾期提示與代辦融合」+ 右下擴充「本週脈搏」（愛德華指令「把逾期的那個提示通知與原本右下角的代辦項目融合」+「右下角可以有什麼可以思考」）：(1) 左側 Today's Action Panel 簡化——只保留日期 + 快速統計 row（進行中/待簽回/今日會議），urgent items 區塊從左側移除；(2) 右側 home-aside 新增「今日聚焦」aside-card——融合 5 類 urgent items（逾期款項 rose / 逾期任務 rose / 報價即將到期 gold / 會議待辦未完成 gold / 任務 3 天內到期 primary），按 weight 排序（rose → gold → primary）；空狀態設計：teal ring icon + 「今天沒有緊急事項·可以專注在重要的事」；資料源統一讀 bp_* localStorage（跟左側同源，永不矛盾）；(3) 右側再加「本週脈搏」aside-card 擴充內容：SVG donut ring 顯示本週任務完成率（封閉五色 teal/gold/rose 階梯）+ 本月報價/已收雙 KPI + 「查看完整營運戰情室」小 CTA；完成率 null（無任務）顯示「—」slate，不再「懲罰新用戶」；(4) 整體視覺升級：右下從「快速操作 + 待辦提醒」單純列表 → 「快速操作 + 今日聚焦 + 本週脈搏」三層資訊架構，設計感提升（SVG ring 視覺錨點 + 色彩語義清晰）· 版號 v1.2.1→v1.2.2 -->
 <!-- v1.2.1 · /path/app/?login=1 徹底廢除，登入流程完全搬到 /path/（愛德華指令）：(1) /path/index.html 加載 Firebase SDK（app-compat + auth-compat 10.14.1）+ firebaseConfig（同 app.html）+ `window.bpLogin()` 函數：直接 `signInWithPopup(new firebase.auth.GoogleAuthProvider())` → 成功 redirect /path/app/、失敗顯示錯誤 + restore 按鈕；(2) 6 處 landing CTA（登入 nav / 免費開始 hero / 免費開始 pricing / 申請 Starter / 申請 Pro / final CTA）從 `href="/path/app/?login=1"` 改成 `onclick="bpLogin(origin);return false;"`——URL bar 永遠停在 /path/，不會跳 /path/app/?login=1；(3) 加 landing auth state listener：已登入用戶進 /path/ 自動 redirect /path/app/（避免回訪時還看到 landing 一瞬間）；(4) app.html `_handleUnauthed()` 簡化——所有未登入 session 一律 `window.location.replace('../')`，不再渲染 landing、不再 auto-trigger Google OAuth（那些邏輯全搬 /path/）· 版號 v1.2.0→v1.2.1 -->
 <!-- v1.2.0 · Lab 誠實度升級（Q1 中庸版）+ AI 儀表板改名為「營運戰情室」（Q2）：(1) Lab 研究入口（受眾研究室）subtitle 從「AI 模擬目標用戶訪談 · B2B/B2C 雙軌 · 華語五大市場」改中庸版「先用 Lab 跑廣度，真訪談跑深度——AI 合成受眾，分鐘級產出洞察」；page-title-area 右側加 slate `AI 合成受眾 · 非真人訪談` badge（霍爾 lab-research-competitive-framing.md Part D 建議，slate 色非 rose/警告，語義是「資訊分類」不是「警告」）；Lab 報告空狀態文案同步改「AI 合成受眾幫你先跑廣度、把訪綱打磨到 90 分」；(2)「AI 儀表板」全站改名「營運戰情室」（共 7 處：sidebar nav label / MODULE_NAMES map / h1 title in renderInsights / pricing highlights × 2 / comparison table / landing text）——名字訂定經城堡 Q2 決議：有溫度 + 場景感 + co-founder 精神（取代虛詞「儀表板」）· 版號 v1.1.4→v1.2.0 · tail cleanup backlog: v1.0.8/v1.0.9/v1.1.0/v1.1.2 待搬 CHANGELOG.md -->
 <!-- v1.1.4 · 首頁訊息融合（Q3 愛德華決議：不要兩個代辦清單）：移除右側 aside「待辦提醒」整塊（原 line 7795-7847），左側 welcome-banner 下的 Today's Action Panel 成為唯一 urgent items source of truth。理由：右側 reminders 讀 `castle_xxx_*` 舊 key（來自 biz 模組殘留），左側 urgentItems 讀 `bp_*`（任務看板/報價/收款/會議的實際 key），兩套資料源會產生「左 2 筆款項逾期 vs 右一切順利」的矛盾訊息，直接破壞用戶信任。此修復後：只在左側統一顯示逾期任務、到期報價、逾期款項、會議待辦，同頁再無矛盾訊息；右側 home-aside 保留「快速操作」4 按鈕。後續 v1.2 會把整個首頁 layout 重構成「今日聚焦 hero + PATH/任務/報告摺疊區」 · 版號 v1.1.3→v1.1.4 -->
