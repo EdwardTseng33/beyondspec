@@ -282,6 +282,41 @@ body[data-dir="A"] .A{display:block}
 
 
 </style>
+<!-- v1.2.1: Firebase + Google OAuth (login fully in /path/, not /path/app/?login=1) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script>
+  var firebaseConfig = {apiKey:"AIzaSyCY8sF0PZc_BGhp3sgZpx64tZnDyBwa6Tg",authDomain:"beyond-business-ca9da.firebaseapp.com",projectId:"beyond-business-ca9da",storageBucket:"beyond-business-ca9da.firebasestorage.app",messagingSenderId:"233160072382",appId:"1:233160072382:web:57cfbc089301d30cd912ef",measurementId:"G-DVBEPK5DJK"};
+  try { firebase.initializeApp(firebaseConfig); } catch(e) { console.warn('[Landing] firebase init:', e.message); }
+
+  // Auto-redirect if already logged in (prevents landing flash on return visits)
+  try {
+    firebase.auth().onAuthStateChanged(function(user){
+      if (user) { window.location.replace('/path/app/'); }
+    });
+  } catch(e) { console.warn('[Landing] auth listener:', e.message); }
+
+  window.bpLogin = function(origin) {
+    var btn = event && event.currentTarget;
+    if (btn) { btn.style.opacity = '0.6'; btn.style.pointerEvents = 'none'; }
+    try {
+      var provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider).then(function(result){
+        // Success → go to app
+        window.location.href = '/path/app/';
+      }).catch(function(err){
+        if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
+        console.error('[Landing] login error:', err);
+        alert('登入失敗：' + (err.message || '請稍後再試'));
+      });
+    } catch(e) {
+      if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
+      console.error('[Landing] login exception:', e);
+      alert('登入系統暫時無法啟動，請重新整理頁面。');
+    }
+  };
+</script>
 </head>
 <body data-dir="A">
 
@@ -299,7 +334,7 @@ body[data-dir="A"] .A{display:block}
       </div>
       <div class="A-nav-spacer"></div>
       <div class="A-nav-cta">
-        <a href="/path/app/?login=1" class="A-btn-primary" style="text-decoration:none">登入</a>
+        <a href="#" onclick="bpLogin('nav');return false;" class="A-btn-primary" style="text-decoration:none;cursor:pointer">登入</a>
       </div>
     </div>
   </nav>
@@ -313,7 +348,7 @@ body[data-dir="A"] .A{display:block}
       </h1>
       <p class="A-sub">從驗證到營收，AI 幫你跑完每一步。產品診斷 × 任務管理 × 客戶關係 × 報價收款 —— 一個人也能跑出完整閉環。</p>
       <div class="A-hero-cta">
-        <a href="/path/app/?login=1" class="A-btn-primary lg" style="text-decoration:none">免費開始使用 <span>→</span></a>
+        <a href="#" onclick="bpLogin('hero');return false;" class="A-btn-primary lg" style="text-decoration:none;cursor:pointer">免費開始使用 <span>→</span></a>
       </div>
     </div>
 
@@ -566,7 +601,7 @@ body[data-dir="A"] .A{display:block}
             <li>報價提案（3 份）</li>
             <li>Claude Sonnet 4.6</li>
           </ul>
-          <a href="/path/app/?login=1" class="p-cta" style="text-decoration:none">免費開始 →</a>
+          <a href="#" onclick="bpLogin('pricing');return false;" class="p-cta" style="text-decoration:none;cursor:pointer">免費開始 →</a>
         </div>
         <div class="A-price">
           <h4>STARTER</h4>
@@ -578,7 +613,7 @@ body[data-dir="A"] .A{display:block}
             <li>報價提案 · 市場探測</li>
             <li>會議紀錄 · 客戶無上限</li>
           </ul>
-          <a href="/path/app/?apply=starter" class="p-cta" style="text-decoration:none">申請 Starter</a>
+          <a href="#" onclick="bpLogin('apply-starter');return false;" class="p-cta" style="text-decoration:none;cursor:pointer">申請 Starter</a>
         </div>
         <div class="A-price feat">
           <div class="pbadge">2-5 人小團隊</div>
@@ -592,7 +627,7 @@ body[data-dir="A"] .A{display:block}
             <li>收款 · 文件庫 · AI 儀表板</li>
             <li>團隊 5 人 + Claude MCP</li>
           </ul>
-          <a href="/path/app/?apply=pro" class="p-cta" style="text-decoration:none">申請 Pro</a>
+          <a href="#" onclick="bpLogin('apply-pro');return false;" class="p-cta" style="text-decoration:none;cursor:pointer">申請 Pro</a>
         </div>
         <div class="A-price">
           <h4>ENTERPRISE</h4>
@@ -615,7 +650,7 @@ body[data-dir="A"] .A{display:block}
     <div class="A-cta">
       <h2>準備好讓 AI，<br><span class="em">幫你跑生意了嗎？</span></h2>
       <p>從驗證到營收，AI 幫你跑完每一步。免費開始，隨時升級。</p>
-      <a href="/path/app/?login=1" class="A-btn-primary lg" style="text-decoration:none">免費開始使用 <span>→</span></a>
+      <a href="#" onclick="bpLogin('hero');return false;" class="A-btn-primary lg" style="text-decoration:none;cursor:pointer">免費開始使用 <span>→</span></a>
     </div>
   </section>
 

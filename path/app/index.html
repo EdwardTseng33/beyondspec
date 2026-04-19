@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.2.0</div>
+        <div class="sidebar-version">v1.2.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -30177,18 +30177,11 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
 
   // v1.1.2: 統一未登入處理
   function _handleUnauthed() {
-    var _qstr = window.location.search;
-    if (!_qstr || _qstr === '?') {
-      window.location.replace('../');
-      return;
-    }
-    try { if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash); } catch(e){}
-    renderLanding();
-    setTimeout(function(){
-      if (typeof handleGoogleLogin === 'function') {
-        try { handleGoogleLogin(); } catch (e) { console.warn('[Auth] auto-open failed:', e); }
-      }
-    }, 300);
+    // v1.2.1: 未登入一律 redirect 回 marketing 首頁 /path/（登入流程完全搬到 /path/ Firebase OAuth）
+    try {
+      if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash);
+    } catch(e){}
+    window.location.replace('../');
   }
 })();
   </script>
@@ -30690,6 +30683,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.2.1 · /path/app/?login=1 徹底廢除，登入流程完全搬到 /path/（愛德華指令）：(1) /path/index.html 加載 Firebase SDK（app-compat + auth-compat 10.14.1）+ firebaseConfig（同 app.html）+ `window.bpLogin()` 函數：直接 `signInWithPopup(new firebase.auth.GoogleAuthProvider())` → 成功 redirect /path/app/、失敗顯示錯誤 + restore 按鈕；(2) 6 處 landing CTA（登入 nav / 免費開始 hero / 免費開始 pricing / 申請 Starter / 申請 Pro / final CTA）從 `href="/path/app/?login=1"` 改成 `onclick="bpLogin(origin);return false;"`——URL bar 永遠停在 /path/，不會跳 /path/app/?login=1；(3) 加 landing auth state listener：已登入用戶進 /path/ 自動 redirect /path/app/（避免回訪時還看到 landing 一瞬間）；(4) app.html `_handleUnauthed()` 簡化——所有未登入 session 一律 `window.location.replace('../')`，不再渲染 landing、不再 auto-trigger Google OAuth（那些邏輯全搬 /path/）· 版號 v1.2.0→v1.2.1 -->
 <!-- v1.2.0 · Lab 誠實度升級（Q1 中庸版）+ AI 儀表板改名為「營運戰情室」（Q2）：(1) Lab 研究入口（受眾研究室）subtitle 從「AI 模擬目標用戶訪談 · B2B/B2C 雙軌 · 華語五大市場」改中庸版「先用 Lab 跑廣度，真訪談跑深度——AI 合成受眾，分鐘級產出洞察」；page-title-area 右側加 slate `AI 合成受眾 · 非真人訪談` badge（霍爾 lab-research-competitive-framing.md Part D 建議，slate 色非 rose/警告，語義是「資訊分類」不是「警告」）；Lab 報告空狀態文案同步改「AI 合成受眾幫你先跑廣度、把訪綱打磨到 90 分」；(2)「AI 儀表板」全站改名「營運戰情室」（共 7 處：sidebar nav label / MODULE_NAMES map / h1 title in renderInsights / pricing highlights × 2 / comparison table / landing text）——名字訂定經城堡 Q2 決議：有溫度 + 場景感 + co-founder 精神（取代虛詞「儀表板」）· 版號 v1.1.4→v1.2.0 · tail cleanup backlog: v1.0.8/v1.0.9/v1.1.0/v1.1.2 待搬 CHANGELOG.md -->
 <!-- v1.1.4 · 首頁訊息融合（Q3 愛德華決議：不要兩個代辦清單）：移除右側 aside「待辦提醒」整塊（原 line 7795-7847），左側 welcome-banner 下的 Today's Action Panel 成為唯一 urgent items source of truth。理由：右側 reminders 讀 `castle_xxx_*` 舊 key（來自 biz 模組殘留），左側 urgentItems 讀 `bp_*`（任務看板/報價/收款/會議的實際 key），兩套資料源會產生「左 2 筆款項逾期 vs 右一切順利」的矛盾訊息，直接破壞用戶信任。此修復後：只在左側統一顯示逾期任務、到期報價、逾期款項、會議待辦，同頁再無矛盾訊息；右側 home-aside 保留「快速操作」4 按鈕。後續 v1.2 會把整個首頁 layout 重構成「今日聚焦 hero + PATH/任務/報告摺疊區」 · 版號 v1.1.3→v1.1.4 -->
 <!-- v1.1.3 · P0 信任修復 + 憲法封閉五色清理（蕪菁頭 UX 盤點 + 女巫視覺 rubric 共同指出的信任殺手）：(1) 戰情室簽回率「懲罰新用戶」bug 修復——`closeRate` 在 `sentCount + acceptedCount === 0` 時改回 null（不再回 0），卡片顯示「—」slate 色 + 「尚無報價資料」說明，不再用 rose 紅色把沒用過的新用戶當業務失敗標示；(2) 憲法違憲色全面清理——11 處非封閉五色改為 `var(--gold)` / `var(--rose)` / `var(--slate)`：市場探測 compColor / trendColor / dColor / oppColor（`#D97706` / `#EF4444`）、問卷 typeColors（`#E8590C` / `#D946EF` / `#0EA5E9`）、問卷 bias 色、問卷 audit score / error / warn 色、colorMap、PMF scoreBar、PATH bar、landing gradient（`#D97706` → `#E08A3A` 直接 hex 因 gradient 不支援 var）；(3) PRESET_COLORS 用戶自訂色盤保留不動（那是用戶權利）· 版號 v1.1.2→v1.1.3 -->
