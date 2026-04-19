@@ -6820,6 +6820,75 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     if (typeof updateCreditBadge === 'function') updateCreditBadge();
   }
 
+  // ==================== URL ROUTER (Batch 1, 2026-04-19) ====================
+  // Hash-based router: #/slug -> moduleId; aliases via replaceState.
+  var Router = (function() {
+    var routes = {
+      home: "home", diagnose: "diagnose", lab: "lab",
+      survey: "survey", market: "market", report: "report",
+      roadmap: "biz-roadmap", planning: "biz-planning",
+      mission: "biz-tasks", crm: "biz-contacts",
+      quote: "biz-quotes", payment: "biz-billing",
+      meeting: "biz-meetings", insights: "biz-insights",
+      vault: "biz-docs", settings: "settings"
+    };
+    var aliases = {
+      dashboard: "home", spec: "planning", inbox: "planning",
+      timeline: "roadmap", tasks: "mission", contacts: "crm",
+      quotes: "quote", billing: "payment",
+      meetings: "meeting", docs: "vault"
+    };
+    var slugByModule = {};
+    Object.keys(routes).forEach(function(slug) { slugByModule[routes[slug]] = slug; });
+
+    function parseHash() {
+      var h = (window.location.hash || "").replace(/^#\/?/, "");
+      var slug = (h.split("/")[0] || "").split("?")[0];
+      if (aliases[slug]) {
+        var canon = aliases[slug];
+        try { history.replaceState(null, "", window.location.pathname + window.location.search + "#/" + canon); } catch(e) {}
+        slug = canon;
+      }
+      if (!slug || !routes[slug]) {
+        try { history.replaceState(null, '', window.location.pathname + window.location.search + '#/home'); } catch(e) {}
+        return routes.home;
+      }
+      return routes[slug];
+    }
+
+    function slugForModule(moduleId) { return slugByModule[moduleId] || "home"; }
+
+    function navigateTo(moduleId, opts) {
+      opts = opts || {};
+      var slug = slugForModule(moduleId);
+      var newHash = "#/" + slug;
+      if (window.location.hash !== newHash) {
+        if (opts.replace) { try { history.replaceState(null, "", newHash); } catch(e) { window.location.hash = newHash; } }
+        else { window.location.hash = newHash; }
+      }
+    }
+
+    function init() {
+      window.addEventListener("hashchange", function() {
+        var moduleId = parseHash();
+        if (window.app && window.app.navigate) window.app.navigate(moduleId, { fromRouter: true });
+      });
+      var hasPathQuery = /[?&]pathP=/.test(window.location.search);
+      var hasHash = !!window.location.hash;
+      if (hasPathQuery && !hasHash) {
+        // Preserve query string in location.search; only rewrite hash to canonical slug
+        try { history.replaceState(null, "", window.location.pathname + window.location.search + "#/lab"); } catch(e) {}
+      }
+      var moduleId = parseHash();
+      if (window.app && window.app.navigate) window.app.navigate(moduleId, { fromRouter: true });
+    }
+
+    return { parseHash: parseHash, slugForModule: slugForModule, navigateTo: navigateTo, init: init };
+  })();
+  // Expose Router to global scope (IIFE-escapes) so inline handlers + navigate() see it
+  window.Router = Router;
+
+
   function navClick(e, moduleId) {
     e.preventDefault();
     // Remove focus to prevent caret flash
@@ -6827,7 +6896,12 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     navigate(moduleId);
   }
 
-  function navigate(moduleId) {
+  function navigate(moduleId, opts) {
+    opts = opts || {};
+    if (!opts.fromRouter && window.Router) {
+      Router.navigateTo(moduleId, { replace: false });
+      return;
+    }
     // Clear soul text timer when leaving home
     if(window._soulTimer) { clearInterval(window._soulTimer); window._soulTimer = null; }
     state.currentModule = moduleId;
@@ -30031,7 +30105,15 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     renderSidebar();
     // v0.34.0: 每次進入 dashboard 渲染全域 topbar
     if (typeof updateCreditBadge === 'function') updateCreditBadge();
-    renderModule('home');
+    // Batch 1 Router: consume pending deep-link hash
+    try {
+      var pending = sessionStorage.getItem('_pendingHash');
+      if (pending && !window.location.hash) {
+        history.replaceState(null, '', pending);
+      }
+      if (pending) sessionStorage.removeItem('_pendingHash');
+    } catch(e) {}
+    if (window.Router) { Router.init(); } else { renderModule('home'); }
   }
   // v0.32.24: dev hook — 讓 smoke test 可繞過 Firebase auth 直接進 dashboard
   // 使用：console 打 `window._devShowDashboard()` → 進 dashboard；再 `window._devRenderModule('biz-roadmap')` 跳時間軸
@@ -30042,6 +30124,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     state.currentView = 'landing';
     state.isLoggedIn = false;
     saveState();
+    try { if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash); } catch(e) {}
     document.getElementById('landingPage').style.display = 'block';
     document.getElementById('app').style.display = 'none';
     document.getElementById('loginModal').className = 'modal-overlay';
@@ -30112,6 +30195,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
         // localStorage says logged in but Firebase says no — show dashboard anyway (offline)
         showDashboard();
       } else {
+        try { if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash); } catch(e){}
         renderLanding();
       }
     });
@@ -30119,7 +30203,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     setTimeout(function() {
       if (!_authHandled) {
         _authHandled = true;
-        if (state.isLoggedIn) { showDashboard(); } else { renderLanding(); }
+        if (state.isLoggedIn) { showDashboard(); } else { try { if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash); } catch(e){} renderLanding(); }
       }
     }, 3000);
   } else {
@@ -30127,6 +30211,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     if (state.isLoggedIn) {
       showDashboard();
     } else {
+      try { if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash); } catch(e){}
       renderLanding();
     }
   }
