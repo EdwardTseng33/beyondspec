@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.1.2</div>
+        <div class="sidebar-version">v1.1.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -19718,7 +19718,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       if (q.status === 'sent') { sentCount++; pendingReceivable += total; }
       if (q.status === 'sent' || q.status === 'accepted') { /* sent or accepted */ }
     });
-    var closeRate = (sentCount + acceptedCount) > 0 ? Math.round(acceptedCount * 100 / (sentCount + acceptedCount)) : 0;
+    // v1.1.3: 無資料時回 null（不顯示 0%，避免「懲罰新用戶」紅色體驗）
+    var _hasQuoteData = (sentCount + acceptedCount) > 0;
+    var closeRate = _hasQuoteData ? Math.round(acceptedCount * 100 / (sentCount + acceptedCount)) : null;
 
     // Billing
     var receivedThisMonth = 0;
@@ -19938,8 +19940,14 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border);position:relative;overflow:hidden">';
     html += '<div style="position:absolute;top:0;right:0;width:60px;height:60px;background:linear-gradient(135deg,rgba(27,168,145,.08),transparent);border-radius:0 0 0 60px"></div>';
     html += '<div style="font-size:12px;color:var(--ink-muted);margin-bottom:8px;font-weight:500">簽回率</div>';
-    html += '<div style="font-size:24px;font-weight:800;color:' + (closeRate >= 50 ? 'var(--teal)' : closeRate >= 25 ? 'var(--gold)' : 'var(--rose)') + ';letter-spacing:-.5px">' + closeRate + '%</div>';
-    html += '<div style="margin-top:8px">' + sparkDot(closeRate, 100, closeRate >= 50 ? 'var(--teal)' : 'var(--gold)') + '</div>';
+    // v1.1.3: 無資料時顯示「—」slate（不再用 rose 懲罰新用戶）
+    if (closeRate === null) {
+      html += '<div style="font-size:24px;font-weight:800;color:var(--slate);letter-spacing:-.5px">—</div>';
+      html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:8px">尚無報價資料</div>';
+    } else {
+      html += '<div style="font-size:24px;font-weight:800;color:' + (closeRate >= 50 ? 'var(--teal)' : closeRate >= 25 ? 'var(--gold)' : 'var(--rose)') + ';letter-spacing:-.5px">' + closeRate + '%</div>';
+      html += '<div style="margin-top:8px">' + sparkDot(closeRate, 100, closeRate >= 50 ? 'var(--teal)' : 'var(--gold)') + '</div>';
+    }
     html += '</div>';
     // Card: 已收款
     html += '<div style="background:var(--bg-card);border-radius:var(--r-lg);padding:20px;border:1px solid var(--border);position:relative;overflow:hidden">';
@@ -25651,8 +25659,9 @@ function loadHistory(){
     }
 
     // 共用的 color / arrow mapping
-    const compColor = { '低': 'var(--teal)', '中': '#D97706', '高': '#EF4444' }[competition] || 'var(--ink-muted)';
-    const trendColor = { '上升': 'var(--teal)', '持平': 'var(--ink)', '下降': '#EF4444' }[trend] || 'var(--ink)';
+    // v1.1.3: 違憲色 #D97706/#EF4444 → 封閉五色 var(--gold)/var(--rose)
+    const compColor = { '低': 'var(--teal)', '中': 'var(--gold)', '高': 'var(--rose)' }[competition] || 'var(--ink-muted)';
+    const trendColor = { '上升': 'var(--teal)', '持平': 'var(--ink)', '下降': 'var(--rose)' }[trend] || 'var(--ink)';
     const trendArrow = { '上升': '↑', '持平': '→', '下降': '↓' }[trend] || '→';
 
     // AI / Mock source indicator
@@ -25661,8 +25670,9 @@ function loadHistory(){
       : '<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-hover);border-radius:var(--r-sm);font-size:11px;font-weight:500;color:var(--ink-muted);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--ink-muted)"></span> 模板估算（AI 未啟用）</div>';
 
       let relatedHTML = relatedKws.map(rk => {
-        const tColor = { '上升': 'var(--teal)', '持平': 'var(--ink-muted)', '下降': '#EF4444' }[rk.trend];
-        const dColor = { '低': 'var(--teal)', '中': '#D97706', '高': '#EF4444' }[rk.diff];
+        // v1.1.3: 違憲色 → 封閉五色
+        const tColor = { '上升': 'var(--teal)', '持平': 'var(--ink-muted)', '下降': 'var(--rose)' }[rk.trend];
+        const dColor = { '低': 'var(--teal)', '中': 'var(--gold)', '高': 'var(--rose)' }[rk.diff];
         const tArrow = { '上升': '↑', '持平': '→', '下降': '↓' }[rk.trend];
         return `<tr style="border-bottom:1px solid var(--border)">
           <td style="padding:10px 16px;font-size:13px;color:var(--ink)">${rk.kw}</td>
@@ -25673,7 +25683,7 @@ function loadHistory(){
       }).join('');
 
       let gapsHTML = gaps.map(g => {
-        const oppColor = g.opportunity === '高' ? 'var(--teal)' : '#D97706';
+        const oppColor = g.opportunity === '高' ? 'var(--teal)' : 'var(--gold)';
         return `<div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start">
           <div style="flex-shrink:0;padding:4px 10px;border-radius:var(--r-sm);font-size:11px;font-weight:600;background:${oppColor}15;color:${oppColor}">${g.type}</div>
           <div style="flex:1;font-size:13px;color:var(--ink);line-height:1.5">${g.gap}</div>
@@ -25774,8 +25784,8 @@ function loadHistory(){
       pmfScore = Math.round(avg);
       if (pmfScore >= 75) { pmfLevel = '強 PMF 信號'; pmfColor = 'var(--teal)'; }
       else if (pmfScore >= 50) { pmfLevel = '中等 PMF 信號'; pmfColor = 'var(--primary)'; }
-      else if (pmfScore >= 25) { pmfLevel = '弱 PMF 信號'; pmfColor = '#F59E0B'; }
-      else { pmfLevel = 'PMF 尚未達標'; pmfColor = '#EF4444'; }
+      else if (pmfScore >= 25) { pmfLevel = '弱 PMF 信號'; pmfColor = 'var(--gold)'; }
+      else { pmfLevel = 'PMF 尚未達標'; pmfColor = 'var(--rose)'; }
     }
 
     content.innerHTML = `
@@ -25808,7 +25818,7 @@ function loadHistory(){
         ${['P|問題驗證|用戶痛點是否真實存在','A|受眾匹配|你能否精準觸達目標族群','T|牽引力|市場是否有付費意願','H|競爭優勢|你的解法是否有差異化'].map(dim => {
           const [key, name, desc] = dim.split('|');
           const score = diagCount > 0 ? Math.round(state.diagnoses[state.diagnoses.length-1]?.scores?.[key] || 0) : 0;
-          const barColor = score >= 70 ? 'var(--teal)' : score >= 40 ? 'var(--primary)' : '#EF4444';
+          const barColor = score >= 70 ? 'var(--teal)' : score >= 40 ? 'var(--primary)' : 'var(--rose)';
           return `<div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:20px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
               <div style="font-size:14px;font-weight:700;color:var(--ink)">${name}</div>
@@ -25837,7 +25847,7 @@ function loadHistory(){
                 H:'建議使用競品雷達分析競爭對手，找出差異化切入點'
               };
               return `<div style="display:flex;gap:12px;padding:12px 16px;background:var(--bg-hover);border-radius:var(--r-sm)">
-                <div style="color:#EF4444;font-weight:700;min-width:36px">${Math.round(v)}</div>
+                <div style="color:var(--rose);font-weight:700;min-width:36px">${Math.round(v)}</div>
                 <div>
                   <div style="font-size:14px;font-weight:600;color:var(--ink)">${labels[k]} — 需要加強</div>
                   <div style="font-size:13px;color:var(--ink-muted);margin-top:2px">${actions[k]}</div>
@@ -26108,7 +26118,8 @@ function loadHistory(){
     const resultsEl = document.getElementById('svResults');
     if (!resultsEl) return;
 
-    const typeColors = { '開放題': 'var(--primary)', '單選題': 'var(--teal)', '複選題': '#E8590C', '量表題': '#D946EF', '排序題': '#0EA5E9' };
+    // v1.1.3: 違憲色（#E8590C/#D946EF/#0EA5E9）→ 封閉五色
+    const typeColors = { '開放題': 'var(--primary)', '單選題': 'var(--teal)', '複選題': 'var(--gold)', '量表題': 'var(--rose)', '排序題': 'var(--slate)' };
     const aiBadge = usingAI
       ? `<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:color-mix(in srgb, var(--primary) 12%, transparent);border-radius:var(--r-sm);font-size:11px;font-weight:600;color:var(--primary);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary)"></span> Claude ${window.PATH_AI.getActiveModel().replace('claude-','').replace(/-/g,' ')}</div>`
       : `<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-hover);border-radius:var(--r-sm);font-size:11px;font-weight:500;color:var(--ink-muted);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--ink-muted)"></span> 模板生成（AI 未啟用）</div>`;
@@ -26153,7 +26164,7 @@ function loadHistory(){
         </div>
         <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
           <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">誘導性風險</div>
-          <div style="font-size:28px;font-weight:800;color:${bias<=10?'var(--teal)':'#E8590C'}">${bias}%</div>
+          <div style="font-size:28px;font-weight:800;color:${bias<=10?'var(--teal)':'var(--gold)'}">${bias}%</div>
         </div>
         <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
           <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">主題覆蓋率</div>
@@ -26258,7 +26269,7 @@ function loadHistory(){
       ? `<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:color-mix(in srgb, var(--primary) 12%, transparent);border-radius:var(--r-sm);font-size:11px;font-weight:600;color:var(--primary);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary)"></span> Claude 分析</div>`
       : `<div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg-hover);border-radius:var(--r-sm);font-size:11px;font-weight:500;color:var(--ink-muted);margin-bottom:12px"><span style="width:6px;height:6px;border-radius:50%;background:var(--ink-muted)"></span> 規則檢測（AI 未啟用）</div>`;
 
-      const colorMap = { error: '#EF4444', warning: '#D97706', info: 'var(--primary)' };
+      const colorMap = { error: 'var(--rose)', warning: 'var(--gold)', info: 'var(--primary)' };
       const bgMap = { error: '#FEF2F2', warning: '#FEF3C7', info: 'var(--primary-light)' };
 
       let findingsHTML = findings.map(f => `
@@ -26280,7 +26291,7 @@ function loadHistory(){
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
           <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">整體品質分數</div>
-            <div style="font-size:28px;font-weight:800;color:${score>=80?'var(--teal)':score>=60?'#D97706':'#EF4444'}">${score}</div>
+            <div style="font-size:28px;font-weight:800;color:${score>=80?'var(--teal)':score>=60?'var(--gold)':'var(--rose)'}">${score}</div>
           </div>
           <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">偵測題數</div>
@@ -26288,11 +26299,11 @@ function loadHistory(){
           </div>
           <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">需修正</div>
-            <div style="font-size:28px;font-weight:800;color:#EF4444">${errorCount}</div>
+            <div style="font-size:28px;font-weight:800;color:var(--rose)">${errorCount}</div>
           </div>
           <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">建議改善</div>
-            <div style="font-size:28px;font-weight:800;color:#D97706">${warnCount}</div>
+            <div style="font-size:28px;font-weight:800;color:var(--gold)">${warnCount}</div>
           </div>
         </div>
 
@@ -26820,7 +26831,7 @@ function loadHistory(){
     const ch2HTML = `
       <div style="background:linear-gradient(180deg,var(--bg-card),rgba(232,89,12,.02));border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-          <div style="width:32px;height:32px;border-radius:8px;background:rgba(232,89,12,.1);color:#E8590C;display:flex;align-items:center;justify-content:center">${ICONS.crosshair}</div>
+          <div style="width:32px;height:32px;border-radius:8px;background:color-mix(in srgb,var(--gold) 10%,transparent);color:var(--gold);display:flex;align-items:center;justify-content:center">${ICONS.crosshair}</div>
           <div style="font-size:18px;font-weight:700;color:var(--ink)">二、競品圖譜</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">${compCardsHTML}</div>
@@ -26945,7 +26956,7 @@ function loadHistory(){
           </div>
           <div style="text-align:center;padding:16px;background:var(--bg);border-radius:var(--r-md)">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">競爭強度</div>
-            <div style="font-size:22px;font-weight:800;color:#D97706">中</div>
+            <div style="font-size:22px;font-weight:800;color:var(--gold)">中</div>
           </div>
           <div style="text-align:center;padding:16px;background:var(--bg);border-radius:var(--r-md)">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:4px">需求缺口</div>
@@ -28204,7 +28215,7 @@ function loadHistory(){
       <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:24px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px">Claude 連接</div>
         <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
-          <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#7C5CFC,#D97706);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#7C5CFC,#E08A3A);display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           </div>
           <div style="flex:1">
@@ -30723,6 +30734,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.1.3 · P0 信任修復 + 憲法封閉五色清理（蕪菁頭 UX 盤點 + 女巫視覺 rubric 共同指出的信任殺手）：(1) 戰情室簽回率「懲罰新用戶」bug 修復——`closeRate` 在 `sentCount + acceptedCount === 0` 時改回 null（不再回 0），卡片顯示「—」slate 色 + 「尚無報價資料」說明，不再用 rose 紅色把沒用過的新用戶當業務失敗標示；(2) 憲法違憲色全面清理——11 處非封閉五色改為 `var(--gold)` / `var(--rose)` / `var(--slate)`：市場探測 compColor / trendColor / dColor / oppColor（`#D97706` / `#EF4444`）、問卷 typeColors（`#E8590C` / `#D946EF` / `#0EA5E9`）、問卷 bias 色、問卷 audit score / error / warn 色、colorMap、PMF scoreBar、PATH bar、landing gradient（`#D97706` → `#E08A3A` 直接 hex 因 gradient 不支援 var）；(3) PRESET_COLORS 用戶自訂色盤保留不動（那是用戶權利）· 版號 v1.1.2→v1.1.3 -->
 <!-- v1.1.2 · 登入/登出 routing 修正（愛德華 prod 回報：兩個登入介紹頁重複 + 登出殘留 hash）：(1) showLanding 直接 window.location.replace('../') 送回 marketing 首頁；(2) 新增 _handleUnauthed — 沒 query 送回 /path/，有 ?login=1 或 ?apply=* 渲染 landing + 300ms 後自動彈 Google OAuth；(3) onAuthStateChanged + timeout fallback + firebase-unavailable 三路徑統一；(4) /path/index.html 4 處登入 CTA 加 ?login=1；(5) 修復 v1.1.1 race condition 誤砍 v1.2.0 Router — base 從 b9abd20 重新 apply，Router 和 _pendingHash 完整保留 · 版號 v1.1.0→v1.1.2 -->
 <!-- v1.1.0 · 早鳥申請模式 + Google 登入一鍵化 + URL 結構升級：(1) Landing（beyondspec.tw/path/）定價區所有「選擇 X」CTA → 「申請 X」（申請 Starter / 申請 Pro），因金流尚未接上；加 early-bird 敘事「🚀 現階段早鳥申請中，付費方案尚未開放，搶先體驗 + 首月雙倍 credits」；(2) App 內部（/path/app/）所有升級按鈕 & 訂閱 modal CTA 同步改「申請 X · 早鳥名單」；(3) Google 登入一鍵化——原登入流程：按登入 → 跳 in-app modal → 再按 Google → 彈 popup（二段式）；改為按「登入/免費開始」直接觸發 handleGoogleLogin() → Google popup 一鍵進產品；4 處公開 CTA（nav 登入、hero 免費開始、pricing Free tier 免費開始、final CTA 免費開始）全部改走直通路；保留 in-app modal 的 Google 按鈕作為 fallback；(4) URL 結構升級——app.html 從 /path/app.html 遷移到 /path/app/index.html 資料夾形式（乾淨、可擴充 /path/app/dashboard 等子路徑）；landing CTA 全部更新 · 版號 v1.0.9→v1.1.0 · tail cleanup: v1.0.7 搬進 CHANGELOG.md -->
 <!-- v1.0.9 · 全面同步定價到新商業模型（與 landing 對齊）：(1) getCreditLimit() FREE 30→50、STARTER 500→600、PRO 保持 3000；(2) PLAN_CATALOG Free tagline 改「永久免費 · 任務/客戶/報價完整可用」、credits 30→50、加首次 PATH 診斷不計費 highlight；Starter monthly 390→290、annual 3900→2900、credits 500→600、tagline 改「個人接案者」；(3) PLAN_CATALOG 價格 card：STARTER 年繳從 325→242 並加「省 17%」敘事；(4) 所有「7 天免費試用」文案（6 處）全拔，改為「選擇方案名 / 立即訂閱 / credits 用多少付多少」；(5) upgrade CTA button 同步新價格；(6) settings 價格表 4 欄從 390→290；(7) feat landing price-card 區塊 FREE/STARTER/PRO 三卡 credit 數 + 按鈕 + 副標全同步 · 版號 v1.0.8→v1.0.9 · tail cleanup: v1.0.6 搬進 CHANGELOG.md -->
