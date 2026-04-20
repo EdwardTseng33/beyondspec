@@ -5067,7 +5067,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.10</div>
+        <div class="sidebar-version">v1.3.11</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6806,6 +6806,15 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       }
     }
 
+    // v1.3.11: 管理員專區（僅 Edward email 可見）
+    if (state.user && state.user.email === 'edwardt0303@gmail.com') {
+      navHtml += '<div class="nav-category">管理</div>';
+      navHtml += `<div class="nav-item ${state.currentModule === 'admin-applications' ? 'active' : ''}" onclick="app.navClick(event,'admin-applications')" title="申請管理">
+        ${ICONS.inbox || ICONS.users}
+        <span>申請管理</span>
+      </div>`;
+    }
+
     // Settings (always visible)
     navHtml += `<div class="nav-item ${state.currentModule === 'settings' ? 'active' : ''}" onclick="app.navClick(event,'settings')" title="設定">
       ${ICONS.sliders}
@@ -6831,7 +6840,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       mission: "biz-tasks", crm: "biz-contacts",
       quote: "biz-quotes", payment: "biz-billing",
       meeting: "biz-meetings", insights: "biz-insights",
-      vault: "biz-docs", settings: "settings"
+      vault: "biz-docs", settings: "settings",
+      admin: "admin-applications"
     };
     var aliases = {
       dashboard: "home", spec: "planning", inbox: "planning",
@@ -7279,6 +7289,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       case 'survey': renderSurveyEngine(); break;
       case 'market': renderMarketSignal(); break;
       case 'report': renderMarketReport(); break;
+      case 'admin-applications': renderAdminApplications(); break;
       case 'settings': renderSettings(); break;
     }
   }
@@ -26651,6 +26662,100 @@ function loadHistory(){
     renderFullReport();
   }
 
+  // v1.3.11: 申請管理頁 — 列出 Firestore applications collection 所有申請
+  function renderAdminApplications() {
+    const content = document.getElementById('content');
+    content.innerHTML = `
+      <div class="page-title-area">
+        <h1>${ICONS.inbox || ICONS.users} <span>申請管理</span></h1>
+        <div class="subtitle">所有早鳥申請即時同步於 Firebase Firestore · applications collection</div>
+      </div>
+      <div id="adminAppsList" style="padding:24px 0"><div style="text-align:center;color:var(--ink-muted);padding:60px">載入中…</div></div>
+    `;
+    _loadAdminApplications();
+  }
+
+  function _loadAdminApplications() {
+    const wrap = document.getElementById('adminAppsList');
+    if (!wrap) return;
+    if (typeof firebase === 'undefined' || !firebase.firestore) {
+      wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--rose)">Firestore SDK 未載入</div>';
+      return;
+    }
+    firebase.firestore().collection('applications').orderBy('submittedAt', 'desc').limit(100).get()
+      .then(function(snap) {
+        if (snap.empty) {
+          wrap.innerHTML = '<div style="padding:60px;text-align:center"><div style="font-size:14px;color:var(--ink-muted);margin-bottom:8px">尚無申請</div><div style="font-size:12px;color:var(--ink-dim)">當有人從 /path/ 早鳥申請 modal 送出，會即時出現在這裡</div></div>';
+          return;
+        }
+        var rows = [];
+        snap.forEach(function(doc) {
+          var d = doc.data();
+          var when = d.submittedAt && d.submittedAt.toDate ? d.submittedAt.toDate() : new Date(d.submittedAtIso || Date.now());
+          var whenStr = when.toLocaleString('zh-TW', { year:'2-digit', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+          var statusMap = {
+            pending:   { label:'待審核', color:'var(--gold)',  bg:'color-mix(in srgb,var(--gold) 12%,transparent)' },
+            approved:  { label:'已通過', color:'var(--teal)',  bg:'color-mix(in srgb,var(--teal) 12%,transparent)' },
+            rejected:  { label:'已婉拒', color:'var(--rose)',  bg:'color-mix(in srgb,var(--rose) 12%,transparent)' }
+          };
+          var st = statusMap[d.status || 'pending'];
+          rows.push(
+            '<tr style="border-bottom:1px solid var(--border)">' +
+              '<td style="padding:12px 10px;font-size:12px;color:var(--ink-muted);white-space:nowrap">' + whenStr + '</td>' +
+              '<td style="padding:12px 10px"><span style="font-size:11px;font-weight:700;letter-spacing:.08em;padding:3px 8px;border-radius:999px;background:color-mix(in srgb,var(--primary) 10%,transparent);color:var(--primary)">' + (d.plan || '').toUpperCase() + '</span></td>' +
+              '<td style="padding:12px 10px;font-size:13px;color:var(--ink);font-weight:600">' + (d.company || '—') + '</td>' +
+              '<td style="padding:12px 10px;font-size:13px;color:var(--ink-sec)">' + (d.name || '—') + '<br><span style="font-size:11px;color:var(--ink-muted)">' + (d.title || '') + '</span></td>' +
+              '<td style="padding:12px 10px;font-size:12px"><a href="mailto:' + (d.email || '') + '" style="color:var(--primary);text-decoration:none">' + (d.email || '—') + '</a></td>' +
+              '<td style="padding:12px 10px;font-size:12px;color:var(--ink-sec);line-height:1.5;max-width:280px">' + (d.needs || '—') + '</td>' +
+              '<td style="padding:12px 10px"><span style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;color:' + st.color + ';background:' + st.bg + '">' + st.label + '</span></td>' +
+              '<td style="padding:12px 10px;white-space:nowrap">' +
+                (d.status !== 'approved' ? '<button onclick="app.updateApplicationStatus(\'' + doc.id + '\',\'approved\')" style="padding:4px 10px;font-size:11px;font-weight:600;background:var(--teal);color:#fff;border:none;border-radius:6px;cursor:pointer;margin-right:4px">通過</button>' : '') +
+                (d.status !== 'rejected' ? '<button onclick="app.updateApplicationStatus(\'' + doc.id + '\',\'rejected\')" style="padding:4px 10px;font-size:11px;font-weight:600;background:transparent;color:var(--rose);border:1px solid var(--rose);border-radius:6px;cursor:pointer">婉拒</button>' : '') +
+              '</td>' +
+            '</tr>'
+          );
+        });
+        wrap.innerHTML =
+          '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">' +
+            '<div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">' +
+              '<div style="font-size:14px;font-weight:600">共 ' + snap.size + ' 筆申請</div>' +
+              '<button onclick="app.renderAdminApplications()" style="padding:6px 14px;font-size:12px;font-weight:600;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer">重新載入</button>' +
+            '</div>' +
+            '<div style="overflow-x:auto">' +
+            '<table style="width:100%;border-collapse:collapse;font-size:13px;min-width:900px">' +
+              '<thead><tr style="background:var(--bg);color:var(--ink-muted);text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em">' +
+                '<th style="padding:10px">時間</th>' +
+                '<th style="padding:10px">方案</th>' +
+                '<th style="padding:10px">公司</th>' +
+                '<th style="padding:10px">姓名 / 職稱</th>' +
+                '<th style="padding:10px">Email</th>' +
+                '<th style="padding:10px">需求</th>' +
+                '<th style="padding:10px">狀態</th>' +
+                '<th style="padding:10px">操作</th>' +
+              '</tr></thead>' +
+              '<tbody>' + rows.join('') + '</tbody>' +
+            '</table></div>' +
+          '</div>';
+      })
+      .catch(function(err) {
+        wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--rose)">讀取失敗：' + (err.message || err) + '</div>';
+      });
+  }
+
+  function updateApplicationStatus(docId, newStatus) {
+    if (typeof firebase === 'undefined' || !firebase.firestore) return;
+    firebase.firestore().collection('applications').doc(docId).update({
+      status: newStatus,
+      reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      reviewedBy: state.user?.email || ''
+    }).then(function(){
+      showToast(newStatus === 'approved' ? '已標記為通過' : '已標記為婉拒');
+      _loadAdminApplications();
+    }).catch(function(e){
+      showToast('更新失敗：' + (e.message || ''));
+    });
+  }
+
   // v1.3.10: 從首頁 report card 點擊 → 直接重建並顯示該已儲存報告（不再跳空白 input 頁）
   function openSavedReport(reportId) {
     const record = (state.savedReports || []).find(function(r){ return r.id === reportId; });
@@ -29519,6 +29624,8 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     // v0.32.0 Subscription flow
     openSubscribeFlow,
     openSavedReport,
+    renderAdminApplications,
+    updateApplicationStatus,
     closeSubscribeModal,
     setSubCycle,
     selectSubPay,
@@ -30834,6 +30941,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.3.11 · app 內申請管理頁（Admin-only，回應愛德華「不靠三方」需求閉環）：接續 v1.3.9 Firestore 寫入，這版加 app 內管理介面讓愛德華不用進 Firebase Console 就能審核所有申請。(1) Sidebar 新增「管理」category + 「申請管理」nav item，條件 `state.user.email === 'edwardt0303@gmail.com'` 才顯示（其他用戶看不到）；(2) Router 新增 `admin: 'admin-applications'` slug mapping；(3) renderModule 加 `case 'admin-applications': renderAdminApplications()`；(4) 新 `renderAdminApplications()` 讀 Firestore `applications` collection orderBy submittedAt desc limit 100，render table 含時間 / 方案 badge / 公司 / 姓名+職稱 / mailto Email / 需求 / 狀態 badge（pending gold / approved teal / rejected rose）/ 操作（通過/婉拒按鈕）；(5) `updateApplicationStatus(docId, status)` update Firestore doc with reviewedAt serverTimestamp + reviewedBy email，toast 回饋 + 重新載入；(6) 空狀態「尚無申請」引導文案；(7) 錯誤 handling + 重新載入按鈕。現在完整流程：landing submit → Firestore write → 愛德華進 app /admin 立即看到 → 點通過/婉拒 → status 更新。Email 通知仍可透過 Firebase Extension「Trigger Email」一鍵啟用（愛德華在 Firebase Console 操作） · 版號 v1.3.10→v1.3.11 -->
 <!-- v1.3.10 · 首頁報告 card 點擊直接顯示完整報告（愛德華回報：「首頁的報告產出要能正常顯示報告才對而不是跳到市場報告 tab 頁去但什麼都沒顯示」）：根因——card onclick 只 `app.navigate('report')` 跳模組主頁（輸入表單），沒帶 report id 讓 report 模組知道要載哪份；另外 `savedReports` record 只存 meta（productName/verdict/diagTotal）**沒存 aiData + selectedDiag snapshot**，即使拿到 id 也無法 re-render。修法：(1) `saveReport()` 擴充 record schema 加入 `aiData` + `selectedDiag` 完整快照；(2) 新增 `openSavedReport(id)`——從 `state.savedReports` 找 record，restore `reportState` 後 navigate + `renderFullReport()` 直接呈現完整報告（跳過 input 頁）；(3) 首頁 card onclick 從 `navigate('report')` 改 `openSavedReport(rpt.id)`；(4) 舊資料缺 snapshot → 跳 report tool + toast「此舊報告缺完整快照，請重新生成」；(5) `window.app` 曝 `openSavedReport` 讓 inline onclick 可呼叫 · 版號 v1.3.9→v1.3.10 -->
 <!-- v1.3.9 · 早鳥申請改寫 Firebase Firestore 直接存取（愛德華回報：「一定要三方工具嗎? 不能直接串 google sheet 然後同步寄送通知給我?」）：v1.3.8 的 FormSubmit.co 雖免註冊但畢竟是第三方 email relay，愛德華要求完全在自家 Firebase project 處理。修法：(1) /path/index.html 載入 firebase-firestore-compat.js 10.14.1（之前只有 app + auth）；(2) bpSubmitApply 移除 FormSubmit POST，改 `firebase.firestore().collection('applications').add({...})` 直寫你 beyond-business-ca9da project 的 Firestore `applications` collection；(3) 每筆 document 含 plan / company / title / name / email / needs / submittedAt (server timestamp + iso) / source / userAgent / status=pending / reviewedAt / reviewedBy / notes — 可追蹤審核流程；(4) 下一版 v1.3.10 會在 app 內加 /admin 申請清單頁讓愛德華直接看 + 手動審核（免第三方）；(5) 即時 email 通知可選擇 Firebase Extension「Trigger Email」（Firebase Console 一鍵安裝、設 SMTP 用 Gmail 帳號即可，新增 doc 自動寄）— 指南 v1.3.10 同步出；Google Sheet 同步如需可另建 Apps Script pull Firestore → Sheet，但 app 內 admin 通常夠用 · 版號 v1.3.8→v1.3.9 -->
 <!-- v1.3.8 · 早鳥申請接 FormSubmit.co 免註冊後端（愛德華 prod 問：「申請會員的表單完成了以後寄送與用戶資訊會留到哪裡?」—— 實情：localStorage 只在申請者瀏覽器、Apps Script 未設愛德華收不到、mailto 需用戶主動點，所以目前愛德華等於收不到任何申請 email）：(1) bpSubmitApply 新增 FormSubmit.co POST——`https://formsubmit.co/edwardt0303@gmail.com` 免註冊免 Access Key，第一次觸發 FormSubmit 寄 confirmation email 給愛德華一次性點擊啟用，之後所有申請自動 email forward 到他信箱；(2) payload 用 FormData，加 `_subject`（[BeyondPath 早鳥] PLAN · NAME）`_template=table`（美化排版）`_captcha=false`；欄位：方案 / 公司 / 職稱 / 姓名 / Email / 需求 / 提交時間 / 來源；(3) mode:no-cors fire-and-forget 避免 CORS blocking；(4) 保留 `window.BP_APPLY_WEBHOOK` Apps Script path（愛德華若未來設定 Google Sheet 同步，webhook 與 FormSubmit 並存）；(5) success modal 文案從「我們會回覆」改「已寄到我們信箱，會回覆到 xxx」更明確告知使用者信件已送達 · 版號 v1.3.7→v1.3.8 -->
