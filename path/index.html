@@ -312,6 +312,32 @@ body[data-dir="A"] .A{display:block}
   // login, but flash-loop is impossible. We may add a non-blocking "welcome
   // back" toast + "進入 app" button in a future version.
 
+  // v1.3.6: auto-open apply modal if URL has ?apply=xxx (from app.html upgrade CTA)
+  try {
+    var _applyQ = new URLSearchParams(window.location.search).get('apply');
+    if (_applyQ && ['starter', 'pro', 'enterprise'].indexOf(_applyQ) !== -1) {
+      // Wait for modal to be ready (DOMContentLoaded fires the init script)
+      document.addEventListener('DOMContentLoaded', function(){
+        setTimeout(function(){
+          if (typeof window.bpOpenApply === 'function') {
+            window.bpOpenApply(_applyQ);
+            // Clean URL so refresh doesn't re-open
+            try { history.replaceState(null, '', window.location.pathname); } catch(e){}
+          }
+        }, 200);
+      });
+      // If DOM already loaded
+      if (document.readyState !== 'loading') {
+        setTimeout(function(){
+          if (typeof window.bpOpenApply === 'function') {
+            window.bpOpenApply(_applyQ);
+            try { history.replaceState(null, '', window.location.pathname); } catch(e){}
+          }
+        }, 200);
+      }
+    }
+  } catch(e) { console.warn('[Landing] apply query parse:', e.message); }
+
   window.bpLogin = function(origin) {
     var btn = event && event.currentTarget;
     if (btn) { btn.style.opacity = '0.6'; btn.style.pointerEvents = 'none'; }
