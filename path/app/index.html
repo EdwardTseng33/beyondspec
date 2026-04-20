@@ -5067,7 +5067,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.11</div>
+        <div class="sidebar-version">v1.3.12</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -21543,7 +21543,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:20px 0 8px">
         <div>
           <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px">下一步：用 Lab 深入驗證</div>
-          <div style="font-size:13px;color:var(--ink-muted)">針對最弱維度「${weakDim.name}」進行 AI 模擬用戶訪談</div>
+          <div style="font-size:13px;color:var(--ink-muted)">針對最弱維度「${weakDim.name}」進行 AI 合成受眾訪談（先跑廣度，真訪談跑深度）</div>
         </div>
         <div style="display:flex;gap:10px;flex-shrink:0">
           <button class="btn btn-accent" onclick="app.navigateLabWithPath('${weakest[0]}', '${JSON.stringify(normalized).replace(/"/g, '&quot;')}')">
@@ -30941,6 +30941,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.3.12 · PATH 診斷結果頁 CTA 文案對齊 Q1 中庸版敘事：line 21546 action card 文案「針對最弱維度進行 AI 模擬用戶訪談」→「針對最弱維度進行 AI 合成受眾訪談（先跑廣度，真訪談跑深度）」，與 v1.2.0 Lab 模組 subtitle / header badge 用同一套語言；延伸實施 Q1 Lab 誠實度 slogan 至全站觸點 · 版號 v1.3.11→v1.3.12 -->
 <!-- v1.3.11 · app 內申請管理頁（Admin-only，回應愛德華「不靠三方」需求閉環）：接續 v1.3.9 Firestore 寫入，這版加 app 內管理介面讓愛德華不用進 Firebase Console 就能審核所有申請。(1) Sidebar 新增「管理」category + 「申請管理」nav item，條件 `state.user.email === 'edwardt0303@gmail.com'` 才顯示（其他用戶看不到）；(2) Router 新增 `admin: 'admin-applications'` slug mapping；(3) renderModule 加 `case 'admin-applications': renderAdminApplications()`；(4) 新 `renderAdminApplications()` 讀 Firestore `applications` collection orderBy submittedAt desc limit 100，render table 含時間 / 方案 badge / 公司 / 姓名+職稱 / mailto Email / 需求 / 狀態 badge（pending gold / approved teal / rejected rose）/ 操作（通過/婉拒按鈕）；(5) `updateApplicationStatus(docId, status)` update Firestore doc with reviewedAt serverTimestamp + reviewedBy email，toast 回饋 + 重新載入；(6) 空狀態「尚無申請」引導文案；(7) 錯誤 handling + 重新載入按鈕。現在完整流程：landing submit → Firestore write → 愛德華進 app /admin 立即看到 → 點通過/婉拒 → status 更新。Email 通知仍可透過 Firebase Extension「Trigger Email」一鍵啟用（愛德華在 Firebase Console 操作） · 版號 v1.3.10→v1.3.11 -->
 <!-- v1.3.10 · 首頁報告 card 點擊直接顯示完整報告（愛德華回報：「首頁的報告產出要能正常顯示報告才對而不是跳到市場報告 tab 頁去但什麼都沒顯示」）：根因——card onclick 只 `app.navigate('report')` 跳模組主頁（輸入表單），沒帶 report id 讓 report 模組知道要載哪份；另外 `savedReports` record 只存 meta（productName/verdict/diagTotal）**沒存 aiData + selectedDiag snapshot**，即使拿到 id 也無法 re-render。修法：(1) `saveReport()` 擴充 record schema 加入 `aiData` + `selectedDiag` 完整快照；(2) 新增 `openSavedReport(id)`——從 `state.savedReports` 找 record，restore `reportState` 後 navigate + `renderFullReport()` 直接呈現完整報告（跳過 input 頁）；(3) 首頁 card onclick 從 `navigate('report')` 改 `openSavedReport(rpt.id)`；(4) 舊資料缺 snapshot → 跳 report tool + toast「此舊報告缺完整快照，請重新生成」；(5) `window.app` 曝 `openSavedReport` 讓 inline onclick 可呼叫 · 版號 v1.3.9→v1.3.10 -->
 <!-- v1.3.9 · 早鳥申請改寫 Firebase Firestore 直接存取（愛德華回報：「一定要三方工具嗎? 不能直接串 google sheet 然後同步寄送通知給我?」）：v1.3.8 的 FormSubmit.co 雖免註冊但畢竟是第三方 email relay，愛德華要求完全在自家 Firebase project 處理。修法：(1) /path/index.html 載入 firebase-firestore-compat.js 10.14.1（之前只有 app + auth）；(2) bpSubmitApply 移除 FormSubmit POST，改 `firebase.firestore().collection('applications').add({...})` 直寫你 beyond-business-ca9da project 的 Firestore `applications` collection；(3) 每筆 document 含 plan / company / title / name / email / needs / submittedAt (server timestamp + iso) / source / userAgent / status=pending / reviewedAt / reviewedBy / notes — 可追蹤審核流程；(4) 下一版 v1.3.10 會在 app 內加 /admin 申請清單頁讓愛德華直接看 + 手動審核（免第三方）；(5) 即時 email 通知可選擇 Firebase Extension「Trigger Email」（Firebase Console 一鍵安裝、設 SMTP 用 Gmail 帳號即可，新增 doc 自動寄）— 指南 v1.3.10 同步出；Google Sheet 同步如需可另建 Apps Script pull Firestore → Sheet，但 app 內 admin 通常夠用 · 版號 v1.3.8→v1.3.9 -->
