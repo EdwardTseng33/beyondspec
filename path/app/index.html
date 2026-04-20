@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.2.4</div>
+        <div class="sidebar-version">v1.2.5</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -30107,17 +30107,23 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
   }
 
   function logout() {
+    // v1.2.5: set flag so /path/ landing won't auto-redirect back to /path/app/ (prevents flash-loop)
+    try { sessionStorage.setItem('_justLoggedOut', Date.now().toString()); } catch(e){}
     // Sync to Firestore before logout
     _syncToFirestore();
     state.isLoggedIn = false;
     state.user = { name: '', email: '', avatar: '' };
     saveState();
-    // Sign out of Firebase Auth
+    // Sign out of Firebase Auth first, then redirect (prevents race where /path/ sees stale auth state)
     if (typeof firebase !== 'undefined' && firebase.auth) {
-      firebase.auth().signOut().catch(function(e) { console.warn('[Auth] signOut error:', e); });
+      firebase.auth().signOut().finally(function() {
+        showToast('已成功登出');
+        showLanding();
+      });
+    } else {
+      showToast('已成功登出');
+      showLanding();
     }
-    showLanding();
-    showToast('已成功登出');
   }
 
   function checkPermission(feature) {
@@ -30694,6 +30700,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.2.5 · 登入頁閃頻 redirect-loop bug 修復（愛德華 prod 回報：「登入頁好像壞掉了，一直閃頻」）：根因——v1.2.1 /path/index.html 加的 `onAuthStateChanged` auto-redirect 跟 app.html `logout()` + `_handleUnauthed()` 產生循環：登出 → showLanding → redirect `/path/` → Firebase auth state 還未 resolve、依然認為 user logged in → onAuthStateChanged 觸發 → redirect 回 `/path/app/` → 但 `state.isLoggedIn=false` → _handleUnauthed redirect 回 `/path/` → 無限閃頻。修法：(1) `logout()` 改為先設 `sessionStorage._justLoggedOut = Date.now()` flag、再 `firebase.auth().signOut().finally(showLanding)`——確保 Firebase 登出完成才 redirect；(2) `/path/` auth listener 加 flag check：10 秒內剛登出就 skip auto-redirect；(3) showToast 放到 signOut.finally 裡避免在 redirect 之前的空檔消失 · 版號 v1.2.4→v1.2.5 -->
 <!-- v1.2.4 · 首頁近期動態移除（補 v1.2.3 sidebar bump 遺漏）+ landing logo 點擊回頂部：(1) 首頁「近期動態」aside-card 整塊移除（5,438 字元）——愛德華回饋「報告生產多了會被壓下去看不到，UX 有問題」。原本讀 castle_xxx_* 舊 key，跟愛德華帳號的 bp_* key 不同源所以恆為空狀態，empty block 又佔 36px padding + 48px icon，報告產出後變視覺盲區。首頁左側 home-main 結構簡化為 welcome-banner → 日期+統計 row → reportsHTML；(2) Landing page (/path/index.html) nav logo 加 `onclick` scroll-to-top（`window.scrollTo({top:0,behavior:'smooth'})`）——愛德華指令「landingpage 的 logo 點擊要能回到最上方」；(3) 前一 commit v1.2.3（Recent Activity 刪除）因 Edit tool file-state race 沒 apply sidebar bump 到 v1.2.3，此版補正跳到 v1.2.4 · 版號 v1.2.2→v1.2.4 -->
 <!-- v1.2.2 · 首頁「逾期提示與代辦融合」+ 右下擴充「本週脈搏」（愛德華指令「把逾期的那個提示通知與原本右下角的代辦項目融合」+「右下角可以有什麼可以思考」）：(1) 左側 Today's Action Panel 簡化——只保留日期 + 快速統計 row（進行中/待簽回/今日會議），urgent items 區塊從左側移除；(2) 右側 home-aside 新增「今日聚焦」aside-card——融合 5 類 urgent items（逾期款項 rose / 逾期任務 rose / 報價即將到期 gold / 會議待辦未完成 gold / 任務 3 天內到期 primary），按 weight 排序（rose → gold → primary）；空狀態設計：teal ring icon + 「今天沒有緊急事項·可以專注在重要的事」；資料源統一讀 bp_* localStorage（跟左側同源，永不矛盾）；(3) 右側再加「本週脈搏」aside-card 擴充內容：SVG donut ring 顯示本週任務完成率（封閉五色 teal/gold/rose 階梯）+ 本月報價/已收雙 KPI + 「查看完整營運戰情室」小 CTA；完成率 null（無任務）顯示「—」slate，不再「懲罰新用戶」；(4) 整體視覺升級：右下從「快速操作 + 待辦提醒」單純列表 → 「快速操作 + 今日聚焦 + 本週脈搏」三層資訊架構，設計感提升（SVG ring 視覺錨點 + 色彩語義清晰）· 版號 v1.2.1→v1.2.2 -->
 <!-- v1.2.1 · /path/app/?login=1 徹底廢除，登入流程完全搬到 /path/（愛德華指令）：(1) /path/index.html 加載 Firebase SDK（app-compat + auth-compat 10.14.1）+ firebaseConfig（同 app.html）+ `window.bpLogin()` 函數：直接 `signInWithPopup(new firebase.auth.GoogleAuthProvider())` → 成功 redirect /path/app/、失敗顯示錯誤 + restore 按鈕；(2) 6 處 landing CTA（登入 nav / 免費開始 hero / 免費開始 pricing / 申請 Starter / 申請 Pro / final CTA）從 `href="/path/app/?login=1"` 改成 `onclick="bpLogin(origin);return false;"`——URL bar 永遠停在 /path/，不會跳 /path/app/?login=1；(3) 加 landing auth state listener：已登入用戶進 /path/ 自動 redirect /path/app/（避免回訪時還看到 landing 一瞬間）；(4) app.html `_handleUnauthed()` 簡化——所有未登入 session 一律 `window.location.replace('../')`，不再渲染 landing、不再 auto-trigger Google OAuth（那些邏輯全搬 /path/）· 版號 v1.2.0→v1.2.1 -->

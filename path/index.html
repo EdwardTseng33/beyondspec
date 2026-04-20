@@ -289,10 +289,19 @@ body[data-dir="A"] .A{display:block}
   var firebaseConfig = {apiKey:"AIzaSyCY8sF0PZc_BGhp3sgZpx64tZnDyBwa6Tg",authDomain:"beyond-business-ca9da.firebaseapp.com",projectId:"beyond-business-ca9da",storageBucket:"beyond-business-ca9da.firebasestorage.app",messagingSenderId:"233160072382",appId:"1:233160072382:web:57cfbc089301d30cd912ef",measurementId:"G-DVBEPK5DJK"};
   try { firebase.initializeApp(firebaseConfig); } catch(e) { console.warn('[Landing] firebase init:', e.message); }
 
-  // Auto-redirect if already logged in (prevents landing flash on return visits)
+  // v1.2.5: Auto-redirect if already logged in, but respect "just logged out" flag to prevent flash-loop
   try {
     firebase.auth().onAuthStateChanged(function(user){
-      if (user) { window.location.replace('/path/app/'); }
+      if (!user) return;
+      try {
+        var ts = parseInt(sessionStorage.getItem('_justLoggedOut') || '0', 10);
+        if (ts && Date.now() - ts < 10000) {
+          // User logged out within last 10s — don't auto-redirect back to app, they want to see landing
+          sessionStorage.removeItem('_justLoggedOut');
+          return;
+        }
+      } catch(e){}
+      window.location.replace('/path/app/');
     });
   } catch(e) { console.warn('[Landing] auth listener:', e.message); }
 
