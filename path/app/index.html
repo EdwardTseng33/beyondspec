@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.1</div>
+        <div class="sidebar-version">v1.3.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -30172,21 +30172,36 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
         _handleUnauthed();
       }
     });
-    // v1.2.7: Fallback timeout extended 3s → 6s (Firebase CDN can be slow on weak network; short timeout triggered premature _handleUnauthed redirect which looped with /path/ auto-redirect)
-    setTimeout(function() {
-      if (!_authHandled) {
+    // v1.3.2: REMOVED setTimeout fallback that prematurely redirected users with valid Firebase sessions.
+    // Chrome MCP 實測證實 bug：Firebase CDN 載入慢時，setTimeout 6s 先於 onAuthStateChanged 觸發，
+    // 即使 IndexedDB 已有 cached user session，`firebase.auth().currentUser` 在 fallback 觸發時仍是 null
+    // （Firebase SDK 還沒從 IndexedDB 讀完 auth state），錯誤 redirect /path/。
+    // 解法：只依賴 onAuthStateChanged（Firebase 保證 fire，除非 SDK 完全沒載入）。
+    // 如 Firebase SDK 真沒載入 → 走下方 else branch 用 localStorage state。
+    // 用戶看 loading 的白屏是可接受的 degradation（但這個情況現在極少）。
+    // 同時加一個 polling safety：每 2 秒 check currentUser，若 Firebase 遲 resolve 但 IndexedDB 已有 user，快速進 dashboard
+    var _pollCount = 0;
+    var _pollInterval = setInterval(function(){
+      if (_authHandled) { clearInterval(_pollInterval); return; }
+      _pollCount++;
+      if (firebase.auth().currentUser) {
         _authHandled = true;
-        // Extra defense: before redirecting, check firebase.auth().currentUser one more time
-        if (firebase.auth().currentUser) {
-          _restoreSessionFromFirebase(firebase.auth().currentUser);
-          showDashboard();
-        } else if (state.isLoggedIn) {
-          showDashboard();
-        } else {
-          _handleUnauthed();
+        clearInterval(_pollInterval);
+        _restoreSessionFromFirebase(firebase.auth().currentUser);
+        _pullFromFirestore(function() { showDashboard(); });
+      } else if (_pollCount >= 10) {
+        // 20 秒都沒 user —— 很可能真的沒登入（Firebase 已 fire onAuthStateChanged with null 但 listener 失效？）
+        clearInterval(_pollInterval);
+        if (!_authHandled) {
+          _authHandled = true;
+          if (state.isLoggedIn) {
+            showDashboard();
+          } else {
+            _handleUnauthed();
+          }
         }
       }
-    }, 6000);
+    }, 2000);
   } else {
     if (state.isLoggedIn) {
       showDashboard();
@@ -30729,6 +30744,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.3.2 · 登入不了的真正 root cause（Chrome MCP 實測證實）——setTimeout(6000) fallback 搶在 Firebase onAuthStateChanged 之前觸發：Firebase SDK 從 IndexedDB 讀 auth state 需要時間（特別是 CDN 冷啟、弱網路），setTimeout 6 秒觸發時 `firebase.auth().currentUser` 仍是 null（auth state 還沒 resolve），即使 IndexedDB 其實已有 cached user session。結果：有登入的用戶訪問 /path/app/ 被錯誤 _handleUnauthed → redirect /path/。修法：(1) 移除 setTimeout fallback 的 premature redirect；(2) 改用 polling interval：每 2 秒 check `firebase.auth().currentUser`，有就 instant restore + showDashboard，最多 poll 10 次（20 秒）後才 fall back 到 state.isLoggedIn / _handleUnauthed；(3) 正常情況 onAuthStateChanged 會先 fire（Firebase 內部從 IndexedDB 讀完就會 fire listener），polling 只是保險——若 Firebase listener 真的卡住，polling 每 2 秒 check 一次 currentUser 可以 recover · 版號 v1.3.1→v1.3.2 (PATCH: bug fix for 登入不了 Chrome MCP 實測 root cause) -->
 <!-- v1.3.1 · 修 v1.3.0 hotfix 引入的 syntax error（蘇菲用 Chrome MCP 實測 prod 發現 `window.bpLogin` 根本 undefined——整個 Firebase `<script>` block 因 SyntaxError 沒執行）：根因——v1.3.0 node script 注入 alert 訊息時，template literal 內 `\\n\\n` 本應轉義成 `\n\n`（escape sequence）寫入 HTML，但實際被解釋成 **真實 newline** 切斷 single-quoted string 橫跨 3 行，瀏覽器 parse 到 line 341 col 51 噴 `SyntaxError: Invalid or unexpected token`，後續 bpLogin / getRedirectResult fallback 全部沒載入。Fix：移除 `\\n\\n`，改用 `' (錯誤代碼：xxx)'` 行內追加括弧——同等資訊量，不需 escape，單行無風險 · 版號 v1.3.0→v1.3.1 (PATCH: hotfix v1.3.0 syntax error) -->
 <!-- v1.3.0 · 登入 popup-blocked fallback（蘇菲用 Chrome MCP 實測 prod 發現 Firebase 噴 `auth/popup-blocked` FirebaseError——某些瀏覽器設定 / 企業策略 / 第三方 cookie 擋住 Google OAuth popup，signInWithPopup 失敗後沒有備援路徑，所以愛德華才說「登入不了」）：(1) /path/index.html `bpLogin()` catch 區段加 popup-blocked 判斷——偵測到 `auth/popup-blocked` / `auth/operation-not-supported-in-this-environment` / `auth/web-storage-unsupported` 三種錯誤碼，自動 fallback 到 `firebase.auth().signInWithRedirect(provider)`（整頁跳 Google login → Google 跳回 /path/ 完成 session）；(2) 頁面初始化時加 `getRedirectResult()` handler——redirect flow 完成後回到 /path/，自動偵測 user 存在→清 anti-loop counter→redirect 到 /path/app/；(3) 其他錯誤 alert 顯示 `err.code` 方便日後排查；(4) 錯誤訊息用 `\\n\\n` 換行顯示錯誤代碼 · 版號 v1.2.9→v1.3.0 (MINOR: login flow 新增 redirect 路徑) -->
 <!-- v1.2.9 · 移除 anti-loop counter 機制（愛德華 prod 再次回報：「不行登入不了」）：v1.2.7/v1.2.8 的 anti-loop counter 即使加了「登入成功清 counter」仍然出問題——**sessionStorage 是 tab-scoped persist，不隨 hard reload 清除**。愛德華的 tab 已經從 v1.2.7 時累積了 counter=2，v1.2.8 的清 counter 邏輯只在「登入成功」時觸發，但他還沒登入成功，counter 一直卡在 >=2，每次訪問 /path/app/ 都被 redirect-loop break 擋下，顯示錯誤頁，用戶根本到不了 signInWithPopup。根治：(1) **完全移除 `_handleUnauthed` 的 counter 邏輯 + 錯誤頁 render**——閃頻防線靠 A (/path/ 無 auto-redirect，v1.2.7 已落實) + B (setTimeout fallback 6s + fallback 內再次 currentUser check，v1.2.7 已落實) + C (_handleUnauthed 開頭 Firebase currentUser safety check，v1.2.7 已落實) 三層已足夠斷 loop；(2) INITIALIZATION 區塊新增「清舊 counter」邏輯——每次 app.html 啟動都顯式 `sessionStorage.removeItem('_unauthedRedirectCnt'/'_unauthedRedirectTs')`，讓 v1.2.7/v1.2.8 期間卡住的用戶 tab 自動 unstuck · 版號 v1.2.8→v1.2.9 -->
