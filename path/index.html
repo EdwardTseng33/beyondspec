@@ -622,7 +622,7 @@ body[data-dir="A"] .A{display:block}
             <li>報價提案 · 市場探測</li>
             <li>會議紀錄 · 客戶無上限</li>
           </ul>
-          <a href="#" onclick="bpLogin('apply-starter');return false;" class="p-cta" style="text-decoration:none;cursor:pointer">申請 Starter</a>
+          <a href="#" onclick="bpOpenApply('starter');return false;" class="p-cta" style="text-decoration:none;cursor:pointer">申請 Starter</a>
         </div>
         <div class="A-price feat">
           <div class="pbadge">2-5 人小團隊</div>
@@ -636,7 +636,7 @@ body[data-dir="A"] .A{display:block}
             <li>收款 · 文件庫 · AI 儀表板</li>
             <li>團隊 5 人 + Claude MCP</li>
           </ul>
-          <a href="#" onclick="bpLogin('apply-pro');return false;" class="p-cta" style="text-decoration:none;cursor:pointer">申請 Pro</a>
+          <a href="#" onclick="bpOpenApply('pro');return false;" class="p-cta" style="text-decoration:none;cursor:pointer">申請 Pro</a>
         </div>
         <div class="A-price">
           <h4>ENTERPRISE</h4>
@@ -648,7 +648,7 @@ body[data-dir="A"] .A{display:block}
             <li>團隊 20 人 · 管理員</li>
             <li>API 整合 · 專屬 CSM</li>
           </ul>
-          <a href="mailto:edwardt0303@gmail.com" class="p-cta" style="text-decoration:none">聯繫我們</a>
+          <a href="#" onclick="bpOpenApply('enterprise');return false;" class="p-cta" style="text-decoration:none;cursor:pointer">聯繫我們</a>
         </div>
       </div>
     </div>
@@ -681,5 +681,132 @@ body[data-dir="A"] .A{display:block}
 </div>
 
 
+<!-- v1.2.6: Early-bird Application Modal -->
+<style>
+.bp-apply-overlay{position:fixed;inset:0;background:rgba(14,14,26,.55);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px}
+.bp-apply-overlay.on{display:flex}
+.bp-apply-card{background:#fff;border-radius:18px;padding:32px 28px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:bpApplyIn .28s cubic-bezier(.4,0,.2,1)}
+@keyframes bpApplyIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.bp-apply-card h3{font-size:20px;font-weight:800;color:#0E0E1A;margin:0 0 4px;letter-spacing:-.3px}
+.bp-apply-card .bp-apply-sub{font-size:13px;color:#4C4C66;margin:0 0 20px;line-height:1.5}
+.bp-apply-card label{display:block;font-size:12px;font-weight:600;color:#0E0E1A;margin:12px 0 6px}
+.bp-apply-card label .req{color:#D94462;margin-left:2px}
+.bp-apply-card input,.bp-apply-card textarea{width:100%;padding:10px 12px;font-size:14px;border:1px solid #E5E5EE;border-radius:8px;font-family:inherit;color:#0E0E1A;background:#FAFAFC;transition:border-color .15s;box-sizing:border-box}
+.bp-apply-card input:focus,.bp-apply-card textarea:focus{outline:none;border-color:#7C5CFC;background:#fff}
+.bp-apply-card textarea{min-height:72px;resize:vertical}
+.bp-apply-card .bp-apply-btns{display:flex;gap:10px;margin-top:22px;justify-content:flex-end}
+.bp-apply-card .bp-btn-cancel{padding:10px 18px;font-size:13px;font-weight:600;color:#4C4C66;background:#F4F4F8;border:none;border-radius:8px;cursor:pointer}
+.bp-apply-card .bp-btn-cancel:hover{background:#E8E8EF}
+.bp-apply-card .bp-btn-submit{padding:10px 22px;font-size:13px;font-weight:700;color:#fff;background:#0E0E1A;border:none;border-radius:8px;cursor:pointer;transition:all .15s}
+.bp-apply-card .bp-btn-submit:hover{background:#7C5CFC;transform:translateY(-1px);box-shadow:0 6px 18px rgba(124,92,252,.28)}
+.bp-apply-card .bp-btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.bp-apply-plan-tag{display:inline-block;padding:3px 10px;font-size:11px;font-weight:700;letter-spacing:.08em;border-radius:999px;background:rgba(124,92,252,.1);color:#7C5CFC;margin-bottom:6px}
+.bp-apply-toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#0E0E1A;color:#fff;padding:14px 22px;border-radius:10px;font-size:14px;font-weight:500;z-index:10000;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;max-width:90vw}
+.bp-apply-toast.on{opacity:1;transform:translateX(-50%) translateY(-8px)}
+</style>
+
+<div class="bp-apply-overlay" id="bpApplyModal" onclick="if(event.target===this)bpCloseApply()">
+  <div class="bp-apply-card" role="dialog" aria-labelledby="bpApplyTitle">
+    <div class="bp-apply-plan-tag" id="bpApplyPlanTag">EARLY BIRD</div>
+    <h3 id="bpApplyTitle">申請早鳥名單</h3>
+    <p class="bp-apply-sub" id="bpApplySub">留下基本資料，我們收到申請後會親自回覆你。</p>
+    <form id="bpApplyForm" onsubmit="return bpSubmitApply(event)">
+      <label>公司 / 團隊名稱 <span class="req">*</span></label>
+      <input type="text" name="company" required maxlength="80" placeholder="例：規格外工作室">
+      <label>職稱 <span class="req">*</span></label>
+      <input type="text" name="title" required maxlength="60" placeholder="例：創辦人 / 產品負責人">
+      <label>姓名 <span class="req">*</span></label>
+      <input type="text" name="name" required maxlength="40" placeholder="你的稱呼">
+      <label>Email <span class="req">*</span></label>
+      <input type="email" name="email" required maxlength="120" placeholder="name@example.com">
+      <label>想在 BeyondPath 獲得什麼幫助？（選填）</label>
+      <textarea name="needs" maxlength="500" placeholder="例：想用 PATH 診斷驗證產品方向、需要報價/收款閉環..."></textarea>
+      <div class="bp-apply-btns">
+        <button type="button" class="bp-btn-cancel" onclick="bpCloseApply()">取消</button>
+        <button type="submit" class="bp-btn-submit" id="bpApplySubmitBtn">送出申請</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="bp-apply-toast" id="bpApplyToast"></div>
+
+<script>
+(function(){
+  var PLAN_META = {
+    starter:    { tag:"STARTER · EARLY BIRD", title:"申請 Starter 早鳥名單", sub:"早鳥申請確認後，我們會手動開通 Starter 方案。" },
+    pro:        { tag:"PRO · EARLY BIRD",     title:"申請 Pro 早鳥名單",     sub:"早鳥申請確認後，我們會手動開通 Pro 方案。" },
+    enterprise: { tag:"ENTERPRISE",           title:"聯繫 Enterprise 方案",  sub:"依需求報價。留下資料，我們會親自聯繫討論合作。" }
+  };
+  window.bpOpenApply = function(plan){
+    plan = plan || "starter";
+    var m = PLAN_META[plan] || PLAN_META.starter;
+    document.getElementById("bpApplyPlanTag").textContent = m.tag;
+    document.getElementById("bpApplyTitle").textContent = m.title;
+    document.getElementById("bpApplySub").textContent = m.sub;
+    var form = document.getElementById("bpApplyForm");
+    form.dataset.plan = plan;
+    form.reset();
+    document.getElementById("bpApplyModal").classList.add("on");
+    document.body.style.overflow = "hidden";
+    setTimeout(function(){ var i = form.querySelector("input[name=\"company\"]"); if(i) i.focus(); }, 100);
+  };
+  window.bpCloseApply = function(){
+    document.getElementById("bpApplyModal").classList.remove("on");
+    document.body.style.overflow = "";
+  };
+  function bpToast(msg, ms){
+    var t = document.getElementById("bpApplyToast");
+    t.textContent = msg;
+    t.classList.add("on");
+    clearTimeout(t._tm);
+    t._tm = setTimeout(function(){ t.classList.remove("on"); }, ms || 3800);
+  }
+  window.bpSubmitApply = function(e){
+    e.preventDefault();
+    var form = e.target;
+    var btn = document.getElementById("bpApplySubmitBtn");
+    btn.disabled = true; btn.textContent = "送出中...";
+    var data = {
+      plan: form.dataset.plan || "starter",
+      company: form.company.value.trim(),
+      title: form.title.value.trim(),
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      needs: form.needs.value.trim(),
+      submittedAt: new Date().toISOString(),
+      source: "landing",
+      userAgent: navigator.userAgent.slice(0,120)
+    };
+    try {
+      var list = JSON.parse(localStorage.getItem("bp_pending_applications") || "[]");
+      list.push(data);
+      localStorage.setItem("bp_pending_applications", JSON.stringify(list));
+    } catch(_e){}
+    var webhook = window.BP_APPLY_WEBHOOK || localStorage.getItem("BP_APPLY_WEBHOOK");
+    var postP = webhook ? fetch(webhook, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data) }).catch(function(){}) : Promise.resolve();
+    var subj = encodeURIComponent("[BeyondPath 早鳥申請] " + data.plan.toUpperCase() + " — " + data.name);
+    var body = encodeURIComponent(
+      "方案：" + data.plan.toUpperCase() + " 早鳥\n" +
+      "公司 / 團隊：" + data.company + "\n" +
+      "職稱：" + data.title + "\n" +
+      "姓名：" + data.name + "\n" +
+      "Email：" + data.email + "\n" +
+      "需求：" + (data.needs || "（選填未填）") + "\n" +
+      "提交時間：" + data.submittedAt + "\n" +
+      "來源：" + data.source
+    );
+    try { window.open("mailto:edwardt0303@gmail.com?subject=" + subj + "&body=" + body, "_blank"); } catch(_e){}
+    postP.finally(function(){
+      btn.disabled = false; btn.textContent = "送出申請";
+      bpCloseApply();
+      bpToast("已收到你的申請！我們會在 1-2 個工作日內回覆你。", 4500);
+    });
+    return false;
+  };
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && document.getElementById("bpApplyModal").classList.contains("on")) bpCloseApply();
+  });
+})();
+</script>
 </body>
 </html>
