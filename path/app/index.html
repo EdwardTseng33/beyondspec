@@ -550,6 +550,8 @@ html,body{width:100%;height:100%;font-family:'Inter',-apple-system,system-ui,san
 }
 #sidebar.expanded ~ #main{margin-left:248px}
 #content{max-width:1400px;margin:0 auto;padding:24px 36px}
+/* v1.3.5: 任務看板寬模式 — 突破 1400px 限制，讓 kanban 用滿 main 可用寬度，預設顯示 4.5-5 個狀態欄位 */
+body.kanban-wide-mode #content{max-width:none;padding:20px 24px}
 
 /* ========================================
    PAGE HEADER — search + right icons
@@ -2915,7 +2917,8 @@ canvas{display:block;margin:0 auto 24px}
    - flex:1 1 0 + 無 max-width：欄少時均等拉伸填滿、欄多時從 min-width 觸發 overflow 捲動 */
 .kanban-board{display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;padding-bottom:16px;min-height:calc(100vh - 220px);align-items:flex-start;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
 /* v1.0.7: min-width 下限 280px——保證 title 單行至少容納 16 個中文字（14px × 16 ≈ 224 + 卡片 padding 32 + priority dot 12 + gap 8 ≈ 276）*/
-.kanban-col{flex:1 1 0;min-width:max(calc((100vw - 280px) / 4.5), 280px);background:var(--bg-card);border-radius:var(--r-lg);display:flex;flex-direction:column;max-height:calc(100vh - 220px);box-shadow:var(--shadow-sm)}
+/* v1.3.5: 任務看板 min-width 公式調整——分母從 4.5 改 5.2，讓 1440-1600px 螢幕也能顯示 4.5-5 欄（配合 body.kanban-wide-mode 解除 1400 max-width），最低 260px 保證 title 15 字單行 */
+.kanban-col{flex:1 1 0;min-width:max(calc((100vw - 160px) / 5.2), 260px);background:var(--bg-card);border-radius:var(--r-lg);display:flex;flex-direction:column;max-height:calc(100vh - 220px);box-shadow:var(--shadow-sm)}
 /* Custom scrollbar track（復原 v1.0.5 前樣式）*/
 .kanban-board::-webkit-scrollbar{height:6px}
 .kanban-board::-webkit-scrollbar-track{background:transparent;margin:0 8px}
@@ -5064,7 +5067,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.4</div>
+        <div class="sidebar-version">v1.3.5</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -7183,6 +7186,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       renderRoadmap();
       return;
     }
+
+    // v1.3.5: 任務看板用寬模式（kanban 解除 #content max-width:1400px 限制，顯示 4.5-5 欄）
+    document.body.classList.toggle('kanban-wide-mode', moduleId === 'biz-tasks');
 
     // biz-tasks → vanilla JS kanban (strict cycle filter, not React)
     if (moduleId === 'biz-tasks') {
@@ -30804,6 +30810,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.3.5 · 任務看板寬模式（愛德華回報：「狀態欄位的預設與全展開為至少能顯示 4.5-5 個狀態目前是 3.3 個左右」）：Chrome MCP 實測 2011px viewport + sidebar 80px 收合下，`#content` 被 `max-width:1400px` + margin auto 限制在 1400px 居中，扣 padding 後 kanban-board 只剩 1328px；`.kanban-col min-width` 公式 `(100vw-280)/4.5` 在大螢幕算 384px → 1328/384 ≈ 3.45 欄（愛德華看到的 3.3）。修法：(1) 新 CSS rule `body.kanban-wide-mode #content{max-width:none;padding:20px 24px}` 解除寬度限制；(2) renderModule 開頭 `body.classList.toggle('kanban-wide-mode', moduleId === 'biz-tasks')` 進出任務看板自動切換 wide mode，其他頁面維持 1400 max-width 原設計；(3) `.kanban-col min-width` 公式改 `(100vw-160)/5.2` 最低 260px——分母從 4.5 加大到 5.2 讓大螢幕能塞更多欄；預留 160px 給 sidebar 收合(80)+padding(48)+margin buffer(32)；下限 260px 仍保證 title 15 字單行 · 版號 v1.3.4→v1.3.5 -->
 <!-- v1.3.4 · 登入 polling 加速 + 全局 debug trace（v1.3.3 polling 2 秒間隔 + 無 trace，Chrome MCP 測試看 appDisplay 一直 "none"）：(1) polling interval 從 2000ms 改 500ms（總 wait cap 30s 不變，只是 check 更密）；(2) SDK ready 時先做 immediate currentUser check——如果 Firebase 已有 user（IndexedDB 已 resolve），不等 onAuthStateChanged fire 就直接 restore + showDashboard；(3) 加 `window._authTrace` global debug array 記錄每一步 timestamp 與狀態（polls / sdk-ready / user-resolved / onAuthStateChanged / showDashboard 執行結果），讓後續 Chrome MCP 可以 inspect trace 看卡在哪一步；(4) `window._authBoot` 狀態旗標讓 inner/outer polling 共享 userResolved 狀態，避免 double-fire · 版號 v1.3.3→v1.3.4 (DEBUG instrumented) -->
 <!-- v1.3.3 · 登入不了真正的 root cause（Chrome MCP 再測發現）——app.html 的 auth IIFE 執行時 Firebase SDK 還沒載入：script 順序上 Firebase SDK 是 async 載入 at end of `</body>`（line 30200+），但 auth IIFE 在 body inline script 更早跑，IIFE 裡 `typeof firebase !== 'undefined'` 判定為 false → 走 else branch → state.isLoggedIn=false → `_handleUnauthed()` 立刻 redirect `/path/`。這才是真正的 bug，v1.3.2 的 polling 只在 `firebase defined` branch 有效，else branch 立即 redirect 沒救。修法：(1) else branch 改成 polling `typeof firebase !== 'undefined'`，每 2 秒 check，最多 30 秒；(2) Firebase SDK 一旦 ready，重新註冊 onAuthStateChanged listener + polling currentUser safety；(3) 30 秒真沒載入 → fallback localStorage state。這套等同於 delay 2–6 秒讓 SDK 載入再決定 redirect，正常網速下使用者根本無感，弱網也只是略延遲，但絕不會錯誤 redirect 已登入用戶 · 版號 v1.3.2→v1.3.3 (PATCH: 登入不了 chrome MCP 實測根治) -->
 <!-- v1.3.2 · 登入不了的真正 root cause（Chrome MCP 實測證實）——setTimeout(6000) fallback 搶在 Firebase onAuthStateChanged 之前觸發：Firebase SDK 從 IndexedDB 讀 auth state 需要時間（特別是 CDN 冷啟、弱網路），setTimeout 6 秒觸發時 `firebase.auth().currentUser` 仍是 null（auth state 還沒 resolve），即使 IndexedDB 其實已有 cached user session。結果：有登入的用戶訪問 /path/app/ 被錯誤 _handleUnauthed → redirect /path/。修法：(1) 移除 setTimeout fallback 的 premature redirect；(2) 改用 polling interval：每 2 秒 check `firebase.auth().currentUser`，有就 instant restore + showDashboard，最多 poll 10 次（20 秒）後才 fall back 到 state.isLoggedIn / _handleUnauthed；(3) 正常情況 onAuthStateChanged 會先 fire（Firebase 內部從 IndexedDB 讀完就會 fire listener），polling 只是保險——若 Firebase listener 真的卡住，polling 每 2 秒 check 一次 currentUser 可以 recover · 版號 v1.3.1→v1.3.2 (PATCH: bug fix for 登入不了 Chrome MCP 實測 root cause) -->
