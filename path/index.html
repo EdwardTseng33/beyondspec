@@ -289,21 +289,15 @@ body[data-dir="A"] .A{display:block}
   var firebaseConfig = {apiKey:"AIzaSyCY8sF0PZc_BGhp3sgZpx64tZnDyBwa6Tg",authDomain:"beyond-business-ca9da.firebaseapp.com",projectId:"beyond-business-ca9da",storageBucket:"beyond-business-ca9da.firebasestorage.app",messagingSenderId:"233160072382",appId:"1:233160072382:web:57cfbc089301d30cd912ef",measurementId:"G-DVBEPK5DJK"};
   try { firebase.initializeApp(firebaseConfig); } catch(e) { console.warn('[Landing] firebase init:', e.message); }
 
-  // v1.2.5: Auto-redirect if already logged in, but respect "just logged out" flag to prevent flash-loop
-  try {
-    firebase.auth().onAuthStateChanged(function(user){
-      if (!user) return;
-      try {
-        var ts = parseInt(sessionStorage.getItem('_justLoggedOut') || '0', 10);
-        if (ts && Date.now() - ts < 10000) {
-          // User logged out within last 10s — don't auto-redirect back to app, they want to see landing
-          sessionStorage.removeItem('_justLoggedOut');
-          return;
-        }
-      } catch(e){}
-      window.location.replace('/path/app/');
-    });
-  } catch(e) { console.warn('[Landing] auth listener:', e.message); }
+  // v1.2.7: auto-redirect REMOVED to eliminate flash-loop risk.
+  // Previous logic redirected logged-in users to /path/app/, but if app.html's
+  // Firebase CDN was slow, it would timeout and redirect back here, looping.
+  // Users returning to /path/ now must click "登入" — bpLogin() does an
+  // instant signInWithPopup which completes immediately for already-signed-in
+  // users (Google auto-picks the existing session), then redirects to /path/app/.
+  // Trade-off: returning users see the landing for a moment before clicking
+  // login, but flash-loop is impossible. We may add a non-blocking "welcome
+  // back" toast + "進入 app" button in a future version.
 
   window.bpLogin = function(origin) {
     var btn = event && event.currentTarget;

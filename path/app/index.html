@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.2.6</div>
+        <div class="sidebar-version">v1.2.7</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -30151,39 +30151,36 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
   loadState();
   _checkCreditReset(); // Monthly credit reset check
 
-  // Firebase Auth state listener — auto-login returning users
+  // v1.2.7: Firebase Auth state listener — robustness pass (fixes flash-loop between /path/ and /path/app/)
   if (typeof firebase !== 'undefined' && firebase.auth && !firebase._mock) {
     var _authHandled = false;
     firebase.auth().onAuthStateChanged(function(user) {
       if (_authHandled) return;
       _authHandled = true;
       if (user) {
-        // Returning Firebase user — restore session
-        state.isLoggedIn = true;
-        state.user = {
-          name: user.displayName || 'User',
-          email: user.email || '',
-          avatar: (user.displayName || 'U').charAt(0).toUpperCase(),
-          uid: user.uid,
-          photoURL: user.photoURL || ''
-        };
-        state.plan = state.plan || 'free';
-        saveState();
-        _pullFromFirestore(function() {
-          showDashboard();
-        });
+        _restoreSessionFromFirebase(user);
+        _pullFromFirestore(function() { showDashboard(); });
       } else if (state.isLoggedIn) {
         showDashboard();
       } else {
         _handleUnauthed();
       }
     });
+    // v1.2.7: Fallback timeout extended 3s → 6s (Firebase CDN can be slow on weak network; short timeout triggered premature _handleUnauthed redirect which looped with /path/ auto-redirect)
     setTimeout(function() {
       if (!_authHandled) {
         _authHandled = true;
-        if (state.isLoggedIn) { showDashboard(); } else { _handleUnauthed(); }
+        // Extra defense: before redirecting, check firebase.auth().currentUser one more time
+        if (firebase.auth().currentUser) {
+          _restoreSessionFromFirebase(firebase.auth().currentUser);
+          showDashboard();
+        } else if (state.isLoggedIn) {
+          showDashboard();
+        } else {
+          _handleUnauthed();
+        }
       }
-    }, 3000);
+    }, 6000);
   } else {
     if (state.isLoggedIn) {
       showDashboard();
@@ -30192,12 +30189,49 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     }
   }
 
-  // v1.1.2: 統一未登入處理
+  // v1.2.7: 將 Firebase user 還原成 app state（避免多處重複邏輯）
+  function _restoreSessionFromFirebase(user) {
+    state.isLoggedIn = true;
+    state.user = {
+      name: user.displayName || 'User',
+      email: user.email || '',
+      avatar: (user.displayName || 'U').charAt(0).toUpperCase(),
+      uid: user.uid,
+      photoURL: user.photoURL || ''
+    };
+    state.plan = state.plan || 'free';
+    saveState();
+  }
+
+  // v1.2.7: 統一未登入處理 — 加 Firebase currentUser 最後檢查 + anti-loop counter 防閃頻
   function _handleUnauthed() {
-    // v1.2.1: 未登入一律 redirect 回 marketing 首頁 /path/（登入流程完全搬到 /path/ Firebase OAuth）
+    // 1) Firebase 有 currentUser → 代表 state 跟 Firebase 不同步，修復 state 進 dashboard（避免閃頻）
     try {
-      if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash);
+      if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+        _restoreSessionFromFirebase(firebase.auth().currentUser);
+        showDashboard();
+        return;
+      }
     } catch(e){}
+
+    // 2) Anti-loop：10 秒內已 redirect 2 次 = 進入 loop，停下來顯示錯誤頁讓用戶手動處理
+    try {
+      var now = Date.now();
+      var rTs = parseInt(sessionStorage.getItem('_unauthedRedirectTs') || '0', 10);
+      var rCnt = (now - rTs < 10000) ? parseInt(sessionStorage.getItem('_unauthedRedirectCnt') || '0', 10) + 1 : 1;
+      sessionStorage.setItem('_unauthedRedirectTs', now.toString());
+      sessionStorage.setItem('_unauthedRedirectCnt', rCnt.toString());
+      if (rCnt >= 2) {
+        console.warn('[Auth] Redirect loop detected (count=' + rCnt + '), breaking');
+        sessionStorage.removeItem('_unauthedRedirectCnt');
+        sessionStorage.removeItem('_unauthedRedirectTs');
+        document.body.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAFAFC;font-family:\'Inter\',\'Noto Sans TC\',sans-serif;padding:20px"><div style="max-width:420px;text-align:center"><div style="font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:16px"><span style="color:#0E0E1A">Beyond</span><span style="color:#7C5CFC">Path</span></div><h2 style="font-size:20px;font-weight:700;color:#0E0E1A;margin:0 0 12px">登入狀態需重新初始化</h2><p style="font-size:14px;color:#4C4C66;line-height:1.6;margin:0 0 24px">系統偵測到登入循環，已自動中止以保護你的體驗。請回到首頁重新登入，或清除瀏覽器快取。</p><a href="/path/" style="display:inline-block;padding:12px 28px;background:#7C5CFC;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">回到首頁</a></div></div>';
+        return;
+      }
+    } catch(e){}
+
+    // 3) 真的沒登入 → redirect /path/
+    try { if (window.location.hash) sessionStorage.setItem('_pendingHash', window.location.hash); } catch(e){}
     window.location.replace('../');
   }
 })();
@@ -30700,6 +30734,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.2.7 · /path/ ↔ /path/app/ 閃頻 redirect-loop 根治（愛德華 prod 再次回報：「還是會喔，會在 /path 與 /path/app 這兩個連結反覆的一直跳」）：v1.2.5 只修了「剛登出」場景的閃頻，正常訪問（Firebase CDN 慢時）仍會 loop——根因：app.html auth flow 的 3 秒 setTimeout fallback 觸發時 state.isLoggedIn=false → _handleUnauthed → redirect /path/ → /path/ 的 auto-redirect 看到 Firebase IndexedDB cached user → redirect /path/app/ → app.html 又 Firebase 慢 → 3s timeout → _handleUnauthed → redirect /path/ → **無限閃頻**。根治措施：(1) **/path/index.html 移除 onAuthStateChanged auto-redirect**——根本不 redirect，回訪用戶需手動點「登入」（bpLogin() 對已 Google-authed 用戶是 instant complete，體感差異小、但絕對不會 loop）；(2) app.html setTimeout fallback 從 3s 延長到 6s（減少誤觸發）+ fallback 觸發前再次 check `firebase.auth().currentUser`，有 user 直接 restoreSession + showDashboard；(3) `_handleUnauthed()` 先做 Firebase currentUser safety check——如果有 Firebase user 但 state.isLoggedIn=false，代表 state mismatch，修復 state 進 dashboard 不再 redirect；(4) 加 anti-loop counter：`sessionStorage._unauthedRedirectCnt`，10 秒內 redirect 2 次 = 偵測到 loop，停下來顯示「登入狀態需重新初始化」錯誤頁 + 「回到首頁」手動按鈕，打破無限迴圈；(5) 新增 `_restoreSessionFromFirebase(user)` helper 把重複的 state 還原邏輯集中 · 版號 v1.2.6→v1.2.7 -->
 <!-- v1.2.6 · 早鳥申請 modal（/path/ landing）上線 + Apps Script 後端設定指南落檔（愛德華需求：「landingpage 跟系統線上的申請 Starter 與 Pro 跟企業帳號先設定彈出一個編輯窗給他們填個人資料如公司名稱、職稱、姓名、信箱、想在系統獲得什麼幫助(選填)，然後有人申請件信給我，與同步紀錄一個 Google Sheet」）：(1) /path/index.html 新增 `.bp-apply-overlay` modal + `window.bpOpenApply(plan)`/`bpCloseApply()`/`bpSubmitApply()`：5 欄位（公司*、職稱*、姓名*、Email*、需求選填 textarea），ESC 關閉、click-outside 關閉、動畫 cubic-bezier；(2) 3 處定價 CTA 從 `bpLogin`/`mailto` 改 `bpOpenApply`：申請 Starter → `bpOpenApply('starter')`、申請 Pro → `bpOpenApply('pro')`、Enterprise「聯繫我們」→ `bpOpenApply('enterprise')`；PLAN_META map 給 3 種方案各自 tag/title/sub 文案；(3) 提交三軌：localStorage `bp_pending_applications` 永久備份 + `window.BP_APPLY_WEBHOOK`/`localStorage.BP_APPLY_WEBHOOK` Apps Script POST（no-cors fire-and-forget）+ `mailto:edwardt0303@gmail.com` 預填主旨「[BeyondPath 早鳥申請] PLAN · NAME」與完整 body，即使後端沒設定愛德華也立即收信；(4) `projects/beyondpath/ops/apply-form-setup.md` 完整 Apps Script 部署指南（Sheet 欄位 / doPost 程式碼 / Web App 部署 / URL 灌入的 2 種方式 / 測試步驟 / 除錯 / 資安注意）；(5) app.html 內部 upgrade CTA 留 v1.2.7 同步（此版只做 landing 對外入口優先）· 版號 v1.2.5→v1.2.6 -->
 <!-- v1.2.5 · 登入頁閃頻 redirect-loop bug 修復（愛德華 prod 回報：「登入頁好像壞掉了，一直閃頻」）：根因——v1.2.1 /path/index.html 加的 `onAuthStateChanged` auto-redirect 跟 app.html `logout()` + `_handleUnauthed()` 產生循環：登出 → showLanding → redirect `/path/` → Firebase auth state 還未 resolve、依然認為 user logged in → onAuthStateChanged 觸發 → redirect 回 `/path/app/` → 但 `state.isLoggedIn=false` → _handleUnauthed redirect 回 `/path/` → 無限閃頻。修法：(1) `logout()` 改為先設 `sessionStorage._justLoggedOut = Date.now()` flag、再 `firebase.auth().signOut().finally(showLanding)`——確保 Firebase 登出完成才 redirect；(2) `/path/` auth listener 加 flag check：10 秒內剛登出就 skip auto-redirect；(3) showToast 放到 signOut.finally 裡避免在 redirect 之前的空檔消失 · 版號 v1.2.4→v1.2.5 -->
 <!-- v1.2.4 · 首頁近期動態移除（補 v1.2.3 sidebar bump 遺漏）+ landing logo 點擊回頂部：(1) 首頁「近期動態」aside-card 整塊移除（5,438 字元）——愛德華回饋「報告生產多了會被壓下去看不到，UX 有問題」。原本讀 castle_xxx_* 舊 key，跟愛德華帳號的 bp_* key 不同源所以恆為空狀態，empty block 又佔 36px padding + 48px icon，報告產出後變視覺盲區。首頁左側 home-main 結構簡化為 welcome-banner → 日期+統計 row → reportsHTML；(2) Landing page (/path/index.html) nav logo 加 `onclick` scroll-to-top（`window.scrollTo({top:0,behavior:'smooth'})`）——愛德華指令「landingpage 的 logo 點擊要能回到最上方」；(3) 前一 commit v1.2.3（Recent Activity 刪除）因 Edit tool file-state race 沒 apply sidebar bump 到 v1.2.3，此版補正跳到 v1.2.4 · 版號 v1.2.2→v1.2.4 -->
