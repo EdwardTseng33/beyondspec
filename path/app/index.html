@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.2</div>
+        <div class="sidebar-version">v1.3.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -30203,11 +30203,51 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
       }
     }, 2000);
   } else {
-    if (state.isLoggedIn) {
-      showDashboard();
-    } else {
-      _handleUnauthed();
-    }
+    // v1.3.3: Firebase SDK 還沒載入（script tag 在 </body> 之後 async 載入）
+    // 不能立即 _handleUnauthed redirect，要等 Firebase 載好再跑 auth flow
+    var _sdkPoll = 0;
+    var _sdkInt = setInterval(function(){
+      _sdkPoll++;
+      if (typeof firebase !== 'undefined' && firebase.auth && !firebase._mock) {
+        clearInterval(_sdkInt);
+        // Firebase SDK ready — 重新跑 auth flow
+        var _authHandled2 = false;
+        firebase.auth().onAuthStateChanged(function(user) {
+          if (_authHandled2) return;
+          _authHandled2 = true;
+          if (user) {
+            _restoreSessionFromFirebase(user);
+            _pullFromFirestore(function() { showDashboard(); });
+          } else if (state.isLoggedIn) {
+            showDashboard();
+          } else {
+            _handleUnauthed();
+          }
+        });
+        // Polling safety 給 onAuthStateChanged（避免 listener 卡住）
+        var _poll2 = 0;
+        var _int2 = setInterval(function(){
+          if (_authHandled2) { clearInterval(_int2); return; }
+          _poll2++;
+          if (firebase.auth().currentUser) {
+            _authHandled2 = true;
+            clearInterval(_int2);
+            _restoreSessionFromFirebase(firebase.auth().currentUser);
+            _pullFromFirestore(function() { showDashboard(); });
+          } else if (_poll2 >= 10) {
+            clearInterval(_int2);
+            if (!_authHandled2) {
+              _authHandled2 = true;
+              if (state.isLoggedIn) { showDashboard(); } else { _handleUnauthed(); }
+            }
+          }
+        }, 2000);
+      } else if (_sdkPoll >= 15) {
+        // 30 秒 Firebase SDK 都沒載入 → CDN 真的壞掉，fallback localStorage
+        clearInterval(_sdkInt);
+        if (state.isLoggedIn) { showDashboard(); } else { _handleUnauthed(); }
+      }
+    }, 2000);
   }
 
   // v1.2.7: 將 Firebase user 還原成 app state（避免多處重複邏輯）
@@ -30744,6 +30784,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.3.3 · 登入不了真正的 root cause（Chrome MCP 再測發現）——app.html 的 auth IIFE 執行時 Firebase SDK 還沒載入：script 順序上 Firebase SDK 是 async 載入 at end of `</body>`（line 30200+），但 auth IIFE 在 body inline script 更早跑，IIFE 裡 `typeof firebase !== 'undefined'` 判定為 false → 走 else branch → state.isLoggedIn=false → `_handleUnauthed()` 立刻 redirect `/path/`。這才是真正的 bug，v1.3.2 的 polling 只在 `firebase defined` branch 有效，else branch 立即 redirect 沒救。修法：(1) else branch 改成 polling `typeof firebase !== 'undefined'`，每 2 秒 check，最多 30 秒；(2) Firebase SDK 一旦 ready，重新註冊 onAuthStateChanged listener + polling currentUser safety；(3) 30 秒真沒載入 → fallback localStorage state。這套等同於 delay 2–6 秒讓 SDK 載入再決定 redirect，正常網速下使用者根本無感，弱網也只是略延遲，但絕不會錯誤 redirect 已登入用戶 · 版號 v1.3.2→v1.3.3 (PATCH: 登入不了 chrome MCP 實測根治) -->
 <!-- v1.3.2 · 登入不了的真正 root cause（Chrome MCP 實測證實）——setTimeout(6000) fallback 搶在 Firebase onAuthStateChanged 之前觸發：Firebase SDK 從 IndexedDB 讀 auth state 需要時間（特別是 CDN 冷啟、弱網路），setTimeout 6 秒觸發時 `firebase.auth().currentUser` 仍是 null（auth state 還沒 resolve），即使 IndexedDB 其實已有 cached user session。結果：有登入的用戶訪問 /path/app/ 被錯誤 _handleUnauthed → redirect /path/。修法：(1) 移除 setTimeout fallback 的 premature redirect；(2) 改用 polling interval：每 2 秒 check `firebase.auth().currentUser`，有就 instant restore + showDashboard，最多 poll 10 次（20 秒）後才 fall back 到 state.isLoggedIn / _handleUnauthed；(3) 正常情況 onAuthStateChanged 會先 fire（Firebase 內部從 IndexedDB 讀完就會 fire listener），polling 只是保險——若 Firebase listener 真的卡住，polling 每 2 秒 check 一次 currentUser 可以 recover · 版號 v1.3.1→v1.3.2 (PATCH: bug fix for 登入不了 Chrome MCP 實測 root cause) -->
 <!-- v1.3.1 · 修 v1.3.0 hotfix 引入的 syntax error（蘇菲用 Chrome MCP 實測 prod 發現 `window.bpLogin` 根本 undefined——整個 Firebase `<script>` block 因 SyntaxError 沒執行）：根因——v1.3.0 node script 注入 alert 訊息時，template literal 內 `\\n\\n` 本應轉義成 `\n\n`（escape sequence）寫入 HTML，但實際被解釋成 **真實 newline** 切斷 single-quoted string 橫跨 3 行，瀏覽器 parse 到 line 341 col 51 噴 `SyntaxError: Invalid or unexpected token`，後續 bpLogin / getRedirectResult fallback 全部沒載入。Fix：移除 `\\n\\n`，改用 `' (錯誤代碼：xxx)'` 行內追加括弧——同等資訊量，不需 escape，單行無風險 · 版號 v1.3.0→v1.3.1 (PATCH: hotfix v1.3.0 syntax error) -->
 <!-- v1.3.0 · 登入 popup-blocked fallback（蘇菲用 Chrome MCP 實測 prod 發現 Firebase 噴 `auth/popup-blocked` FirebaseError——某些瀏覽器設定 / 企業策略 / 第三方 cookie 擋住 Google OAuth popup，signInWithPopup 失敗後沒有備援路徑，所以愛德華才說「登入不了」）：(1) /path/index.html `bpLogin()` catch 區段加 popup-blocked 判斷——偵測到 `auth/popup-blocked` / `auth/operation-not-supported-in-this-environment` / `auth/web-storage-unsupported` 三種錯誤碼，自動 fallback 到 `firebase.auth().signInWithRedirect(provider)`（整頁跳 Google login → Google 跳回 /path/ 完成 session）；(2) 頁面初始化時加 `getRedirectResult()` handler——redirect flow 完成後回到 /path/，自動偵測 user 存在→清 anti-loop counter→redirect 到 /path/app/；(3) 其他錯誤 alert 顯示 `err.code` 方便日後排查；(4) 錯誤訊息用 `\\n\\n` 換行顯示錯誤代碼 · 版號 v1.2.9→v1.3.0 (MINOR: login flow 新增 redirect 路徑) -->
