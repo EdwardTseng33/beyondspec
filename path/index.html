@@ -305,6 +305,8 @@ body[data-dir="A"] .A{display:block}
     try {
       var provider = new firebase.auth.GoogleAuthProvider();
       firebase.auth().signInWithPopup(provider).then(function(result){
+        // v1.2.8: 清 anti-loop counter（登入成功 → app.html 不該觸發 redirect-loop break 誤擋）
+        try { sessionStorage.removeItem('_unauthedRedirectCnt'); sessionStorage.removeItem('_unauthedRedirectTs'); } catch(e){}
         // Success → go to app
         window.location.href = '/path/app/';
       }).catch(function(err){

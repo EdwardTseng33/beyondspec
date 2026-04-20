@@ -5064,7 +5064,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.2.7</div>
+        <div class="sidebar-version">v1.2.8</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -30201,6 +30201,11 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     };
     state.plan = state.plan || 'free';
     saveState();
+    // v1.2.8: 成功登入 → 清 anti-loop counter（否則 fresh login 會被誤擋：unauthed 1次 + login 後 fallback 1次 = counter 2 觸發 break）
+    try {
+      sessionStorage.removeItem('_unauthedRedirectCnt');
+      sessionStorage.removeItem('_unauthedRedirectTs');
+    } catch(e){}
   }
 
   // v1.2.7: 統一未登入處理 — 加 Firebase currentUser 最後檢查 + anti-loop counter 防閃頻
@@ -30734,6 +30739,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.2.8 · 登入流程 anti-loop counter 誤擋修復（愛德華 prod 回報：「不會閃頻了，但沒辦法登入」）：v1.2.7 anti-loop counter 在正常登入流程會誤觸發——步驟：(a) 用戶首次訪問 /path/app/（未登入）→ `_handleUnauthed` counter=1 → redirect /path/；(b) 用戶點登入 → Google OAuth popup → 成功 → redirect 回 /path/app/；(c) Firebase Auth state 在新 page load 慢 resolve（IndexedDB 讀 session 有 latency）→ `setTimeout(6000)` fallback 觸發前 counter 還是 1，但在 10 秒 window 內；(d) 若 fallback 再次觸發 `_handleUnauthed` → counter=2 達 threshold → **錯誤地顯示「登入狀態需重新初始化」錯誤頁**，用戶無法進 dashboard。根治：(1) app.html `_restoreSessionFromFirebase(user)` 內清 `sessionStorage._unauthedRedirectCnt` + `_unauthedRedirectTs` —— 任何一條路徑 restore session 成功都會清 counter；(2) /path/index.html `bpLogin()` 的 `.then(result)` 裡也清 counter，確保 signInWithPopup 成功當下就把之前的 unauthed redirect 標記清掉，即使下一個 page load 的 Firebase 慢，fallback 的 currentUser check 應該 catch 到 user —— 但雙保險，counter 也不會累積 · 版號 v1.2.7→v1.2.8 -->
 <!-- v1.2.7 · /path/ ↔ /path/app/ 閃頻 redirect-loop 根治（愛德華 prod 再次回報：「還是會喔，會在 /path 與 /path/app 這兩個連結反覆的一直跳」）：v1.2.5 只修了「剛登出」場景的閃頻，正常訪問（Firebase CDN 慢時）仍會 loop——根因：app.html auth flow 的 3 秒 setTimeout fallback 觸發時 state.isLoggedIn=false → _handleUnauthed → redirect /path/ → /path/ 的 auto-redirect 看到 Firebase IndexedDB cached user → redirect /path/app/ → app.html 又 Firebase 慢 → 3s timeout → _handleUnauthed → redirect /path/ → **無限閃頻**。根治措施：(1) **/path/index.html 移除 onAuthStateChanged auto-redirect**——根本不 redirect，回訪用戶需手動點「登入」（bpLogin() 對已 Google-authed 用戶是 instant complete，體感差異小、但絕對不會 loop）；(2) app.html setTimeout fallback 從 3s 延長到 6s（減少誤觸發）+ fallback 觸發前再次 check `firebase.auth().currentUser`，有 user 直接 restoreSession + showDashboard；(3) `_handleUnauthed()` 先做 Firebase currentUser safety check——如果有 Firebase user 但 state.isLoggedIn=false，代表 state mismatch，修復 state 進 dashboard 不再 redirect；(4) 加 anti-loop counter：`sessionStorage._unauthedRedirectCnt`，10 秒內 redirect 2 次 = 偵測到 loop，停下來顯示「登入狀態需重新初始化」錯誤頁 + 「回到首頁」手動按鈕，打破無限迴圈；(5) 新增 `_restoreSessionFromFirebase(user)` helper 把重複的 state 還原邏輯集中 · 版號 v1.2.6→v1.2.7 -->
 <!-- v1.2.6 · 早鳥申請 modal（/path/ landing）上線 + Apps Script 後端設定指南落檔（愛德華需求：「landingpage 跟系統線上的申請 Starter 與 Pro 跟企業帳號先設定彈出一個編輯窗給他們填個人資料如公司名稱、職稱、姓名、信箱、想在系統獲得什麼幫助(選填)，然後有人申請件信給我，與同步紀錄一個 Google Sheet」）：(1) /path/index.html 新增 `.bp-apply-overlay` modal + `window.bpOpenApply(plan)`/`bpCloseApply()`/`bpSubmitApply()`：5 欄位（公司*、職稱*、姓名*、Email*、需求選填 textarea），ESC 關閉、click-outside 關閉、動畫 cubic-bezier；(2) 3 處定價 CTA 從 `bpLogin`/`mailto` 改 `bpOpenApply`：申請 Starter → `bpOpenApply('starter')`、申請 Pro → `bpOpenApply('pro')`、Enterprise「聯繫我們」→ `bpOpenApply('enterprise')`；PLAN_META map 給 3 種方案各自 tag/title/sub 文案；(3) 提交三軌：localStorage `bp_pending_applications` 永久備份 + `window.BP_APPLY_WEBHOOK`/`localStorage.BP_APPLY_WEBHOOK` Apps Script POST（no-cors fire-and-forget）+ `mailto:edwardt0303@gmail.com` 預填主旨「[BeyondPath 早鳥申請] PLAN · NAME」與完整 body，即使後端沒設定愛德華也立即收信；(4) `projects/beyondpath/ops/apply-form-setup.md` 完整 Apps Script 部署指南（Sheet 欄位 / doPost 程式碼 / Web App 部署 / URL 灌入的 2 種方式 / 測試步驟 / 除錯 / 資安注意）；(5) app.html 內部 upgrade CTA 留 v1.2.7 同步（此版只做 landing 對外入口優先）· 版號 v1.2.5→v1.2.6 -->
 <!-- v1.2.5 · 登入頁閃頻 redirect-loop bug 修復（愛德華 prod 回報：「登入頁好像壞掉了，一直閃頻」）：根因——v1.2.1 /path/index.html 加的 `onAuthStateChanged` auto-redirect 跟 app.html `logout()` + `_handleUnauthed()` 產生循環：登出 → showLanding → redirect `/path/` → Firebase auth state 還未 resolve、依然認為 user logged in → onAuthStateChanged 觸發 → redirect 回 `/path/app/` → 但 `state.isLoggedIn=false` → _handleUnauthed redirect 回 `/path/` → 無限閃頻。修法：(1) `logout()` 改為先設 `sessionStorage._justLoggedOut = Date.now()` flag、再 `firebase.auth().signOut().finally(showLanding)`——確保 Firebase 登出完成才 redirect；(2) `/path/` auth listener 加 flag check：10 秒內剛登出就 skip auto-redirect；(3) showToast 放到 signOut.finally 裡避免在 redirect 之前的空檔消失 · 版號 v1.2.4→v1.2.5 -->
