@@ -339,9 +339,7 @@ body[data-dir="A"] .A{display:block}
         }
         if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
         console.error('[Landing] login error:', err);
-        alert('登入失敗：' + (err.message || '請稍後再試') + '
-
-錯誤代碼：' + (err.code || 'unknown'));
+        alert('登入失敗：' + (err.message || '請稍後再試') + ' (錯誤代碼：' + (err.code || 'unknown') + ')');
       });
     } catch(e) {
       if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
