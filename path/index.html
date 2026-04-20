@@ -288,6 +288,19 @@ body[data-dir="A"] .A{display:block}
 <script>
   var firebaseConfig = {apiKey:"AIzaSyCY8sF0PZc_BGhp3sgZpx64tZnDyBwa6Tg",authDomain:"beyond-business-ca9da.firebaseapp.com",projectId:"beyond-business-ca9da",storageBucket:"beyond-business-ca9da.firebasestorage.app",messagingSenderId:"233160072382",appId:"1:233160072382:web:57cfbc089301d30cd912ef",measurementId:"G-DVBEPK5DJK"};
   try { firebase.initializeApp(firebaseConfig); } catch(e) { console.warn('[Landing] firebase init:', e.message); }
+  // v1.3.0: handle signInWithRedirect callback (popup-blocked fallback returns here)
+  try {
+    firebase.auth().getRedirectResult().then(function(result){
+      if (result && result.user) {
+        try { sessionStorage.removeItem('_unauthedRedirectCnt'); sessionStorage.removeItem('_unauthedRedirectTs'); } catch(e){}
+        window.location.href = '/path/app/';
+      }
+    }).catch(function(err){
+      if (err && err.code && err.code !== 'auth/no-auth-event') {
+        console.warn('[Landing] getRedirectResult:', err.code, err.message);
+      }
+    });
+  } catch(e){ console.warn('[Landing] getRedirectResult setup:', e.message); }
 
   // v1.2.7: auto-redirect REMOVED to eliminate flash-loop risk.
   // Previous logic redirected logged-in users to /path/app/, but if app.html's
@@ -310,10 +323,25 @@ body[data-dir="A"] .A{display:block}
         // Success → go to app
         window.location.href = '/path/app/';
       }).catch(function(err){
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+          if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
+          return;
+        }
+        // v1.3.0: popup-blocked or 3rd-party-cookie-blocked → fallback to redirect flow
+        if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment' || err.code === 'auth/web-storage-unsupported') {
+          console.warn('[Landing] popup blocked (' + err.code + '), falling back to signInWithRedirect');
+          try {
+            firebase.auth().signInWithRedirect(provider);
+            return;
+          } catch(e2) {
+            console.error('[Landing] redirect fallback failed:', e2);
+          }
+        }
         if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
-        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
         console.error('[Landing] login error:', err);
-        alert('登入失敗：' + (err.message || '請稍後再試'));
+        alert('登入失敗：' + (err.message || '請稍後再試') + '
+
+錯誤代碼：' + (err.code || 'unknown'));
       });
     } catch(e) {
       if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
