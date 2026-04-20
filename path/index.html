@@ -832,6 +832,25 @@ body[data-dir="A"] .A{display:block}
     } catch(_e){}
     var webhook = window.BP_APPLY_WEBHOOK || localStorage.getItem("BP_APPLY_WEBHOOK");
     var postP = webhook ? fetch(webhook, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data) }).catch(function(){}) : Promise.resolve();
+    // v1.3.8: FormSubmit.co free backend — emails every submission to edwardt0303@gmail.com
+    // First submission triggers a one-time confirmation email to Edward; click link to activate
+    var formSubmitBody = new FormData();
+    formSubmitBody.append("_subject", "[BeyondPath 早鳥] " + data.plan.toUpperCase() + " · " + data.name);
+    formSubmitBody.append("_template", "table");
+    formSubmitBody.append("_captcha", "false");
+    formSubmitBody.append("方案", data.plan.toUpperCase() + " 早鳥");
+    formSubmitBody.append("公司", data.company);
+    formSubmitBody.append("職稱", data.title);
+    formSubmitBody.append("姓名", data.name);
+    formSubmitBody.append("Email", data.email);
+    formSubmitBody.append("需求", data.needs || "（選填未填）");
+    formSubmitBody.append("提交時間", data.submittedAt);
+    formSubmitBody.append("來源", data.source);
+    var formSubmitP = fetch("https://formsubmit.co/edwardt0303@gmail.com", {
+      method: "POST",
+      mode: "no-cors",
+      body: formSubmitBody
+    }).catch(function(){});
     var subj = encodeURIComponent("[BeyondPath 早鳥申請] " + data.plan.toUpperCase() + " — " + data.name);
     var body = encodeURIComponent(
       "方案：" + data.plan.toUpperCase() + " 早鳥\n" +
@@ -852,7 +871,7 @@ body[data-dir="A"] .A{display:block}
       if (card) {
         card.innerHTML = '<div class="bp-apply-plan-tag">' + (document.getElementById("bpApplyPlanTag")?.textContent || "EARLY BIRD") + '</div>' +
           '<h3>已收到你的申請</h3>' +
-          '<p class="bp-apply-sub">我們會在 <strong>1-2 個工作日內</strong>回覆到你留的 Email：<strong>' + data.email + '</strong></p>' +
+          '<p class="bp-apply-sub">已寄到我們信箱，我們會在 <strong>1-2 個工作日內</strong>回覆到 <strong>' + data.email + '</strong></p>' +
           '<div style="margin:16px 0;padding:14px 16px;background:#F4F4F8;border-radius:10px;font-size:13px;color:#4C4C66;line-height:1.6">' +
             '<strong>申請摘要</strong><br>' +
             '方案：' + data.plan.toUpperCase() + ' 早鳥<br>' +
