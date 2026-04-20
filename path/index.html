@@ -285,6 +285,7 @@ body[data-dir="A"] .A{display:block}
 <!-- v1.2.1: Firebase + Google OAuth (login fully in /path/, not /path/app/?login=1) -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
   var firebaseConfig = {apiKey:"AIzaSyCY8sF0PZc_BGhp3sgZpx64tZnDyBwa6Tg",authDomain:"beyond-business-ca9da.firebaseapp.com",projectId:"beyond-business-ca9da",storageBucket:"beyond-business-ca9da.firebasestorage.app",messagingSenderId:"233160072382",appId:"1:233160072382:web:57cfbc089301d30cd912ef",measurementId:"G-DVBEPK5DJK"};
   try { firebase.initializeApp(firebaseConfig); } catch(e) { console.warn('[Landing] firebase init:', e.message); }
@@ -832,25 +833,32 @@ body[data-dir="A"] .A{display:block}
     } catch(_e){}
     var webhook = window.BP_APPLY_WEBHOOK || localStorage.getItem("BP_APPLY_WEBHOOK");
     var postP = webhook ? fetch(webhook, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data) }).catch(function(){}) : Promise.resolve();
-    // v1.3.8: FormSubmit.co free backend — emails every submission to edwardt0303@gmail.com
-    // First submission triggers a one-time confirmation email to Edward; click link to activate
-    var formSubmitBody = new FormData();
-    formSubmitBody.append("_subject", "[BeyondPath 早鳥] " + data.plan.toUpperCase() + " · " + data.name);
-    formSubmitBody.append("_template", "table");
-    formSubmitBody.append("_captcha", "false");
-    formSubmitBody.append("方案", data.plan.toUpperCase() + " 早鳥");
-    formSubmitBody.append("公司", data.company);
-    formSubmitBody.append("職稱", data.title);
-    formSubmitBody.append("姓名", data.name);
-    formSubmitBody.append("Email", data.email);
-    formSubmitBody.append("需求", data.needs || "（選填未填）");
-    formSubmitBody.append("提交時間", data.submittedAt);
-    formSubmitBody.append("來源", data.source);
-    var formSubmitP = fetch("https://formsubmit.co/edwardt0303@gmail.com", {
-      method: "POST",
-      mode: "no-cors",
-      body: formSubmitBody
-    }).catch(function(){});
+    // v1.3.9: 直接寫 Firebase Firestore — 無三方服務，愛德華在 app 內 /admin 看申請清單
+    var firestoreP;
+    try {
+      var fs = firebase.firestore();
+      firestoreP = fs.collection("applications").add({
+        plan: data.plan,
+        company: data.company,
+        title: data.title,
+        name: data.name,
+        email: data.email,
+        needs: data.needs || "",
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        submittedAtIso: data.submittedAt,
+        source: data.source,
+        userAgent: data.userAgent,
+        status: "pending",
+        reviewedAt: null,
+        reviewedBy: null,
+        notes: ""
+      }).catch(function(err){
+        console.warn("[Apply] Firestore write failed:", err.message);
+      });
+    } catch(e) {
+      console.warn("[Apply] Firestore unavailable:", e.message);
+      firestoreP = Promise.resolve();
+    }
     var subj = encodeURIComponent("[BeyondPath 早鳥申請] " + data.plan.toUpperCase() + " — " + data.name);
     var body = encodeURIComponent(
       "方案：" + data.plan.toUpperCase() + " 早鳥\n" +
@@ -864,7 +872,7 @@ body[data-dir="A"] .A{display:block}
     );
     // v1.3.7: 移除自動 mailto（會導致某些瀏覽器白屏）— 改顯示確認訊息 + 可選「寄副本 Email」按鈕
     var _mailtoHref = "mailto:edwardt0303@gmail.com?subject=" + subj + "&body=" + body;
-    postP.finally(function(){
+    Promise.all([postP, firestoreP]).finally(function(){
       btn.disabled = false; btn.textContent = "送出申請";
       // Replace modal body with success state
       var card = document.querySelector(".bp-apply-card");
