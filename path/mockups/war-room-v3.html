@@ -62,23 +62,13 @@ body { font-family: 'Inter', 'Noto Sans TC', -apple-system, sans-serif; color: v
 .mode-badge { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--teal-glow); color: var(--teal); border-radius: var(--r-sm); font-size: 11px; font-weight: 600; }
 .mode-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
 
-/* Hero — Claude 今日洞察 */
+/* Hero — Claude 今日洞察（v4: 去漸層，實色；不用 border-left 色條 = 憲法禁忌） */
 .hero-insight {
-  background: linear-gradient(135deg, #FFFFFF 0%, #FAF9FF 100%);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--primary) 4%, #fff);
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, var(--border));
   border-radius: var(--r-xl);
   padding: 24px 28px;
   margin-bottom: 20px;
-  box-shadow: var(--shadow-md);
-  position: relative;
-  overflow: hidden;
-}
-.hero-insight::before {
-  content: '';
-  position: absolute;
-  top: 0; right: 0; width: 260px; height: 180px;
-  background: radial-gradient(circle at top right, var(--primary-glow), transparent 70%);
-  pointer-events: none;
 }
 .hero-insight-header {
   display: flex; align-items: center; gap: 8px;
@@ -88,7 +78,7 @@ body { font-family: 'Inter', 'Noto Sans TC', -apple-system, sans-serif; color: v
 .sparkle {
   display: inline-flex; align-items: center; justify-content: center;
   width: 22px; height: 22px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--primary-deep));
+  background: var(--primary);
   color: #fff;
 }
 .hero-quote {
@@ -107,7 +97,7 @@ body { font-family: 'Inter', 'Noto Sans TC', -apple-system, sans-serif; color: v
   cursor: pointer; font-family: inherit; transition: all .15s;
   display: inline-flex; align-items: center; gap: 6px;
 }
-.btn-primary:hover { background: var(--primary); transform: translateY(-1px); box-shadow: 0 6px 14px rgba(124,92,252,.25); }
+.btn-primary:hover { background: var(--primary); transform: translateY(-1px); }
 .btn-outline {
   padding: 10px 18px; border: 1px solid var(--border-strong); border-radius: var(--r-md);
   background: transparent; color: var(--ink-sec); font-size: 13px; font-weight: 600;
@@ -525,6 +515,119 @@ body { font-family: 'Inter', 'Noto Sans TC', -apple-system, sans-serif; color: v
         <div class="quote-amount">NT$ 68,500</div>
         <div class="quote-status st-sent">已送出</div>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══ DATA SOURCE AUDIT ═══ -->
+  <div style="margin-top:32px;padding:22px 24px;background:#FAFAFC;border:1px solid var(--border);border-radius:var(--r-lg)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <strong style="font-size:14px;color:var(--ink)">資料來源對照表</strong>
+      <span style="font-size:12px;color:var(--ink-muted)">— 這份 mockup 所有數字、對應的 localStorage / Firebase 來源與狀態</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border);color:var(--ink-muted);text-align:left">
+          <th style="padding:8px 10px;font-weight:600;width:22%">Mockup 區塊</th>
+          <th style="padding:8px 10px;font-weight:600;width:28%">資料來源</th>
+          <th style="padding:8px 10px;font-weight:600">計算邏輯</th>
+          <th style="padding:8px 10px;font-weight:600;width:12%;text-align:center">現況</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">Hero 今日戰情 quote</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">Claude market_insight node</code>（未建）</td>
+          <td style="padding:10px;color:var(--ink-sec)">根據當日 billing / quotes / tasks 逾期情境組文案；Q3 你決議「生成不準確先不上」</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--gold-glow);color:var(--gold);padding:3px 10px;border-radius:999px;font-weight:600">規則版</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">本月現金流</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_billing</code></td>
+          <td style="padding:10px;color:var(--ink-sec)">SUM(amount) WHERE status='paid' AND paidAt ≥ 月初</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--teal-glow);color:var(--teal);padding:3px 10px;border-radius:999px;font-weight:600">可讀</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">Pipeline 健康度 /100</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_quotes</code></td>
+          <td style="padding:10px;color:var(--ink-sec)">SUM(sent × 0.3 + accepted × 1.0)，normalize by 目標金額</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--gold-glow);color:var(--gold);padding:3px 10px;border-radius:999px;font-weight:600">需加 selector</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">異常提醒</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_billing</code>+<code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_quotes</code>+<code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_kanban_cards</code></td>
+          <td style="padding:10px;color:var(--ink-sec)">逾期款項 + 7 天無更新報價 + 任務逾期 的總數（同首頁今日聚焦）</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--teal-glow);color:var(--teal);padding:3px 10px;border-radius:999px;font-weight:600">可讀</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">本年度累計營收</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_billing</code></td>
+          <td style="padding:10px;color:var(--ink-sec)">SUM(amount) WHERE status='paid' AND paidAt ≥ 本年 1/1</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--teal-glow);color:var(--teal);padding:3px 10px;border-radius:999px;font-weight:600">可讀</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">近 6 月營收折線</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_billing</code></td>
+          <td style="padding:10px;color:var(--ink-sec)">GROUP BY paidAt 的 yyyy-MM，SUM(amount) 填近 6 月</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--teal-glow);color:var(--teal);padding:3px 10px;border-radius:999px;font-weight:600">可讀</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">去年同期虛線</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_billing</code></td>
+          <td style="padding:10px;color:var(--ink-sec)">同上但日期範圍 = 去年同 6 月；第一年使用者無去年資料則隱藏此線</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--gold-glow);color:var(--gold);padding:3px 10px;border-radius:999px;font-weight:600">條件顯示</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">YoY 百分比</td>
+          <td style="padding:10px">計算自本年/去年累計</td>
+          <td style="padding:10px;color:var(--ink-sec)">(本年累計 − 去年同期累計) ÷ 去年同期累計；去年為 0 → 顯示「—」</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--teal-glow);color:var(--teal);padding:3px 10px;border-radius:999px;font-weight:600">可算</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">報價漏斗 4 階段</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_quotes</code></td>
+          <td style="padding:10px;color:var(--ink-sec)">COUNT BY status：draft+sent+accepted（總報價）/ sent+accepted（已送出）/ accepted（簽回）/ billing paid（成交）</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--teal-glow);color:var(--teal);padding:3px 10px;border-radius:999px;font-weight:600">可讀</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">客戶分佈甜甜圈</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_contacts</code></td>
+          <td style="padding:10px;color:var(--ink-sec)">COUNT BY type (B2B/B2C/partner)——但目前客戶 schema 可能無 type 欄位</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--rose-glow);color:var(--rose);padding:3px 10px;border-radius:999px;font-weight:600">缺欄位</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">30 天活動熱度</td>
+          <td style="padding:10px">所有 <code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_*</code> updatedAt</td>
+          <td style="padding:10px;color:var(--ink-sec)">GROUP BY DATE(updatedAt) 過去 30 天，每日 COUNT；color 深淺 5 階</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--teal-glow);color:var(--teal);padding:3px 10px;border-radius:999px;font-weight:600">可讀</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">本週任務完成率</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_kanban_cards</code></td>
+          <td style="padding:10px;color:var(--ink-sec)">COUNT(done WHERE updatedAt 本週) / COUNT(all WHERE 本週活躍)</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--teal-glow);color:var(--teal);padding:3px 10px;border-radius:999px;font-weight:600">可讀</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px">近期報價 list × 4</td>
+          <td style="padding:10px"><code style="background:#E5E5EE;padding:1px 6px;border-radius:4px">bp_quotes</code></td>
+          <td style="padding:10px;color:var(--ink-sec)">ORDER BY createdAt DESC LIMIT 4；avatar 顏色 hash(clientName)</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--teal-glow);color:var(--teal);padding:3px 10px;border-radius:999px;font-weight:600">可讀</span></td>
+        </tr>
+        <tr>
+          <td style="padding:10px">+23% vs 上月（現金流）</td>
+          <td style="padding:10px">本月現金流 vs 上月</td>
+          <td style="padding:10px;color:var(--ink-sec)">(本月 − 上月) ÷ 上月；上月為 0 → 顯示「新增」</td>
+          <td style="padding:10px;text-align:center"><span style="background:var(--teal-glow);color:var(--teal);padding:3px 10px;border-radius:999px;font-weight:600">可算</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px dashed var(--border);font-size:12px;color:var(--ink-muted);line-height:1.7">
+      <strong style="color:var(--ink-sec)">現況標記：</strong>
+      <span style="color:var(--teal);font-weight:600">● 可讀</span> = 立即可從既有 bp_* localStorage 取；
+      <span style="color:var(--gold);font-weight:600">● 需加 selector / 條件顯示 / 規則版</span> = 小工程，v1.4 sprint 內可做；
+      <span style="color:var(--rose);font-weight:600">● 缺欄位</span> = 需先擴充 data schema（例如客戶加 type 欄位）才能顯示該區塊，v1.4 不做或用預設 B2B/B2C 假定值。
+      <br><br>
+      <strong style="color:var(--ink-sec)">新用戶空狀態：</strong>任何區塊在 COUNT=0 時顯示「—」slate 色 + 引導文案（例：「新增第一筆報價開始追蹤 Pipeline」），<strong>不顯示 rose/gold 紅黃色警告</strong>——避免 v1.1.3 信任殺手（愛德華痛點）復發。
     </div>
   </div>
 
