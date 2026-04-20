@@ -843,11 +843,32 @@ body[data-dir="A"] .A{display:block}
       "提交時間：" + data.submittedAt + "\n" +
       "來源：" + data.source
     );
-    try { window.open("mailto:edwardt0303@gmail.com?subject=" + subj + "&body=" + body, "_blank"); } catch(_e){}
+    // v1.3.7: 移除自動 mailto（會導致某些瀏覽器白屏）— 改顯示確認訊息 + 可選「寄副本 Email」按鈕
+    var _mailtoHref = "mailto:edwardt0303@gmail.com?subject=" + subj + "&body=" + body;
     postP.finally(function(){
       btn.disabled = false; btn.textContent = "送出申請";
-      bpCloseApply();
-      bpToast("已收到你的申請！我們會在 1-2 個工作日內回覆你。", 4500);
+      // Replace modal body with success state
+      var card = document.querySelector(".bp-apply-card");
+      if (card) {
+        card.innerHTML = '<div class="bp-apply-plan-tag">' + (document.getElementById("bpApplyPlanTag")?.textContent || "EARLY BIRD") + '</div>' +
+          '<h3>已收到你的申請</h3>' +
+          '<p class="bp-apply-sub">我們會在 <strong>1-2 個工作日內</strong>回覆到你留的 Email：<strong>' + data.email + '</strong></p>' +
+          '<div style="margin:16px 0;padding:14px 16px;background:#F4F4F8;border-radius:10px;font-size:13px;color:#4C4C66;line-height:1.6">' +
+            '<strong>申請摘要</strong><br>' +
+            '方案：' + data.plan.toUpperCase() + ' 早鳥<br>' +
+            '公司：' + data.company + '<br>' +
+            '姓名：' + data.name +
+          '</div>' +
+          '<p style="font-size:12px;color:#888;margin-top:12px">想立刻寄一份副本到你 Email？' +
+            '<a href="' + _mailtoHref + '" style="color:#7C5CFC;font-weight:600;text-decoration:none">點此寄送 →</a>' +
+          '</p>' +
+          '<div class="bp-apply-btns" style="margin-top:20px">' +
+            '<button type="button" class="bp-btn-submit" onclick="bpCloseApply()">完成</button>' +
+          '</div>';
+      } else {
+        bpCloseApply();
+        bpToast("已收到你的申請！我們會在 1-2 個工作日內回覆你。", 4500);
+      }
     });
     return false;
   };

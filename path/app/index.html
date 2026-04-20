@@ -5067,7 +5067,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.6</div>
+        <div class="sidebar-version">v1.3.7</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -30808,6 +30808,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.3.7 · 早鳥申請 submit 白屏修復（愛德華 prod 回報：「表單填寫完變成白頻」）：根因——v1.2.6 的 bpSubmitApply 成功後自動 `window.open('mailto:...', '_blank')`，某些瀏覽器沒 mail handler 會 navigate 當前頁到 mailto URL 而不是開 new tab，整頁變白屏。修法：(1) 移除自動 mailto；(2) submit 成功後 modal body 替換成 in-place 確認 UI——「已收到你的申請」header + 1-2 工作日回覆承諾 + 申請摘要 card + 可選「點此寄送副本」mailto `<a>`（用戶主動點才觸發，無 popup blocker 風險）+「完成」按鈕；(3) localStorage + Apps Script webhook 照舊不動 · 版號 v1.3.6→v1.3.7 -->
 <!-- v1.3.6 · app 內部升級 CTA 串接 landing 早鳥申請 modal（愛德華需求：「系統線上的申請 Starter 與 Pro 跟企業帳號先設定彈出一個編輯窗」）：(1) `openSubscribeFlow(planId)` 升級路徑從 `renderSubscribeModal`（原本付款 flow）改 `window.location.href = '/path/?apply=' + planId`——早鳥期所有付費方案統一走「填表 → 寄信給愛德華 → 同步 Sheet → 手動開通」流程，金流未接通前先停用付款 modal；(2) Enterprise 方案原本只 toast 聯絡信箱，現在也走 apply modal 統一體驗；(3) 降級流程保留原 `openDowngradeFlow`（不需要申請表，直接切 plan）；(4) /path/index.html 新增 URL query 解析——載入時若 URL 含 `?apply=starter|pro|enterprise`，`DOMContentLoaded` 後 200ms 自動觸發 `bpOpenApply(planId)`，並用 `history.replaceState` 清 query 避免 refresh 重複開 modal；(5) 此版只有一份 modal code（在 landing）被兩處（app + landing）共用，維護成本低；代價是 app 內點申請會跳出到 landing（未來 v1.4+ 可在 app 內複製 modal 避免離開 app） · 版號 v1.3.5→v1.3.6 -->
 <!-- v1.3.5 · 任務看板寬模式（愛德華回報：「狀態欄位的預設與全展開為至少能顯示 4.5-5 個狀態目前是 3.3 個左右」）：Chrome MCP 實測 2011px viewport + sidebar 80px 收合下，`#content` 被 `max-width:1400px` + margin auto 限制在 1400px 居中，扣 padding 後 kanban-board 只剩 1328px；`.kanban-col min-width` 公式 `(100vw-280)/4.5` 在大螢幕算 384px → 1328/384 ≈ 3.45 欄（愛德華看到的 3.3）。修法：(1) 新 CSS rule `body.kanban-wide-mode #content{max-width:none;padding:20px 24px}` 解除寬度限制；(2) renderModule 開頭 `body.classList.toggle('kanban-wide-mode', moduleId === 'biz-tasks')` 進出任務看板自動切換 wide mode，其他頁面維持 1400 max-width 原設計；(3) `.kanban-col min-width` 公式改 `(100vw-160)/5.2` 最低 260px——分母從 4.5 加大到 5.2 讓大螢幕能塞更多欄；預留 160px 給 sidebar 收合(80)+padding(48)+margin buffer(32)；下限 260px 仍保證 title 15 字單行 · 版號 v1.3.4→v1.3.5 -->
 <!-- v1.3.4 · 登入 polling 加速 + 全局 debug trace（v1.3.3 polling 2 秒間隔 + 無 trace，Chrome MCP 測試看 appDisplay 一直 "none"）：(1) polling interval 從 2000ms 改 500ms（總 wait cap 30s 不變，只是 check 更密）；(2) SDK ready 時先做 immediate currentUser check——如果 Firebase 已有 user（IndexedDB 已 resolve），不等 onAuthStateChanged fire 就直接 restore + showDashboard；(3) 加 `window._authTrace` global debug array 記錄每一步 timestamp 與狀態（polls / sdk-ready / user-resolved / onAuthStateChanged / showDashboard 執行結果），讓後續 Chrome MCP 可以 inspect trace 看卡在哪一步；(4) `window._authBoot` 狀態旗標讓 inner/outer polling 共享 userResolved 狀態，避免 double-fire · 版號 v1.3.3→v1.3.4 (DEBUG instrumented) -->
