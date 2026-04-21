@@ -1,0 +1,407 @@
+/* ============================================================================
+ * BeyondPath · .report-* CSS Namespace v1.0
+ * ----------------------------------------------------------------------------
+ * 建立：2026-04-21 · Sprint 1 · 卡西法 D1
+ * 依據：visual-rubric-95.md § 8 + tool-selection-matrix Howl's Law
+ * 適用：5 份報告共用 render engine 的視覺 contract
+ * 憲法：封閉五色 / 字體 scale / 間距 scale / 無 stripe / 無 emoji icon
+ *
+ * 使用：
+ *   <article class="report">
+ *     <header class="report-hero report-hero--ritual">
+ *       <p class="report-section-meta">01 / PATH 診斷</p>
+ *       <h1 class="report-verdict">方向對，補 Traction 就能衝</h1>
+ *       <p class="report-tldr">...</p>
+ *       <div class="report-hero-break"></div>
+ *       <div class="report-kpi-row">...</div>
+ *     </header>
+ *     <section class="report-section">...</section>
+ *     <footer class="report-cta-trio">...</footer>
+ *   </article>
+ * ============================================================================ */
+
+
+/* ── CSS Custom Properties · 擴充既有 token ────────────────────────── */
+:root {
+  /* 琥珀 DNA（warm-serif 儀式區塊專用）*/
+  --amber-ink:    #3D2E1A;
+  --amber-accent: #D4712A;
+  --amber-bg:     rgba(212, 113, 42, .08);
+
+  /* 資料源 badge 色 semantic alias */
+  --source-measured:  var(--teal);   /* 🟢 實測 */
+  --source-estimated: var(--gold);   /* 🟡 推估 */
+  --source-ai:        var(--rose);   /* 🔴 AI 生成 */
+
+  /* Report 專屬字級（若既有 token 無則補）*/
+  --text-section-meta: 11px;
+  --text-report-body:  14px;
+
+  /* Report 專屬間距（對應 space-8/9/10 儀式級別）*/
+  --report-hero-py:     96px;   /* space-9 */
+  --report-hero-py-lg:  128px;  /* space-10 */
+  --report-section-py:  72px;   /* space-8 */
+  --report-card-px:     24px;   /* space-5 */
+}
+
+
+/* ── 基底容器 ──────────────────────────────────────────────────────── */
+.report {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 var(--space-6, 36px);
+  color: var(--ink);
+  font-family: var(--font-sans, 'Inter', 'Noto Sans TC', -apple-system, sans-serif);
+  font-size: var(--text-report-body);
+  line-height: 1.7;
+}
+
+
+/* ── Hero 儀式型 vs 工具型（憲法級分界）──────────────────────────── */
+.report-hero {
+  padding: var(--report-hero-py) 0;
+  position: relative;
+}
+
+.report-hero--ritual {
+  /* 儀式型：允許 warm-serif + 琥珀（首頁、報告開場）*/
+  font-family: Georgia, 'Noto Serif TC', 'Source Han Serif TC', serif;
+  background: linear-gradient(180deg, var(--amber-bg) 0%, transparent 100%);
+}
+
+.report-hero--ritual .report-verdict {
+  color: var(--amber-ink);
+  font-style: italic;
+  font-weight: 700;
+}
+
+.report-hero--tool {
+  /* 工具型：強制封閉五色 + sans-serif（競品表、5 力圖、分數環）*/
+  font-family: var(--font-sans, 'Inter', 'Noto Sans TC', sans-serif);
+  background: var(--bg-card, #fff);
+}
+
+
+/* ── Section meta（01 / 02 / 03 · 對標 Dovetail）──────────────── */
+.report-section-meta {
+  font-size: var(--text-section-meta);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--ink-muted, #94A3B8);
+  margin: 0 0 var(--space-3, 12px) 0;
+  font-family: Georgia, 'Noto Serif TC', serif;
+  font-style: italic;
+}
+
+
+/* ── Verdict（Hero 主標 · 一句話結論）────────────────────────── */
+.report-verdict {
+  font-size: var(--text-display-md, 36px);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+  margin: 0 0 var(--space-4, 16px) 0;
+  color: var(--ink);
+  max-width: 720px;
+}
+
+
+/* ── TL;DR（60-80 字摘要）────────────────────────────────────── */
+.report-tldr {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-sec, #6B6B6B);
+  font-style: italic;
+  margin: 0 0 var(--space-5, 24px) 0;
+  max-width: 640px;
+}
+
+
+/* ── Hero → Section 過渡帶（憲法 §7.1 v1.1 新增）──────────────── */
+.report-hero-break {
+  height: 1px;
+  background: var(--border, #E8E4DD);
+  margin: var(--space-5, 24px) 0 0 0;
+  padding: 0;
+}
+
+
+/* ── KPI Row（3-KPI 橫排 · 對標 Dovetail ROI）──────────────── */
+.report-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-8, 72px);
+  margin: var(--space-6, 36px) 0 0 0;
+}
+
+@media (max-width: 768px) {
+  .report-kpi-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-5, 24px);
+  }
+}
+
+.report-kpi {
+  padding: var(--report-card-px) 0;
+  border-top: 1px solid var(--border, #E8E4DD);
+}
+
+.report-kpi-value {
+  font-size: var(--text-display-lg, 48px);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  margin: 0 0 var(--space-2, 8px) 0;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.report-kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--ink-muted, #94A3B8);
+  margin: 0 0 var(--space-1, 4px) 0;
+}
+
+.report-kpi-trend {
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.report-kpi-trend--up   { color: var(--teal, #1BA891); }
+.report-kpi-trend--down { color: var(--rose, #D94462); }
+.report-kpi-trend--flat { color: var(--ink-muted, #94A3B8); }
+
+
+/* ── Section 容器 ────────────────────────────────────────────── */
+.report-section {
+  padding: var(--report-section-py) 0;
+  border-top: 1px solid var(--border, #E8E4DD);
+}
+
+.report-section:first-of-type {
+  border-top: none;
+}
+
+
+/* ── Source Badge（🟢🟡🔴 · 憲法 §7.2 不搶戲）───────────────── */
+.report-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-hover, rgba(0,0,0,.04));
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-weight: 500;
+  color: var(--ink-muted);
+  margin-top: var(--space-1, 4px);
+}
+
+.report-source-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.report-source-badge--measured  .dot { background: var(--source-measured); }
+.report-source-badge--estimated .dot { background: var(--source-estimated); }
+.report-source-badge--ai        .dot { background: var(--source-ai); }
+
+
+/* ── Warning AI Synth（Lab 專用 · 唯一允許 stripe 的場合）─── */
+.report-warning-ai-synth {
+  background: color-mix(in srgb, var(--rose, #D94462) 14%, transparent);
+  color: var(--rose, #D94462);
+  border-left: 3px solid var(--rose, #D94462);  /* 唯一例外 · 嚴格限此 class */
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin: 0 0 var(--space-5, 24px) 0;
+  border-radius: 0 4px 4px 0;
+}
+
+
+/* ── Quote（editorial · 對標 Dovetail）──────────────────────── */
+.report-quote {
+  font-family: Georgia, 'Noto Serif TC', serif;
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--ink);
+  padding: var(--space-5, 24px) 0;
+  max-width: 680px;
+  position: relative;
+}
+
+.report-quote-dropcap {
+  float: left;
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 700;
+  padding: 4px 8px 0 0;
+  color: var(--primary, #7C5CFC);
+}
+
+
+/* ── JTBD 4 層（v1.1 新增 · PATH 診斷 P 維展開）────────────── */
+.report-jtbd-layer {
+  display: grid;
+  grid-template-columns: 1fr 80px 2fr;
+  gap: var(--space-3, 12px);
+  padding: var(--space-3, 12px) 0;
+  border-bottom: 1px solid var(--border, #E8E4DD);
+  align-items: center;
+}
+
+.report-jtbd-layer:last-child {
+  border-bottom: none;
+}
+
+.report-jtbd-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.report-jtbd-score {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.report-jtbd-score--healthy { color: var(--teal); }
+.report-jtbd-score--warn    { color: var(--gold); }
+.report-jtbd-score--danger  { color: var(--rose); }
+
+.report-jtbd-evidence {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-sec, #6B6B6B);
+}
+
+
+/* ── CTA Trio（分享 / 儲存 / 下載 PDF · 憲法 §6.4 強制）───── */
+.report-cta-trio {
+  display: flex;
+  gap: var(--space-3, 12px);
+  justify-content: flex-end;
+  padding: var(--space-6, 36px) 0;
+  border-top: 1px solid var(--border, #E8E4DD);
+  margin-top: var(--space-8, 72px);
+}
+
+.report-cta-trio button {
+  padding: 10px 20px;
+  background: var(--bg-card, #fff);
+  color: var(--ink);
+  border: 1px solid var(--border, #E8E4DD);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 180ms cubic-bezier(.4,0,.2,1),
+              transform 180ms cubic-bezier(.4,0,.2,1);
+}
+
+.report-cta-trio button:hover {
+  border-color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.report-cta-trio button.report-cta-primary {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+
+/* ── Section Num（01/02/03 · Dovetail 風）──────────────────── */
+.report-section-num {
+  font-family: Georgia, 'Noto Serif TC', serif;
+  font-style: italic;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  margin-bottom: var(--space-2, 8px);
+}
+
+
+/* ── Print Safe（A4 列印）────────────────────────────────── */
+@media print {
+  .report {
+    max-width: 100%;
+    padding: 20mm;
+    font-size: 12pt;
+  }
+  .report-hero {
+    padding: 10mm 0;
+  }
+  .report-kpi-row {
+    gap: 10mm;
+  }
+  .report-section {
+    page-break-inside: avoid;
+    padding: 8mm 0;
+  }
+  .report-cta-trio {
+    display: none;  /* 列印不印 CTA */
+  }
+}
+
+
+/* ── Dark Mode 適配 ─────────────────────────────────────── */
+[data-theme="dark"] .report,
+.theme-dark .report {
+  color: var(--ink-dark, #E2E2EA);
+}
+
+[data-theme="dark"] .report-hero--ritual {
+  background: linear-gradient(180deg, rgba(212, 113, 42, .12) 0%, transparent 100%);
+}
+
+[data-theme="dark"] .report-source-badge {
+  background: rgba(255,255,255,.06);
+}
+
+
+/* ── Mobile 375px 基本響應式 ────────────────────────────── */
+@media (max-width: 640px) {
+  .report {
+    padding: 0 var(--space-4, 16px);
+  }
+  .report-hero {
+    padding: var(--space-8, 72px) 0;
+  }
+  .report-verdict {
+    font-size: 28px;
+  }
+  .report-kpi-value {
+    font-size: 36px;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+ * End of BeyondPath .report-* Namespace v1.0
+ * 下一步（Sprint 1 剩餘）：
+ *   - D2 Report Render Engine v1 integration (app.html 內)
+ *   - D3 URL routing /path/report/diagnostic/:id
+ *   - D4 AI Call Wrapper v2
+ *   - D5 PATH 診斷 v2.0 實戰（套此 namespace）
+ * ════════════════════════════════════════════════════════════ */
