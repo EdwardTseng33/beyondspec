@@ -84,12 +84,36 @@ button,a,[onclick],[role="button"],.btn,.nav-item,.qt-filter-btn,.bl-filter-btn,
   --ease-out:cubic-bezier(0.4,0,0.2,1);--ease-smooth:cubic-bezier(0.22,1,0.36,1);--ease-spring:cubic-bezier(0.34,1.56,0.64,1);
   /* ===== Spacing scale (4px grid) ===== */
   --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:36px;--space-7:48px;
+  /* v1.3.13 (Witch Action 1): 敘事型頁面專用 section-scale spacing — 僅限 landing / 問卷結果 / 市場報告 / 年度回顧等儀式型區塊 */
+  --space-8:72px;--space-9:96px;--space-10:128px;
+  /* v1.3.13 (Witch Action 1): 敘事型 display 字階 — 工具頁仍用 --text-page-title 22px 上限，不動 */
+  --text-display-sm:28px;--text-display-md:36px;--text-display-lg:48px;--text-display-xl:72px;
+  /* v1.3.13 (Witch Action 1): font 家族 token — warm-serif 帶中文 fallback */
+  --font-serif:Georgia,'Noto Serif TC','Source Han Serif TC',serif;
+  --font-sans:'Inter','Noto Sans TC',-apple-system,system-ui,sans-serif;
   /* ===== Shadow library ===== */
   --shadow-xs:0 1px 2px rgba(0,0,0,.04);
   --shadow-md:0 4px 16px rgba(0,0,0,.08);
   --shadow-glow:0 0 0 3px rgba(124,92,252,.18);
   --shadow-purple:0 4px 20px rgba(124,92,252,.12);
 }
+/* v1.3.13 (Witch Action 2): 敘事型 card variant — 不做 shadow glow，hover 只變 border（Maze-inspired）
+   使用場景：問卷結果卡、市場報告段落卡、首頁 feature 段落、Lab 方法論區塊、年度回顧節點 */
+.card-editorial{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  padding:var(--space-6) var(--space-5);
+  box-shadow:none;
+  transition:border-color var(--motion-normal) var(--ease-out),transform var(--motion-normal) var(--ease-out);
+}
+.card-editorial:hover{
+  border-color:var(--ink);
+  transform:translateY(-2px);
+}
+/* v1.3.13 (Witch Action 5): Landing / 敘事頁 section separator 規範化 */
+.l-section{padding:var(--space-9) var(--space-6);}
+.l-section.spacious{padding:var(--space-10) var(--space-6);}
 [data-theme="dark"]{
   --bg-app:#0D0D14;--bg-card:#1A1A24;--bg-sidebar:#4A35A0;--bg-input:#1A1A24;--bg-hover:#24243A;--bg-overlay:rgba(0,0,0,.65);
   --ink:#F0F0F5;--ink-sec:#B8B8CC;--ink-muted:#8888A0;--ink-dim:#6A6A80;--ink-placeholder:#585870;
@@ -5067,7 +5091,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.12</div>
+        <div class="sidebar-version">v1.3.13</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -22652,6 +22676,26 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         <svg class="rpt-caveat-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="3,4.5 6,7.5 9,4.5"/></svg>
       </button>
       <div class="rpt-caveat-body">
+        <!-- v1.3.13 (Q1 Lab 中庸版 · 霍爾 D.2 方法論文案落地) -->
+        <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed var(--border)">
+          <strong style="color:var(--primary)">🟢 適合使用</strong><br>
+          <span style="font-size:13px;color:var(--ink-sec);line-height:1.7">
+          · 早期假設驗證、訪綱 pilot、市場方向探測<br>
+          · 產品描述 / 定價 / 賣點在真人訪談前的壓力測試<br>
+          · 無法招募到的長尾族群的快速回饋
+          </span>
+        </div>
+        <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed var(--border)">
+          <strong style="color:var(--gold)">⚠️ 不適合替代</strong><br>
+          <span style="font-size:13px;color:var(--ink-sec);line-height:1.7">
+          · 涉及情緒、文化敏感、真實行為觀察的深度研究<br>
+          · 最終商業決策前的驗證（請搭配真人訪談）<br>
+          · 無障礙、高風險產品（醫療、金融合規）的使用者測試
+          </span>
+        </div>
+        <div style="margin-bottom:14px">
+          <strong>誠實聲明：</strong> 合成受眾在個體上貼近真人，但整體分佈可能偏向 median user（平均值用戶）。建議：用 Lab 跑廣度、真人訪談跑深度（"Invert the process. Don't replace it."）。
+        </div>
         <strong>本報告由 AI 合成用戶引擎生成，品質由研究品質分數（RQS）衡量。</strong><br>
         RQS 衡量的是「這次研究在方法論上做對了多少事」，不是統計學的信賴區間或預測精度。合成用戶非真人隨機抽樣，無法計算傳統 CI。<br>
         RQS 基於四項可量化因子加權：(1) 樣本規模——回應分布穩定度（最高 +85）；(2) 產品資料完整度——AI 可用上下文量（最高 +4）；(3) 受眾精準度——人物誌具體程度（最高 +3）；(4) 真人訪談校準——唯一的真實基準因子（最高 +8），可突破 RQS 上限。<br>
@@ -30941,6 +30985,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.3.13 · Witch Action 1+2+5 設計 token 擴充 + Lab CAVEAT 方法論升級（霍爾 D.2 落地）：(1) `:root` 新增 `--space-8:72px` / `--space-9:96px` / `--space-10:128px` 敘事型 section-scale spacing；新增 `--text-display-sm:28px` / `-md:36px` / `-lg:48px` / `-xl:72px` display 字階 — 僅限 landing / 問卷結果 / 市場報告 / 年度回顧等儀式型區塊使用，工具頁仍守 `--text-page-title` 22px 上限；新增 `--font-serif` / `--font-sans` 含中文 fallback（Noto Serif TC + Noto Sans TC）修 Georgia italic 中文 fallback 到系統 sans 的斷裂；(2) `.card-editorial` variant — 敘事型卡片 hover 只變 border 不做 shadow glow（Maze-inspired），用於問卷結果卡、市場報告段落、Lab 方法論區塊、首頁 feature；(3) `.l-section` / `.l-section.spacious` landing section separator 規範化用 `--space-9/10`；(4) Lab CAVEAT 擴充霍爾 D.2 文案三段結構：🟢 適合使用 / ⚠️ 不適合替代 / 誠實聲明（"用 Lab 跑廣度、真人訪談跑深度" Synthetic Users "Invert the process" 中文版），保留原 RQS / 已知限制內容在後；全部 Q1 Lab 誠實度配套到位 · 版號 v1.3.12→v1.3.13 -->
 <!-- v1.3.12 · PATH 診斷結果頁 CTA 文案對齊 Q1 中庸版敘事：line 21546 action card 文案「針對最弱維度進行 AI 模擬用戶訪談」→「針對最弱維度進行 AI 合成受眾訪談（先跑廣度，真訪談跑深度）」，與 v1.2.0 Lab 模組 subtitle / header badge 用同一套語言；延伸實施 Q1 Lab 誠實度 slogan 至全站觸點 · 版號 v1.3.11→v1.3.12 -->
 <!-- v1.3.11 · app 內申請管理頁（Admin-only，回應愛德華「不靠三方」需求閉環）：接續 v1.3.9 Firestore 寫入，這版加 app 內管理介面讓愛德華不用進 Firebase Console 就能審核所有申請。(1) Sidebar 新增「管理」category + 「申請管理」nav item，條件 `state.user.email === 'edwardt0303@gmail.com'` 才顯示（其他用戶看不到）；(2) Router 新增 `admin: 'admin-applications'` slug mapping；(3) renderModule 加 `case 'admin-applications': renderAdminApplications()`；(4) 新 `renderAdminApplications()` 讀 Firestore `applications` collection orderBy submittedAt desc limit 100，render table 含時間 / 方案 badge / 公司 / 姓名+職稱 / mailto Email / 需求 / 狀態 badge（pending gold / approved teal / rejected rose）/ 操作（通過/婉拒按鈕）；(5) `updateApplicationStatus(docId, status)` update Firestore doc with reviewedAt serverTimestamp + reviewedBy email，toast 回饋 + 重新載入；(6) 空狀態「尚無申請」引導文案；(7) 錯誤 handling + 重新載入按鈕。現在完整流程：landing submit → Firestore write → 愛德華進 app /admin 立即看到 → 點通過/婉拒 → status 更新。Email 通知仍可透過 Firebase Extension「Trigger Email」一鍵啟用（愛德華在 Firebase Console 操作） · 版號 v1.3.10→v1.3.11 -->
 <!-- v1.3.10 · 首頁報告 card 點擊直接顯示完整報告（愛德華回報：「首頁的報告產出要能正常顯示報告才對而不是跳到市場報告 tab 頁去但什麼都沒顯示」）：根因——card onclick 只 `app.navigate('report')` 跳模組主頁（輸入表單），沒帶 report id 讓 report 模組知道要載哪份；另外 `savedReports` record 只存 meta（productName/verdict/diagTotal）**沒存 aiData + selectedDiag snapshot**，即使拿到 id 也無法 re-render。修法：(1) `saveReport()` 擴充 record schema 加入 `aiData` + `selectedDiag` 完整快照；(2) 新增 `openSavedReport(id)`——從 `state.savedReports` 找 record，restore `reportState` 後 navigate + `renderFullReport()` 直接呈現完整報告（跳過 input 頁）；(3) 首頁 card onclick 從 `navigate('report')` 改 `openSavedReport(rpt.id)`；(4) 舊資料缺 snapshot → 跳 report tool + toast「此舊報告缺完整快照，請重新生成」；(5) `window.app` 曝 `openSavedReport` 讓 inline onclick 可呼叫 · 版號 v1.3.9→v1.3.10 -->
