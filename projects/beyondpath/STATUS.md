@@ -2,7 +2,7 @@
 
 > **用途**：每個 Claude conversation window 都有 context 限制，這個檔案是**跨對話的進度記憶 single source of truth**。
 > **規則**：每次 session 關鍵進度 / 決策 / 版本推送後，愛德華或主對話蘇菲要**更新此檔 + git commit**，下個 session 開頭 `Read STATUS.md` 就能完整 pick up。
-> **上次更新**：2026-04-21 深夜（v1.3.19 三合一 hotfix · 連鎖事故救火完成 + 部署憲法升級）
+> **上次更新**：2026-04-21 深夜（v1.3.19 三合一 hotfix · 部署憲法升級 · 專案資料夾大整理 89→24 頂層項目）
 
 ---
 
