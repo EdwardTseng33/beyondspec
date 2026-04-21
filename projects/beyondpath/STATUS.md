@@ -10,8 +10,8 @@
 
 | 項目 | 值 |
 |------|-----|
-| **prod 版本** | v1.3.12（sidebar badge）|
-| **最新 commit** | `9bb966a` v1.3.12: PATH result CTA copy aligned to Q1 |
+| **prod 版本** | v1.3.16（sidebar badge）|
+| **最新 commit** | `0c39360` v1.3.16: market signal results P0 rubric revamp (53→82) |
 | **repo** | github.com/EdwardTseng33/beyondspec |
 | **部署** | GitHub Pages · https://beyondspec.tw/path/ |
 | **Firebase project** | beyond-business-ca9da（Auth + Firestore enabled）|
@@ -89,20 +89,25 @@
 2. **Chart.js 引入 vs 純 SVG**（v1.4 大工程決策）
 3. **DataForSEO 真實資料接入**要不要這個月投入（H 風險，Markl 建議列 P2）
 
-**不需愛德華拍板的 P0（auto mode 可跑）**：
-- BL-012 Tail cleanup（搬 v1.0.x 進 CHANGELOG.md，≤ 3 條熱區）
-- BL-013 Firebase Trigger Email 指南 `projects/beyondpath/ops/trigger-email-setup.md`
-- BL-003 問卷結果頁 P0 重修（4 卡改 ring + hero verdict，女巫 rubric 55 → 82）
-- BL-004 市場探測結果頁 P0 重修（加 sparkline + benchmark + 真 SVG 折線，53 → 82）
-- BL-009 客戶 `bp_contacts.type` schema 擴充
-- Lab 配套（footer 方法論區塊 / 全站敘述 / persona AI 小標 / confidence score）
-- Witch Action 1（Display 字階 + section-scale spacing token 擴充）
+**不需愛德華拍板的 P0**：
+- ✅ ~~BL-012 Tail cleanup~~（v1.3.14 完成：26 條搬進 CHANGELOG.md）
+- ✅ ~~BL-013 Firebase Trigger Email 指南~~（v1.3.14：`projects/beyondpath/ops/trigger-email-setup.md`）
+- ✅ ~~BL-003 問卷結果頁 P0 重修~~（v1.3.15：55 → 82，移除 Math.random 假分 + hero verdict + 4 ring）
+- ✅ ~~BL-004 市場探測結果頁 P0 重修~~（v1.3.16：53 → 82，hero verdict + 12 月 sparkline + CPC benchmark bar + 真 SVG 折線）
+- ✅ ~~Lab CAVEAT 升級~~（v1.3.13 霍爾 D.2 三段結構落地）
+- ✅ ~~Witch Action 1+2+5~~（v1.3.13 display 字階 + section-scale spacing + `.card-editorial` + `.l-section` token）
+
+**剩餘未做**：
+- BL-009 客戶 `bp_contacts.type` schema 擴充（戰情室客戶分佈前置，下輪做）
+- Lab 全站敘述更新（landing / 定價 / 模組入口散點中庸版同步）
+- Lab persona 卡片右上角「AI 合成」小標
+- Lab confidence score Claude prompt 擴充
 
 ---
 
 ## 📜 今晚（2026-04-21）重大進度
 
-### 推了 26 版（v1.1.1 → v1.3.12）
+### 推了 30 版（v1.1.1 → v1.3.16）
 見 Git log + HTML tail changelog。關鍵里程碑：
 - **v1.1.2** Routing fix（登入/登出 /path/ vs /path/app/ 錯亂根治）
 - **v1.1.3** P0 信任修復（`closeRate 0%` rose → slate「—」）+ 11 憲法色清理
@@ -118,6 +123,10 @@
 - **v1.3.10** 首頁報告 card 點擊 open full report（snapshot + openSavedReport）
 - **v1.3.11** app 內 /admin 申請管理頁（Edward-only）
 - **v1.3.12** PATH CTA 文案對齊 Q1
+- **v1.3.13** Witch 設計 token 擴充（display 字階/section spacing/font-serif fallback/.card-editorial）+ Lab CAVEAT 霍爾 D.2 三段結構
+- **v1.3.14** Tail cleanup（26 條搬 CHANGELOG.md）+ Firebase Trigger Email 指南
+- **v1.3.15** 問卷結果頁 P0 重修（55→82，移 Math.random 假分 + hero verdict + 4 ring）
+- **v1.3.16** 市場探測結果頁 P0 重修（53→82，hero verdict + sparkline + CPC benchmark + 真 SVG 折線）
 
 ### 產了 4 份深度研究 + 1 份設計參考
 見 research/ 目錄。
