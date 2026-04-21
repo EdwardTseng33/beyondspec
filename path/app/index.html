@@ -5091,7 +5091,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.16</div>
+        <div class="sidebar-version">v1.3.17</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -19774,7 +19774,73 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     // Header
     html += '<div class="page-title-area">';
     html += '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="2 16 6 10 10 13 14 6 18 2"/><circle cx="18" cy="2" r="1.5" fill="var(--primary)"/></svg><span>營運戰情室</span></h1>';
-    html += '<p class="subtitle">公司現在狀況怎樣？</p>';
+    html += '<p class="subtitle">今天該擔心什麼？AI 會主動提醒。</p>';
+    html += '</div>';
+
+    // v1.3.17: Hero insight card — 規則引擎敘事（Q3 決議「AI 生成不準確先不上」，改規則式即時訊號）
+    var _overduePayAmount = 0;
+    billing.forEach(function(b) {
+      if ((b.status === 'overdue' || (b.status === 'pending' && b.dueDate && b.dueDate < today)) && !isNaN(b.amount)) {
+        _overduePayAmount += (b.amount || 0);
+      }
+    });
+    var _heroInsight = '';
+    var _heroTone = 'primary'; // primary | teal | gold | rose
+    var _heroCTA = null;
+    if (overdueCount > 0 && _overduePayAmount > 0) {
+      _heroInsight = '有 <strong>' + overdueCount + ' 筆款項逾期</strong>，合計 <strong>NT$ ' + _overduePayAmount.toLocaleString() + '</strong> 待收。建議優先處理。';
+      _heroTone = 'rose';
+      _heroCTA = { label:'前往收款管理', action:"app.navigate('biz-billing')" };
+    } else if (_overdueTasks.length > 0) {
+      _heroInsight = '任務有 <strong>' + _overdueTasks.length + ' 筆逾期</strong>，其他商業項目目前穩定。';
+      _heroTone = 'gold';
+      _heroCTA = { label:'前往任務看板', action:"app.navigate('biz-tasks')" };
+    } else if (sentCount > 0) {
+      _heroInsight = '本月已簽回 <strong>' + acceptedCount + ' 筆報價</strong>，另有 <strong>' + sentCount + ' 筆等待客戶回覆</strong>。不妨主動 follow up。';
+      _heroTone = 'teal';
+      _heroCTA = { label:'前往報價管理', action:"app.navigate('biz-quotes')" };
+    } else if (receivedThisMonth > 0 || monthlyQuoteTotal > 0) {
+      _heroInsight = '本月營運穩定。已累計報價 <strong>NT$ ' + monthlyQuoteTotal.toLocaleString() + '</strong>，收款 <strong>NT$ ' + receivedThisMonth.toLocaleString() + '</strong>。';
+      _heroTone = 'teal';
+    } else {
+      _heroInsight = '資料累積中——完成首筆報價、收款或任務後，這裡會出現完整的每日戰情訊號。';
+      _heroTone = 'primary';
+    }
+    var _heroBorderColor = _heroTone === 'rose' ? 'var(--rose)' : _heroTone === 'gold' ? 'var(--gold)' : _heroTone === 'teal' ? 'var(--teal)' : 'var(--primary)';
+    var _heroBgColor = 'color-mix(in srgb, ' + _heroBorderColor + ' 4%, var(--bg-card))';
+    var _todayStr = now.toLocaleDateString('zh-TW', { month:'long', day:'numeric', weekday:'long' });
+    html += '<div style="background:' + _heroBgColor + ';border:1px solid color-mix(in srgb, ' + _heroBorderColor + ' 16%, var(--border));border-radius:var(--r-lg);padding:20px 24px;margin-bottom:16px">';
+    html += '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-muted);font-weight:500;margin-bottom:12px">';
+    html += '<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:' + _heroBorderColor + ';color:#fff"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 4.6L19 9l-4.2 2.8L16 17l-4-2.5L8 17l1.2-5.2L5 9l5.2-1.4z"/></svg></span>';
+    html += '<span>今日戰情 · ' + _todayStr + '</span>';
+    html += '</div>';
+    html += '<div style="font-size:16px;color:var(--ink);font-weight:500;line-height:1.7;margin-bottom:' + (_heroCTA ? '16px' : '0') + '">' + _heroInsight + '</div>';
+    if (_heroCTA) {
+      html += '<button onclick="' + _heroCTA.action + '" style="padding:9px 18px;border:none;border-radius:var(--r-md);background:var(--ink);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px">' + _heroCTA.label + ' <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="7 4 13 10 7 16"/></svg></button>';
+    }
+    html += '</div>';
+
+    // v1.3.17: 3 Mini KPI cards — 本月收款 / Pipeline / 異常提醒（純 SVG 圓點指示，sparkline 留給資料累積後）
+    var _alertCount = overdueCount + _overdueTasks.length + _stuckTasks.length;
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px">';
+    // KPI 1: 本月已收
+    html += '<div class="card-editorial" style="padding:18px 20px">';
+    html += '<div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:6px">本月已收</div>';
+    html += '<div style="font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-.5px">' + (receivedThisMonth > 0 ? 'NT$ ' + receivedThisMonth.toLocaleString() : '<span style="color:var(--slate)">—</span>') + '</div>';
+    html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:4px">' + (receivedThisMonth > 0 ? '已入帳 · 即時同步' : '尚無收款資料') + '</div>';
+    html += '</div>';
+    // KPI 2: Pipeline
+    html += '<div class="card-editorial" style="padding:18px 20px">';
+    html += '<div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:6px">Pipeline 等待</div>';
+    html += '<div style="font-size:24px;font-weight:800;color:var(--primary);letter-spacing:-.5px">' + (sentCount > 0 ? sentCount + ' 筆' : '<span style="color:var(--slate)">—</span>') + '</div>';
+    html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:4px">' + (sentCount > 0 ? '報價送出等待簽回' : '尚無待回覆報價') + '</div>';
+    html += '</div>';
+    // KPI 3: 異常提醒
+    html += '<div class="card-editorial" style="padding:18px 20px">';
+    html += '<div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:6px">異常提醒</div>';
+    html += '<div style="font-size:24px;font-weight:800;color:' + (_alertCount > 0 ? 'var(--rose)' : 'var(--teal)') + ';letter-spacing:-.5px">' + (_alertCount > 0 ? _alertCount + ' 件' : '<span style="color:var(--teal)">✓ 0</span>') + '</div>';
+    html += '<div style="font-size:11px;color:var(--ink-muted);margin-top:4px">' + (_alertCount > 0 ? overdueCount + ' 逾期 · ' + _overdueTasks.length + ' 任務 · ' + _stuckTasks.length + ' 卡住' : '今日無緊急事項') + '</div>';
+    html += '</div>';
     html += '</div>';
 
     // ═══ PULSE VIEW — Anti-Anxiety UX v0.31.0 ═══
@@ -31080,6 +31146,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.3.17 · 營運戰情室視覺升級 Batch 1（愛德華指令「戰情室先做個視覺上的升級」）：renderInsights 頂部 page-title-area 後新增兩層：(1) **Hero 今日戰情卡**——color-mix 4% 底 + 16% border tint 依訊號 tone 動態上色（rose 逾期款項 / gold 任務逾期 / teal 報價健康 / primary 資料累積中），sparkle icon + 日期 + 完整敘事 + 黑色 CTA 按鈕直跳對應模組；規則引擎生成（Q3 決議「AI 生成不準先不上」，改 5 情境規則式敘事）；subtitle 改「今天該擔心什麼？AI 會主動提醒。」；(2) **3 Mini KPI**（本月已收 / Pipeline 等待 / 異常提醒）．card-editorial variant（Maze-inspired hover 只變 border）；封閉五色編碼；null 顯示 slate「—」不懲罰新用戶；sparkline 留給資料累積後；既有 pulse view / 營收健康度 / 商業動能 / 執行力 / 報價 list 全部保留不動，新 hero + 3 mini 插在最頂部作為「第一眼戰情摘要」· 版號 v1.3.16→v1.3.17 -->
 <!-- v1.3.16 · 市場探測結果頁 P0 重修（女巫 rubric 53→82）：(1) 新增 Hero verdict 綜合市場訊號卡（84px SVG ring）— verdictScore = monthlyVol (40pt) + competition (35pt) + trend (25pt) 加權算出 0-100 綜合分；verdict 三階 verdict：≥70「值得投入」teal / ≥45「需再觀察」gold / <45「不建議強推」rose + 情境文案（月搜尋量 X + 競爭 Y + 趨勢 Z）；(2) 月搜尋量卡加 12 月 sparkline（SVG area chart + gradient fill）依 trend 方向模擬數據點，讓「4,000」不再是孤立數字；(3) 競爭強度卡加 CPC benchmark bar（小進度條對比行業均值 NT2）；(4) 趨勢卡廢掉 ↑/→/↓ 單一字元，改真 SVG 折線 stroke 隨 trend 方向（上升/持平/下降）→ 視覺訊號而非文字；(5) 4 卡全改 .card-editorial variant（Maze-inspired border hover）+ 封閉五色；保留 aiBadge 上方不動 · 版號 v1.3.15→v1.3.16 -->
 <!-- v1.3.15 · 問卷結果頁 P0 重修（女巫 rubric 55→82）：移除 Math.random() 假品質分數 — clarity/bias/coverage/completion 不再顯示虛假 random，改由 AI survey_audit 真實給分存 ；未檢測時 4 卡顯示「—」slate dashed ring；新增 Hero verdict 綜合可信度 84px SVG ring（overallScore = avg(clarity + 100-bias + coverage + completion)）+「可以發 / 建議優化 / 建議重做」verdict 色彩編碼（teal/gold/rose）+ 建議文案 + 題數·預估填答時間 meta；4 純數字卡改 SVG 56px ring 視覺化（封閉五色：清晰度 teal / 誘導性 gold / 覆蓋率 primary / 完成率 rose）；empty state 用 .card-editorial variant（Maze-inspired hover 只變 border）· 版號 v1.3.14→v1.3.15 -->
 <!-- v1.3.14 · Tail cleanup + Firebase Trigger Email 指南：(1) HTML tail 熱區 26 條舊 changelog（v1.0.8 → v1.3.10）搬運至 `projects/beyondpath/CHANGELOG.md` 歸檔，tail 回歸 CLAUDE.md 憲法 ≤3 條規則（目前保留 v1.3.11/12/13/14）；(2) `projects/beyondpath/ops/trigger-email-setup.md` 建檔——Firebase Extension「Trigger Email from Firestore」5-10 分鐘設定指南含：Gmail App Password 取得、Extension 安裝設定（asia-east1 region + SMTP URI）、Cloud Function `applicationEmail` onCreate 中繼寫 `mail/` collection 自動寄 HTML email 給 edwardt0303@gmail.com（含申請摘要 table + admin 頁連結）、測試 & 故障排除、Firebase 免費額度試算（申請量 < 500/日 完全免費）；(3) 愛德華只需在 Firebase Console 執行 5 步即可啟用即時 email 通知，完全不靠第三方 · 版號 v1.3.13→v1.3.14 -->
