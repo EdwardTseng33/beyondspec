@@ -1,5 +1,13 @@
 # PATH App Changelog
 
+## v1.3.16
+
+<!-- 從 app.html tail 搬出 · v1.3.19 cleanup -->
+
+v1.3.16 · 市場探測結果頁 P0 重修（女巫 rubric 53→82）：(1) 新增 Hero verdict 綜合市場訊號卡（84px SVG ring）— verdictScore = monthlyVol (40pt) + competition (35pt) + trend (25pt) 加權算出 0-100 綜合分；verdict 三階 verdict：≥70「值得投入」teal / ≥45「需再觀察」gold / <45「不建議強推」rose + 情境文案（月搜尋量 X + 競爭 Y + 趨勢 Z）；(2) 月搜尋量卡加 12 月 sparkline（SVG area chart + gradient fill）依 trend 方向模擬數據點，讓「4,000」不再是孤立數字；(3) 競爭強度卡加 CPC benchmark bar（小進度條對比行業均值 NT2）；(4) 趨勢卡廢掉 ↑/→/↓ 單一字元，改真 SVG 折線 stroke 隨 trend 方向（上升/持平/下降）→ 視覺訊號而非文字；(5) 4 卡全改 .card-editorial variant（Maze-inspired border hover）+ 封閉五色；保留 aiBadge 上方不動 · 版號 v1.3.15→v1.3.16
+
+---
+
 ## v1.3.15
 
 <!-- 從 app.html tail 搬出 · v1.3.18 cleanup -->
