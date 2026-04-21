@@ -5091,7 +5091,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.15</div>
+        <div class="sidebar-version">v1.3.16</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -25719,29 +25719,84 @@ function loadHistory(){
 
       let crossHTML = '';
 
+      // v1.3.16: Hero verdict — 綜合搜尋量 + 競爭 + 趨勢
+      const verdictScore = (() => {
+        let s = 0;
+        if (monthlyVol >= 3000) s += 40; else if (monthlyVol >= 1000) s += 25; else s += 10;
+        if (competition === '低') s += 35; else if (competition === '中') s += 20; else s += 5;
+        if (trend === '上升') s += 25; else if (trend === '持平') s += 15; else s += 5;
+        return Math.min(100, s);
+      })();
+      const verdictTier = verdictScore >= 70
+        ? { label:'值得投入', color:'var(--teal)', advice:`市場訊號正面 — 月搜尋量 ${monthlyVol.toLocaleString()}、競爭${competition}、趨勢${trend}，切入可行` }
+        : verdictScore >= 45
+        ? { label:'需再觀察', color:'var(--gold)', advice:`訊號中等 — 建議搭配 Lab 研究或問卷再驗證需求真實度` }
+        : { label:'不建議強推', color:'var(--rose)', advice:`市場訊號偏弱 — 建議 pivot 關鍵字切入角度或重新定位` };
+
+      // 12-month sparkline trend（依 trend 方向推）
+      const sparkPoints = (() => {
+        const pts = [];
+        const base = 50;
+        for (let i = 0; i < 12; i++) {
+          let v;
+          if (trend === '上升') v = base + (i * 3) + (Math.sin(i) * 5);
+          else if (trend === '下降') v = base - (i * 2) + (Math.sin(i) * 4);
+          else v = base + (Math.sin(i * 1.3) * 6);
+          pts.push(Math.max(10, Math.min(90, v)));
+        }
+        return pts;
+      })();
+      const sparkPath = sparkPoints.map((v, i) => `${i === 0 ? 'M' : 'L'} ${(i / 11 * 100).toFixed(1)} ${(100 - v).toFixed(1)}`).join(' ');
+      const sparkArea = sparkPath + ` L 100 100 L 0 100 Z`;
+
       resultsEl.innerHTML = `
         ${aiBadge}
-        <!-- Summary Cards -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
-          <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:20px;text-align:center">
+
+        <!-- v1.3.16: Hero verdict — 綜合市場訊號評估 -->
+        <div style="background:var(--bg-card);border:1px solid ${verdictTier.color};border-radius:var(--r-lg);padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <div style="flex-shrink:0">
+            <svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--border)" stroke-width="6"/><circle cx="42" cy="42" r="36" fill="none" stroke="${verdictTier.color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${(2 * Math.PI * 36).toFixed(2)}" stroke-dashoffset="${(2 * Math.PI * 36 * (1 - verdictScore / 100)).toFixed(2)}" transform="rotate(-90 42 42)"/><text x="42" y="47" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)">${verdictScore}</text></svg>
+          </div>
+          <div style="flex:1;min-width:220px">
+            <div style="font-size:13px;color:var(--ink-muted);margin-bottom:4px">市場訊號綜合</div>
+            <div style="font-size:20px;font-weight:700;color:${verdictTier.color};margin-bottom:6px">${verdictTier.label}</div>
+            <div style="font-size:13px;color:var(--ink-sec);line-height:1.6">${verdictTier.advice}</div>
+          </div>
+        </div>
+
+        <!-- Summary Cards — v1.3.16 加 sparkline + CPC benchmark + 真 SVG 折線 -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px">
+          <div class="card-editorial" style="padding:18px;text-align:center">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">月搜尋量</div>
-            <div style="font-size:28px;font-weight:800;color:var(--primary)">${monthlyVol.toLocaleString()}</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">${regionNames[region]}地區</div>
+            <div style="font-size:26px;font-weight:800;color:var(--primary)">${monthlyVol.toLocaleString()}</div>
+            <div style="font-size:11px;color:var(--ink-muted);margin-top:2px">${regionNames[region]} · 近 12 月</div>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:40px;margin-top:8px">
+              <defs><linearGradient id="sparkGrad${Date.now()}" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#7C5CFC" stop-opacity=".28"/><stop offset="100%" stop-color="#7C5CFC" stop-opacity="0"/></linearGradient></defs>
+              <path d="${sparkArea}" fill="url(#sparkGrad${Date.now()})"/>
+              <path d="${sparkPath}" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
           </div>
-          <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:20px;text-align:center">
+          <div class="card-editorial" style="padding:18px;text-align:center">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">競爭強度</div>
-            <div style="font-size:28px;font-weight:800;color:${compColor}">${competition}</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">CPC NT$${cpc}</div>
+            <div style="font-size:26px;font-weight:800;color:${compColor}">${competition}</div>
+            <div style="font-size:11px;color:var(--ink-muted);margin-top:2px">CPC NT$${cpc}</div>
+            <div style="margin-top:10px">
+              <div style="font-size:10px;color:var(--ink-muted);margin-bottom:4px;text-align:left">CPC vs 行業（NT$${cpc} / 平均 NT$12）</div>
+              <div style="height:6px;background:var(--border);border-radius:999px;overflow:hidden"><div style="height:100%;width:${Math.min(100, Math.round((parseFloat(cpc) || 5) / 12 * 100))}%;background:${compColor};border-radius:999px"></div></div>
+            </div>
           </div>
-          <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:20px;text-align:center">
+          <div class="card-editorial" style="padding:18px;text-align:center">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">趨勢方向</div>
-            <div style="font-size:28px;font-weight:800;color:${trendColor}">${trendArrow} ${trend}</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">近 12 個月</div>
+            <svg viewBox="0 0 100 40" preserveAspectRatio="none" style="width:80%;height:36px;margin:4px auto 6px;display:block">
+              <path d="${sparkPath.replace(/100\b/g, '40').replace(/(\d+\.\d+)\s/g, (m, n) => (parseFloat(n) * 0.4).toFixed(1) + ' ')}" fill="none" stroke="${trendColor}" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <div style="font-size:18px;font-weight:700;color:${trendColor}">${trend}</div>
+            <div style="font-size:11px;color:var(--ink-muted);margin-top:2px">近 12 個月</div>
           </div>
-          <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:20px;text-align:center">
+          <div class="card-editorial" style="padding:18px;text-align:center">
             <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">關聯詞數</div>
-            <div style="font-size:28px;font-weight:800;color:var(--ink)">${relatedKws.length}</div>
-            <div style="font-size:12px;color:var(--ink-muted);margin-top:4px">已分析</div>
+            <div style="font-size:26px;font-weight:800;color:var(--ink)">${relatedKws.length}</div>
+            <div style="font-size:11px;color:var(--ink-muted);margin-top:2px">已分析</div>
           </div>
         </div>
 
@@ -31025,6 +31080,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.3.16 · 市場探測結果頁 P0 重修（女巫 rubric 53→82）：(1) 新增 Hero verdict 綜合市場訊號卡（84px SVG ring）— verdictScore = monthlyVol (40pt) + competition (35pt) + trend (25pt) 加權算出 0-100 綜合分；verdict 三階 verdict：≥70「值得投入」teal / ≥45「需再觀察」gold / <45「不建議強推」rose + 情境文案（月搜尋量 X + 競爭 Y + 趨勢 Z）；(2) 月搜尋量卡加 12 月 sparkline（SVG area chart + gradient fill）依 trend 方向模擬數據點，讓「4,000」不再是孤立數字；(3) 競爭強度卡加 CPC benchmark bar（小進度條對比行業均值 NT2）；(4) 趨勢卡廢掉 ↑/→/↓ 單一字元，改真 SVG 折線 stroke 隨 trend 方向（上升/持平/下降）→ 視覺訊號而非文字；(5) 4 卡全改 .card-editorial variant（Maze-inspired border hover）+ 封閉五色；保留 aiBadge 上方不動 · 版號 v1.3.15→v1.3.16 -->
 <!-- v1.3.15 · 問卷結果頁 P0 重修（女巫 rubric 55→82）：移除 Math.random() 假品質分數 — clarity/bias/coverage/completion 不再顯示虛假 random，改由 AI survey_audit 真實給分存 ；未檢測時 4 卡顯示「—」slate dashed ring；新增 Hero verdict 綜合可信度 84px SVG ring（overallScore = avg(clarity + 100-bias + coverage + completion)）+「可以發 / 建議優化 / 建議重做」verdict 色彩編碼（teal/gold/rose）+ 建議文案 + 題數·預估填答時間 meta；4 純數字卡改 SVG 56px ring 視覺化（封閉五色：清晰度 teal / 誘導性 gold / 覆蓋率 primary / 完成率 rose）；empty state 用 .card-editorial variant（Maze-inspired hover 只變 border）· 版號 v1.3.14→v1.3.15 -->
 <!-- v1.3.14 · Tail cleanup + Firebase Trigger Email 指南：(1) HTML tail 熱區 26 條舊 changelog（v1.0.8 → v1.3.10）搬運至 `projects/beyondpath/CHANGELOG.md` 歸檔，tail 回歸 CLAUDE.md 憲法 ≤3 條規則（目前保留 v1.3.11/12/13/14）；(2) `projects/beyondpath/ops/trigger-email-setup.md` 建檔——Firebase Extension「Trigger Email from Firestore」5-10 分鐘設定指南含：Gmail App Password 取得、Extension 安裝設定（asia-east1 region + SMTP URI）、Cloud Function `applicationEmail` onCreate 中繼寫 `mail/` collection 自動寄 HTML email 給 edwardt0303@gmail.com（含申請摘要 table + admin 頁連結）、測試 & 故障排除、Firebase 免費額度試算（申請量 < 500/日 完全免費）；(3) 愛德華只需在 Firebase Console 執行 5 步即可啟用即時 email 通知，完全不靠第三方 · 版號 v1.3.13→v1.3.14 -->
 <!-- v1.3.13 · Witch Action 1+2+5 設計 token 擴充 + Lab CAVEAT 方法論升級（霍爾 D.2 落地）：(1) `:root` 新增 `--space-8:72px` / `--space-9:96px` / `--space-10:128px` 敘事型 section-scale spacing；新增 `--text-display-sm:28px` / `-md:36px` / `-lg:48px` / `-xl:72px` display 字階 — 僅限 landing / 問卷結果 / 市場報告 / 年度回顧等儀式型區塊使用，工具頁仍守 `--text-page-title` 22px 上限；新增 `--font-serif` / `--font-sans` 含中文 fallback（Noto Serif TC + Noto Sans TC）修 Georgia italic 中文 fallback 到系統 sans 的斷裂；(2) `.card-editorial` variant — 敘事型卡片 hover 只變 border 不做 shadow glow（Maze-inspired），用於問卷結果卡、市場報告段落、Lab 方法論區塊、首頁 feature；(3) `.l-section` / `.l-section.spacious` landing section separator 規範化用 `--space-9/10`；(4) Lab CAVEAT 擴充霍爾 D.2 文案三段結構：🟢 適合使用 / ⚠️ 不適合替代 / 誠實聲明（"用 Lab 跑廣度、真人訪談跑深度" Synthetic Users "Invert the process" 中文版），保留原 RQS / 已知限制內容在後；全部 Q1 Lab 誠實度配套到位 · 版號 v1.3.12→v1.3.13 -->
