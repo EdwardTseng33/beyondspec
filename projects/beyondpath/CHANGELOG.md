@@ -1,5 +1,45 @@
 # PATH App Changelog
 
+## v1.3.15
+
+<!-- 從 app.html tail 搬出 · v1.3.18 cleanup -->
+
+v1.3.15 · 問卷結果頁 P0 重修（女巫 rubric 55→82）：移除 Math.random() 假品質分數 — clarity/bias/coverage/completion 不再顯示虛假 random，改由 AI survey_audit 真實給分存；未檢測時 4 卡顯示「—」slate dashed ring；新增 Hero verdict 綜合可信度 84px SVG ring（overallScore = avg(clarity + 100-bias + coverage + completion)）+「可以發 / 建議優化 / 建議重做」verdict 色彩編碼（teal/gold/rose）+ 建議文案 + 題數·預估填答時間 meta；4 純數字卡改 SVG 56px ring 視覺化（封閉五色：清晰度 teal / 誘導性 gold / 覆蓋率 primary / 完成率 rose）；empty state 用 .card-editorial variant（Maze-inspired hover 只變 border）· 版號 v1.3.14→v1.3.15
+
+---
+
+## v1.3.14
+
+<!-- 從 app.html tail 搬出 · v1.3.18 cleanup -->
+
+v1.3.14 · Tail cleanup + Firebase Trigger Email 指南：(1) HTML tail 熱區 26 條舊 changelog（v1.0.8 → v1.3.10）搬運至 `projects/beyondpath/CHANGELOG.md` 歸檔，tail 回歸 CLAUDE.md 憲法 ≤3 條規則；(2) `projects/beyondpath/ops/trigger-email-setup.md` 建檔——Firebase Extension「Trigger Email from Firestore」5-10 分鐘設定指南含：Gmail App Password 取得、Extension 安裝設定（asia-east1 region + SMTP URI）、Cloud Function `applicationEmail` onCreate 中繼寫 `mail/` collection 自動寄 HTML email 給 edwardt0303@gmail.com（含申請摘要 table + admin 頁連結）、測試 & 故障排除、Firebase 免費額度試算（申請量 < 500/日 完全免費）；(3) 愛德華只需在 Firebase Console 執行 5 步即可啟用即時 email 通知，完全不靠第三方 · 版號 v1.3.13→v1.3.14
+
+---
+
+## v1.3.13
+
+<!-- 從 app.html tail 搬出 · v1.3.18 cleanup -->
+
+v1.3.13 · Witch Action 1+2+5 設計 token 擴充 + Lab CAVEAT 方法論升級（霍爾 D.2 落地）：(1) `:root` 新增 `--space-8:72px` / `--space-9:96px` / `--space-10:128px` 敘事型 section-scale spacing；新增 `--text-display-sm:28px` / `-md:36px` / `-lg:48px` / `-xl:72px` display 字階；新增 `--font-serif` / `--font-sans` 含中文 fallback（Noto Serif TC + Noto Sans TC）修 Georgia italic 中文 fallback 到系統 sans 的斷裂；(2) `.card-editorial` variant — 敘事型卡片 hover 只變 border 不做 shadow glow（Maze-inspired）；(3) `.l-section` / `.l-section.spacious` landing section separator 規範化用 `--space-9/10`；(4) Lab CAVEAT 擴充霍爾 D.2 文案三段結構：🟢 適合使用 / ⚠️ 不適合替代 / 誠實聲明 · 版號 v1.3.12→v1.3.13
+
+---
+
+## v1.3.12
+
+<!-- 從 app.html tail 搬出 · v1.3.18 cleanup -->
+
+v1.3.12 · PATH 診斷結果頁 CTA 文案對齊 Q1 中庸版敘事：line 21546 action card 文案「針對最弱維度進行 AI 模擬用戶訪談」→「針對最弱維度進行 AI 合成受眾訪談（先跑廣度，真訪談跑深度）」，與 v1.2.0 Lab 模組 subtitle / header badge 用同一套語言；延伸實施 Q1 Lab 誠實度 slogan 至全站觸點 · 版號 v1.3.11→v1.3.12
+
+---
+
+## v1.3.11
+
+<!-- 從 app.html tail 搬出 · v1.3.18 cleanup -->
+
+v1.3.11 · app 內申請管理頁（Admin-only，回應愛德華「不靠三方」需求閉環）：接續 v1.3.9 Firestore 寫入，這版加 app 內管理介面讓愛德華不用進 Firebase Console 就能審核所有申請。(1) Sidebar 新增「管理」category + 「申請管理」nav item，條件 `state.user.email === 'edwardt0303@gmail.com'` 才顯示；(2) Router 新增 `admin: 'admin-applications'` slug mapping；(3) renderModule 加 `case 'admin-applications': renderAdminApplications()`；(4) 新 `renderAdminApplications()` 讀 Firestore `applications` collection orderBy submittedAt desc limit 100，render table 含時間 / 方案 badge / 公司 / 姓名+職稱 / mailto Email / 需求 / 狀態 badge（pending gold / approved teal / rejected rose）/ 操作；(5) `updateApplicationStatus(docId, status)` update Firestore doc with reviewedAt serverTimestamp + reviewedBy email；完整流程：landing submit → Firestore write → 愛德華進 app /admin 立即看到 → 點通過/婉拒 → status 更新 · 版號 v1.3.10→v1.3.11
+
+---
+
 ## v1.3.10
 
 <!-- 從 app.html tail 搬出 · v1.3.14 cleanup -->

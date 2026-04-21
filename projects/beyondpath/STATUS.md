@@ -2,7 +2,7 @@
 
 > **用途**：每個 Claude conversation window 都有 context 限制，這個檔案是**跨對話的進度記憶 single source of truth**。
 > **規則**：每次 session 關鍵進度 / 決策 / 版本推送後，愛德華或主對話蘇菲要**更新此檔 + git commit**，下個 session 開頭 `Read STATUS.md` 就能完整 pick up。
-> **上次更新**：2026-04-21（今夜累積推 26 版 v1.1–v1.3.12 + 4 份深度研究 + mockup v4）
+> **上次更新**：2026-04-21 深夜（v1.3.18 信任救火 + 4 視角報告升級評估完成）
 
 ---
 
@@ -10,8 +10,8 @@
 
 | 項目 | 值 |
 |------|-----|
-| **prod 版本** | v1.3.16（sidebar badge）|
-| **最新 commit** | `0c39360` v1.3.16: market signal results P0 rubric revamp (53→82) |
+| **prod 版本** | v1.3.18（sidebar badge）|
+| **最新里程碑** | v1.3.18 信任救火 · Math.random 全清 + 競品矩陣 AI 推估標記 |
 | **repo** | github.com/EdwardTseng33/beyondspec |
 | **部署** | GitHub Pages · https://beyondspec.tw/path/ |
 | **Firebase project** | beyond-business-ca9da（Auth + Firestore enabled）|
@@ -46,6 +46,11 @@
 | `projects/beyondpath/research/platform-diagnosis-visual.md` | Witch · 10 維 rubric 評分 + 設計提案 |
 | `projects/beyondpath/research/platform-diagnosis-strategy.md` | Howl · 五工具洞察 + 戰情室策略 + 首頁定位 |
 | `projects/beyondpath/research/platform-diagnosis-ux.md` | Turnip · 決策閉環 + 首頁訊息矛盾 + 空狀態 UX |
+| `projects/beyondpath/research/report-upgrade-visual.md` | 女巫 · 三報告 10 維 rubric 視覺評分（市場 58 / Lab 62 / PATH 83）+ P0/P1/P2 Actions |
+| `projects/beyondpath/research/report-upgrade-content.md` | 霍爾 · 內容深度三層框架（表層/中層/深層）+ 對標 Maze/Dovetail/Productboard |
+| `projects/beyondpath/research/report-upgrade-ux.md` | 蕪菁頭 · 5 persona × 3 報告 情緒曲線 + Math.random 信任風險 + Step A 引導 |
+| `projects/beyondpath/research/report-upgrade-tech.md` | 卡西法 · 技術債盤點 + 3 投資分級（Quick Win / Foundation / Future Bet）|
+| `projects/beyondpath/research/report-upgrade-roadmap.md` | 蘇菲 · 四視角整合路線圖 + 2 週 sprint plan + Edward 待拍板 3 件 |
 
 ### Mockup / Design 原型
 | 檔案 | 內容 |
@@ -84,10 +89,12 @@
 
 ## 🎯 當前 Backlog（P0 先做）
 
-**愛德華待拍板 3 件**：
+**愛德華待拍板 5 件（v1.3.18 後新增 2 件）**：
 1. **戰情室 mockup v4 sign-off**（看完 https://beyondspec.tw/path/mockups/war-room-v3.html → 「OK 實裝」或「X 要改」）
 2. **Chart.js 引入 vs 純 SVG**（v1.4 大工程決策）
 3. **DataForSEO 真實資料接入**要不要這個月投入（H 風險，Markl 建議列 P2）
+4. **🆕 是否啟動 2 週 report upgrade sprint**（Y/N）— 詳見 `research/report-upgrade-roadmap.md`
+5. **🆕 `renderFullReport` 475 行 god function 重構**（16h · 重構期間無新 feature）Y/N
 
 **不需愛德華拍板的 P0**：
 - ✅ ~~BL-012 Tail cleanup~~（v1.3.14 完成：26 條搬進 CHANGELOG.md）
@@ -127,6 +134,8 @@
 - **v1.3.14** Tail cleanup（26 條搬 CHANGELOG.md）+ Firebase Trigger Email 指南
 - **v1.3.15** 問卷結果頁 P0 重修（55→82，移 Math.random 假分 + hero verdict + 4 ring）
 - **v1.3.16** 市場探測結果頁 P0 重修（53→82，hero verdict + sparkline + CPC benchmark + 真 SVG 折線）
+- **v1.3.17** 營運戰情室視覺升級 Batch 1（Hero 今日戰情卡 + 3 mini KPI · Maze-inspired）
+- **v1.3.18** 信任救火 · Math.random 造假數據清零 + 競品矩陣 AI badge（P3 坤書型信任風險根除）
 
 ### 產了 4 份深度研究 + 1 份設計參考
 見 research/ 目錄。
