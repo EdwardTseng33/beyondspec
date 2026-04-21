@@ -5091,7 +5091,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.14</div>
+        <div class="sidebar-version">v1.3.15</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -26174,31 +26174,71 @@ function loadHistory(){
         </div>`;
     }).join('');
 
-    // Quality scores
-    const clarity = Math.floor(Math.random() * 15) + 80;
-    const bias = Math.floor(Math.random() * 10) + 5;
-    const coverage = Math.floor(Math.random() * 12) + 82;
-    const completion = Math.floor(Math.random() * 8) + 88;
+    // v1.3.15: 移除 Math.random() 假品質分數（女巫 rubric 55 分信任殺手）— 改由 AI audit 真實給分或顯示「尚未檢測」
+    // 4 個維度改為 null（若 survey_audit 尚未跑過），用戶點「執行檢測」才會拿到真分
+    const auditData = window._svAuditData || null;
+    const clarity = auditData?.clarity || null;
+    const bias = auditData?.bias || null;
+    const coverage = auditData?.coverage || null;
+    const completion = auditData?.completion || null;
+    const hasAudit = clarity !== null;
+
+    // v1.3.15 hero verdict — 綜合分 = (clarity + (100-bias) + coverage + completion) / 4
+    const overallScore = hasAudit ? Math.round((clarity + (100 - bias) + coverage + completion) / 4) : null;
+    const verdictTier = overallScore === null ? null
+      : overallScore >= 85 ? { label:'可以發', color:'var(--teal)', advice:'問卷品質優良，可直接發送給真實用戶填答' }
+      : overallScore >= 70 ? { label:'建議優化', color:'var(--gold)', advice:'問卷可用但建議針對弱項調整再發' }
+      :                       { label:'建議重做', color:'var(--rose)', advice:'問卷品質不足，調整後再發會拿到更可信回饋' };
+
+    // SVG ring helper — 用單色 arc 帶封閉五色
+    const renderRing = (val, color, isBias) => {
+      if (val === null) return '<div style="width:56px;height:56px;border-radius:50%;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink-dim);font-size:13px">—</div>';
+      const displayVal = isBias ? (100 - val) : val;
+      const r = 22, c = 2 * Math.PI * r, pct = Math.max(0, Math.min(100, displayVal));
+      const dash = c * (1 - pct / 100);
+      return `<svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="${r}" fill="none" stroke="var(--border)" stroke-width="4"/><circle cx="28" cy="28" r="${r}" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${dash.toFixed(2)}" transform="rotate(-90 28 28)"/><text x="28" y="33" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">${val}${isBias?'%':'%'}</text></svg>`;
+    };
 
     resultsEl.innerHTML = `
       ${aiBadge}
-      <!-- Quality Score Cards -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
-        <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
-          <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">題目清晰度</div>
-          <div style="font-size:28px;font-weight:800;color:${clarity>=85?'var(--teal)':'var(--primary)'}">${clarity}%</div>
+
+      <!-- v1.3.15: Hero verdict — 綜合可信度 + 建議 -->
+      ${hasAudit && verdictTier ? `
+        <div style="background:var(--bg-card);border:1px solid ${verdictTier.color};border-radius:var(--r-lg);padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <div style="flex-shrink:0">
+            <svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--border)" stroke-width="6"/><circle cx="42" cy="42" r="36" fill="none" stroke="${verdictTier.color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${(2 * Math.PI * 36).toFixed(2)}" stroke-dashoffset="${(2 * Math.PI * 36 * (1 - overallScore / 100)).toFixed(2)}" transform="rotate(-90 42 42)"/><text x="42" y="47" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)">${overallScore}</text></svg>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:13px;color:var(--ink-muted);margin-bottom:4px">問卷可信度</div>
+            <div style="font-size:20px;font-weight:700;color:${verdictTier.color};margin-bottom:6px">${verdictTier.label}</div>
+            <div style="font-size:13px;color:var(--ink-sec);line-height:1.6">${verdictTier.advice}</div>
+          </div>
+          <div style="font-size:12px;color:var(--ink-muted)">共 ${questions.length} 題 · 預估 ${Math.ceil(questions.length * 0.25)} 分鐘填答</div>
         </div>
-        <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
-          <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">誘導性風險</div>
-          <div style="font-size:28px;font-weight:800;color:${bias<=10?'var(--teal)':'var(--gold)'}">${bias}%</div>
+      ` : `
+        <div class="card-editorial" style="margin-bottom:16px;text-align:center;padding:24px">
+          <div style="font-size:14px;color:var(--ink);font-weight:600;margin-bottom:6px">問卷已生成，共 ${questions.length} 題</div>
+          <div style="font-size:13px;color:var(--ink-muted);margin-bottom:12px">點擊下方「執行問卷檢測」跑 AI 品質評分（題目清晰度 / 誘導性 / 覆蓋率 / 完成率）</div>
         </div>
-        <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
-          <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">主題覆蓋率</div>
-          <div style="font-size:28px;font-weight:800;color:${coverage>=85?'var(--teal)':'var(--primary)'}">${coverage}%</div>
+      `}
+
+      <!-- Quality Score Cards — v1.3.15 改為 SVG ring，封閉五色，無 Math.random 假分 -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
+        <div class="card-editorial" style="padding:16px;text-align:center">
+          <div style="margin-bottom:8px;display:flex;justify-content:center">${renderRing(clarity, 'var(--teal)')}</div>
+          <div style="font-size:12px;color:var(--ink-muted);font-weight:500">題目清晰度</div>
         </div>
-        <div style="background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-lg);padding:16px;text-align:center">
-          <div style="font-size:12px;color:var(--ink-muted);margin-bottom:6px">預估完成率</div>
-          <div style="font-size:28px;font-weight:800;color:${completion>=90?'var(--teal)':'var(--primary)'}">${completion}%</div>
+        <div class="card-editorial" style="padding:16px;text-align:center">
+          <div style="margin-bottom:8px;display:flex;justify-content:center">${renderRing(bias, 'var(--gold)', true)}</div>
+          <div style="font-size:12px;color:var(--ink-muted);font-weight:500">誘導性風險 <span style="font-size:10px">(越低越好)</span></div>
+        </div>
+        <div class="card-editorial" style="padding:16px;text-align:center">
+          <div style="margin-bottom:8px;display:flex;justify-content:center">${renderRing(coverage, 'var(--primary)')}</div>
+          <div style="font-size:12px;color:var(--ink-muted);font-weight:500">主題覆蓋率</div>
+        </div>
+        <div class="card-editorial" style="padding:16px;text-align:center">
+          <div style="margin-bottom:8px;display:flex;justify-content:center">${renderRing(completion, 'var(--rose)')}</div>
+          <div style="font-size:12px;color:var(--ink-muted);font-weight:500">預估完成率</div>
         </div>
       </div>
 
@@ -30985,6 +31025,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.3.15 · 問卷結果頁 P0 重修（女巫 rubric 55→82）：移除 Math.random() 假品質分數 — clarity/bias/coverage/completion 不再顯示虛假 random，改由 AI survey_audit 真實給分存 ；未檢測時 4 卡顯示「—」slate dashed ring；新增 Hero verdict 綜合可信度 84px SVG ring（overallScore = avg(clarity + 100-bias + coverage + completion)）+「可以發 / 建議優化 / 建議重做」verdict 色彩編碼（teal/gold/rose）+ 建議文案 + 題數·預估填答時間 meta；4 純數字卡改 SVG 56px ring 視覺化（封閉五色：清晰度 teal / 誘導性 gold / 覆蓋率 primary / 完成率 rose）；empty state 用 .card-editorial variant（Maze-inspired hover 只變 border）· 版號 v1.3.14→v1.3.15 -->
 <!-- v1.3.14 · Tail cleanup + Firebase Trigger Email 指南：(1) HTML tail 熱區 26 條舊 changelog（v1.0.8 → v1.3.10）搬運至 `projects/beyondpath/CHANGELOG.md` 歸檔，tail 回歸 CLAUDE.md 憲法 ≤3 條規則（目前保留 v1.3.11/12/13/14）；(2) `projects/beyondpath/ops/trigger-email-setup.md` 建檔——Firebase Extension「Trigger Email from Firestore」5-10 分鐘設定指南含：Gmail App Password 取得、Extension 安裝設定（asia-east1 region + SMTP URI）、Cloud Function `applicationEmail` onCreate 中繼寫 `mail/` collection 自動寄 HTML email 給 edwardt0303@gmail.com（含申請摘要 table + admin 頁連結）、測試 & 故障排除、Firebase 免費額度試算（申請量 < 500/日 完全免費）；(3) 愛德華只需在 Firebase Console 執行 5 步即可啟用即時 email 通知，完全不靠第三方 · 版號 v1.3.13→v1.3.14 -->
 <!-- v1.3.13 · Witch Action 1+2+5 設計 token 擴充 + Lab CAVEAT 方法論升級（霍爾 D.2 落地）：(1) `:root` 新增 `--space-8:72px` / `--space-9:96px` / `--space-10:128px` 敘事型 section-scale spacing；新增 `--text-display-sm:28px` / `-md:36px` / `-lg:48px` / `-xl:72px` display 字階 — 僅限 landing / 問卷結果 / 市場報告 / 年度回顧等儀式型區塊使用，工具頁仍守 `--text-page-title` 22px 上限；新增 `--font-serif` / `--font-sans` 含中文 fallback（Noto Serif TC + Noto Sans TC）修 Georgia italic 中文 fallback 到系統 sans 的斷裂；(2) `.card-editorial` variant — 敘事型卡片 hover 只變 border 不做 shadow glow（Maze-inspired），用於問卷結果卡、市場報告段落、Lab 方法論區塊、首頁 feature；(3) `.l-section` / `.l-section.spacious` landing section separator 規範化用 `--space-9/10`；(4) Lab CAVEAT 擴充霍爾 D.2 文案三段結構：🟢 適合使用 / ⚠️ 不適合替代 / 誠實聲明（"用 Lab 跑廣度、真人訪談跑深度" Synthetic Users "Invert the process" 中文版），保留原 RQS / 已知限制內容在後；全部 Q1 Lab 誠實度配套到位 · 版號 v1.3.12→v1.3.13 -->
 <!-- v1.3.12 · PATH 診斷結果頁 CTA 文案對齊 Q1 中庸版敘事：line 21546 action card 文案「針對最弱維度進行 AI 模擬用戶訪談」→「針對最弱維度進行 AI 合成受眾訪談（先跑廣度，真訪談跑深度）」，與 v1.2.0 Lab 模組 subtitle / header badge 用同一套語言；延伸實施 Q1 Lab 誠實度 slogan 至全站觸點 · 版號 v1.3.11→v1.3.12 -->
