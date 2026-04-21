@@ -2,7 +2,7 @@
 
 > **用途**：每個 Claude conversation window 都有 context 限制，這個檔案是**跨對話的進度記憶 single source of truth**。
 > **規則**：每次 session 關鍵進度 / 決策 / 版本推送後，愛德華或主對話蘇菲要**更新此檔 + git commit**，下個 session 開頭 `Read STATUS.md` 就能完整 pick up。
-> **上次更新**：2026-04-21 深夜（v1.3.18 信任救火 + 4 視角報告升級評估完成）
+> **上次更新**：2026-04-21 深夜（v1.3.19 三合一 hotfix · 連鎖事故救火完成 + 部署憲法升級）
 
 ---
 
@@ -10,8 +10,9 @@
 
 | 項目 | 值 |
 |------|-----|
-| **prod 版本** | v1.3.18（sidebar badge）|
-| **最新里程碑** | v1.3.18 信任救火 · Math.random 全清 + 競品矩陣 AI 推估標記 |
+| **prod 版本** | v1.3.19（sidebar badge）|
+| **最新 commit** | `7989772` v1.3.19 hotfix · 戰情室白屏 + 登出踢錯頁 + landing 被覆蓋 三合一修復 |
+| **最新里程碑** | 部署憲法升級：`scripts/push-prod.sh` 五層 guard + CLAUDE.md 新增 D-1~D-6 條款 |
 | **repo** | github.com/EdwardTseng33/beyondspec |
 | **部署** | GitHub Pages · https://beyondspec.tw/path/ |
 | **Firebase project** | beyond-business-ca9da（Auth + Firestore enabled）|
@@ -136,6 +137,15 @@
 - **v1.3.16** 市場探測結果頁 P0 重修（53→82，hero verdict + sparkline + CPC benchmark + 真 SVG 折線）
 - **v1.3.17** 營運戰情室視覺升級 Batch 1（Hero 今日戰情卡 + 3 mini KPI · Maze-inspired）
 - **v1.3.18** 信任救火 · Math.random 造假數據清零 + 競品矩陣 AI badge（P3 坤書型信任風險根除）
+- **v1.3.19** 三合一 hotfix · (A) renderInsights var hoisting 修復（戰情室白屏）+ (B) `../` → `/path/` 絕對路徑（登出踢錯頁）+ (C) landing 真本復原（被 app.html 覆蓋）+ `push-prod.sh` 五層 guard
+
+### 🔥 v1.3.17-19 連鎖事故（2026-04-21 深夜）
+三個 bug 一次暴露：(1) 戰情室白屏 TypeError；(2) landing 被 app.html 覆蓋 2.6MB；(3) 登出跳到規格外工作室根域。根因：v1.3.17 `var` hoisting 陷阱 + v1.3.18 我繞過 `push-prod.sh` 手動 cp 誤覆蓋。後果：愛德華信任損耗 + 1.5h hotfix。
+
+**憲法升級成果**：
+- `CLAUDE.md` 新增**部署憲法 D-1~D-6**（詳見主檔 [部署憲法] 章節）
+- `scripts/push-prod.sh` 強化 5 層 guard（App 正向檢查 / App 大小 / Landing 正向 / Landing 大小 / Post-deploy sanity）
+- Post-mortem 落檔：`projects/beyondpath/ops/postmortem-v1.3.17-to-v1.3.19-chain.md`（完整連鎖事件分析）
 
 ### 產了 4 份深度研究 + 1 份設計參考
 見 research/ 目錄。
