@@ -2,7 +2,7 @@
 
 > **用途**：每個 Claude conversation window 都有 context 限制，這個檔案是**跨對話的進度記憶 single source of truth**。
 > **規則**：每次 session 關鍵進度 / 決策 / 版本推送後，愛德華或主對話蘇菲要**更新此檔 + git commit**，下個 session 開頭 `Read STATUS.md` 就能完整 pick up。
-> **上次更新**：2026-04-21 深夜（v1.3.19 三合一 hotfix · 部署憲法升級 · 專案資料夾大整理 89→24 頂層項目）
+> **上次更新**：2026-04-21 深夜（v1.4.0 S1 進行中 · 95 分報告規格體系全貌落地 · PATH 診斷 v2.0 施工中）
 
 ---
 
@@ -10,9 +10,11 @@
 
 | 項目 | 值 |
 |------|-----|
-| **prod 版本** | v1.3.19（sidebar badge）|
-| **最新 commit** | `7989772` v1.3.19 hotfix · 戰情室白屏 + 登出踢錯頁 + landing 被覆蓋 三合一修復 |
-| **最新里程碑** | 部署憲法升級：`scripts/push-prod.sh` 五層 guard + CLAUDE.md 新增 D-1~D-6 條款 |
+| **prod 版本** | v1.3.19（sidebar badge · prod 未動）|
+| **local 版本** | v1.4.0-alpha（31,944 行 · sha256 `769228783d...`）|
+| **最新 commit** | `dca9043` S1 D5 content layer（spec + prompt + schema）|
+| **S1 進度** | D1/D2/D3 完成 · D4+D5 卡西法 bg 實戰中（agentId `a4966a5ad6a3f9bbd`）|
+| **最新里程碑** | **95 分報告規格體系 v1.2** 完整落地（486+78+30+40 = 634 條 criteria · 12 份規格文件）|
 | **repo** | github.com/EdwardTseng33/beyondspec |
 | **部署** | GitHub Pages · https://beyondspec.tw/path/ |
 | **Firebase project** | beyond-business-ca9da（Auth + Firestore enabled）|
@@ -138,6 +140,33 @@
 - **v1.3.17** 營運戰情室視覺升級 Batch 1（Hero 今日戰情卡 + 3 mini KPI · Maze-inspired）
 - **v1.3.18** 信任救火 · Math.random 造假數據清零 + 競品矩陣 AI badge（P3 坤書型信任風險根除）
 - **v1.3.19** 三合一 hotfix · (A) renderInsights var hoisting 修復（戰情室白屏）+ (B) `../` → `/path/` 絕對路徑（登出踢錯頁）+ (C) landing 真本復原（被 app.html 覆蓋）+ `push-prod.sh` 五層 guard
+
+### 🎯 v1.4.0 Sprint 1 · PATH 診斷 v2.0（進行中 · 預計 2026-05-05 push prod）
+
+**目標**：首份 95 分報告（PATH 診斷 v2.0）+ 技術地基（5 報告共用的 Render Engine / URL routing / AI Wrapper）
+
+**Sprint 1 進度**：
+- ✅ D1 · `.report-*` CSS namespace（59 個 class · 封閉五色合規）
+- ✅ D2 · `window.BPReport` Render Engine v1（168 行 · schema-driven · 3 section type）
+- ✅ D3 · URL routing `/path/report/diagnostic/:id`（36/36 unit test PASS）
+- 🏃 D4 · AI Call Wrapper v2（卡西法 bg 實戰中）
+- 🏃 D5 · PATH 診斷 v2.0 整合（卡西法 bg 實戰中 · JTBD 4 層 + SMART + Hypothesis 抽屜 + 液態團隊彩蛋）
+
+**戰略決議**（城堡 7 人圓桌會議 · 霍爾 Top 3 + 卡西法 + 馬魯克整合）：
+- Q1 命名：**A · 液態團隊時代**（3-10 人用 Claude 跑完驗證到營收的元年）
+- Q2 環境：**STEEP 2.0 改版**（砍 Political + 加 Ethics/AI Governance）
+- Q3 主語氣：**Gemini 70% + GPT 30%**
+- Q4 AI 處理：Claude + 霍爾折衷（融入每章 + AI 宣言章）
+- Q5 Signal：每 Trend ≥ 3 Signal
+- Q6 工具棧：**AI 研究工具**（Perplexity / Claude Projects / Gemini Deep Research · 不是 MBA 框架）
+
+**Howl's Law 3 條守護**：融合 > 並列 / 讀者情境決定 / 創業者不需學 MBA
+
+**4 Sprint 藍圖**（8 週 · 馬魯克切割）：
+- S1（W1-2）· PATH 診斷 v2.0 · **進行中**
+- S2（W3-4）· Lab 分析 + 市場探測（共用 Signal engine）
+- S3（W5-6）· 🏆 市場報告旗艦（Data Flywheel money slide）
+- S4（W7-8）· AI 問卷 + 整合收尾
 
 ### 🔥 v1.3.17-19 連鎖事故（2026-04-21 深夜）
 三個 bug 一次暴露：(1) 戰情室白屏 TypeError；(2) landing 被 app.html 覆蓋 2.6MB；(3) 登出跳到規格外工作室根域。根因：v1.3.17 `var` hoisting 陷阱 + v1.3.18 我繞過 `push-prod.sh` 手動 cp 誤覆蓋。後果：愛德華信任損耗 + 1.5h hotfix。
