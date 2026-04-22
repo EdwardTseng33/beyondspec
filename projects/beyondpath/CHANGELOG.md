@@ -1,5 +1,13 @@
 # PATH App Changelog
 
+## v1.3.17
+
+<!-- 從 app.html tail 搬出 · v1.4.0 cleanup -->
+
+v1.3.17 · 營運戰情室視覺升級 Batch 1（愛德華指令「戰情室先做個視覺上的升級」）：renderInsights 頂部 page-title-area 後新增兩層：(1) **Hero 今日戰情卡**——color-mix 4% 底 + 16% border tint 依訊號 tone 動態上色（rose 逾期款項 / gold 任務逾期 / teal 報價健康 / primary 資料累積中），sparkle icon + 日期 + 完整敘事 + 黑色 CTA 按鈕直跳對應模組；規則引擎生成（Q3 決議「AI 生成不準先不上」，改 5 情境規則式敘事）；subtitle 改「今天該擔心什麼？AI 會主動提醒。」；(2) **3 Mini KPI**（本月已收 / Pipeline 等待 / 異常提醒）．card-editorial variant（Maze-inspired hover 只變 border）；封閉五色編碼；null 顯示 slate「—」不懲罰新用戶；sparkline 留給資料累積後；既有 pulse view / 營收健康度 / 商業動能 / 執行力 / 報價 list 全部保留不動，新 hero + 3 mini 插在最頂部作為「第一眼戰情摘要」· 版號 v1.3.16→v1.3.17
+
+---
+
 ## v1.3.16
 
 <!-- 從 app.html tail 搬出 · v1.3.19 cleanup -->

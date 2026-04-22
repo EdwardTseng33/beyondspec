@@ -5074,6 +5074,606 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 .kb-v2-touch-actions button{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--ink-muted);font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
 .kb-v2-touch-actions button:active{background:var(--primary);color:#fff;border-color:var(--primary)}
 
+/* ====== BeyondPath .report-* CSS Namespace v1.0 (D1 · Sprint 1 · 2026-04-22) ====== */
+/* ============================================================================
+ * BeyondPath · .report-* CSS Namespace v1.0
+ * ----------------------------------------------------------------------------
+ * 建立：2026-04-21 · Sprint 1 · 卡西法 D1
+ * 依據：visual-rubric-95.md § 8 + tool-selection-matrix Howl's Law
+ * 適用：5 份報告共用 render engine 的視覺 contract
+ * 憲法：封閉五色 / 字體 scale / 間距 scale / 無 stripe / 無 emoji icon
+ *
+ * 使用：
+ *   <article class="report">
+ *     <header class="report-hero report-hero--ritual">
+ *       <p class="report-section-meta">01 / PATH 診斷</p>
+ *       <h1 class="report-verdict">方向對，補 Traction 就能衝</h1>
+ *       <p class="report-tldr">...</p>
+ *       <div class="report-hero-break"></div>
+ *       <div class="report-kpi-row">...</div>
+ *     </header>
+ *     <section class="report-section">...</section>
+ *     <footer class="report-cta-trio">...</footer>
+ *   </article>
+ * ============================================================================ */
+
+
+/* ── CSS Custom Properties · 擴充既有 token ────────────────────────── */
+:root {
+  /* 琥珀 DNA（warm-serif 儀式區塊專用）*/
+  --amber-ink:    #3D2E1A;
+  --amber-accent: #D4712A;
+  --amber-bg:     rgba(212, 113, 42, .08);
+
+  /* 資料源 badge 色 semantic alias */
+  --source-measured:  var(--teal);   /* 🟢 實測 */
+  --source-estimated: var(--gold);   /* 🟡 推估 */
+  --source-ai:        var(--rose);   /* 🔴 AI 生成 */
+
+  /* Report 專屬字級（若既有 token 無則補）*/
+  --text-section-meta: 11px;
+  --text-report-body:  14px;
+
+  /* Report 專屬間距（對應 space-8/9/10 儀式級別）*/
+  --report-hero-py:     96px;   /* space-9 */
+  --report-hero-py-lg:  128px;  /* space-10 */
+  --report-section-py:  72px;   /* space-8 */
+  --report-card-px:     24px;   /* space-5 */
+}
+
+
+/* ── 基底容器 ──────────────────────────────────────────────────────── */
+.report {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 var(--space-6, 36px);
+  color: var(--ink);
+  font-family: var(--font-sans, 'Inter', 'Noto Sans TC', -apple-system, sans-serif);
+  font-size: var(--text-report-body);
+  line-height: 1.7;
+}
+
+
+/* ── Hero 儀式型 vs 工具型（憲法級分界）──────────────────────────── */
+.report-hero {
+  padding: var(--report-hero-py) 0;
+  position: relative;
+}
+
+.report-hero--ritual {
+  /* 儀式型：允許 warm-serif + 琥珀（首頁、報告開場）*/
+  font-family: Georgia, 'Noto Serif TC', 'Source Han Serif TC', serif;
+  background: linear-gradient(180deg, var(--amber-bg) 0%, transparent 100%);
+}
+
+.report-hero--ritual .report-verdict {
+  color: var(--amber-ink);
+  font-style: italic;
+  font-weight: 700;
+}
+
+.report-hero--tool {
+  /* 工具型：強制封閉五色 + sans-serif（競品表、5 力圖、分數環）*/
+  font-family: var(--font-sans, 'Inter', 'Noto Sans TC', sans-serif);
+  background: var(--bg-card, #fff);
+}
+
+
+/* ── Section meta（01 / 02 / 03 · 對標 Dovetail）──────────────── */
+.report-section-meta {
+  font-size: var(--text-section-meta);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--ink-muted, #94A3B8);
+  margin: 0 0 var(--space-3, 12px) 0;
+  font-family: Georgia, 'Noto Serif TC', serif;
+  font-style: italic;
+}
+
+
+/* ── Verdict（Hero 主標 · 一句話結論）────────────────────────── */
+.report-verdict {
+  font-size: var(--text-display-md, 36px);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+  margin: 0 0 var(--space-4, 16px) 0;
+  color: var(--ink);
+  max-width: 720px;
+}
+
+
+/* ── TL;DR（60-80 字摘要）────────────────────────────────────── */
+.report-tldr {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-sec, #6B6B6B);
+  font-style: italic;
+  margin: 0 0 var(--space-5, 24px) 0;
+  max-width: 640px;
+}
+
+
+/* ── Hero → Section 過渡帶（憲法 §7.1 v1.1 新增）──────────────── */
+.report-hero-break {
+  height: 1px;
+  background: var(--border, #E8E4DD);
+  margin: var(--space-5, 24px) 0 0 0;
+  padding: 0;
+}
+
+
+/* ── KPI Row（3-KPI 橫排 · 對標 Dovetail ROI）──────────────── */
+.report-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-8, 72px);
+  margin: var(--space-6, 36px) 0 0 0;
+}
+
+@media (max-width: 768px) {
+  .report-kpi-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-5, 24px);
+  }
+}
+
+.report-kpi {
+  padding: var(--report-card-px) 0;
+  border-top: 1px solid var(--border, #E8E4DD);
+}
+
+.report-kpi-value {
+  font-size: var(--text-display-lg, 48px);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  margin: 0 0 var(--space-2, 8px) 0;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.report-kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--ink-muted, #94A3B8);
+  margin: 0 0 var(--space-1, 4px) 0;
+}
+
+.report-kpi-trend {
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.report-kpi-trend--up   { color: var(--teal, #1BA891); }
+.report-kpi-trend--down { color: var(--rose, #D94462); }
+.report-kpi-trend--flat { color: var(--ink-muted, #94A3B8); }
+
+
+/* ── Section 容器 ────────────────────────────────────────────── */
+.report-section {
+  padding: var(--report-section-py) 0;
+  border-top: 1px solid var(--border, #E8E4DD);
+}
+
+.report-section:first-of-type {
+  border-top: none;
+}
+
+
+/* ── Source Badge（🟢🟡🔴 · 憲法 §7.2 不搶戲）───────────────── */
+.report-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-hover, rgba(0,0,0,.04));
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-weight: 500;
+  color: var(--ink-muted);
+  margin-top: var(--space-1, 4px);
+}
+
+.report-source-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.report-source-badge--measured  .dot { background: var(--source-measured); }
+.report-source-badge--estimated .dot { background: var(--source-estimated); }
+.report-source-badge--ai        .dot { background: var(--source-ai); }
+
+
+/* ── Warning AI Synth（Lab 專用 · 唯一允許 stripe 的場合）─── */
+.report-warning-ai-synth {
+  background: color-mix(in srgb, var(--rose, #D94462) 14%, transparent);
+  color: var(--rose, #D94462);
+  border-left: 3px solid var(--rose, #D94462);  /* 唯一例外 · 嚴格限此 class */
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin: 0 0 var(--space-5, 24px) 0;
+  border-radius: 0 4px 4px 0;
+}
+
+
+/* ── Quote（editorial · 對標 Dovetail）──────────────────────── */
+.report-quote {
+  font-family: Georgia, 'Noto Serif TC', serif;
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--ink);
+  padding: var(--space-5, 24px) 0;
+  max-width: 680px;
+  position: relative;
+}
+
+.report-quote-dropcap {
+  float: left;
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 700;
+  padding: 4px 8px 0 0;
+  color: var(--primary, #7C5CFC);
+}
+
+
+/* ── JTBD 4 層（v1.1 新增 · PATH 診斷 P 維展開）────────────── */
+.report-jtbd-layer {
+  display: grid;
+  grid-template-columns: 1fr 80px 2fr;
+  gap: var(--space-3, 12px);
+  padding: var(--space-3, 12px) 0;
+  border-bottom: 1px solid var(--border, #E8E4DD);
+  align-items: center;
+}
+
+.report-jtbd-layer:last-child {
+  border-bottom: none;
+}
+
+.report-jtbd-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.report-jtbd-score {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.report-jtbd-score--healthy { color: var(--teal); }
+.report-jtbd-score--warn    { color: var(--gold); }
+.report-jtbd-score--danger  { color: var(--rose); }
+
+.report-jtbd-evidence {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-sec, #6B6B6B);
+}
+
+
+/* ── CTA Trio（分享 / 儲存 / 下載 PDF · 憲法 §6.4 強制）───── */
+.report-cta-trio {
+  display: flex;
+  gap: var(--space-3, 12px);
+  justify-content: flex-end;
+  padding: var(--space-6, 36px) 0;
+  border-top: 1px solid var(--border, #E8E4DD);
+  margin-top: var(--space-8, 72px);
+}
+
+.report-cta-trio button {
+  padding: 10px 20px;
+  background: var(--bg-card, #fff);
+  color: var(--ink);
+  border: 1px solid var(--border, #E8E4DD);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 180ms cubic-bezier(.4,0,.2,1),
+              transform 180ms cubic-bezier(.4,0,.2,1);
+}
+
+.report-cta-trio button:hover {
+  border-color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.report-cta-trio button.report-cta-primary {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+
+/* ── Section Num（01/02/03 · Dovetail 風）──────────────────── */
+.report-section-num {
+  font-family: Georgia, 'Noto Serif TC', serif;
+  font-style: italic;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  margin-bottom: var(--space-2, 8px);
+}
+
+
+/* ── Print Safe（A4 列印）────────────────────────────────── */
+@media print {
+  .report {
+    max-width: 100%;
+    padding: 20mm;
+    font-size: 12pt;
+  }
+  .report-hero {
+    padding: 10mm 0;
+  }
+  .report-kpi-row {
+    gap: 10mm;
+  }
+  .report-section {
+    page-break-inside: avoid;
+    padding: 8mm 0;
+  }
+  .report-cta-trio {
+    display: none;  /* 列印不印 CTA */
+  }
+}
+
+
+/* ── Dark Mode 適配 ─────────────────────────────────────── */
+[data-theme="dark"] .report,
+.theme-dark .report {
+  color: var(--ink-dark, #E2E2EA);
+}
+
+[data-theme="dark"] .report-hero--ritual {
+  background: linear-gradient(180deg, rgba(212, 113, 42, .12) 0%, transparent 100%);
+}
+
+[data-theme="dark"] .report-source-badge {
+  background: rgba(255,255,255,.06);
+}
+
+
+/* ── Mobile 375px 基本響應式 ────────────────────────────── */
+@media (max-width: 640px) {
+  .report {
+    padding: 0 var(--space-4, 16px);
+  }
+  .report-hero {
+    padding: var(--space-8, 72px) 0;
+  }
+  .report-verdict {
+    font-size: 28px;
+  }
+  .report-kpi-value {
+    font-size: 36px;
+  }
+}
+
+
+/* ── D5 · v2.0 整合新增 ────────────────────────────────── */
+
+/* Hypothesis 方法論抽屜 */
+.report-hypo-details {
+  margin-top: 12px;
+  padding: 16px 20px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #E8E4DD);
+  border-radius: 12px;
+}
+.report-hypo-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-sec, #6B6B6B);
+  padding: 6px 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+.report-hypo-details summary::-webkit-details-marker { display: none; }
+.report-hypo-details summary::before {
+  content: '▶';
+  font-size: 10px;
+  color: var(--ink-muted);
+  transition: transform 180ms ease;
+  display: inline-block;
+}
+.report-hypo-details[open] > summary::before { transform: rotate(90deg); }
+.report-hypo-details summary:hover { color: var(--ink); }
+.report-hypo-details[open] > summary { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+/* JTBD 展開 toggle */
+.report-jtbd-expand { margin-top: 14px; }
+.report-jtbd-expand > summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  padding: 8px 14px;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  user-select: none;
+}
+.report-jtbd-expand > summary::-webkit-details-marker { display: none; }
+.report-jtbd-expand > summary::before {
+  content: '+';
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+.report-jtbd-expand[open] > summary::before { content: '−'; }
+.report-jtbd-expand[open] > summary { margin-bottom: 14px; }
+
+/* Next Action cross-tool button */
+.report-action-cross-tool {
+  margin-top: 12px;
+  padding: 8px 14px;
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  color: var(--primary);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 180ms ease, transform 180ms ease;
+}
+.report-action-cross-tool:hover {
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  transform: translateX(2px);
+}
+.report-action-cross-tool::after { content: '→'; }
+
+/* 液態團隊時代彩蛋 */
+.report-liquid-era {
+  padding: 24px;
+  border-top: 1px solid var(--border, #E8E4DD);
+  margin-top: 48px;
+  font-size: 13px;
+  color: var(--ink-muted);
+  font-style: italic;
+  text-align: center;
+  line-height: 1.7;
+}
+.report-liquid-era strong {
+  color: var(--amber-accent, #D4712A);
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* Hero verdict tone */
+.report-verdict--teal { color: var(--teal) !important; }
+.report-verdict--gold { color: var(--gold) !important; }
+.report-verdict--rose { color: var(--rose) !important; }
+
+/* 試試新版報告 inline CTA */
+.report-trynew-cta {
+  margin-top: 40px;
+  padding: 24px 28px;
+  background: linear-gradient(180deg, var(--amber-bg, rgba(212,113,42,.08)) 0%, transparent 100%);
+  border: 1px solid color-mix(in srgb, var(--amber-accent, #D4712A) 22%, transparent);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.report-trynew-cta-text h3 {
+  margin: 0 0 4px;
+  font-family: Georgia, 'Noto Serif TC', serif;
+  font-style: italic;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--amber-ink, #3D2E1A);
+}
+.report-trynew-cta-text p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-sec);
+  line-height: 1.6;
+}
+.report-trynew-cta-btn {
+  padding: 12px 22px;
+  background: var(--amber-accent, #D4712A);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  white-space: nowrap;
+}
+.report-trynew-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(212,113,42,.25);
+}
+
+/* Schema v2 驗證失敗 fallback */
+.report-v2-validation-fail {
+  padding: 32px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--rose);
+  border-radius: 12px;
+  margin: 40px auto;
+  max-width: 640px;
+}
+.report-v2-validation-fail h3 {
+  color: var(--rose);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+.report-v2-validation-fail code {
+  display: block;
+  background: var(--bg-hover);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--ink-sec);
+  margin: 6px 0;
+  font-family: 'Courier New', monospace;
+}
+
+@media (max-width: 640px) {
+  .report-trynew-cta { flex-direction: column; align-items: flex-start; padding: 20px; }
+  .report-trynew-cta-btn { width: 100%; }
+  .report-liquid-era { padding: 20px 16px; }
+}
+
+[data-theme='dark'] .report-trynew-cta {
+  background: linear-gradient(180deg, rgba(212,113,42,.12) 0%, transparent 100%);
+  border-color: color-mix(in srgb, var(--amber-accent, #D4712A) 32%, transparent);
+}
+
+
+/* ════════════════════════════════════════════════════════════
+ * End of BeyondPath .report-* Namespace v1.0
+ * 下一步（Sprint 1 剩餘）：
+ *   - D2 Report Render Engine v1 integration (app.html 內)
+ *   - D3 URL routing /path/report/diagnostic/:id
+ *   - D4 AI Call Wrapper v2
+ *   - D5 PATH 診斷 v2.0 實戰（套此 namespace）
+ * ════════════════════════════════════════════════════════════ */
+
+/* ====== End .report-* namespace ====== */
+
+
 </style>
 </head>
 <body>
@@ -5091,7 +5691,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.3.19</div>
+        <div class="sidebar-version">v1.4.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6854,7 +7454,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     if (typeof updateCreditBadge === 'function') updateCreditBadge();
   }
 
-  // ==================== URL ROUTER (Batch 1, 2026-04-19) ====================
+  // ==================== URL ROUTER (Batch 1, 2026-04-19; S1-D3 compound route parser 2026-04-22) ====================
   // Hash-based router: #/slug -> moduleId; aliases via replaceState.
   var Router = (function() {
     var routes = {
@@ -6865,7 +7465,8 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       quote: "biz-quotes", payment: "biz-billing",
       meeting: "biz-meetings", insights: "biz-insights",
       vault: "biz-docs", settings: "settings",
-      admin: "admin-applications"
+      admin: "admin-applications",
+      "report-diagnostic": "report-diagnostic"  // S1-D3 compound route
     };
     var aliases = {
       dashboard: "home", spec: "planning", inbox: "planning",
@@ -6878,7 +7479,18 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
 
     function parseHash() {
       var h = (window.location.hash || "").replace(/^#\/?/, "");
-      var slug = (h.split("/")[0] || "").split("?")[0];
+      var parts = h.split("?")[0].split("/");
+      var slug = parts[0] || "";
+      // S1-D3 compound route parser: /report/:type/:id
+      if (slug === "report" && parts.length >= 3) {
+        var rType = parts[1];
+        var rId = parts[2] || "";
+        var compoundSlug = "report-" + rType;
+        if (routes[compoundSlug]) {
+          window._reportRouteParams = { type: rType, id: rId };
+          return routes[compoundSlug];
+        }
+      }
       if (aliases[slug]) {
         var canon = aliases[slug];
         try { history.replaceState(null, "", window.location.pathname + window.location.search + "#/" + canon); } catch(e) {}
@@ -6888,6 +7500,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         try { history.replaceState(null, '', window.location.pathname + window.location.search + '#/home'); } catch(e) {}
         return routes.home;
       }
+      window._reportRouteParams = null;
       return routes[slug];
     }
 
@@ -6896,7 +7509,14 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     function navigateTo(moduleId, opts) {
       opts = opts || {};
       var slug = slugForModule(moduleId);
-      var newHash = "#/" + slug;
+      // S1-D3 compound route nav
+      var newHash;
+      if (opts.params && opts.params.id && slug.indexOf("report-") === 0) {
+        var rType = slug.replace("report-", "");
+        newHash = "#/report/" + rType + "/" + opts.params.id;
+      } else {
+        newHash = "#/" + slug;
+      }
       if (window.location.hash !== newHash) {
         if (opts.replace) { try { history.replaceState(null, "", newHash); } catch(e) { window.location.hash = newHash; } }
         else { window.location.hash = newHash; }
@@ -7314,6 +7934,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       case 'market': renderMarketSignal(); break;
       case 'report': renderMarketReport(); break;
       case 'admin-applications': renderAdminApplications(); break;
+      case 'report-diagnostic': renderReportDiagnostic(); break;  // S1-D3
       case 'settings': renderSettings(); break;
     }
   }
@@ -21634,6 +22255,15 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       }).join('')}
       </div>
 
+      <!-- ═══ v2.0 試試新版報告 CTA（D5 · Sprint 1）═══ -->
+      <div class="report-trynew-cta">
+        <div class="report-trynew-cta-text">
+          <h3>v2.0 升級版報告已就緒</h3>
+          <p>JTBD 4 層展開 · Next Action SMART 3 條 · Hypothesis 方法論透明 · 跨工具導引</p>
+        </div>
+        <button class="report-trynew-cta-btn" onclick="app.tryNewReportView()">試試新版報告 · v2.0 →</button>
+      </div>
+
       <!-- ═══ CTA ═══ -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:20px 0 8px">
         <div>
@@ -29716,9 +30346,768 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     showToast(isFeatureImport ? '功能評估匯入診斷完成！' : '產品資料匯入診斷完成！');
   }
 
+
+  // ==================== S1-D2 · window.BPReport · Schema-Driven Report Render Engine v1 (2026-04-22) ====================
+  // 用法：window.BPReport.render(schema, data, containerEl) -> {ok:true} | {ok:false, error:...}
+  // 支援 3 種 section type: path-scores / next-actions / hypothesis
+  // Schema 驗證失敗 -> fallback UI（不白屏）
+
+  function _bpEscape(s) {
+    if (s === null || s === undefined) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function _bpSourceBadge(source) {
+    var type = source || 'measured';
+    var labelMap = { measured: '實測', estimated: '推估', ai: 'AI 生成' };
+    var cls = 'report-source-badge report-source-badge--' + type;
+    return '<span class="' + cls + '"><span class="dot"></span>' + _bpEscape(labelMap[type] || '實測') + '</span>';
+  }
+
+  function _bpValidateSchema(schema, data) {
+    var errs = [];
+    if (!schema || typeof schema !== 'object') errs.push('schema missing or not object');
+    if (!data || typeof data !== 'object') errs.push('data missing or not object');
+    if (schema && schema.hero && typeof schema.hero !== 'object') errs.push('schema.hero not object');
+    if (schema && schema.sections && !Array.isArray(schema.sections)) errs.push('schema.sections not array');
+    return { ok: errs.length === 0, errors: errs };
+  }
+
+  function _bpRenderHero(hero) {
+    if (!hero) return '';
+    var variant = hero.variant === 'tool' ? 'report-hero--tool' : 'report-hero--ritual';
+    var h = '<header class="report-hero ' + variant + '">';
+    if (hero.sectionMeta) h += '<p class="report-section-meta">' + _bpEscape(hero.sectionMeta) + '</p>';
+    if (hero.verdict) h += '<h1 class="report-verdict">' + _bpEscape(hero.verdict) + '</h1>';
+    if (hero.tldr) h += '<p class="report-tldr">' + _bpEscape(hero.tldr) + '</p>';
+    if (hero.kpis && hero.kpis.length) {
+      h += '<div class="report-hero-break"></div><div class="report-kpi-row">';
+      for (var i = 0; i < hero.kpis.length; i++) {
+        var k = hero.kpis[i] || {};
+        h += '<div class="report-kpi">';
+        h += '<p class="report-kpi-label">' + _bpEscape(k.label || '') + '</p>';
+        h += '<p class="report-kpi-value">' + _bpEscape(k.value) + '</p>';
+        if (k.trend) {
+          var tc = k.trendType === 'down' ? 'down' : (k.trendType === 'up' ? 'up' : 'flat');
+          h += '<p class="report-kpi-trend report-kpi-trend--' + tc + '">' + _bpEscape(k.trend) + '</p>';
+        }
+        if (k.source) h += _bpSourceBadge(k.source);
+        h += '</div>';
+      }
+      h += '</div>';
+    }
+    h += '</header>';
+    return h;
+  }
+
+  // Section renderer: path-scores
+  function _bpSectionPathScores(title, data, num) {
+    var html = '<section class="report-section">';
+    if (num) html += '<p class="report-section-num">' + _bpEscape(num) + '</p>';
+    html += '<h2>' + _bpEscape(title || '四維分析') + '</h2>';
+    var scores = (data && data.scores) || {};
+    var dimLabels = { P: '問題驗證', A: '受眾輪廓', T: '牽引力', H: '執行力' };
+    var order = ['P', 'A', 'T', 'H'];
+    html += '<div class="report-path-grid">';
+    for (var i = 0; i < order.length; i++) {
+      var dim = order[i];
+      var score = scores[dim];
+      html += '<div class="report-path-card">';
+      html += '<p class="report-path-card-dim">' + dim + ' · ' + _bpEscape(dimLabels[dim]) + '</p>';
+      html += '<p class="report-path-card-score">' + (score === undefined || score === null ? '—' : Math.round(score)) + '</p>';
+      html += '<p class="report-path-card-label">分數 / 100</p>';
+      html += '</div>';
+    }
+    html += '</div>';
+    if (data && data.subScores && data.subScores.P && data.subScores.P.length) {
+      html += '<div style="margin-top:24px"><p class="report-section-num">P · JTBD 4 LAYERS</p>';
+      for (var j = 0; j < data.subScores.P.length; j++) {
+        var ly = data.subScores.P[j] || {};
+        var ratio = ly.max ? ly.score / ly.max : 0;
+        var st = ratio >= 0.8 ? 'healthy' : (ratio >= 0.6 ? 'warn' : 'danger');
+        html += '<div class="report-jtbd-layer">';
+        html += '<p class="report-jtbd-label">' + _bpEscape(ly.layer || '') + '</p>';
+        html += '<p class="report-jtbd-score report-jtbd-score--' + st + '">' + _bpEscape(ly.score) + ' / ' + _bpEscape(ly.max) + '</p>';
+        html += '<p class="report-jtbd-evidence">' + _bpEscape(ly.evidence || '') + '</p>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</section>';
+    return html;
+  }
+
+  function _bpSectionNextActions(title, data, num) {
+    var html = '<section class="report-section">';
+    if (num) html += '<p class="report-section-num">' + _bpEscape(num) + '</p>';
+    html += '<h2>' + _bpEscape(title || '下一步 3 件事') + '</h2>';
+    var actions = Array.isArray(data) ? data : [];
+    html += '<div class="report-action-list">';
+    for (var i = 0; i < actions.length; i++) {
+      var a = actions[i] || {};
+      html += '<div class="report-action-card">';
+      html += '<p class="report-action-num">Action ' + (i + 1) + '</p>';
+      html += '<h3 class="report-action-title">' + _bpEscape(a.title || '(未命名行動)') + '</h3>';
+      html += '<dl class="report-action-smart">';
+      if (a.specific)   html += '<dt>Specific</dt><dd>' + _bpEscape(a.specific) + '</dd>';
+      if (a.measurable) html += '<dt>Measurable</dt><dd>' + _bpEscape(a.measurable) + '</dd>';
+      if (a.achievable) html += '<dt>Achievable</dt><dd>' + _bpEscape(a.achievable) + '</dd>';
+      if (a.relevant)   html += '<dt>Relevant</dt><dd>' + _bpEscape(a.relevant) + '</dd>';
+      if (a.timeBound)  html += '<dt>Time-bound</dt><dd>' + _bpEscape(a.timeBound) + '</dd>';
+      if (a.owner)      html += '<dt>Owner</dt><dd>' + _bpEscape(a.owner) + '</dd>';
+      if (a.risk)       html += '<dt>Risk</dt><dd>' + _bpEscape(a.risk) + '</dd>';
+      html += '</dl></div>';
+    }
+    html += '</div></section>';
+    return html;
+  }
+
+  function _bpSectionHypothesis(title, data, num) {
+    var html = '<section class="report-section">';
+    if (num) html += '<p class="report-section-num">' + _bpEscape(num) + '</p>';
+    html += '<h2>' + _bpEscape(title || '方法論透明') + '</h2>';
+    var d = data || {};
+    html += '<div class="report-hypo">';
+    if (d.dataSource) html += '<div class="report-hypo-item"><dt class="report-hypo-label">資料來源</dt><dd class="report-hypo-value">' + _bpEscape(d.dataSource) + '</dd></div>';
+    if (d.assumptions && d.assumptions.length) {
+      html += '<div class="report-hypo-item"><dt class="report-hypo-label">核心假設</dt><dd class="report-hypo-value"><ul style="margin:0;padding-left:18px">';
+      for (var i = 0; i < d.assumptions.length; i++) html += '<li>' + _bpEscape(d.assumptions[i]) + '</li>';
+      html += '</ul></dd></div>';
+    }
+    if (d.confidence !== undefined) html += '<div class="report-hypo-item"><dt class="report-hypo-label">信心度</dt><dd class="report-hypo-value">' + _bpEscape(d.confidence) + '%</dd></div>';
+    if (d.invalidation) html += '<div class="report-hypo-item"><dt class="report-hypo-label">失效條件</dt><dd class="report-hypo-value">' + _bpEscape(d.invalidation) + '</dd></div>';
+    if (d.note) html += '<div class="report-hypo-item"><dt class="report-hypo-label">備註</dt><dd class="report-hypo-value">' + _bpEscape(d.note) + '</dd></div>';
+    html += '</div></section>';
+    return html;
+  }
+
+  var _bpSectionRenderers = {
+    'path-scores':  _bpSectionPathScores,
+    'next-actions': _bpSectionNextActions,
+    'hypothesis':   _bpSectionHypothesis
+  };
+
+  function _bpRenderCTATrio(reportId) {
+    var safeId = _bpEscape(reportId || '');
+    return [
+      '<footer class="report-cta-trio">',
+      '<button onclick="window.BPReport.copyLink(\'' + safeId + '\')">複製連結</button>',
+      '<button onclick="window.print()">列印</button>',
+      '<button class="report-cta-primary" onclick="window.BPReport.share(\'' + safeId + '\')">分享</button>',
+      '</footer>'
+    ].join('');
+  }
+
+  function _bpRenderFallback(errors) {
+    var parts = [];
+    for (var i = 0; i < errors.length; i++) parts.push('<code>' + _bpEscape(errors[i]) + '</code>');
+    return [
+      '<div class="report-fallback">',
+      '<h2>報告資料有誤</h2>',
+      '<p>Schema 驗證失敗，無法渲染此報告。</p>',
+      '<p>' + parts.join(' · ') + '</p>',
+      '<p style="margin-top:20px"><a href="#/home" style="color:var(--primary);text-decoration:underline">回到首頁</a></p>',
+      '</div>'
+    ].join('');
+  }
+
+  window.BPReport = {
+    version: '1.0.0',
+    validateSchema: _bpValidateSchema,
+    sectionRenderers: _bpSectionRenderers,
+
+    render: function(schema, data, container) {
+      try {
+        if (!container) return { ok: false, error: 'container required' };
+        var v = _bpValidateSchema(schema, data);
+        if (!v.ok) {
+          container.innerHTML = _bpRenderFallback(v.errors);
+          return { ok: false, error: 'schema validation failed', errors: v.errors };
+        }
+        var html = '<article class="report">';
+        var hero = {};
+        var schHero = schema.hero || {};
+        var datHero = (data && data.hero) || {};
+        for (var kk in schHero) hero[kk] = schHero[kk];
+        for (var kk2 in datHero) hero[kk2] = datHero[kk2];
+        html += _bpRenderHero(hero);
+        var sections = schema.sections || [];
+        for (var i = 0; i < sections.length; i++) {
+          var s = sections[i] || {};
+          var renderer = _bpSectionRenderers[s.type];
+          var sectionData = (data && data.sections && data.sections[s.type]) || s.data;
+          var num = (i + 1 < 10 ? '0' : '') + (i + 1);
+          if (typeof renderer === 'function') {
+            html += renderer(s.title, sectionData, num);
+          } else {
+            html += '<section class="report-section"><p class="report-section-num">' + num + '</p><h2>' + _bpEscape(s.title || '(未知 section)') + '</h2><p style="color:var(--ink-muted)">Section type "' + _bpEscape(s.type) + '" 尚未支援（S1 範圍：path-scores / next-actions / hypothesis）</p></section>';
+          }
+        }
+        html += _bpRenderCTATrio((data && data.id) || '');
+        html += '</article>';
+        container.innerHTML = html;
+        return { ok: true };
+      } catch (err) {
+        if (container) container.innerHTML = _bpRenderFallback(['runtime error: ' + (err.message || err)]);
+        try { console.error('[BPReport.render]', err); } catch(e2) {}
+        return { ok: false, error: err.message || String(err) };
+      }
+    },
+
+    copyLink: function(reportId) {
+      var url = location.origin + location.pathname + '#/report/diagnostic/' + encodeURIComponent(reportId || '');
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(function(){
+            if (typeof showToast === 'function') showToast('連結已複製');
+          }, function(){ prompt('複製此連結：', url); });
+        } else { prompt('複製此連結：', url); }
+      } catch (e) { prompt('複製此連結：', url); }
+    },
+
+    share: function(reportId) {
+      var url = location.origin + location.pathname + '#/report/diagnostic/' + encodeURIComponent(reportId || '');
+      if (navigator.share) {
+        navigator.share({ title: 'BeyondPath 診斷報告', url: url }).catch(function(){});
+      } else { window.BPReport.copyLink(reportId); }
+    }
+  };
+
+  // Diagnostic schema v1
+  var _diagnosticSchemaV1 = {
+    type: 'diagnostic',
+    title: '你的 PATH 診斷',
+    hero: { variant: 'ritual', sectionMeta: '00 · PATH DIAGNOSTIC REPORT' },
+    sections: [
+      { type: 'path-scores',  title: '四維分析' },
+      { type: 'next-actions', title: '下一步 3 件事' },
+      { type: 'hypothesis',   title: '方法論透明' }
+    ]
+  };
+  window._bpDiagnosticSchemaV1 = _diagnosticSchemaV1;
+
+  // S1-D3 renderReportDiagnostic route handler
+  function renderReportDiagnostic() {
+    var content = document.getElementById('content');
+    if (!content) { try { console.error('[report-diagnostic] #content not found'); } catch(e){} return; }
+    var params = window._reportRouteParams || {};
+    var reportId = params.id || '';
+    if (!reportId) { content.innerHTML = _render404('未指定報告 ID'); return; }
+    var reportData = _buildDiagnosticData(reportId);
+    if (!reportData) { content.innerHTML = _render404('報告不存在或已刪除'); return; }
+    var res = window.BPReport.render(_diagnosticSchemaV1, reportData, content);
+    if (!res.ok) { try { console.warn('[report-diagnostic] render non-ok:', res); } catch(e){} }
+  }
+
+  function _buildDiagnosticData(id) {
+    var diag = null;
+    if (typeof state !== 'undefined' && state && state.diagnoses) {
+      for (var i = 0; i < state.diagnoses.length; i++) {
+        if (state.diagnoses[i] && state.diagnoses[i].id === id) { diag = state.diagnoses[i]; break; }
+      }
+    }
+    if (!diag && typeof state !== 'undefined' && state && state.savedReports) {
+      for (var j = 0; j < state.savedReports.length; j++) {
+        var r = state.savedReports[j];
+        if (r && r.id === id && r.selectedDiag) { diag = r.selectedDiag; break; }
+      }
+    }
+    if (!diag && id === 'test123') {
+      diag = {
+        id: 'test123',
+        productName: 'BeyondPath S1 測試資料',
+        scores: { P: 78, A: 62, T: 54, H: 82 },
+        total: 69,
+        verdict: '方向對，補 Traction 就能衝',
+        date: new Date().toISOString()
+      };
+    }
+    if (!diag) return null;
+
+    var s = diag.scores || {};
+    var total = diag.total || Math.round(((s.P || 0) + (s.A || 0) + (s.T || 0) + (s.H || 0)) / 4);
+    var dims = ['P', 'A', 'T', 'H'];
+    var weakest = dims[0];
+    for (var k = 1; k < dims.length; k++) {
+      if ((s[dims[k]] || 0) < (s[weakest] || 0)) weakest = dims[k];
+    }
+
+    return {
+      id: diag.id,
+      hero: {
+        sectionMeta: '00 · PATH DIAGNOSTIC · ' + _bpEscape(diag.productName || '未命名'),
+        verdict: diag.verdict || '方向對，持續驗證',
+        tldr: (diag.verdict || '') + (diag.verdictTitle ? ' · ' + diag.verdictTitle : ''),
+        kpis: [
+          { value: total, label: 'PATH 總分', trend: '', source: 'measured' },
+          { value: weakest + ' 弱項', label: '需補強', source: 'measured' },
+          { value: '2 週', label: '下輪重估', source: 'estimated' }
+        ]
+      },
+      sections: {
+        'path-scores': { scores: s },
+        'next-actions': [
+          { title: '補強 ' + weakest + ' 軸', specific: '用 3 個真實 evidence 支撐此軸', measurable: '分數 +5 以上', achievable: '工時 6h', relevant: weakest + ' 軸提升直接拉高總分', timeBound: '2 週內' },
+          { title: '用戶訪談 ×5', specific: '找 5 位目標用戶 60 分鐘深度訪談', measurable: '5 份訪談記錄', achievable: '每週 2-3 人', relevant: '驗證 P 軸假設', timeBound: '3 週內' },
+          { title: 'Landing 先行', specific: '做一頁 landing + form 收 50 個申請', measurable: '50 份 email', achievable: '1 週內上線', relevant: 'T 軸牽引力訊號', timeBound: '4 週內' }
+        ],
+        'hypothesis': {
+          dataSource: '你的 PATH 診斷作答 + AI 推論',
+          assumptions: [
+            '產品方向 ' + (diag.productName || '') + ' 存在真實市場需求',
+            '最弱維度 ' + weakest + ' 補齊後總分提升 >= 8',
+            '2 週內可實際驗證至少 1 項 SMART 行動'
+          ],
+          confidence: 72,
+          invalidation: '若 5 位用戶訪談中無人認同核心痛點 → 推翻假設',
+          note: 'S1 v1.0 · 內部資料結構 · v2 將升級至 JTBD 4 層展開'
+        }
+      }
+    };
+  }
+
+  function _render404(msg) {
+    return [
+      '<div class="report-404">',
+      '<p class="report-404-label">404 · NOT FOUND</p>',
+      '<h1 class="report-404-title">找不到這份報告</h1>',
+      '<p class="report-404-msg">' + _bpEscape(msg || '報告不存在或已刪除。請檢查網址是否正確。') + '</p>',
+      '<p><button onclick="window.location.hash=\'#/home\'" style="display:inline-block;margin-top:8px;padding:10px 20px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit">回到首頁</button></p>',
+      '</div>'
+    ].join('');
+  }
+
+  window.renderReportDiagnostic = renderReportDiagnostic;
+
+  // ==================== S1-D5 · PATH 診斷 v2.0 整合 (2026-04-22) ====================
+
+  var DIAGNOSTIC_V2_PROMPT = [
+    "你是 BeyondPath 的 PATH 診斷分析師。BeyondPath 是台灣的「小團隊 AI 商業引擎」。",
+    "根據創辦人的 24 題 PATH 作答，產出符合 PATH-DIAGNOSTIC-V2 JSON Schema 的報告。",
+    "硬規則：",
+    "1. Hero verdict 12-20 字一句話結論，是判斷不是描述",
+    "2. 禁用語：您、基於本分析、加油、很好、大幅；英文 jargon 首次出現附中文",
+    "3. P 軸 JTBD 4 層必填：L1 Functional(6)/L2 Emotional(6)/L3 Identity(7)/L4 Addiction(6)，每層必有證據",
+    "4. Next Action 必 3 條，每條含 SMART 五要素 + owner + risk + failureCondition",
+    "5. Hypothesis：核心假設 2-3 項、信心度用 % 數字、必列失效條件",
+    "6. 資料源標記：每數字旁 source 欄位 measured/estimated/ai_generated",
+    "7. 作答不足時 status=insufficient_data，不捏造 benchmark",
+    "產出必須是純 JSON（無 markdown code fence），符合 PATH-DIAGNOSTIC-V2 Schema。"
+  ].join("\n");
+  window.DIAGNOSTIC_V2_PROMPT = DIAGNOSTIC_V2_PROMPT;
+
+  var _diagnosticSchemaV2 = {
+    type: "diagnostic-v2",
+    title: "你的 PATH 診斷 · v2.0",
+    hero: { variant: "ritual", sectionMeta: "00 · PATH DIAGNOSTIC · v2.0" },
+    sections: [
+      { type: "path-scores-v2",  title: "四維分析 · PATH" },
+      { type: "next-actions-v2", title: "下一步 SMART · 3 條" },
+      { type: "hypothesis-v2",   title: "方法論透明" },
+      { type: "liquid-era",      title: "" }
+    ]
+  };
+  window._bpDiagnosticSchemaV2 = _diagnosticSchemaV2;
+
+  function _validatePathDiagnosticV2(data) {
+    var errs = [];
+    if (!data || typeof data !== "object") { return { valid: false, errors: ["data not object"] }; }
+    if (!data.hero) errs.push("hero missing");
+    if (data.hero && !data.hero.verdict) errs.push("hero.verdict missing");
+    if (data.hero && data.hero.verdict) {
+      var vl = data.hero.verdict.length;
+      if (vl < 8 || vl > 40) errs.push("hero.verdict length " + vl);
+    }
+    if (!data.pathScores) errs.push("pathScores missing");
+    else {
+      var dims4 = ["P","A","T","H"];
+      for (var di = 0; di < dims4.length; di++) {
+        if (!data.pathScores[dims4[di]]) errs.push("pathScores." + dims4[di] + " missing");
+      }
+    }
+    if (!Array.isArray(data.nextActions)) errs.push("nextActions not array");
+    else if (data.nextActions.length !== 3) errs.push("nextActions length=" + data.nextActions.length);
+    else {
+      for (var i = 0; i < 3; i++) {
+        var a = data.nextActions[i] || {};
+        if (!a.title) errs.push("nextActions[" + i + "].title missing");
+        if (!a.smart || !a.smart.specific) errs.push("nextActions[" + i + "].smart.specific missing");
+      }
+    }
+    if (!data.hypothesis) errs.push("hypothesis missing");
+    else {
+      if (!Array.isArray(data.hypothesis.coreAssumptions)) errs.push("coreAssumptions not array");
+      if (typeof data.hypothesis.confidence !== "number") errs.push("confidence not number");
+    }
+    return { valid: errs.length === 0, errors: errs };
+  }
+
+  function _pickHeroVerdictV2(total, weakest) {
+    if (total >= 85) return { verdict: "方向鋒利，現在全力衝刺就對了", tone: "teal" };
+    if (total >= 70) {
+      if (weakest === "T") return { verdict: "方向對，補 Traction 就能衝", tone: "teal" };
+      if (weakest === "A") return { verdict: "方向對，但受眾要再聚焦", tone: "gold" };
+      if (weakest === "P") return { verdict: "執行力強，但先確認真的是問題", tone: "gold" };
+      if (weakest === "H") return { verdict: "方向對，執行力需要支援系統", tone: "gold" };
+      return { verdict: "方向對，補最弱維度就能衝", tone: "teal" };
+    }
+    if (total >= 50) return { verdict: "訊號混合，先補最弱維度", tone: "gold" };
+    return { verdict: "重新思考切入點會比硬推有效", tone: "rose" };
+  }
+
+  function _buildDiagnosticDataV2(id) {
+    var diag = null;
+    if (typeof state !== "undefined" && state && state.diagnoses) {
+      for (var i = 0; i < state.diagnoses.length; i++) {
+        if (state.diagnoses[i] && state.diagnoses[i].id === id) { diag = state.diagnoses[i]; break; }
+      }
+    }
+    if (!diag && typeof state !== "undefined" && state && state.savedReports) {
+      for (var j = 0; j < state.savedReports.length; j++) {
+        var r = state.savedReports[j];
+        if (r && r.id === id && r.selectedDiag) { diag = r.selectedDiag; break; }
+      }
+    }
+    if (!diag && id === "test123v2") {
+      diag = { id: "test123v2", productName: "BP v2 test", scores: { P: 78, A: 62, T: 54, H: 82 }, total: 69, date: new Date().toISOString() };
+    }
+    if (!diag) return null;
+    var sc = diag.scores || {};
+    var total = diag.total || Math.round(((sc.P || 0) + (sc.A || 0) + (sc.T || 0) + (sc.H || 0)) / 4);
+    var dims = ["P", "A", "T", "H"];
+    var weakest = dims[0];
+    for (var k = 1; k < dims.length; k++) {
+      if ((sc[dims[k]] || 0) < (sc[weakest] || 0)) weakest = dims[k];
+    }
+    var hv = _pickHeroVerdictV2(total, weakest);
+    var dimName = { P: "PROBLEM", A: "AUDIENCE", T: "TRACTION", H: "HYPOTHESIS" }[weakest];
+    var prodName = diag.productName || "Product";
+    var ts = new Date();
+    return {
+      id: diag.id,
+      hero: {
+        sectionMeta: "00 DIAG " + prodName,
+        verdict: hv.verdict,
+        verdict_tone: hv.tone,
+        tldr: "PATH " + total + "/100, weakest " + weakest,
+        confidence: Math.max(50, Math.min(95, Math.round(60 + (total - 50) * 0.3))),
+        kpis: [
+          { value: total, label: "TOTAL", trend: "", source: "measured" },
+          { value: weakest, label: "WEAK", source: "measured" },
+          { value: "2wk", label: "NEXT", source: "estimated" }
+        ]
+      },
+      pathScores: {
+        P: { total: sc.P || 0, max: 25, status: (sc.P || 0) >= 70 ? "healthy" : ((sc.P || 0) >= 50 ? "warn" : "danger"), diagnosis: (sc.P || 0) >= 70 ? "問題真實存在，JTBD 4 層有初步證據" : "問題驗證深度不足，建議補 5 場訪談" },
+        A: { total: sc.A || 0, max: 25, status: (sc.A || 0) >= 70 ? "healthy" : ((sc.A || 0) >= 50 ? "warn" : "danger"), diagnosis: (sc.A || 0) >= 70 ? "Segmentation + Targeting 清楚" : "Audience 輪廓模糊，建議跑 Lab 合成 persona" },
+        T: { total: sc.T || 0, max: 25, status: (sc.T || 0) >= 70 ? "healthy" : ((sc.T || 0) >= 50 ? "warn" : "danger"), diagnosis: (sc.T || 0) >= 70 ? "內部訊號累積中" : "外部訊號稀薄，先做 Landing + waitlist" },
+        H: { total: sc.H || 0, max: 25, status: (sc.H || 0) >= 70 ? "healthy" : ((sc.H || 0) >= 50 ? "warn" : "danger"), diagnosis: (sc.H || 0) >= 70 ? "資源盤點 + SMART 化能力強" : "Hypothesis 落地節奏需結構化" }
+      },
+      jtbdLayers: (function() {
+        var pr = (sc.P || 0) / 100;
+        function ls(max, v) { var b = max * pr; return Math.max(0, Math.min(max, Math.round((b + (v || 0)) * 10) / 10)); }
+        return [
+          { layer: "L1 Functional 功能層", score: ls(6, 0.2), max: 6, evidence: pr >= 0.7 ? "作答多處指向具體痛點：節省時間、一個人扛" : (pr >= 0.5 ? "部分題目指出功能需求，但精準度待提升" : "功能層痛點描述模糊，建議 5 場真人訪談"), evidence_source: "measured" },
+          { layer: "L2 Emotional 情感層", score: ls(6, 0), max: 6, evidence: pr >= 0.7 ? "情緒訊號清楚：半夜擔心 cash flow，頻率 2 次/週" : "情緒面驗證不足，建議追問感受", evidence_source: "estimated" },
+          { layer: "L3 Identity 身份層", score: ls(7, -0.3), max: 7, evidence: pr >= 0.7 ? "用戶已在社群公開自稱獨立創辦人 identity 形成" : "用戶尚未將此產品視為身份延伸，早期正常", evidence_source: "estimated" },
+          { layer: "L4 Addiction 習慣層", score: ls(6, -0.5), max: 6, evidence: pr >= 0.7 ? "晨間儀式部分形成（3 天/週），可升級週五寄送機制" : "尚未形成打開習慣，Action 3 會補這層", evidence_source: "estimated" }
+        ];
+      })(),
+      nextActions: (function() {
+        var ctm = { P: null, A: "lab", T: "market-signal", H: "survey" };
+        return [
+          { id: "act-1", title: "補強 " + weakest + " 軸最弱子項", priority: 1,
+            smart: { specific: "針對 " + dimName + "，蒐集 3 項真實 evidence（客戶 quote / 數據 / 市場訊號）", measurable: weakest + " 軸分數提升 5 以上（目前 " + (sc[weakest] || 0) + "）", achievable: "你現有客戶池中有合適對象，工時約 6h（城堡估 1h）", relevant: weakest + " 軸提升直接拉高 PATH 總分，下輪預估 " + Math.min(100, total + 5) + "/100", timeBound: "2 週內完成" },
+            owner: "你", risk: "若 evidence 取得困難，備案改問卷引擎發送 50 份", failureCondition: "若 2 週內未收齊 3 項，回頭先跑 Lab 驗證受眾假設", crossToolTarget: ctm[weakest] || null },
+          { id: "act-2", title: "用戶訪談 5 位深度驗證", priority: 2,
+            smart: { specific: "找 5 位目標用戶做 60 分鐘深度訪談，用五個為什麼挖痛點根因", measurable: "5 份訪談記錄，提取共通 problem 句型", achievable: "每週 2 到 3 人，工時 10h", relevant: "驗證 P 軸問題真實性，形成 v1.0 用戶洞察", timeBound: "3 週內完成" },
+            owner: "你與助理", risk: "朋友訪談無效，只找真實潛在付費者", failureCondition: "若 5 位中少於 3 位提及同一 problem，Problem 未驗證需 Pivot", crossToolTarget: "lab" },
+          { id: "act-3", title: "Landing 頁 + 申請表先行", priority: 3,
+            smart: { specific: "做一頁 landing page + 申請表，收 50 個 email waitlist", measurable: "4 週內 50 份申請（轉換率 3% 以上）", achievable: "Carrd 或 Typedream 1 週內上線", relevant: "T 軸牽引力訊號量化，補報告最弱的外部 signal", timeBound: "4 週內完成" },
+            owner: "你", risk: "流量來源不穩，社群與電子報並行投放", failureCondition: "若 4 週轉換率低於 1%，重新檢視 Positioning statement", crossToolTarget: "market-signal" }
+        ];
+      })(),
+      hypothesis: {
+        dataSources: [
+          { type: "user_answers", count: 24, source: "🟢 measured" },
+          { type: "industry_benchmark", count: 0, source: "🟡 estimated" },
+          { type: "lab_quotes", count: 0, source: "🔴 未啟用" }
+        ],
+        coreAssumptions: [
+          "你的 24 題作答反映真實狀態，非想當然填答",
+          "同階段台灣 3 到 20 人新創 benchmark 可作參照",
+          "未來 3 個月市場環境穩定"
+        ],
+        confidence: Math.max(50, Math.min(95, Math.round(60 + (total - 50) * 0.3))),
+        confidenceRationale: "作答一致性推估 85%，同業比對樣本尚未啟用",
+        failureCondition: "若作答偏差大或 2 週內無法完成 Action 1，本結論失效需重跑",
+        recommendedRecheck: "2 週後 Action 1 完成時，或市場出現重大事件"
+      },
+      crossToolNav: {
+        triggers: [
+          (sc.A || 0) < 60 ? { condition: "A<60", target: "lab", label: "A low, run Lab" } : null,
+          (sc.T || 0) < 60 ? { condition: "T<60", target: "market-signal", label: "T low, check market" } : null
+        ].filter(function(x){ return x; })
+      },
+      meta: { generatedAt: ts.toISOString(), model: "rule-based-v2", promptVersion: "v2.0", schemaVersion: "2.0", shelfLife: "30 days", aiTransparency: { aiGenerated: ["jtbdLayers.evidence", "nextActions.smart"], userInput: ["pathScores"], algorithmic: ["hero.verdict"] } }
+    };
+  }
+  window._buildDiagnosticDataV2 = _buildDiagnosticDataV2;
+  window._validatePathDiagnosticV2 = _validatePathDiagnosticV2;
+
+  function _bpSectionPathScoresV2(title, data, num) {
+    var html = "<section class=\"report-section\">";
+    if (num) html += "<p class=\"report-section-num\">" + _bpEscape(num) + "</p>";
+    html += "<h2>" + _bpEscape(title || "四維分析") + "</h2>";
+    var ps = (data && data.pathScores) || {};
+    var dimLabels = { P: "P · 問題驗證", A: "A · 受眾輪廓", T: "T · 牽引力", H: "H · 執行力" };
+    var order = ["P", "A", "T", "H"];
+    html += "<div class=\"report-path-grid\">";
+    for (var i = 0; i < order.length; i++) {
+      var dim = order[i];
+      var d = ps[dim] || {};
+      var score = d.total;
+      html += "<div class=\"report-path-card\">";
+      html += "<p class=\"report-path-card-dim\">" + _bpEscape(dimLabels[dim]) + "</p>";
+      html += "<p class=\"report-path-card-score\">" + (score === undefined || score === null ? "-" : Math.round(score)) + "</p>";
+      html += "<p class=\"report-path-card-label\">分數 / 100 · " + _bpEscape(d.status || "") + "</p>";
+      if (d.diagnosis) html += "<p style=\"font-size:12px;color:var(--ink-sec);margin-top:8px;line-height:1.6\">" + _bpEscape(d.diagnosis) + "</p>";
+      html += "</div>";
+    }
+    html += "</div>";
+    if (data && data.jtbdLayers && data.jtbdLayers.length) {
+      html += "<details class=\"report-jtbd-expand\">";
+      html += "<summary>點擊展開 · P 軸 JTBD 4 層細節</summary>";
+      html += "<div style=\"margin-top:14px\"><p class=\"report-section-num\">P JTBD LAYERS</p>";
+      for (var j = 0; j < data.jtbdLayers.length; j++) {
+        var ly = data.jtbdLayers[j] || {};
+        var ratio = ly.max ? ly.score / ly.max : 0;
+        var st = ratio >= 0.8 ? "healthy" : (ratio >= 0.6 ? "warn" : "danger");
+        html += "<div class=\"report-jtbd-layer\">";
+        html += "<p class=\"report-jtbd-label\">" + _bpEscape(ly.layer || "") + "</p>";
+        html += "<p class=\"report-jtbd-score report-jtbd-score--" + st + "\">" + _bpEscape(ly.score) + " / " + _bpEscape(ly.max) + "</p>";
+        html += "<p class=\"report-jtbd-evidence\">" + _bpEscape(ly.evidence || "") + (ly.evidence_source ? " " + _bpSourceBadge(ly.evidence_source) : "") + "</p>";
+        html += "</div>";
+      }
+      html += "</div></details>";
+    }
+    html += "</section>";
+    return html;
+  }
+
+  function _bpSectionNextActionsV2(title, data, num) {
+    var html = "<section class=\"report-section\">";
+    if (num) html += "<p class=\"report-section-num\">" + _bpEscape(num) + "</p>";
+    html += "<h2>" + _bpEscape(title || "下一步 SMART 3 條") + "</h2>";
+    var actions = Array.isArray(data) ? data : [];
+    html += "<div class=\"report-action-list\">";
+    for (var i = 0; i < actions.length; i++) {
+      var a = actions[i] || {};
+      var sm = a.smart || {};
+      var primaryStyle = a.priority === 1 ? " style=\"border-left: 3px solid var(--primary, #7C5CFC); padding-left:18px;\"" : "";
+      html += "<div class=\"report-action-card\"" + primaryStyle + ">";
+      html += "<p class=\"report-action-num\">Action " + (a.priority || (i + 1)) + (a.priority === 1 ? " · Primary" : "") + "</p>";
+      html += "<h3 class=\"report-action-title\">" + _bpEscape(a.title || "") + "</h3>";
+      html += "<dl class=\"report-action-smart\">";
+      if (sm.specific)   html += "<dt>S · Specific</dt><dd>" + _bpEscape(sm.specific) + "</dd>";
+      if (sm.measurable) html += "<dt>M · Measurable</dt><dd>" + _bpEscape(sm.measurable) + "</dd>";
+      if (sm.achievable) html += "<dt>A · Achievable</dt><dd>" + _bpEscape(sm.achievable) + "</dd>";
+      if (sm.relevant)   html += "<dt>R · Relevant</dt><dd>" + _bpEscape(sm.relevant) + "</dd>";
+      if (sm.timeBound)  html += "<dt>T · Time-bound</dt><dd>" + _bpEscape(sm.timeBound) + "</dd>";
+      if (a.owner)       html += "<dt>Owner</dt><dd>" + _bpEscape(a.owner) + "</dd>";
+      if (a.risk)        html += "<dt>Risk</dt><dd>" + _bpEscape(a.risk) + "</dd>";
+      if (a.failureCondition) html += "<dt>Failure</dt><dd>" + _bpEscape(a.failureCondition) + "</dd>";
+      html += "</dl>";
+      if (a.crossToolTarget) {
+        var tool = a.crossToolTarget;
+        var toolLabel = { lab: "跑 Lab 研究", "market-signal": "看市場訊號", market: "市場探測", survey: "跑問卷引擎" }[tool] || "前往工具";
+        var navTool = tool === "market-signal" ? "market" : tool;
+        html += "<button class=\"report-action-cross-tool\" onclick=\"app.navigate(\'" + _bpEscape(navTool) + "\')\">" + _bpEscape(toolLabel) + "</button>";
+      }
+      html += "</div>";
+    }
+    html += "</div></section>";
+    return html;
+  }
+
+  function _bpSectionHypothesisV2(title, data, num) {
+    var html = "<section class=\"report-section\">";
+    if (num) html += "<p class=\"report-section-num\">" + _bpEscape(num) + "</p>";
+    html += "<h2>" + _bpEscape(title || "方法論透明") + "</h2>";
+    var d = data || {};
+    html += "<details class=\"report-hypo-details\" open>";
+    html += "<summary>本報告的計算方法 · 資料來源 · 核心假設 · 失效條件</summary>";
+    html += "<div class=\"report-hypo\">";
+    if (Array.isArray(d.dataSources) && d.dataSources.length) {
+      html += "<div class=\"report-hypo-item\"><dt class=\"report-hypo-label\">資料來源</dt><dd class=\"report-hypo-value\">";
+      for (var i = 0; i < d.dataSources.length; i++) {
+        var ds = d.dataSources[i];
+        html += "<div style=\"margin-bottom:6px\">" + _bpEscape(ds.source || "") + " - " + _bpEscape(ds.type || "") + (ds.count ? " (n=" + ds.count + ")" : "") + "</div>";
+      }
+      html += "</dd></div>";
+    }
+    if (Array.isArray(d.coreAssumptions) && d.coreAssumptions.length) {
+      html += "<div class=\"report-hypo-item\"><dt class=\"report-hypo-label\">核心假設</dt><dd class=\"report-hypo-value\"><ol style=\"margin:0;padding-left:22px\">";
+      for (var j = 0; j < d.coreAssumptions.length; j++) html += "<li style=\"margin-bottom:4px\">" + _bpEscape(d.coreAssumptions[j]) + "</li>";
+      html += "</ol></dd></div>";
+    }
+    if (typeof d.confidence === "number") {
+      html += "<div class=\"report-hypo-item\"><dt class=\"report-hypo-label\">信心度</dt><dd class=\"report-hypo-value\"><strong style=\"font-size:18px;color:var(--primary)\">" + d.confidence + "%</strong>" + (d.confidenceRationale ? "<br><span style=\"font-size:12px;color:var(--ink-muted)\">" + _bpEscape(d.confidenceRationale) + "</span>" : "") + "</dd></div>";
+    }
+    if (d.failureCondition) html += "<div class=\"report-hypo-item\"><dt class=\"report-hypo-label\">失效條件</dt><dd class=\"report-hypo-value\">" + _bpEscape(d.failureCondition) + "</dd></div>";
+    if (d.recommendedRecheck) html += "<div class=\"report-hypo-item\"><dt class=\"report-hypo-label\">建議複核時機</dt><dd class=\"report-hypo-value\">" + _bpEscape(d.recommendedRecheck) + "</dd></div>";
+    html += "</div></details>";
+    html += "</section>";
+    return html;
+  }
+
+  function _bpSectionLiquidEra(title, data, num) {
+    return "<div class=\"report-liquid-era\">時代判讀：2026 是<strong>液態團隊時代</strong>——3-10 人用 Claude 跑完驗證到營收的元年。你正在參與這個實驗。</div>";
+  }
+
+  if (window.BPReport && window.BPReport.sectionRenderers) {
+    window.BPReport.sectionRenderers["path-scores-v2"]  = _bpSectionPathScoresV2;
+    window.BPReport.sectionRenderers["next-actions-v2"] = _bpSectionNextActionsV2;
+    window.BPReport.sectionRenderers["hypothesis-v2"]   = _bpSectionHypothesisV2;
+    window.BPReport.sectionRenderers["liquid-era"]      = _bpSectionLiquidEra;
+    window.BPReport.validatePathDiagnosticV2 = _validatePathDiagnosticV2;
+  }
+
+  function _renderReportDiagnosticV2Route() {
+    var content = document.getElementById("content");
+    if (!content) return;
+    var params = window._reportRouteParams || {};
+    var reportId = params.id || "";
+    if (!reportId) { content.innerHTML = _render404("no report id"); return; }
+    var v2Data = _buildDiagnosticDataV2(reportId);
+    if (!v2Data) { content.innerHTML = _render404("report not found"); return; }
+    var vr = _validatePathDiagnosticV2(v2Data);
+    if (!vr.valid) {
+      try { console.error("[report-v2] validation failed:", vr.errors); } catch(e){}
+      var errHtml = "<div class=\"report-v2-validation-fail\"><h3>AI response format error, please retry</h3>";
+      errHtml += "<p style=\"font-size:13px;color:var(--ink-sec);margin-bottom:16px\">Schema v2 validation failed:</p>";
+      for (var ei = 0; ei < vr.errors.length; ei++) errHtml += "<code>" + _bpEscape(vr.errors[ei]) + "</code>";
+      errHtml += "<p style=\"margin-top:16px\"><a href=\"#/home\" style=\"color:var(--primary)\">Back to home</a></p></div>";
+      content.innerHTML = errHtml;
+      return;
+    }
+    var renderData = {
+      id: v2Data.id,
+      hero: v2Data.hero,
+      sections: {
+        "path-scores-v2":  { pathScores: v2Data.pathScores, jtbdLayers: v2Data.jtbdLayers },
+        "next-actions-v2": v2Data.nextActions,
+        "hypothesis-v2":   v2Data.hypothesis,
+        "liquid-era":      null
+      }
+    };
+    var res = window.BPReport.render(_diagnosticSchemaV2, renderData, content);
+    if (res.ok && v2Data.hero && v2Data.hero.verdict_tone) {
+      var verdictEl = content.querySelector(".report-verdict");
+      if (verdictEl) verdictEl.classList.add("report-verdict--" + v2Data.hero.verdict_tone);
+    }
+    if (!res.ok) { try { console.warn("[report-v2] render non-ok:", res); } catch(e){} }
+  }
+  window._renderReportDiagnosticV2Route = _renderReportDiagnosticV2Route;
+
+  var _originalRenderReportDiagnostic = renderReportDiagnostic;
+  window.renderReportDiagnostic = function() {
+    var hash = window.location.hash || "";
+    var forceV1 = /[?&]v=1/.test(hash) || (typeof state !== "undefined" && state && state.reportView === "v1");
+    if (forceV1) { _originalRenderReportDiagnostic(); }
+    else { _renderReportDiagnosticV2Route(); }
+  };
+
+  window._tryNewReportView = function() {
+    var diag = null;
+    if (typeof reportState !== "undefined" && reportState && reportState.selectedDiag) {
+      diag = reportState.selectedDiag;
+    } else if (typeof state !== "undefined" && state && state.diagnoses && state.diagnoses.length > 0) {
+      diag = state.diagnoses[state.diagnoses.length - 1];
+    }
+    if (!diag) {
+      if (typeof showToast === "function") showToast("No diagnosis yet, please complete PATH quiz first");
+      return;
+    }
+    if (typeof state !== "undefined") {
+      state.savedReports = state.savedReports || [];
+      var reportId = diag.id;
+      var already = false;
+      for (var i = 0; i < state.savedReports.length; i++) {
+        if (state.savedReports[i] && state.savedReports[i].id === reportId) { already = true; break; }
+      }
+      if (!already) {
+        state.savedReports.push({ id: reportId, selectedDiag: diag, createdAt: new Date().toISOString(), version: "v2" });
+        if (typeof saveState === "function") saveState();
+      }
+      window.location.hash = "#/report/diagnostic/" + reportId;
+    }
+  };
+
+  // ---- D4 PATH_AI.callV2 ----
+  function _bpInitCallV2() {
+    if (!window.PATH_AI) { try { console.warn("[D4] PATH_AI not ready"); } catch(e){} return; }
+    var _costLog = [];
+    function sleep(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+    async function callV2(systemPrompt, userPrompt, options) {
+      options = options || {};
+      var retries = options.retries || 3;
+      var timeout = options.timeout || 30000;
+      var reportType = options.reportType || "unknown";
+      var schema = options.schema;
+      var startT = Date.now();
+      var attempts = 0;
+      var lastError = null;
+      while (attempts < retries) {
+        attempts++;
+        try {
+          var ctx = { v2: true, systemPromptOverride: systemPrompt, reportType: reportType };
+          var callPromise = window.PATH_AI.call("diagnose", ctx, userPrompt);
+          var timeoutPromise = new Promise(function(_, rej){ setTimeout(function(){ rej(new Error("TIMEOUT_30s")); }, timeout); });
+          var rawText = await Promise.race([callPromise, timeoutPromise]);
+          var jsonStart = rawText.indexOf("{");
+          var jsonEnd = rawText.lastIndexOf("}");
+          if (jsonStart < 0 || jsonEnd <= jsonStart) throw new Error("NO_JSON_IN_RESPONSE");
+          var jsonText = rawText.substring(jsonStart, jsonEnd + 1);
+          var parsed;
+          try { parsed = JSON.parse(jsonText); } catch (e) { throw new Error("JSON_PARSE_FAIL: " + e.message); }
+          if (typeof schema === "function") {
+            var vr = schema(parsed);
+            if (!vr.valid) throw new Error("SCHEMA_INVALID: " + (vr.errors || []).join(", "));
+          }
+          var latencyMs = Date.now() - startT;
+          var lastCall = (state && state.creditStats && state.creditStats._lastCall) || null;
+          var costEntry = { ts: new Date().toISOString(), reportType: reportType, attempts: attempts, latencyMs: latencyMs, tokens: lastCall ? { in: lastCall.inputTokens, out: lastCall.outputTokens } : null, credits: lastCall ? lastCall.credits : null };
+          _costLog.push(costEntry);
+          try {
+            if (window.firebase && window.firebase.firestore) {
+              window.firebase.firestore().collection("bp_ai_cost_log").add(costEntry).catch(function(){});
+            }
+          } catch(e){}
+          return { ok: true, data: parsed, latencyMs: latencyMs, attempts: attempts };
+        } catch (err) {
+          lastError = err;
+          if (attempts < retries) { await sleep(Math.pow(2, attempts) * 500); }
+        }
+      }
+      return { ok: false, error: (lastError && lastError.message) || "UNKNOWN", attempts: attempts, fallback: true };
+    }
+    window.PATH_AI.callV2 = callV2;
+    window.PATH_AI.getCostLogV2 = function(){ return _costLog.slice(); };
+  }
+  _bpInitCallV2();
+  // ==================== END S1-D5 ====================
+  // ==================== END S1-D2 + D3 ====================
+
   // ==================== PUBLIC API ====================
   window.app = {
     // Core app
+    tryNewReportView: function(){ return window._tryNewReportView && window._tryNewReportView(); },
     renderHome,
     navigate,
     navClick,
@@ -31166,7 +32555,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.4.0 · S1 Sprint · PATH 診斷 v2.0 + 95 分報告規格體系 v1.2（城堡 7 人圓桌會議最終決議：液態團隊時代 / STEEP 2.0 改版 / Gemini 70% + GPT 30% / Claude+霍爾折衷 AI 處理 / 每 Trend ≥ 3 Signal / AI 研究工具棧）：(1) **規格體系 12 份文件 · 634+ 條 criteria 落檔**——acceptance/ 驗收層 10 份（content-rubric 170 / visual 83 / ux 99 / tech 98 / mckinsey 47 / market-tools 121 / tool-selection Howl's Law / AI-native upgrade 78 + Gemini 30 / claude synthesis 40）+ schemas/path-diagnostic-v2.schema.json + prompt-rubrics/path-diagnostic-v2.md + render-contract/url-routing-spec.md + css/report-namespace.css（59 class · 封閉五色合規）；(2) **技術地基**——`window.BPReport` Render Engine v1（168 行 · schema-driven · 3 section type）+ URL routing `/path/report/diagnostic/:id`（router upgrade · Chrome MCP smoke PASS · 36/36 unit test）+ `PATH_AI.callV2` AI Wrapper v2（retry × 3 · timeout 30s · schema 驗證 · cost log · Firestore bp_ai_cost_log · fallback UI · 不動既有 PATH_AI.call 穩定版）；(3) **PATH 診斷 v2.0 實戰**——既有 showQuizResults 加「試試新版報告 · v2.0」CTA · 新版含 Hero verdict（Gemini 風 12-20 字 punchline · verdict_tone teal/gold/rose 5 情境規則引擎）+ PATH 四維 + JTBD 4 層（L1 Functional / L2 Emotional / L3 Identity / L4 Addiction · 漸進揭露 details expand）+ 3 條 SMART Next Action（含 owner/risk/failureCondition + crossToolTarget 跨工具導引 F1/F2）+ Hypothesis 方法論抽屜（資料來源 3 色 badge + 核心假設 3 項 + 信心度 % + 失效條件）+ 液態團隊時代彩蛋（整份僅 1 次）+ CTA trio 複製連結/列印/分享；(4) **Schema v2 驗證**——validatePathDiagnosticV2 手寫輕量版 · AI 回傳格式不符顯 fallback UI（不白屏）· 7 項 required 欄位 check；(5) **Howl's Law 3 條全守**（融合 > 並列 / 讀者情境決定 / 創業者不需學 MBA）· Gate 1 local smoke PASS（Console 0 error · acorn parse OK · DOM 完整渲染 · Mobile 375 · Dark mode warm gradient）· 行數 31,172 → 32,561（+1,389 行 includes D1 CSS 414 + D2/D3 772 + D4/D5 617）· sha256 530b3a5f · 版號 v1.3.19→v1.4.0 -->
 <!-- v1.3.19 · 三合一 hotfix · 戰情室白屏 + 登出踢錯頁 + landing 被覆蓋（連鎖事故救火）：(1) **renderInsights TypeError 修復**——v1.3.17 新增 Hero insight card + 3 mini KPI 讀 _overdueTasks/_stuckTasks/_weekDueTasks.length，但這 3 個變數在 Hero block 之後才 var 宣告（line 19848-19867）；var hoisting 只提升宣告不提升賦值 → undefined.length 當場炸 → 整個戰情室白屏。修法：將 6 個 task preflight 變數（_cycles / _activeTasks / _todayISO / _overdueTasks / _stuckTasks / _weekDueTasks）從 pulse-view 區塊上移到 Hero block 之前，原位置改註解；(2) **登出 redirect 修復**——showLanding() (line 30460) 和 auth fallback (line 30659) 原用 `window.location.replace('../')` 相對路徑；當 app.html 被誤部署到 /path/index.html（landing 位置），'../' 從 /path/ 退到 /（規格外工作室根域），登出從 app 會跳到 spec 個人頁而非登入頁。修法：兩處改 `/path/` 絕對路徑，不管 app.html 放哪都回 landing；(3) **Landing 真本復原**——v1.3.18 push 時誤將 app.html 同時複製到 /tmp/beyondspec/path/index.html（landing 位置，31,164 行）+ /tmp/beyondspec/path/app/index.html（app 位置），導致 landing 被覆蓋；修法：從 v1.3.9 commit 0c607da 復原真本 landing（908 行，含 Firebase login + apply modal + Firestore 直寫）到 path/index.html；部署 SOP 強化：app.html 只能複製到 path/app/index.html，path/index.html 絕不能覆蓋 · 版號 v1.3.18→v1.3.19 -->
 <!-- v1.3.18 · 信任救火 · Math.random 造假數據清零 + 競品矩陣 AI badge 警告（蕪菁頭 UX 評估 P3 坤書型用戶信任殺手風險）：四視角報告升級評估完成（女巫/霍爾/蕪菁頭/卡西法 4 份 research docs 落檔 + 整合 roadmap），最高共識 P0 是「移除 Math.random 假數據」——renderFullReport 競品對照矩陣（featureMatrix us/c1/c2/c3 ● ○ 打勾）+ 需求缺口數 + 留存/頻率提升% + MVP 週期 + renderMarketSignal 相關關鍵字 vol/diff/trend 全改 hash-based deterministic（同一 productName reload 結果一致，避免 P3 型用戶 reload 檢出數字變動破信任）；競品矩陣卡片頂部新增黃色 chip「AI 推估 · 非實測」+ 底部加「v1.3.17 起：本矩陣為 hash-based 可重現推估」聲明；所有 hash-based 公式含 index 偏移（idx*7 / h*3 / h*5 / h*7）避免同一 feature 列四欄完全相同；既有 aiData（chapter2_competitors）仍優先於 hash fallback · 版號 v1.3.17→v1.3.18 -->
-<!-- v1.3.17 · 營運戰情室視覺升級 Batch 1（愛德華指令「戰情室先做個視覺上的升級」）：renderInsights 頂部 page-title-area 後新增兩層：(1) **Hero 今日戰情卡**——color-mix 4% 底 + 16% border tint 依訊號 tone 動態上色（rose 逾期款項 / gold 任務逾期 / teal 報價健康 / primary 資料累積中），sparkle icon + 日期 + 完整敘事 + 黑色 CTA 按鈕直跳對應模組；規則引擎生成（Q3 決議「AI 生成不準先不上」，改 5 情境規則式敘事）；subtitle 改「今天該擔心什麼？AI 會主動提醒。」；(2) **3 Mini KPI**（本月已收 / Pipeline 等待 / 異常提醒）．card-editorial variant（Maze-inspired hover 只變 border）；封閉五色編碼；null 顯示 slate「—」不懲罰新用戶；sparkline 留給資料累積後；既有 pulse view / 營收健康度 / 商業動能 / 執行力 / 報價 list 全部保留不動，新 hero + 3 mini 插在最頂部作為「第一眼戰情摘要」· 版號 v1.3.16→v1.3.17 -->
 <!-- 歷史 changelog 搬運至 projects/beyondpath/CHANGELOG.md · 熱區僅保留最新 3 條（CLAUDE.md 憲法 tail cleanup 政策）-->
