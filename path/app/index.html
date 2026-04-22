@@ -5691,7 +5691,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.0</div>
+        <div class="sidebar-version">v1.4.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6471,7 +6471,121 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     localStorage.setItem('bp_settings', JSON.stringify(state.settings));
   }
 
+  // ==================== MCP COLLABORATION API (v1.4.1) ====================
+  // 讓 Chrome MCP / Extension / Plugin 透過 window.BP 直接操作 app state
+  // 設計原則：
+  //   1. 實作於 state IIFE closure 內，取得 state + saveState 引用
+  //   2. ES5 only (var/function 無 arrow/const/let)
+  //   3. append 預設、replace 可選；render 預設 true
+  //   4. getState 回傳 shallow copy，不暴露 state 原始 reference
+  //   5. Edward 本人訓：「系統為 AI 透過 MCP 協作而設計，不能寫入等於白幹」
+  window.BP = window.BP || {};
+
+  window.BP.injectDiagnoses = function(diagArray, options) {
+    options = options || {};
+    if (!Array.isArray(diagArray)) {
+      console.warn('[BP.injectDiagnoses] diagArray 必須是陣列');
+      return { ok: false, error: 'diagArray_not_array' };
+    }
+    if (options.replace === true) {
+      state.diagnoses = diagArray.slice();
+    } else {
+      diagArray.forEach(function(d) {
+        if (!d || !d.id) return;
+        var exists = state.diagnoses.find(function(x){ return x && x.id === d.id; });
+        if (!exists) state.diagnoses.push(d);
+      });
+    }
+    saveState();
+    if (options.render !== false && window.app && typeof window.app.navigate === 'function') {
+      try { window.app.navigate('home'); } catch(e) { console.warn('[BP.injectDiagnoses] navigate home failed: ' + (e && e.message)); }
+    }
+    return { ok: true, count: state.diagnoses.length };
+  };
+
+  window.BP.injectReports = function(reportArray, options) {
+    options = options || {};
+    if (!Array.isArray(reportArray)) {
+      console.warn('[BP.injectReports] reportArray 必須是陣列');
+      return { ok: false, error: 'reportArray_not_array' };
+    }
+    if (!Array.isArray(state.savedReports)) state.savedReports = [];
+    if (options.replace === true) {
+      state.savedReports = reportArray.slice();
+    } else {
+      reportArray.forEach(function(r) {
+        if (!r || !r.id) return;
+        var exists = state.savedReports.find(function(x){ return x && x.id === r.id; });
+        if (!exists) state.savedReports.push(r);
+      });
+    }
+    try { localStorage.setItem('bp_savedReports', JSON.stringify(state.savedReports)); } catch(e) {}
+    saveState();
+    if (options.render !== false && window.app && typeof window.app.navigate === 'function') {
+      try { window.app.navigate('home'); } catch(e) {}
+    }
+    return { ok: true, count: state.savedReports.length };
+  };
+
+  window.BP.clearAll = function(keys, options) {
+    options = options || {};
+    if (!Array.isArray(keys) || keys.length === 0) {
+      console.warn('[BP.clearAll] keys 必須是非空字串陣列');
+      return { ok: false, error: 'keys_empty' };
+    }
+    var KEY_MAP = {
+      'diagnoses': 'bp_diagnoses',
+      'researches': 'bp_researches',
+      'savedReports': 'bp_savedReports',
+      'savedSurveys': 'bp_savedSurveys',
+      'feedbackLog': 'bp_feedback'
+    };
+    var cleared = [];
+    keys.forEach(function(k) {
+      if (KEY_MAP.hasOwnProperty(k)) {
+        state[k] = [];
+        try { localStorage.removeItem(KEY_MAP[k]); } catch(e) {}
+        cleared.push(k);
+      } else {
+        console.warn('[BP.clearAll] 未知 key: ' + k + '（白名單：' + Object.keys(KEY_MAP).join(', ') + '）');
+      }
+    });
+    saveState();
+    if (options.reload === true && typeof window.location !== 'undefined') {
+      window.location.reload();
+      return { ok: true, cleared: cleared, reloaded: true };
+    }
+    if (options.render !== false && window.app && typeof window.app.navigate === 'function') {
+      try { window.app.navigate('home'); } catch(e) {}
+    }
+    return { ok: true, cleared: cleared };
+  };
+
+  window.BP.getState = function() {
+    // Shallow copy，陣列用 slice() 避免外部污染
+    return {
+      isLoggedIn: state.isLoggedIn,
+      plan: state.plan,
+      currentModule: state.currentModule,
+      currentView: state.currentView,
+      diagCount: state.diagCount,
+      labCount: state.labCount,
+      creditUsed: state.creditUsed,
+      creditResetDate: state.creditResetDate,
+      aiModel: state.aiModel,
+      aiMode: state.aiMode,
+      diagnoses: Array.isArray(state.diagnoses) ? state.diagnoses.slice() : [],
+      researches: Array.isArray(state.researches) ? state.researches.slice() : [],
+      savedReports: Array.isArray(state.savedReports) ? state.savedReports.slice() : [],
+      savedSurveys: Array.isArray(state.savedSurveys) ? state.savedSurveys.slice() : [],
+      feedbackLog: Array.isArray(state.feedbackLog) ? state.feedbackLog.slice() : [],
+      settings: state.settings ? JSON.parse(JSON.stringify(state.settings)) : {}
+    };
+  };
+  // ==================== END MCP COLLABORATION API ====================
+
   // ==================== UI UTILITIES ====================
+
   function showLoginGate() {
     showLoginModal();
   }
@@ -32555,7 +32669,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
+<!-- v1.4.1 · MCP 協作 state injection API（Edward 本人訓後補丁「系統為 AI 透過 MCP 協作而設計，不能寫入等於白幹」）：state 在 IIFE closure 封閉、外部無法寫入 → 新增 4 個 public API on window.BP 讓 Chrome MCP / Extension / Plugin 直接操作 app state：(1) **window.BP.injectDiagnoses(array, {replace|append, render})** — 預設 append mode（skip 既有 id 避免 v1.3.17-19 連鎖事件教訓 · Edward 既有 diagnoses 不覆蓋），replace:true 時清空 state.diagnoses 換新陣列；saveState() 寫回 localStorage；options.render !== false 時自動 navigate home 觸發 re-render；(2) **window.BP.injectReports(array, options)** — 同樣 replace/append mode 寫入 state.savedReports + 手動 localStorage.setItem（saveState 既有邏輯未覆蓋 savedReports）；(3) **window.BP.clearAll([keys], {reload, render})** — 白名單 5 key（diagnoses/researches/savedReports/savedSurveys/feedbackLog）防誤清系統設定；未知 key 印 warn 不 throw；(4) **window.BP.getState()** — 回傳 shallow copy（陣列 slice / settings JSON.parse 深拷）不暴露 state reference 避免外部污染；落檔位置：app.html line 6474-6585 緊接 saveState 之後同一 closure 內（無需 expose 內部 state，改用 this-closure-capture）；ES5 規範守（var/function/無 arrow const let）；Gate 1 acorn parse OK · 版號 v1.4.0→v1.4.1 · wc=32675 -->
 <!-- v1.4.0 · S1 Sprint · PATH 診斷 v2.0 + 95 分報告規格體系 v1.2（城堡 7 人圓桌會議最終決議：液態團隊時代 / STEEP 2.0 改版 / Gemini 70% + GPT 30% / Claude+霍爾折衷 AI 處理 / 每 Trend ≥ 3 Signal / AI 研究工具棧）：(1) **規格體系 12 份文件 · 634+ 條 criteria 落檔**——acceptance/ 驗收層 10 份（content-rubric 170 / visual 83 / ux 99 / tech 98 / mckinsey 47 / market-tools 121 / tool-selection Howl's Law / AI-native upgrade 78 + Gemini 30 / claude synthesis 40）+ schemas/path-diagnostic-v2.schema.json + prompt-rubrics/path-diagnostic-v2.md + render-contract/url-routing-spec.md + css/report-namespace.css（59 class · 封閉五色合規）；(2) **技術地基**——`window.BPReport` Render Engine v1（168 行 · schema-driven · 3 section type）+ URL routing `/path/report/diagnostic/:id`（router upgrade · Chrome MCP smoke PASS · 36/36 unit test）+ `PATH_AI.callV2` AI Wrapper v2（retry × 3 · timeout 30s · schema 驗證 · cost log · Firestore bp_ai_cost_log · fallback UI · 不動既有 PATH_AI.call 穩定版）；(3) **PATH 診斷 v2.0 實戰**——既有 showQuizResults 加「試試新版報告 · v2.0」CTA · 新版含 Hero verdict（Gemini 風 12-20 字 punchline · verdict_tone teal/gold/rose 5 情境規則引擎）+ PATH 四維 + JTBD 4 層（L1 Functional / L2 Emotional / L3 Identity / L4 Addiction · 漸進揭露 details expand）+ 3 條 SMART Next Action（含 owner/risk/failureCondition + crossToolTarget 跨工具導引 F1/F2）+ Hypothesis 方法論抽屜（資料來源 3 色 badge + 核心假設 3 項 + 信心度 % + 失效條件）+ 液態團隊時代彩蛋（整份僅 1 次）+ CTA trio 複製連結/列印/分享；(4) **Schema v2 驗證**——validatePathDiagnosticV2 手寫輕量版 · AI 回傳格式不符顯 fallback UI（不白屏）· 7 項 required 欄位 check；(5) **Howl's Law 3 條全守**（融合 > 並列 / 讀者情境決定 / 創業者不需學 MBA）· Gate 1 local smoke PASS（Console 0 error · acorn parse OK · DOM 完整渲染 · Mobile 375 · Dark mode warm gradient）· 行數 31,172 → 32,561（+1,389 行 includes D1 CSS 414 + D2/D3 772 + D4/D5 617）· sha256 530b3a5f · 版號 v1.3.19→v1.4.0 -->
 <!-- v1.3.19 · 三合一 hotfix · 戰情室白屏 + 登出踢錯頁 + landing 被覆蓋（連鎖事故救火）：(1) **renderInsights TypeError 修復**——v1.3.17 新增 Hero insight card + 3 mini KPI 讀 _overdueTasks/_stuckTasks/_weekDueTasks.length，但這 3 個變數在 Hero block 之後才 var 宣告（line 19848-19867）；var hoisting 只提升宣告不提升賦值 → undefined.length 當場炸 → 整個戰情室白屏。修法：將 6 個 task preflight 變數（_cycles / _activeTasks / _todayISO / _overdueTasks / _stuckTasks / _weekDueTasks）從 pulse-view 區塊上移到 Hero block 之前，原位置改註解；(2) **登出 redirect 修復**——showLanding() (line 30460) 和 auth fallback (line 30659) 原用 `window.location.replace('../')` 相對路徑；當 app.html 被誤部署到 /path/index.html（landing 位置），'../' 從 /path/ 退到 /（規格外工作室根域），登出從 app 會跳到 spec 個人頁而非登入頁。修法：兩處改 `/path/` 絕對路徑，不管 app.html 放哪都回 landing；(3) **Landing 真本復原**——v1.3.18 push 時誤將 app.html 同時複製到 /tmp/beyondspec/path/index.html（landing 位置，31,164 行）+ /tmp/beyondspec/path/app/index.html（app 位置），導致 landing 被覆蓋；修法：從 v1.3.9 commit 0c607da 復原真本 landing（908 行，含 Firebase login + apply modal + Firestore 直寫）到 path/index.html；部署 SOP 強化：app.html 只能複製到 path/app/index.html，path/index.html 絕不能覆蓋 · 版號 v1.3.18→v1.3.19 -->
-<!-- v1.3.18 · 信任救火 · Math.random 造假數據清零 + 競品矩陣 AI badge 警告（蕪菁頭 UX 評估 P3 坤書型用戶信任殺手風險）：四視角報告升級評估完成（女巫/霍爾/蕪菁頭/卡西法 4 份 research docs 落檔 + 整合 roadmap），最高共識 P0 是「移除 Math.random 假數據」——renderFullReport 競品對照矩陣（featureMatrix us/c1/c2/c3 ● ○ 打勾）+ 需求缺口數 + 留存/頻率提升% + MVP 週期 + renderMarketSignal 相關關鍵字 vol/diff/trend 全改 hash-based deterministic（同一 productName reload 結果一致，避免 P3 型用戶 reload 檢出數字變動破信任）；競品矩陣卡片頂部新增黃色 chip「AI 推估 · 非實測」+ 底部加「v1.3.17 起：本矩陣為 hash-based 可重現推估」聲明；所有 hash-based 公式含 index 偏移（idx*7 / h*3 / h*5 / h*7）避免同一 feature 列四欄完全相同；既有 aiData（chapter2_competitors）仍優先於 hash fallback · 版號 v1.3.17→v1.3.18 -->
-<!-- 歷史 changelog 搬運至 projects/beyondpath/CHANGELOG.md · 熱區僅保留最新 3 條（CLAUDE.md 憲法 tail cleanup 政策）-->
+<!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
