@@ -5691,7 +5691,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.2</div>
+        <div class="sidebar-version">v1.4.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -8218,7 +8218,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           const dimNames = {P:'問題',A:'受眾',T:'牽引',H:'執行'};
           const menuId = 'diagMenu_' + d.id;
           const scoreColor = total >= 75 ? 'var(--teal)' : total >= 50 ? 'var(--primary)' : total >= 30 ? 'var(--gold)' : 'var(--rose)';
-          return '<div class="diag-card" style="position:relative" onclick="app.openDiagnosisV2(\'' + d.id + '\')">' +
+          return '<div class="diag-card" style="position:relative" onclick="app.viewDiagnosis(\'' + d.id + '\')">' +
             '<div class="card-more-wrap">' +
               '<button class="card-more-btn" onclick="event.stopPropagation();app.toggleCardMenu(event,\'' + menuId + '\')" title="更多操作">⋯</button>' +
               '<div class="card-more-menu" id="' + menuId + '">' +
@@ -26156,7 +26156,7 @@ function loadHistory(){
           const dimColors = {P:'var(--primary)',A:'var(--teal)',T:'var(--gold)',H:'var(--violet)'};
           const dimNames = {P:'問題',A:'受眾',T:'牽引',H:'執行'};
           return `
-          <div class="diag-card" onclick="app.openDiagnosisV2('${d.id}')">
+          <div class="diag-card" onclick="app.viewDiagnosis('${d.id}')">
             <div class="diag-card-header">
               <div class="diag-card-left">
                 <div class="diag-card-type">${d.productName || d.pathType || 'PATH 診斷'}</div>
@@ -32696,7 +32696,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
-<!-- v1.4.2 · 首頁 / 市場報告列表 diag-card onclick → v2 URL 直跳 BPReport 報告（Edward 指示「把 1.4.2 做完」· v1.4.1 MCP API 合併一次上 prod）：新增 `openDiagnosisV2(diagId)` function（line 31166-31190 · 緊接 _tryNewReportView 之後同一 closure），內部流程：(1) state.diagnoses 查找 diagId（找不到 showToast「找不到該診斷記錄」return），(2) state.savedReports 檢查是否已存在該 id（已存在 skip、不存在 push 新 record 含 selectedDiag + createdAt + version:"v2"），(3) saveState() 寫回 localStorage，(4) window.location.hash = "#/report/diagnostic/" + diagId 觸發 BPReport router 渲染 v2 報告；Export 到 app namespace（line 31302 緊接 viewDiagnosis 之後）；兩處 onclick 改動：line 8221 首頁 home diag-card string concat 版 + line 26159 市場報告列表 template literal 版 從 `app.viewDiagnosis` 改成 `app.openDiagnosisV2`；viewDiagnosis legacy function 保留不動（line 26251 · 其他 re-diagnose / admin 流程可能仍用）；Sidebar 保持首頁 active（hash 變更不觸發 nav 切換）；⋯ 選單 event.stopPropagation 完好（onclick 事件冒泡策略未改）；ES5 規範守（var/function/for loop/string concat）· 版號 v1.4.1→v1.4.2 -->
+<!-- v1.4.3 · hotfix · v1.4.2 onclick 導向 v2 URL 方向錯誤 roll back：Edward prod 驗收回報 5 問題 ((1) PATH 報告壞——v2 schema validation fail 因既有真實 diag 無 JTBD 4 層/SMART 3 條欄位；(2) Lab 報告沒優化——S2 範疇；(3) 市場報告沒優化——S3 範疇；(4) 首頁列表無法編輯/刪除——待驗；(5) 「點 card 不要跳頁，應首頁 inline expand」——這是架構需求，Edward 之前已提多次)。立即 hotfix：line 8221 + line 26159 onclick 從 `app.openDiagnosisV2` roll back 回 `app.viewDiagnosis`（legacy 穩定路徑），恢復 v1.4.1 前 prod 行為；`openDiagnosisV2` function 保留在 line 31166-31190 不刪（future inline expand 重做時復用）；v1.4.1 MCP inject API（window.BP.*）完整保留；Gate 4 snapshot v1.4.3.html · 版號 v1.4.2→v1.4.3 -->
+<!-- v1.4.2 · 首頁 / 市場報告列表 diag-card onclick → v2 URL 直跳 BPReport 報告（方向錯誤已於 v1.4.3 roll back；openDiagnosisV2 function 保留於 line 31166-31190 待未來 inline expand 重做復用）· 版號 v1.4.1→v1.4.2 -->
 <!-- v1.4.1 · MCP 協作 state injection API（Edward 本人訓後補丁「系統為 AI 透過 MCP 協作而設計，不能寫入等於白幹」）：state 在 IIFE closure 封閉、外部無法寫入 → 新增 4 個 public API on window.BP 讓 Chrome MCP / Extension / Plugin 直接操作 app state：(1) **window.BP.injectDiagnoses(array, {replace|append, render})** — 預設 append mode（skip 既有 id 避免 v1.3.17-19 連鎖事件教訓 · Edward 既有 diagnoses 不覆蓋），replace:true 時清空 state.diagnoses 換新陣列；saveState() 寫回 localStorage；options.render !== false 時自動 navigate home 觸發 re-render；(2) **window.BP.injectReports(array, options)** — 同樣 replace/append mode 寫入 state.savedReports + 手動 localStorage.setItem（saveState 既有邏輯未覆蓋 savedReports）；(3) **window.BP.clearAll([keys], {reload, render})** — 白名單 5 key（diagnoses/researches/savedReports/savedSurveys/feedbackLog）防誤清系統設定；未知 key 印 warn 不 throw；(4) **window.BP.getState()** — 回傳 shallow copy（陣列 slice / settings JSON.parse 深拷）不暴露 state reference 避免外部污染；落檔位置：app.html line 6474-6585 緊接 saveState 之後同一 closure 內（無需 expose 內部 state，改用 this-closure-capture）；ES5 規範守（var/function/無 arrow const let）；Gate 1 acorn parse OK · 版號 v1.4.0→v1.4.1 · wc=32675 -->
 <!-- v1.4.0 · S1 Sprint · PATH 診斷 v2.0 + 95 分報告規格體系 v1.2（城堡 7 人圓桌會議最終決議：液態團隊時代 / STEEP 2.0 改版 / Gemini 70% + GPT 30% / Claude+霍爾折衷 AI 處理 / 每 Trend ≥ 3 Signal / AI 研究工具棧）：(1) **規格體系 12 份文件 · 634+ 條 criteria 落檔**——acceptance/ 驗收層 10 份（content-rubric 170 / visual 83 / ux 99 / tech 98 / mckinsey 47 / market-tools 121 / tool-selection Howl's Law / AI-native upgrade 78 + Gemini 30 / claude synthesis 40）+ schemas/path-diagnostic-v2.schema.json + prompt-rubrics/path-diagnostic-v2.md + render-contract/url-routing-spec.md + css/report-namespace.css（59 class · 封閉五色合規）；(2) **技術地基**——`window.BPReport` Render Engine v1（168 行 · schema-driven · 3 section type）+ URL routing `/path/report/diagnostic/:id`（router upgrade · Chrome MCP smoke PASS · 36/36 unit test）+ `PATH_AI.callV2` AI Wrapper v2（retry × 3 · timeout 30s · schema 驗證 · cost log · Firestore bp_ai_cost_log · fallback UI · 不動既有 PATH_AI.call 穩定版）；(3) **PATH 診斷 v2.0 實戰**——既有 showQuizResults 加「試試新版報告 · v2.0」CTA · 新版含 Hero verdict（Gemini 風 12-20 字 punchline · verdict_tone teal/gold/rose 5 情境規則引擎）+ PATH 四維 + JTBD 4 層（L1 Functional / L2 Emotional / L3 Identity / L4 Addiction · 漸進揭露 details expand）+ 3 條 SMART Next Action（含 owner/risk/failureCondition + crossToolTarget 跨工具導引 F1/F2）+ Hypothesis 方法論抽屜（資料來源 3 色 badge + 核心假設 3 項 + 信心度 % + 失效條件）+ 液態團隊時代彩蛋（整份僅 1 次）+ CTA trio 複製連結/列印/分享；(4) **Schema v2 驗證**——validatePathDiagnosticV2 手寫輕量版 · AI 回傳格式不符顯 fallback UI（不白屏）· 7 項 required 欄位 check；(5) **Howl's Law 3 條全守**（融合 > 並列 / 讀者情境決定 / 創業者不需學 MBA）· Gate 1 local smoke PASS（Console 0 error · acorn parse OK · DOM 完整渲染 · Mobile 375 · Dark mode warm gradient）· 行數 31,172 → 32,561（+1,389 行 includes D1 CSS 414 + D2/D3 772 + D4/D5 617）· sha256 530b3a5f · 版號 v1.3.19→v1.4.0 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
