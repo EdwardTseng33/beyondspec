@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://beyondpath.tw/schemas/path-diagnostic-v2.json",
+  "title": "PATH Diagnostic Report v2",
+  "description": "BeyondPath PATH 診斷報告 v2.0 JSON 契約（AI 輸出驗證）",
+  "version": "2.0.0",
+  "type": "object",
+  "required": ["hero", "pathScores", "nextActions", "hypothesis", "meta"],
+  "properties": {
+
+    "hero": {
+      "type": "object",
+      "required": ["verdict", "verdict_tone", "tldr", "confidence"],
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 30,
+          "description": "12-20 字一句話結論（判斷非描述）"
+        },
+        "verdict_tone": {
+          "type": "string",
+          "enum": ["teal", "gold", "rose", "primary"],
+          "description": "色彩語義：teal=healthy / gold=warn / rose=danger / primary=default"
+        },
+        "tldr": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 120,
+          "description": "60-80 字摘要"
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "信心度 %（非 高/中/低）"
+        },
+        "confidence_calc": {
+          "type": "string",
+          "description": "信心度計算依據一句話"
+        },
+        "kpis": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["value", "label", "source"],
+            "properties": {
+              "value": { "type": ["string", "number"] },
+              "label": { "type": "string", "maxLength": 20 },
+              "trend": { "type": "string" },
+              "trendDirection": { "type": "string", "enum": ["up", "down", "flat"] },
+              "source": { "type": "string", "enum": ["measured", "estimated", "ai_generated"] }
+            }
+          }
+        }
+      }
+    },
+
+    "pathScores": {
+      "type": "object",
+      "required": ["P", "A", "T", "H"],
+      "properties": {
+        "P": { "$ref": "#/$defs/pathDimension" },
+        "A": { "$ref": "#/$defs/pathDimension" },
+        "T": { "$ref": "#/$defs/pathDimension" },
+        "H": { "$ref": "#/$defs/pathDimension" }
+      }
+    },
+
+    "nextActions": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "description": "Top 3 Next Actions（必 3 條，不可多不可少）",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "priority", "smart", "owner", "risk", "failureCondition"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^act-[0-9]+$" },
+          "title": { "type": "string", "minLength": 8, "maxLength": 30 },
+          "priority": { "type": "integer", "minimum": 1, "maximum": 3 },
+          "smart": {
+            "type": "object",
+            "required": ["specific", "measurable", "achievable", "relevant", "timeBound"],
+            "properties": {
+              "specific": { "type": "string", "minLength": 20 },
+              "measurable": { "type": "string", "minLength": 15 },
+              "achievable": { "type": "string", "minLength": 15 },
+              "relevant": { "type": "string", "minLength": 15 },
+              "timeBound": { "type": "string", "minLength": 5 }
+            }
+          },
+          "owner": { "type": "string" },
+          "risk": { "type": "string", "minLength": 10 },
+          "failureCondition": { "type": "string", "minLength": 15 },
+          "crossToolTarget": {
+            "type": ["string", "null"],
+            "enum": ["lab", "market-signal", "market", "survey", null]
+          }
+        }
+      }
+    },
+
+    "hypothesis": {
+      "type": "object",
+      "required": ["dataSources", "coreAssumptions", "confidence", "failureCondition", "recommendedRecheck"],
+      "properties": {
+        "dataSources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["type", "source"],
+            "properties": {
+              "type": { "type": "string" },
+              "count": { "type": "integer", "minimum": 0 },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "🟢 measured",
+                  "🟡 estimated",
+                  "🔴 ai_generated",
+                  "🔴 未啟用"
+                ]
+              }
+            }
+          }
+        },
+        "coreAssumptions": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "items": { "type": "string", "minLength": 15 }
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "confidenceRationale": { "type": "string" },
+        "failureCondition": {
+          "type": "string",
+          "minLength": 20,
+          "description": "若 X 改變 → 本結論不成立"
+        },
+        "recommendedRecheck": {
+          "type": "string",
+          "description": "建議何時重跑本報告"
+        }
+      }
+    },
+
+    "crossToolNav": {
+      "type": "object",
+      "properties": {
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["condition", "target", "label"],
+            "properties": {
+              "condition": { "type": "string" },
+              "target": {
+                "type": "string",
+                "enum": ["lab", "market-signal", "market", "survey"]
+              },
+              "label": { "type": "string", "minLength": 15 }
+            }
+          }
+        }
+      }
+    },
+
+    "meta": {
+      "type": "object",
+      "required": ["generatedAt", "model", "promptVersion", "schemaVersion", "shelfLife"],
+      "properties": {
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "model": { "type": "string", "pattern": "^claude-" },
+        "promptVersion": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+$" },
+        "schemaVersion": { "type": "string", "const": "2.0" },
+        "costUSD": { "type": "number", "minimum": 0 },
+        "latencyMs": { "type": "integer", "minimum": 0 },
+        "shelfLife": { "type": "string" },
+        "aiTransparency": {
+          "type": "object",
+          "required": ["aiGenerated", "userInput", "algorithmic"],
+          "properties": {
+            "aiGenerated": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "哪些欄位由 AI 生成（標 🔴）"
+            },
+            "userInput": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "哪些欄位由用戶作答（標 🟢）"
+            },
+            "algorithmic": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "哪些欄位由演算法計算（標 🟡）"
+            }
+          }
+        }
+      }
+    }
+
+  },
+
+  "$defs": {
+    "pathDimension": {
+      "type": "object",
+      "required": ["total", "max", "status", "diagnosis"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0, "maximum": 25 },
+        "max": { "type": "integer", "const": 25 },
+        "status": {
+          "type": "string",
+          "enum": ["healthy", "warn", "danger", "insufficient_data"]
+        },
+        "diagnosis": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 100,
+          "description": "每軸一句 diagnosis 20-60 字"
+        },
+        "subScores": {
+          "type": "object",
+          "description": "JTBD 4 層（P）/ STP 三步驟（A）/ 內部+五力+AI（T）/ SMART（H）",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["score", "max", "status"],
+            "properties": {
+              "score": { "type": "number", "minimum": 0 },
+              "max": { "type": "number", "minimum": 0 },
+              "status": {
+                "type": "string",
+                "enum": ["healthy", "warn", "danger"]
+              },
+              "evidence": { "type": "string", "minLength": 10 },
+              "evidence_source": {
+                "type": "string",
+                "enum": ["measured", "estimated", "ai_generated"]
+              }
+            }
+          }
+        },
+        "insufficient": { "type": "boolean" }
+      }
+    }
+  }
+}
