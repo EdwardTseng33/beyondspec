@@ -5691,7 +5691,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.4</div>
+        <div class="sidebar-version">v1.4.5</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6408,6 +6408,18 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     // Phase 0 (v1.0.7): BP namespace lifecycle bootstrap
     if (window.BP && BP.store && BP.store.backupOnce) BP.store.backupOnce();
     if (window.BP && BP.lifecycle && BP.lifecycle.bumpLoginStamp) BP.lifecycle.bumpLoginStamp();
+    // v1.4.5 one-time migration: 清除 reportType='diagnostic' 的 savedReports
+    // 原因：Edward 要求一致體驗不保留半升級 dangle，diagnostic type 未來透過 bp_diagnoses 直接檢視
+    try {
+      if (localStorage.getItem('bp_v145_migrated') !== '1') {
+        var before = (state.savedReports || []).length;
+        state.savedReports = (state.savedReports || []).filter(function(r){ return r && r.reportType !== 'diagnostic'; });
+        var after = state.savedReports.length;
+        localStorage.setItem('bp_savedReports', JSON.stringify(state.savedReports));
+        localStorage.setItem('bp_v145_migrated', '1');
+        try { console.log('[v1.4.5 migration] savedReports 清除 diagnostic type: ' + before + ' → ' + after); } catch(_){}
+      }
+    } catch(e) { try { console.warn('[v1.4.5 migration] skipped:', e); } catch(_){} }
   }
 
   function loadTheme() {
@@ -22369,14 +22381,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       }).join('')}
       </div>
 
-      <!-- ═══ v2.0 試試新版報告 CTA（D5 · Sprint 1）═══ -->
-      <div class="report-trynew-cta">
-        <div class="report-trynew-cta-text">
-          <h3>v2.0 升級版報告已就緒</h3>
-          <p>JTBD 4 層展開 · Next Action SMART 3 條 · Hypothesis 方法論透明 · 跨工具導引</p>
-        </div>
-        <button class="report-trynew-cta-btn" onclick="app.tryNewReportView()">試試新版報告 · v2.0 →</button>
-      </div>
+      <!-- v1.4.5: v2.0 升級 CTA 已移除（Edward 要求一致體驗不要 dangle 版本）→ 報告升級由 Lab 驗證流程 natively 觸發 -->
 
       <!-- ═══ CTA ═══ -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:20px 0 8px">
@@ -32701,7 +32706,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
-<!-- v1.4.4 · hotfix · Chrome MCP prod 實測找到 PATH 報告真正 root cause：「點 path 報告未預期錯誤」不是 v1.4.2 的 onclick 問題，而是首頁「報告列表 tab」用 `app.openSavedReport` (line 27717) 無條件呼叫 `renderFullReport`（市場報告渲染），對 reportType='diagnostic' 的 saved record（v1.4.0 開始產生的 v2 診斷 snapshot + v1.4.1 MCP inject API 塞入的 demo record）也走市場報告 flow → title 顯示 "BEYONDPATH UNDEFINED" + 錯誤顯示 TAM/SAM/SOM 市場分析內容。修法：openSavedReport 頭部判斷 reportType==='diagnostic' 且 record.selectedDiag.id 存在 → 走 legacy viewDiagnosis 路徑（穩定可渲染），否則維持既有 renderFullReport 流程（toc/tob/feature 不動）；try/catch 包裹 viewDiagnosis 呼叫，若失敗 console.warn 不 throw · 版號 v1.4.3→v1.4.4 -->
+<!-- v1.4.5 · 移除半調子「試試新版報告 · v2.0」CTA + 一次性 migration 清除 reportType='diagnostic' saved reports（Edward 指示「不要這種升級按鈕，要一致體驗：舊報告直接升級或全清」）：(1) showQuizResults line 22372-22379 的 `.report-trynew-cta` 區塊移除，改註解說明；(2) loadState 內新增 one-time migration：檢查 `bp_v145_migrated` flag，未跑過就 filter out reportType='diagnostic' 的 savedReports（Edward 既有 5 份 demo/舊測試 record），setItem flag='1' 防重複執行；(3) 保留 bp_diagnoses（PATH 診斷歷史不動，用戶可 rediag）；(4) v1.4.4 openSavedReport 的 diagnostic fallback 保留作 defense in depth；(5) `tryNewReportView` function + hash router v2 route 仍在（未來 Q5 inline drawer 重用）· 版號 v1.4.4→v1.4.5 -->
+<!-- v1.4.4 · hotfix · openSavedReport 對 reportType='diagnostic' 改走 legacy viewDiagnosis 避免 renderFullReport 顯示 "BEYONDPATH UNDEFINED" + TAM/SAM 亂碼（實作為 defense in depth，v1.4.5 migration 清除後不再觸發此 fallback）· 版號 v1.4.3→v1.4.4 -->
 <!-- v1.4.3 · hotfix · v1.4.2 onclick 導向 v2 URL 方向錯誤 roll back（方向錯誤已 roll back；openDiagnosisV2 function 保留於 line 31166-31190 待未來 inline expand 重做復用）· 版號 v1.4.2→v1.4.3 -->
 <!-- v1.4.2 · 首頁 / 市場報告列表 diag-card onclick → v2 URL 直跳 BPReport 報告（方向錯誤已於 v1.4.3 roll back；openDiagnosisV2 function 保留於 line 31166-31190 待未來 inline expand 重做復用）· 版號 v1.4.1→v1.4.2 -->
 <!-- v1.4.1 · MCP 協作 state injection API（Edward 本人訓後補丁「系統為 AI 透過 MCP 協作而設計，不能寫入等於白幹」）：state 在 IIFE closure 封閉、外部無法寫入 → 新增 4 個 public API on window.BP 讓 Chrome MCP / Extension / Plugin 直接操作 app state：(1) **window.BP.injectDiagnoses(array, {replace|append, render})** — 預設 append mode（skip 既有 id 避免 v1.3.17-19 連鎖事件教訓 · Edward 既有 diagnoses 不覆蓋），replace:true 時清空 state.diagnoses 換新陣列；saveState() 寫回 localStorage；options.render !== false 時自動 navigate home 觸發 re-render；(2) **window.BP.injectReports(array, options)** — 同樣 replace/append mode 寫入 state.savedReports + 手動 localStorage.setItem（saveState 既有邏輯未覆蓋 savedReports）；(3) **window.BP.clearAll([keys], {reload, render})** — 白名單 5 key（diagnoses/researches/savedReports/savedSurveys/feedbackLog）防誤清系統設定；未知 key 印 warn 不 throw；(4) **window.BP.getState()** — 回傳 shallow copy（陣列 slice / settings JSON.parse 深拷）不暴露 state reference 避免外部污染；落檔位置：app.html line 6474-6585 緊接 saveState 之後同一 closure 內（無需 expose 內部 state，改用 this-closure-capture）；ES5 規範守（var/function/無 arrow const let）；Gate 1 acorn parse OK · 版號 v1.4.0→v1.4.1 · wc=32675 -->
