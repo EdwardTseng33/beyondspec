@@ -5691,7 +5691,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.8</div>
+        <div class="sidebar-version">v1.4.9</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6438,6 +6438,39 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         try { console.log('[v1.4.6 migration] diagnoses: ' + diagBefore + '→0 · researches: ' + resBefore + '→0 (archived backup kept at bp_*_archived_v146)'); } catch(_){}
       }
     } catch(e) { try { console.warn('[v1.4.6 migration] skipped:', e); } catch(_){} }
+    // v1.4.9: Headless mount BizModule React component · 即使用戶停留首頁也觸發 activateWorkspace
+    // 解決核心架構問題：BizModule 只在點商業 tab 才 mount → 首頁 user wsId 永不 expose → migration 永不跑
+    // 策略：建隱形 div (1×1px off-screen) mount CastleDashboardEmbedded · React useEffect 鏈觸發 onAuthStateChanged → activateWorkspace → window._currentWorkspaceId set
+    try {
+      function _bpTryHeadlessMount() {
+        if (window._bizReactRoot || window._bpHeadlessMounted) return true;
+        if (typeof window.CastleDashboardEmbedded !== 'function' || typeof ReactDOM === 'undefined' || typeof React === 'undefined') return false;
+        try {
+          var hiddenRoot = document.getElementById('bpHeadlessBizRoot');
+          if (!hiddenRoot) {
+            hiddenRoot = document.createElement('div');
+            hiddenRoot.id = 'bpHeadlessBizRoot';
+            hiddenRoot.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;';
+            document.body.appendChild(hiddenRoot);
+          }
+          var root = ReactDOM.createRoot(hiddenRoot);
+          root.render(React.createElement(window.CastleDashboardEmbedded, { initialTab: 'pipeline', onTabChange: function(){} }));
+          window._bizReactRoot = root;
+          window._bpHeadlessMounted = true;
+          try { console.log('[v1.4.9 headless biz mount] triggered · wsId will expose after auth'); } catch(_){}
+          return true;
+        } catch(e) {
+          try { console.warn('[v1.4.9 headless mount fail]', e); } catch(_){}
+          return false;
+        }
+      }
+      // 嘗試 30 次每 1 秒，等 React + BizModule script + Firebase auth 全就緒
+      var _mountAttempts = 0;
+      var _mountInterval = setInterval(function() {
+        _mountAttempts++;
+        if (_bpTryHeadlessMount() || _mountAttempts >= 30) clearInterval(_mountInterval);
+      }, 1000);
+    } catch(e) { try { console.warn('[v1.4.9 headless mount setup failed]', e); } catch(_){} }
     // v1.4.7+v1.4.8 migration: 若 v1.4.6 已 archive 過（= Edward 明示要清空），延遲清 Firestore
     // 需等 BizModule activateWorkspace 完成把 _currentWorkspaceId expose 到 window
     // v1.4.8: 拉長重試時間到 2 分鐘（60 × 2s），解決 BizModule React mount 慢於 9s 的情況
@@ -32790,7 +32823,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
-<!-- v1.4.8 · 延長 migration 重試時間：v1.4.7 setInterval 6 × 1.5s = 9s 太短，BizModule React mount 有時 >9s 導致 wsId 還沒 expose migration 就放棄；改為先 setTimeout 500ms 立即嘗試一次（若 wsId 已有瞬間完成），然後 setInterval 每 2s 重試 60 次共 2 分鐘；同時 console log 從 [v1.4.7] 改為 [v1.4.8] 方便診斷 · 版號 v1.4.7→v1.4.8 -->
+<!-- v1.4.9 · 架構根治：Headless mount BizModule React component 讓 Edward 停留首頁也觸發 activateWorkspace · 修 v1.4.7/8 的核心缺陷 —— migration 依賴 _currentWorkspaceId 但該值只在點商業 tab 時才 set，首頁用戶永遠沒 wsId。方案：建 1×1px off-screen div (#bpHeadlessBizRoot) mount CastleDashboardEmbedded，React useEffect 鏈自動跑 onAuthStateChanged → activateWorkspace → window._currentWorkspaceId expose → v1.4.8 migration setInterval 偵測到後寫 Firestore set value:[] 清 researches + diagnoses。嘗試 30 次每 1s 等 React/BizModule/Firebase auth 全就緒；副作用：headless mount BizModule 會跑 usePersisted hooks 建 Firestore onSnapshot listeners，CPU/記憶體輕微增加（~50-100ms 首次 mount），但不 overwrite 資料（只 sync down） · 版號 v1.4.8→v1.4.9 -->
+<!-- v1.4.8 · 延長 migration setInterval 到 2 分鐘（60 × 2s）等 BizModule mount · 版號 v1.4.7→v1.4.8 -->
 <!-- v1.4.7 · 根治 delete/rename 未寫 Firestore 的 bug · 新增 _bpSyncToFirestore helper + expose wsId 到 window + 4 CRUD 寫 Firestore + loadState migration 清 Firestore · 版號 v1.4.6→v1.4.7 -->
 <!-- v1.4.6 · 雙管齊下：migration 清 bp_diagnoses + bp_researches（archive 到 bp_*_archived_v146）+ showQuizResults end 加 setTimeout 50ms redirect 到 `#/report/diagnostic/:id` 跳 v2 route · 版號 v1.4.5→v1.4.6 -->
 <!-- v1.4.5 · 移除半調子「試試新版報告 · v2.0」CTA + 一次性 migration 清除 reportType='diagnostic' saved reports（開啟全清策略的第一步，v1.4.6 接續清 diagnoses/researches）· 版號 v1.4.4→v1.4.5 -->
