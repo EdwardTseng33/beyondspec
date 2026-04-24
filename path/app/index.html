@@ -5691,7 +5691,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.6</div>
+        <div class="sidebar-version">v1.4.7</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6438,6 +6438,34 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         try { console.log('[v1.4.6 migration] diagnoses: ' + diagBefore + '→0 · researches: ' + resBefore + '→0 (archived backup kept at bp_*_archived_v146)'); } catch(_){}
       }
     } catch(e) { try { console.warn('[v1.4.6 migration] skipped:', e); } catch(_){} }
+    // v1.4.7 migration: 若 v1.4.6 已 archive 過（= Edward 明示要清空），延遲清 Firestore
+    // 需等 BizModule activateWorkspace 完成把 _currentWorkspaceId expose 到 window（通常 2-5 秒）
+    try {
+      if (localStorage.getItem('bp_v147_firestore_cleared') !== '1' && localStorage.getItem('bp_researches_archived_v146')) {
+        var _tryClear = function() {
+          if (!window._currentWorkspaceId || typeof _bpSyncToFirestore !== 'function') return false;
+          var r1 = _bpSyncToFirestore('researches', []);
+          var r2 = _bpSyncToFirestore('diagnoses', []);
+          if (r1 && r2) {
+            localStorage.setItem('bp_v147_firestore_cleared', '1');
+            localStorage.setItem('bp_researches', '[]');
+            localStorage.setItem('bp_diagnoses', '[]');
+            state.researches = [];
+            state.diagnoses = [];
+            try { console.log('[v1.4.7 migration] Firestore researches/diagnoses cleared · wsId=' + window._currentWorkspaceId); } catch(_){}
+            if (typeof renderHome === 'function') { try { renderHome(); } catch(_){} }
+            return true;
+          }
+          return false;
+        };
+        // 嘗試 6 次（每 1.5 秒一次），等 auth + wsId 就緒
+        var _attempts = 0;
+        var _interval = setInterval(function() {
+          _attempts++;
+          if (_tryClear() || _attempts >= 6) clearInterval(_interval);
+        }, 1500);
+      }
+    } catch(e) { try { console.warn('[v1.4.7 migration] skipped:', e); } catch(_){} }
   }
 
   function loadTheme() {
@@ -6500,6 +6528,25 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
     localStorage.setItem('bp_aiMode', state.aiMode);
     localStorage.setItem('bp_settings', JSON.stringify(state.settings));
   }
+
+  // v1.4.7: 同步 BeyondPath 資料（researches / diagnoses / savedReports）到 Firestore
+  // 修復 delete/rename 只寫 localStorage 導致 Firestore onSnapshot 把舊值 sync 回來的 bug
+  // 需 window._currentWorkspaceId 已 set（BizModule activateWorkspace 後 expose）
+  function _bpSyncToFirestore(key, value) {
+    try {
+      if (!window._currentWorkspaceId) return false;
+      if (typeof firebase === 'undefined' || !firebase.firestore) return false;
+      firebase.firestore()
+        .collection('workspaces').doc(window._currentWorkspaceId)
+        .collection('data').doc(key)
+        .set({ value: value });
+      return true;
+    } catch(e) {
+      try { console.warn('[_bpSyncToFirestore] ' + key + ' failed:', e.message); } catch(_){}
+      return false;
+    }
+  }
+  window._bpSyncToFirestore = _bpSyncToFirestore;
 
   // ==================== MCP COLLABORATION API (v1.4.1) ====================
   // 讓 Chrome MCP / Extension / Plugin 透過 window.BP 直接操作 app state
@@ -26344,6 +26391,8 @@ function loadHistory(){
     r.productName = newName.trim();
     try { localStorage.setItem('bp_researches', JSON.stringify(state.researches)); } catch(e){}
     saveState();
+    // v1.4.7: 同步到 Firestore
+    if (typeof _bpSyncToFirestore === 'function') _bpSyncToFirestore('researches', state.researches);
     renderHome();
     showToast('已重命名');
   }
@@ -26353,6 +26402,8 @@ function loadHistory(){
     state.researches = state.researches.filter(r => r.id !== researchId);
     try { localStorage.setItem('bp_researches', JSON.stringify(state.researches)); } catch(e){}
     saveState();
+    // v1.4.7: 同步到 Firestore (修復 sync 回 localStorage 導致刪了又復活的 bug)
+    if (typeof _bpSyncToFirestore === 'function') _bpSyncToFirestore('researches', state.researches);
     renderHome();
     showToast('已刪除');
   }
@@ -29961,6 +30012,8 @@ function loadHistory(){
     if (newName === null || !newName.trim()) return;
     d.productName = newName.trim();
     saveState();
+    // v1.4.7: 同步到 Firestore
+    if (typeof _bpSyncToFirestore === 'function') _bpSyncToFirestore('diagnoses', state.diagnoses);
     renderHome();
     showToast('已重命名');
   }
@@ -29969,6 +30022,8 @@ function loadHistory(){
     if (!confirm('確定刪除這份診斷？此操作無法復原。')) return;
     state.diagnoses = state.diagnoses.filter(x => x.id !== diagId);
     saveState();
+    // v1.4.7: 同步到 Firestore
+    if (typeof _bpSyncToFirestore === 'function') _bpSyncToFirestore('diagnoses', state.diagnoses);
     renderHome();
     showToast('已刪除');
   }
@@ -32640,7 +32695,7 @@ var newHistory=updates.history?updates.history:_toConsumableArray(c.history||[])
 if(updates.status&&updates.status!==c.status){var _AR_STATUSES$find,_AR_STATUSES$find2;var fromLabel=((_AR_STATUSES$find=AR_STATUSES.find(function(s){return s.id===c.status;}))===null||_AR_STATUSES$find===void 0?void 0:_AR_STATUSES$find.label)||c.status||"未設定";var toLabel=((_AR_STATUSES$find2=AR_STATUSES.find(function(s){return s.id===updates.status;}))===null||_AR_STATUSES$find2===void 0?void 0:_AR_STATUSES$find2.label)||updates.status;newHistory=[].concat(_toConsumableArray(newHistory),[{date:new Date().toISOString().split("T")[0],action:"📋 狀態變更",note:"".concat(fromLabel," \u2192 ").concat(toLabel)}]);}return _objectSpread(_objectSpread(_objectSpread({},c),updates),{},{history:newHistory});});});// 同步 Drawer 中正在查看的案件（含 history）
 if((activeArCase===null||activeArCase===void 0?void 0:activeArCase.id)===id){setActiveArCase(function(c){var newHistory=updates.history?updates.history:_toConsumableArray(c.history||[]);if(updates.status&&updates.status!==c.status){var _AR_STATUSES$find3,_AR_STATUSES$find4;var fromLabel=((_AR_STATUSES$find3=AR_STATUSES.find(function(s){return s.id===c.status;}))===null||_AR_STATUSES$find3===void 0?void 0:_AR_STATUSES$find3.label)||c.status||"未設定";var toLabel=((_AR_STATUSES$find4=AR_STATUSES.find(function(s){return s.id===updates.status;}))===null||_AR_STATUSES$find4===void 0?void 0:_AR_STATUSES$find4.label)||updates.status;newHistory=[].concat(_toConsumableArray(newHistory),[{date:new Date().toISOString().split("T")[0],action:"📋 狀態變更",note:"".concat(fromLabel," \u2192 ").concat(toLabel)}]);}return _objectSpread(_objectSpread(_objectSpread({},c),updates),{},{history:newHistory});});}// Log 只在狀態變更時才寫
 if(updates.status){var _AR_STATUSES$find5;var label=((_AR_STATUSES$find5=AR_STATUSES.find(function(s){return s.id===updates.status;}))===null||_AR_STATUSES$find5===void 0?void 0:_AR_STATUSES$find5.label)||updates.status;addLog("💰","帳務催收","\u66F4\u65B0 AR \u6848\u4EF6\u72C0\u614B\u70BA\uFF1A".concat(label),C.gold);}};var nDeal=useRef(Math.max.apply(Math,_toConsumableArray((deals.length?deals:INIT_DEALS).map(function(d){return d.id;})))+1);var nTask=useRef(Math.max.apply(Math,_toConsumableArray((tasks.length?tasks:INIT_TASKS).map(function(t){return t.id;})))+1);var nLead=useRef(Math.max.apply(Math,_toConsumableArray((leads.length?leads:INIT_LEADS).map(function(l){return l.id;})))+1);var nRole=useRef(100);var nProposal=useRef(Math.max.apply(Math,_toConsumableArray((proposals.length?proposals:INIT_PROPOSALS).map(function(p){return p.id;})))+1);var nInvoice=useRef(Math.max.apply(Math,_toConsumableArray((invoices.length?invoices:INIT_INVOICES).map(function(i){return i.id;})))+1);var nMeeting=useRef(Math.max.apply(Math,_toConsumableArray((meetings.length?meetings:INIT_MEETINGS).map(function(m){return m.id;})))+1);// ── v2.5: Select & activate a specific workspace ──
-var activateWorkspace=useCallback(/*#__PURE__*/function(){var _ref76=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(wsId,fbUser){var snap,wsData,memberList,me,updated,upgraded,emails,existingData,_t9,_t0;return _regenerator().w(function(_context9){while(1)switch(_context9.p=_context9.n){case 0:_currentWorkspaceId=wsId;// Update member's name/picture if changed (silent)
+var activateWorkspace=useCallback(/*#__PURE__*/function(){var _ref76=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(wsId,fbUser){var snap,wsData,memberList,me,updated,upgraded,emails,existingData,_t9,_t0;return _regenerator().w(function(_context9){while(1)switch(_context9.p=_context9.n){case 0:_currentWorkspaceId=wsId;try{window._currentWorkspaceId=wsId;}catch(_){}// Update member's name/picture if changed (silent)
 _context9.p=1;_context9.n=2;return db.collection("workspaces").doc(wsId).get();case 2:snap=_context9.v;if(snap.exists){wsData=snap.data();memberList=wsData.members||[];me=memberList.find(function(m){return(typeof m==="string"?m:m.email)===fbUser.email;});if(me&&_typeof(me)==="object"&&(me.name!==fbUser.displayName||me.picture!==fbUser.photoURL)){updated=memberList.map(function(m){return _typeof(m)==="object"&&m.email===fbUser.email?_objectSpread(_objectSpread({},m),{},{name:fbUser.displayName,picture:fbUser.photoURL}):m;});db.collection("workspaces").doc(wsId).update({members:updated})["catch"](function(){});}// Auto-upgrade old members format
 if(wsData.members&&wsData.members.length>0&&typeof wsData.members[0]==="string"){upgraded=wsData.members.map(function(email){return{email:email,name:email===fbUser.email?fbUser.displayName||"":"",picture:email===fbUser.email?fbUser.photoURL||"":"",roleId:null,joinedAt:new Date().toISOString()};});db.collection("workspaces").doc(wsId).update({members:upgraded,memberEmails:wsData.members})["catch"](function(){});}if(!wsData.memberEmails){emails=(wsData.members||[]).map(function(m){return typeof m==="string"?m:m.email;});db.collection("workspaces").doc(wsId).update({memberEmails:emails})["catch"](function(){});}}_context9.n=4;break;case 3:_context9.p=3;_t9=_context9.v;console.warn("activateWorkspace update failed:",_t9);case 4:_firestoreReady=true;setWsPicker(null);setToast({message:"\u2705 \u6B61\u8FCE\u56DE\u4F86\uFF0C".concat(fbUser.displayName||fbUser.email,"\uFF01\u96F2\u7AEF\u5DE5\u4F5C\u53F0\u5DF2\u9023\u7DDA\u3002"),undo:null});// Check if migration needed
 _context9.p=5;_context9.n=6;return db.collection("workspaces").doc(wsId).collection("data").doc("deals").get();case 6:existingData=_context9.v;if(!existingData.exists)setShowMigration(true);_context9.n=8;break;case 7:_context9.p=7;_t0=_context9.v;case 8:return _context9.a(2);}},_callee9,null,[[5,7],[1,3]]);}));return function(_x9,_x0){return _ref76.apply(this,arguments);};}(),[setShowMigration]);// ── v2.5: Query all workspaces for user, return array ──
@@ -32649,7 +32704,7 @@ _context0.n=1;return db.collection("workspaces").where("memberEmails","array-con
 if(!(results.length===0)){_context0.n=3;break;}_context0.n=2;return db.collection("workspaces").where("members","array-contains",email).get();case 2:legacyQuery=_context0.v;legacyQuery.forEach(function(doc){if(!results.find(function(r){return r.id===doc.id;}))results.push(_objectSpread({id:doc.id},doc.data()));});case 3:return _context0.a(2,results);}},_callee0);}));return function findWorkspacesForUser(_x1){return _ref77.apply(this,arguments);};}();// ── Google Login Handler (v2.5: multi-workspace picker) ──
 var handleGoogleLogin=useCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(){var provider,result,fbUser,u,workspaces,memberObj,wsRef,_t1;return _regenerator().w(function(_context1){while(1)switch(_context1.p=_context1.n){case 0:_context1.p=0;provider=new firebase.auth.GoogleAuthProvider();_context1.n=1;return auth.signInWithPopup(provider);case 1:result=_context1.v;fbUser=result.user;u={email:fbUser.email,name:fbUser.displayName,picture:fbUser.photoURL,uid:fbUser.uid};setUser(u);ls.setUser(u);_currentUser=u;_context1.n=2;return findWorkspacesForUser(fbUser.email);case 2:workspaces=_context1.v;if(!(workspaces.length>1)){_context1.n=3;break;}// Multiple workspaces found — show picker
 setWsPicker({user:fbUser,workspaces:workspaces.map(function(ws){return{id:ws.id,name:ws.name||"未命名工作台",owner:ws.owner||"",memberCount:(ws.members||[]).length,isOwner:ws.owner===fbUser.email};})});return _context1.a(2);case 3:if(!(workspaces.length===1)){_context1.n=5;break;}_context1.n=4;return activateWorkspace(workspaces[0].id,fbUser);case 4:_context1.n=7;break;case 5:// No workspace found — create new
-memberObj={email:fbUser.email,name:fbUser.displayName||"",picture:fbUser.photoURL||"",roleId:null,joinedAt:new Date().toISOString()};_context1.n=6;return db.collection("workspaces").add({name:"我的工作室",owner:fbUser.email,members:[memberObj],memberEmails:[fbUser.email],createdAt:firebase.firestore.FieldValue.serverTimestamp()});case 6:wsRef=_context1.v;_context1.n=7;return activateWorkspace(wsRef.id,fbUser);case 7:_context1.n=9;break;case 8:_context1.p=8;_t1=_context1.v;console.error("Login failed:",_t1);setToast({message:"❌ 登入失敗："+(_t1.message||"請再試一次"),undo:null});case 9:return _context1.a(2);}},_callee1,null,[[0,8]]);})),[setShowMigration,activateWorkspace]);var handleLogout=/*#__PURE__*/function(){var _ref79=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(){return _regenerator().w(function(_context10){while(1)switch(_context10.n){case 0:_context10.n=1;return auth.signOut();case 1:setUser(null);ls.setUser(null);_currentUser=null;_currentWorkspaceId=null;_firestoreReady=false;case 2:return _context10.a(2);}},_callee10);}));return function handleLogout(){return _ref79.apply(this,arguments);};}();// ── Cloud Sync (manual) ──
+memberObj={email:fbUser.email,name:fbUser.displayName||"",picture:fbUser.photoURL||"",roleId:null,joinedAt:new Date().toISOString()};_context1.n=6;return db.collection("workspaces").add({name:"我的工作室",owner:fbUser.email,members:[memberObj],memberEmails:[fbUser.email],createdAt:firebase.firestore.FieldValue.serverTimestamp()});case 6:wsRef=_context1.v;_context1.n=7;return activateWorkspace(wsRef.id,fbUser);case 7:_context1.n=9;break;case 8:_context1.p=8;_t1=_context1.v;console.error("Login failed:",_t1);setToast({message:"❌ 登入失敗："+(_t1.message||"請再試一次"),undo:null});case 9:return _context1.a(2);}},_callee1,null,[[0,8]]);})),[setShowMigration,activateWorkspace]);var handleLogout=/*#__PURE__*/function(){var _ref79=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(){return _regenerator().w(function(_context10){while(1)switch(_context10.n){case 0:_context10.n=1;return auth.signOut();case 1:setUser(null);ls.setUser(null);_currentUser=null;_currentWorkspaceId=null;try{window._currentWorkspaceId=null;}catch(_){}_firestoreReady=false;case 2:return _context10.a(2);}},_callee10);}));return function handleLogout(){return _ref79.apply(this,arguments);};}();// ── Cloud Sync (manual) ──
 var _usePersisted39=usePersisted("lastSync",null),_usePersisted40=_slicedToArray(_usePersisted39,2),lastSyncTime=_usePersisted40[0],setLastSyncTime=_usePersisted40[1];var syncToCloud=useCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(){var _now,_t10;return _regenerator().w(function(_context11){while(1)switch(_context11.p=_context11.n){case 0:if(!(!user||!API_URL)){_context11.n=1;break;}return _context11.a(2);case 1:setSyncing(true);_context11.p=2;_context11.n=3;return api.post("syncAll",user.email,{deals:deals,tasks:tasks,leads:leads});case 3:_now=new Date().toISOString();setLastSyncTime(_now);addLog("☁️","雲端同步","".concat(deals.filter(function(d){return!d.archived;}).length," \u6848\u4EF6 \xB7 ").concat(tasks.filter(function(t){return!t.archived;}).length," \u4EFB\u52D9 \xB7 ").concat(leads.filter(function(l){return!l.archived;}).length," BD"),C.emerald);setToast({message:"✅ 已同步到 Google Sheets 雲端",undo:null});_context11.n=5;break;case 4:_context11.p=4;_t10=_context11.v;setToast({message:"❌ 同步失敗，請檢查網路連線",undo:null});case 5:setSyncing(false);case 6:return _context11.a(2);}},_callee11,null,[[2,4]]);})),[user,deals,tasks,leads]);// ── Activity Logger (v2.1: includes operator tracking) ──
 var addLog=useCallback(function(icon,action,detail,color){var by=_currentUser?{email:_currentUser.email,name:_currentUser.name||""}:null;setActivityLog(function(prev){return[{icon:icon,action:action,detail:detail,color:color,time:new Date().toISOString(),by:by}].concat(_toConsumableArray(prev)).slice(0,50);});},[]);// ── Data Migration: localStorage → Firestore (v2.02: lock to prevent multi-tab conflict) ──
 var migrateLocalToFirestore=/*#__PURE__*/function(){var _ref81=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(){var freshCheck,batch,dataRef,keysToMigrate,count,_t11;return _regenerator().w(function(_context12){while(1)switch(_context12.p=_context12.n){case 0:if(_currentWorkspaceId){_context12.n=1;break;}return _context12.a(2);case 1:_context12.p=1;_context12.n=2;return db.collection("workspaces").doc(_currentWorkspaceId).collection("data").doc("deals").get();case 2:freshCheck=_context12.v;if(!freshCheck.exists){_context12.n=3;break;}setToast({message:"ℹ️ 雲端已有資料，跳過匯入。",undo:null});return _context12.a(2);case 3:batch=db.batch();dataRef=db.collection("workspaces").doc(_currentWorkspaceId).collection("data");keysToMigrate=["deals","tasks","leads","roles","log","lastSeenLogCount","goals","docs","serviceTemplates","partners","noteTemplates","companyProfile","proposals","invoices","meetings","manualContacts","statsPeriod","lastSync"];count=0;keysToMigrate.forEach(function(key){var localData=ls.get(key,null);if(localData!==null){batch.set(dataRef.doc(key),{value:localData,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});count++;}});if(!(count>0)){_context12.n=5;break;}_context12.n=4;return batch.commit();case 4:addLog("📦","本機資料匯入","".concat(count," \u9805\u8CC7\u6599\u5DF2\u540C\u6B65\u5230\u96F2\u7AEF"),C.emerald);setToast({message:"\u2705 \u5DF2\u532F\u5165 ".concat(count," \u9805\u8CC7\u6599\u5230\u96F2\u7AEF\u5DE5\u4F5C\u53F0"),undo:null});_context12.n=6;break;case 5:setToast({message:"ℹ️ 本機沒有可匯入的資料",undo:null});case 6:_context12.n=8;break;case 7:_context12.p=7;_t11=_context12.v;console.error("Migration failed:",_t11);setToast({message:"❌ 資料匯入失敗："+(_t11.message||"請重試"),undo:null});case 8:return _context12.a(2);}},_callee12,null,[[1,7]]);}));return function migrateLocalToFirestore(){return _ref81.apply(this,arguments);};}();// ── Firebase Auth State Listener ──
@@ -32732,7 +32787,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
-<!-- v1.4.6 · 雙管齊下「Edward 不想再看到舊報告樣示」：(1) 一次性 migration 清除 bp_diagnoses + bp_researches（「診斷與研究的報告也一併刪除」·接續 v1.4.5 全清策略），loadState 內檢查 bp_v146_migrated flag，archive 備份到 bp_*_archived_v146 後清空 localStorage + state，不動 savedSurveys / savedReports / contacts / quotes / settings / credit / plan；(2) showQuizResults end 加 redirect：quiz 完成 saveState 後 setTimeout 50ms 把 hash 改 `#/report/diagnostic/:latestDiagId`，觸發 window.renderReportDiagnostic override 走 v2 BPReport route → 舊 quiz result legacy UI 完全退場（舊 innerHTML 會被 v2 router 覆寫，drawRadarChart setTimeout 仍會跑但找不到 canvas 會 silent fail 已測）· 版號 v1.4.5→v1.4.6 -->
+<!-- v1.4.7 · 根治 delete/rename 未寫 Firestore 導致資料永遠復活的 bug（Edward 在 path 內點刪除看「已刪除」toast 但 card 沒消失 + v1.4.6 migration 清 localStorage 後 Firestore onSnapshot 把舊值 sync 回 → research 復活）：(1) 新增 `_bpSyncToFirestore(key, value)` helper（saveState 後），需 window._currentWorkspaceId 存在時寫 `workspaces/{wsId}/data/{key}` = {value:[]}；(2) BizModule activateWorkspace case 0 expose `window._currentWorkspaceId=wsId`（line 32643 壓縮 React 碼內插 try/catch），handleLogout 同步 null；(3) 四個 CRUD function 加 sync call：deleteResearch (26351) / renameResearch (26339) / deleteDiagnosis (29968) / renameDiagnosis (29957)——saveState 後呼叫 `_bpSyncToFirestore('researches'|'diagnoses', state.*)`；(4) loadState migration v1.4.7：若 bp_researches_archived_v146 存在（= v1.4.6 已明示清過）+ flag 未 set，setInterval 每 1.5s 重試 6 次等 wsId 就緒，就緒後寫 Firestore clear researches + diagnoses，set flag，同步 localStorage + state + renderHome · 版號 v1.4.6→v1.4.7 -->
+<!-- v1.4.6 · 雙管齊下：migration 清 bp_diagnoses + bp_researches（archive 到 bp_*_archived_v146）+ showQuizResults end 加 setTimeout 50ms redirect 到 `#/report/diagnostic/:id` 跳 v2 route · 版號 v1.4.5→v1.4.6 -->
 <!-- v1.4.5 · 移除半調子「試試新版報告 · v2.0」CTA + 一次性 migration 清除 reportType='diagnostic' saved reports（開啟全清策略的第一步，v1.4.6 接續清 diagnoses/researches）· 版號 v1.4.4→v1.4.5 -->
 <!-- v1.4.4 · hotfix · openSavedReport 對 reportType='diagnostic' 改走 legacy viewDiagnosis 避免 renderFullReport 顯示 "BEYONDPATH UNDEFINED" + TAM/SAM 亂碼（實作為 defense in depth，v1.4.5 migration 清除後不再觸發此 fallback）· 版號 v1.4.3→v1.4.4 -->
 <!-- v1.4.3 · hotfix · v1.4.2 onclick 導向 v2 URL 方向錯誤 roll back（方向錯誤已 roll back；openDiagnosisV2 function 保留於 line 31166-31190 待未來 inline expand 重做復用）· 版號 v1.4.2→v1.4.3 -->
