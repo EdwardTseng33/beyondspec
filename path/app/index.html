@@ -5691,7 +5691,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.7</div>
+        <div class="sidebar-version">v1.4.8</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6438,8 +6438,9 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         try { console.log('[v1.4.6 migration] diagnoses: ' + diagBefore + '→0 · researches: ' + resBefore + '→0 (archived backup kept at bp_*_archived_v146)'); } catch(_){}
       }
     } catch(e) { try { console.warn('[v1.4.6 migration] skipped:', e); } catch(_){} }
-    // v1.4.7 migration: 若 v1.4.6 已 archive 過（= Edward 明示要清空），延遲清 Firestore
-    // 需等 BizModule activateWorkspace 完成把 _currentWorkspaceId expose 到 window（通常 2-5 秒）
+    // v1.4.7+v1.4.8 migration: 若 v1.4.6 已 archive 過（= Edward 明示要清空），延遲清 Firestore
+    // 需等 BizModule activateWorkspace 完成把 _currentWorkspaceId expose 到 window
+    // v1.4.8: 拉長重試時間到 2 分鐘（60 × 2s），解決 BizModule React mount 慢於 9s 的情況
     try {
       if (localStorage.getItem('bp_v147_firestore_cleared') !== '1' && localStorage.getItem('bp_researches_archived_v146')) {
         var _tryClear = function() {
@@ -6452,20 +6453,22 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
             localStorage.setItem('bp_diagnoses', '[]');
             state.researches = [];
             state.diagnoses = [];
-            try { console.log('[v1.4.7 migration] Firestore researches/diagnoses cleared · wsId=' + window._currentWorkspaceId); } catch(_){}
+            try { console.log('[v1.4.8 migration] Firestore researches/diagnoses cleared · wsId=' + window._currentWorkspaceId); } catch(_){}
             if (typeof renderHome === 'function') { try { renderHome(); } catch(_){} }
             return true;
           }
           return false;
         };
-        // 嘗試 6 次（每 1.5 秒一次），等 auth + wsId 就緒
+        // 立即嘗試一次（若 wsId 已 expose 則瞬間完成）
+        setTimeout(function(){ _tryClear(); }, 500);
+        // 重試 60 次（每 2 秒），共 2 分鐘，確保 BizModule mount 後一定抓到
         var _attempts = 0;
         var _interval = setInterval(function() {
           _attempts++;
-          if (_tryClear() || _attempts >= 6) clearInterval(_interval);
-        }, 1500);
+          if (_tryClear() || _attempts >= 60) clearInterval(_interval);
+        }, 2000);
       }
-    } catch(e) { try { console.warn('[v1.4.7 migration] skipped:', e); } catch(_){} }
+    } catch(e) { try { console.warn('[v1.4.8 migration] skipped:', e); } catch(_){} }
   }
 
   function loadTheme() {
@@ -32787,7 +32790,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
-<!-- v1.4.7 · 根治 delete/rename 未寫 Firestore 導致資料永遠復活的 bug（Edward 在 path 內點刪除看「已刪除」toast 但 card 沒消失 + v1.4.6 migration 清 localStorage 後 Firestore onSnapshot 把舊值 sync 回 → research 復活）：(1) 新增 `_bpSyncToFirestore(key, value)` helper（saveState 後），需 window._currentWorkspaceId 存在時寫 `workspaces/{wsId}/data/{key}` = {value:[]}；(2) BizModule activateWorkspace case 0 expose `window._currentWorkspaceId=wsId`（line 32643 壓縮 React 碼內插 try/catch），handleLogout 同步 null；(3) 四個 CRUD function 加 sync call：deleteResearch (26351) / renameResearch (26339) / deleteDiagnosis (29968) / renameDiagnosis (29957)——saveState 後呼叫 `_bpSyncToFirestore('researches'|'diagnoses', state.*)`；(4) loadState migration v1.4.7：若 bp_researches_archived_v146 存在（= v1.4.6 已明示清過）+ flag 未 set，setInterval 每 1.5s 重試 6 次等 wsId 就緒，就緒後寫 Firestore clear researches + diagnoses，set flag，同步 localStorage + state + renderHome · 版號 v1.4.6→v1.4.7 -->
+<!-- v1.4.8 · 延長 migration 重試時間：v1.4.7 setInterval 6 × 1.5s = 9s 太短，BizModule React mount 有時 >9s 導致 wsId 還沒 expose migration 就放棄；改為先 setTimeout 500ms 立即嘗試一次（若 wsId 已有瞬間完成），然後 setInterval 每 2s 重試 60 次共 2 分鐘；同時 console log 從 [v1.4.7] 改為 [v1.4.8] 方便診斷 · 版號 v1.4.7→v1.4.8 -->
+<!-- v1.4.7 · 根治 delete/rename 未寫 Firestore 的 bug · 新增 _bpSyncToFirestore helper + expose wsId 到 window + 4 CRUD 寫 Firestore + loadState migration 清 Firestore · 版號 v1.4.6→v1.4.7 -->
 <!-- v1.4.6 · 雙管齊下：migration 清 bp_diagnoses + bp_researches（archive 到 bp_*_archived_v146）+ showQuizResults end 加 setTimeout 50ms redirect 到 `#/report/diagnostic/:id` 跳 v2 route · 版號 v1.4.5→v1.4.6 -->
 <!-- v1.4.5 · 移除半調子「試試新版報告 · v2.0」CTA + 一次性 migration 清除 reportType='diagnostic' saved reports（開啟全清策略的第一步，v1.4.6 接續清 diagnoses/researches）· 版號 v1.4.4→v1.4.5 -->
 <!-- v1.4.4 · hotfix · openSavedReport 對 reportType='diagnostic' 改走 legacy viewDiagnosis 避免 renderFullReport 顯示 "BEYONDPATH UNDEFINED" + TAM/SAM 亂碼（實作為 defense in depth，v1.4.5 migration 清除後不再觸發此 fallback）· 版號 v1.4.3→v1.4.4 -->
