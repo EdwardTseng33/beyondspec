@@ -5691,7 +5691,7 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.4.5</div>
+        <div class="sidebar-version">v1.4.6</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -6420,6 +6420,24 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
         try { console.log('[v1.4.5 migration] savedReports 清除 diagnostic type: ' + before + ' → ' + after); } catch(_){}
       }
     } catch(e) { try { console.warn('[v1.4.5 migration] skipped:', e); } catch(_){} }
+    // v1.4.6 one-time migration: 清除既有 bp_diagnoses + bp_researches（Edward 指示「診斷與研究的報告也一併刪除」）
+    // 備份策略：原資料 archive 到 bp_*_archived_v146，萬一事後需要還原可手動 localStorage.setItem('bp_diagnoses', localStorage.getItem('bp_diagnoses_archived_v146'))
+    try {
+      if (localStorage.getItem('bp_v146_migrated') !== '1') {
+        var diagBefore = (state.diagnoses || []).length;
+        var resBefore = (state.researches || []).length;
+        // archive 備份
+        if (localStorage.getItem('bp_diagnoses')) localStorage.setItem('bp_diagnoses_archived_v146', localStorage.getItem('bp_diagnoses'));
+        if (localStorage.getItem('bp_researches')) localStorage.setItem('bp_researches_archived_v146', localStorage.getItem('bp_researches'));
+        // 清空
+        state.diagnoses = [];
+        state.researches = [];
+        localStorage.setItem('bp_diagnoses', '[]');
+        localStorage.setItem('bp_researches', '[]');
+        localStorage.setItem('bp_v146_migrated', '1');
+        try { console.log('[v1.4.6 migration] diagnoses: ' + diagBefore + '→0 · researches: ' + resBefore + '→0 (archived backup kept at bp_*_archived_v146)'); } catch(_){}
+      }
+    } catch(e) { try { console.warn('[v1.4.6 migration] skipped:', e); } catch(_){} }
   }
 
   function loadTheme() {
@@ -22445,6 +22463,14 @@ input.rmdrw-title-input,textarea.rmdrw-desc-input,input.rmdrw-date-input,
       }
       saveState();
     }
+    // v1.4.6: quiz 完成一律 redirect 到 v2 BPReport route，不再顯示舊 quiz result UI
+    // Edward 指示「我不想再看到舊的報告樣示」——legacy showQuizResults UI 完全退場
+    try {
+      var _latestDiag = (state.diagnoses && state.diagnoses.length > 0) ? state.diagnoses[state.diagnoses.length - 1] : null;
+      if (_latestDiag && _latestDiag.id) {
+        setTimeout(function(){ try { location.hash = '#/report/diagnostic/' + _latestDiag.id; } catch(_){} }, 50);
+      }
+    } catch(e){ try{console.warn('[v1.4.6 quiz redirect]', e);}catch(_){} }
   }
 
   // ══════ Kill / Pivot / Persevere 決策引擎 ══════
@@ -32706,7 +32732,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 </script>
 </body>
 </html>
-<!-- v1.4.5 · 移除半調子「試試新版報告 · v2.0」CTA + 一次性 migration 清除 reportType='diagnostic' saved reports（Edward 指示「不要這種升級按鈕，要一致體驗：舊報告直接升級或全清」）：(1) showQuizResults line 22372-22379 的 `.report-trynew-cta` 區塊移除，改註解說明；(2) loadState 內新增 one-time migration：檢查 `bp_v145_migrated` flag，未跑過就 filter out reportType='diagnostic' 的 savedReports（Edward 既有 5 份 demo/舊測試 record），setItem flag='1' 防重複執行；(3) 保留 bp_diagnoses（PATH 診斷歷史不動，用戶可 rediag）；(4) v1.4.4 openSavedReport 的 diagnostic fallback 保留作 defense in depth；(5) `tryNewReportView` function + hash router v2 route 仍在（未來 Q5 inline drawer 重用）· 版號 v1.4.4→v1.4.5 -->
+<!-- v1.4.6 · 雙管齊下「Edward 不想再看到舊報告樣示」：(1) 一次性 migration 清除 bp_diagnoses + bp_researches（「診斷與研究的報告也一併刪除」·接續 v1.4.5 全清策略），loadState 內檢查 bp_v146_migrated flag，archive 備份到 bp_*_archived_v146 後清空 localStorage + state，不動 savedSurveys / savedReports / contacts / quotes / settings / credit / plan；(2) showQuizResults end 加 redirect：quiz 完成 saveState 後 setTimeout 50ms 把 hash 改 `#/report/diagnostic/:latestDiagId`，觸發 window.renderReportDiagnostic override 走 v2 BPReport route → 舊 quiz result legacy UI 完全退場（舊 innerHTML 會被 v2 router 覆寫，drawRadarChart setTimeout 仍會跑但找不到 canvas 會 silent fail 已測）· 版號 v1.4.5→v1.4.6 -->
+<!-- v1.4.5 · 移除半調子「試試新版報告 · v2.0」CTA + 一次性 migration 清除 reportType='diagnostic' saved reports（開啟全清策略的第一步，v1.4.6 接續清 diagnoses/researches）· 版號 v1.4.4→v1.4.5 -->
 <!-- v1.4.4 · hotfix · openSavedReport 對 reportType='diagnostic' 改走 legacy viewDiagnosis 避免 renderFullReport 顯示 "BEYONDPATH UNDEFINED" + TAM/SAM 亂碼（實作為 defense in depth，v1.4.5 migration 清除後不再觸發此 fallback）· 版號 v1.4.3→v1.4.4 -->
 <!-- v1.4.3 · hotfix · v1.4.2 onclick 導向 v2 URL 方向錯誤 roll back（方向錯誤已 roll back；openDiagnosisV2 function 保留於 line 31166-31190 待未來 inline expand 重做復用）· 版號 v1.4.2→v1.4.3 -->
 <!-- v1.4.2 · 首頁 / 市場報告列表 diag-card onclick → v2 URL 直跳 BPReport 報告（方向錯誤已於 v1.4.3 roll back；openDiagnosisV2 function 保留於 line 31166-31190 待未來 inline expand 重做復用）· 版號 v1.4.1→v1.4.2 -->
