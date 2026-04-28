@@ -8041,7 +8041,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.5.0</div>
+        <div class="sidebar-version">v1.5.0-hotfix1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -8751,7 +8751,7 @@ body.hd-locked { overflow: hidden; }
       savedSurveys:  { shape: "array",  syncFirestore: true,  localKey: "bp_savedSurveys" },
       settings:      { shape: "object", syncFirestore: true,  localKey: "bp_settings" },
       feedbackLog:   { shape: "array",  syncFirestore: false, localKey: "bp_feedback" },
-      billing:       { shape: "object", syncFirestore: true,  localKey: "bp_billing" }
+      billing:       { shape: "array",  syncFirestore: true,  localKey: "bp_billing" }
     });
 
     var _subscribers = {};
@@ -11392,7 +11392,7 @@ body.hd-locked { overflow: hidden; }
 
           <!-- ═══ Today's Action Panel (v1.5) ═══ -->
           ${(() => {
-            const _get = (k, fb) => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : fb; } catch { return fb; } };
+            const _get = (k, fb) => { try { const s = localStorage.getItem(k); if (!s) return fb; const v = JSON.parse(s); if (Array.isArray(fb) && !Array.isArray(v)) return fb; return v; } catch { return fb; } };
             const _tasks = _get('bp_kanban_cards', []);
             const _quotes = _get('bp_quotes', []).filter(q => !q.archived);
             const _meetings = _get('bp_meetings', []);
@@ -11478,7 +11478,7 @@ body.hd-locked { overflow: hidden; }
             </div>
             <div style="display:flex;flex-direction:column;gap:4px;padding:4px 0">
               ${(() => {
-                const _get = (k, fb) => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : fb; } catch { return fb; } };
+                const _get = (k, fb) => { try { const s = localStorage.getItem(k); if (!s) return fb; const v = JSON.parse(s); if (Array.isArray(fb) && !Array.isArray(v)) return fb; return v; } catch { return fb; } };
                 const _tasks = _get('bp_kanban_cards', []);
                 const _quotes = _get('bp_quotes', []).filter(q => !q.archived);
                 const _meetings = _get('bp_meetings', []);
@@ -11530,7 +11530,7 @@ body.hd-locked { overflow: hidden; }
             </div>
             <div style="padding:4px 0">
               ${(() => {
-                const _get = (k, fb) => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : fb; } catch { return fb; } };
+                const _get = (k, fb) => { try { const s = localStorage.getItem(k); if (!s) return fb; const v = JSON.parse(s); if (Array.isArray(fb) && !Array.isArray(v)) return fb; return v; } catch { return fb; } };
                 const _tasks = _get('bp_kanban_cards', []);
                 const _quotes = _get('bp_quotes', []).filter(q => !q.archived);
                 const _billing = _get('bp_billing', []);
