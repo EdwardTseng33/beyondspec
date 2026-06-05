@@ -39744,7 +39744,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   var editingEmpId=null, insMode='auto';
   var pendingRows=null;
   var _loaded=false;     // 是否已從資料層載入
-  var _wsId=null;        // 當前 workspace id
+  var _wsId=null;        // v1.7.0 帳號綁定：此變數現存「登入者 uid」（沿用名稱以最小化下游引用改動；非工作區 id）
   var _canSeePayroll=false;
   // 免費路線：身分證/帳號改存 Firestore 一般明文欄位（權限鎖 + Google 靜態加密保護），不再用加解密 Cloud Function；以下旗標保留為歷史相容、現無任何路徑讀取
   var _piiBackendReady = false;
@@ -39847,61 +39847,38 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   }
 
   /* ════════════════════════════════════════════════════════════════════
-     資料層 · Firestore workspace 隔離（取代 localStorage）
-     · 員工：workspaces/{wsId}/payroll_employees/{employeeId}
-     · 月薪資單：workspaces/{wsId}/payroll_payslips/{YYYYMM}/items/{employeeId}（lock 用，這版主存 runs meta）
-     · 年度參數：workspaces/{wsId}/payroll_meta/yearParams
-     · 月度異動：workspaces/{wsId}/payroll_runs/{YYYYMM}（整月一 doc，非敏感）
-     · 身分證/帳號（免費路線）：庫裡存明文欄位 idNumber/bankCode/bankAccount + 對應遮罩
-       靠 payroll_employees 權限鎖（owner/payrollAccessEmails 才讀）+ Google 靜態加密保護，不走加解密後端
-     · 不重用會雙寫 users/{uid}/ 的 _syncToFirestore（Gate5 G7）
+     資料層 · Firestore 帳號綁定（v1.7.0 · 取代「工作區隔離」與 localStorage）
+     · 一切資料綁登入者帳號 uid（firebase.auth().currentUser.uid），登入即自動完成。
+     · 員工：users/{uid}/payroll_employees/{employeeId}
+     · 月薪資單（lock 用，這版主存 runs meta）：users/{uid}/payroll_payslips/{YYYYMM}/items/{employeeId}
+     · 年度參數：users/{uid}/payroll_meta/yearParams
+     · 月度異動（整月一 doc，非敏感）：users/{uid}/payroll_runs/{YYYYMM}
+     · 稽核：users/{uid}/payroll_audit/{autoId}
+     · 身分證/帳號（免費路線）：庫裡存明文欄位 idNumber/bankCode/bankAccount + 對應遮罩，
+       靠 Firestore 規則「只放行本人 uid」+ Google 靜態加密保護，不走加解密後端。
+     · 沒有工作區概念、沒有本機落地、沒有預覽模式：有 uid → 雲端；無 uid → 請重新登入（不存本機）。
      ════════════════════════════════════════════════════════════════════ */
   function _db(){ try{ if(typeof firebase!=='undefined' && firebase.firestore) return firebase.firestore(); }catch(e){} return null; }
-  function _ws(){ try{ return window._currentWorkspaceId || null; }catch(e){ return null; } }
   function _me(){ try{ return (window.state && window.state.user && window.state.user.email) || (firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.email) || null; }catch(e){ return null; } }
-  function _uid(){ try{ return (window.state && window.state.user && window.state.user.uid) || (firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) || null; }catch(e){ return null; } }
+  function _uid(){ try{ return (firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) || (window.state && window.state.user && window.state.user.uid) || null; }catch(e){ return null; } }
   function _ts(){ try{ return firebase.firestore.FieldValue.serverTimestamp(); }catch(e){ return new Date().toISOString(); } }
+  /* 當前帳號資料根：users/{uid}。_wsId 此版存的是 uid（見上方變數註解）。 */
+  function _userBase(){ var db=_db(); var uid=_wsId; if(!db || !uid) return null; return db.collection('users').doc(uid); }
 
-  /* 角色閘：owner 一律可；或 email 在 payrollAccessEmails（與 firestore.rules isPayrollRole 對齊）。
-     登入且有公司工作區（window._currentWorkspaceId，與其他模組同源）→ 一律走雲端 Firestore、綁帳號/公司，不存本機。
-     極端情況真的無工作區（理論上登入用戶都有）→ 提示選/建工作區，不悄悄存本機、不顯示預覽模式。 */
+  /* 帳號閘：登入（有 uid）→ 直接用帳號雲端，所有資料綁 users/{uid}、規則只放行本人。
+     無工作區概念、無角色清單、無本機預覽。真取不到 uid（理論上 app 已導去登入）→ 請重新登入，不存本機。 */
   function resolveAccess(cb){
-    var db=_db(), ws=_ws(), me=_me();
-    if(!db || !ws){ _canSeePayroll=false; _wsId=null; cb(true,'noworkspace'); return; }   // 無工作區：提示選/建，不走本機預覽
-    _wsId=ws;
-    db.collection('workspaces').doc(ws).get().then(function(snap){
-      var d=(snap && snap.exists)?(snap.data()||{}):{};
-      var owner=d.owner||null;
-      var list=Array.isArray(d.payrollAccessEmails)?d.payrollAccessEmails:[];
-      var ok=(owner && me && owner===me) || (me && list.indexOf(me)>=0) || (!owner); // 無 owner 欄位（舊 workspace）→ 放行，rules 仍會擋直連
-      _canSeePayroll=ok; cb(ok,'cloud');
-    }).catch(function(){ _canSeePayroll=true; cb(true,'cloud'); });   // 讀 workspace doc 暫時失敗 → 仍走雲端（不退本機），寫入時 rules 仍把關
+    var uid=_uid(), db=_db();
+    if(!db || !uid){ _canSeePayroll=false; _wsId=null; cb(false,'noauth'); return; }  // 無登入身分：請重新登入，不走本機
+    _wsId=uid;            // 此版 _wsId 即登入者 uid
+    _canSeePayroll=true;  // 帳號隔離：能讀到的就是本人，規則層由 Firestore 把關
+    cb(true,'cloud');
   }
 
-  /* localStorage 後援（僅非敏感資料、僅離線/本機 dev；雲端就緒時不寫敏感） */
-  var LS={ params:'bp_payroll_params', runs:'bp_payroll_runs', emp:'bp_payroll_emp_local' };
-  function persistLocal(){
-    try{
-      localStorage.setItem(LS.params, JSON.stringify(PARAMS));
-      localStorage.setItem(LS.runs, JSON.stringify(M));
-      // ⚠ 僅在無工作區（_wsId 為空、極端後援）時才會存員工到 localStorage。
-      //   正常登入用戶都有工作區（_wsId 有值）→ 一律走雲端，敏感欄位永不落 localStorage。
-      if(!_wsId) localStorage.setItem(LS.emp, JSON.stringify(EMP));
-    }catch(e){ console.warn('[payroll] persistLocal 失敗', e); }
-  }
-  function loadLocal(){
-    try{
-      var p=localStorage.getItem(LS.params); if(p){ var o=JSON.parse(p); if(o&&typeof o==='object') Object.assign(PARAMS,o); }
-      var r=localStorage.getItem(LS.runs); if(r){ var m=JSON.parse(r); if(m&&typeof m==='object') M=m; }
-      if(!_wsId){ var e=localStorage.getItem(LS.emp); if(e){ var arr=JSON.parse(e); if(Array.isArray(arr)) EMP=arr; } }
-    }catch(e){ console.warn('[payroll] loadLocal 失敗', e); }
-  }
-
-  /* 從 Firestore 載入員工 + 參數 + 本月異動 */
+  /* 從 Firestore 載入員工 + 參數 + 本月異動（綁 users/{uid}） */
   function loadFromCloud(cb){
-    var db=_db(), ws=_wsId;
-    if(!db || !ws){ loadLocal(); cb&&cb(); return; }
-    var base=db.collection('workspaces').doc(ws);
+    var base=_userBase();
+    if(!base){ cb&&cb(); return; }   // 無 uid 不該走到這（resolveAccess 已擋），保險：不載入、不退本機
     Promise.all([
       base.collection('payroll_employees').get().catch(function(){return null;}),
       base.collection('payroll_meta').doc('yearParams').get().catch(function(){return null;}),
@@ -39913,7 +39890,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       if(metaSnap && metaSnap.exists){ var md=metaSnap.data()||{}; if(md.params && typeof md.params==='object') Object.assign(PARAMS,md.params); }
       if(runSnap && runSnap.exists){ var rd=runSnap.data()||{}; if(rd.M && typeof rd.M==='object'){ /* 合併本月 */ Object.assign(M, rd.M); } }
       cb&&cb();
-    }).catch(function(err){ console.warn('[payroll] loadFromCloud 失敗，退本機', err); loadLocal(); cb&&cb(); });
+    }).catch(function(err){ console.warn('[payroll] loadFromCloud 失敗', err); cb&&cb(); });
   }
   /* 庫裡 doc → 前端員工物件（免費路線：身分證/帳號為一般明文欄位，直接讀回前端供轉帳檔匯出用；遮罩同步還原給清單頁） */
   function _fromCloudEmp(id,d){
@@ -39921,29 +39898,25 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       id:id, name:d.name||'', base:+d.base||0,
       laborIns:+d.laborIns||0, healthIns:+d.healthIns||0, pension:+d.pension||0,
       deps:+d.deps||0, voluntary:+d.voluntary||0, hire:d.hire||'', leave:d.leave||'', email:d.email||'',
-      // 身分證/帳號：明文（轉帳檔匯出 + 編輯頁回填用）+ 遮罩（清單頁顯示用）
       natId:d.idNumber||'', bankCode:d.bankCode||'', bankAcct:d.bankAccount||'',
       natIdMasked:d.idNumberMasked||'', bankCodeMasked:d.bankCodeMasked||'', bankAcctMasked:d.bankAccountMasked||'',
       _hasSecret: !!(d.idNumber||d.bankAccount)
     };
   }
 
-  /* 寫一筆員工到 Firestore（免費路線：身分證/帳號當一般明文欄位存，靠 payroll_employees 權限鎖 + Google at-rest 加密保護；不再呼叫加解密 Cloud Function） */
+  /* 寫一筆員工到 Firestore（綁 users/{uid}；免費路線：身分證/帳號當一般明文欄位存，靠「只放行本人」規則 + Google at-rest 加密保護，不再呼叫加解密 Cloud Function） */
   function saveEmpCloud(emp, plainSecret, cb){
-    var db=_db(), ws=_wsId;
-    if(!db || !ws){ persistLocal(); cb&&cb(true); return; }   // 本機 dev：留記憶體 + 後援
+    var base=_userBase();
+    if(!base){ cb&&cb(false); return; }   // 無 uid：不存本機，回失敗讓 UI 提示
     var nonSensitive={
       name:emp.name, base:emp.base, laborIns:emp.laborIns, healthIns:emp.healthIns,
       pension:emp.pension, deps:emp.deps, voluntary:emp.voluntary, hire:emp.hire||'', leave:emp.leave||'', email:emp.email||'',
       updatedBy:_uid(), updatedAt:_ts()
     };
     var docRef = (emp.id && String(emp.id).length>6)
-      ? db.collection('workspaces').doc(ws).collection('payroll_employees').doc(String(emp.id))
-      : db.collection('workspaces').doc(ws).collection('payroll_employees').doc();
+      ? base.collection('payroll_employees').doc(String(emp.id))
+      : base.collection('payroll_employees').doc();
     emp.id = docRef.id;
-    // 身分證/帳號：有填才更新（明文 + 遮罩一起入庫）；留空＝不變更（merge:true 不動既有值）
-    //   明文直接存一般欄位 idNumber/bankCode/bankAccount —— 同 email，靠 Firestore 權限鎖（owner/payrollAccessEmails 才讀得到）+ Google 靜態加密保護，不走解密後端（免費方案可用）。
-    //   遮罩照存（清單頁遮罩顯示用），完整值僅編輯頁可見。
     var hasPlain = plainSecret && (plainSecret.natId || plainSecret.bankAcct || plainSecret.bankCode);
     if(hasPlain){
       if(plainSecret.natId){ nonSensitive.idNumber = plainSecret.natId; nonSensitive.idNumberMasked = maskId(plainSecret.natId); }
@@ -39954,33 +39927,33 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       .catch(function(err){ console.warn('[payroll] saveEmp 寫入失敗', err); cb&&cb(false,err); });
   }
   function deleteEmpCloud(id, cb){
-    var db=_db(), ws=_wsId;
-    if(!db || !ws){ persistLocal(); cb&&cb(true); return; }
-    db.collection('workspaces').doc(ws).collection('payroll_employees').doc(String(id)).delete()
+    var base=_userBase();
+    if(!base){ cb&&cb(false); return; }
+    base.collection('payroll_employees').doc(String(id)).delete()
       .then(function(){ _writeAudit('emp.delete', id); cb&&cb(true); })
       .catch(function(err){ console.warn('[payroll] deleteEmp 失敗', err); cb&&cb(false,err); });
   }
-  /* 月度異動：整月一 doc（非敏感，可整包） */
+  /* 月度異動：整月一 doc（非敏感，可整包；綁 users/{uid}） */
   function saveRunCloud(){
-    var db=_db(), ws=_wsId;
-    if(!db || !ws){ persistLocal(); return; }
+    var base=_userBase();
+    if(!base){ return; }
     var ym=curYear+String(curMonth).padStart(2,'0');
     var monthM={}; Object.keys(M).forEach(function(k){ if(k.indexOf(ym+'_')===0) monthM[k]=M[k]; });
-    db.collection('workspaces').doc(ws).collection('payroll_runs').doc(ym)
+    base.collection('payroll_runs').doc(ym)
       .set({M:monthM, updatedBy:_uid(), updatedAt:_ts()},{merge:true})
       .catch(function(err){ console.warn('[payroll] saveRun 失敗', err); });
   }
   function saveParamsCloud(){
-    var db=_db(), ws=_wsId;
-    if(!db || !ws){ persistLocal(); return; }
-    db.collection('workspaces').doc(ws).collection('payroll_meta').doc('yearParams')
+    var base=_userBase();
+    if(!base){ return; }
+    base.collection('payroll_meta').doc('yearParams')
       .set({year:curYear, params:PARAMS, updatedBy:_uid(), updatedAt:_ts()},{merge:true})
       .catch(function(err){ console.warn('[payroll] saveParams 失敗', err); });
   }
   function _writeAudit(action, target){
-    var db=_db(), ws=_wsId; if(!db || !ws) return;
+    var base=_userBase(); if(!base) return;
     try{
-      db.collection('workspaces').doc(ws).collection('payroll_audit').add({
+      base.collection('payroll_audit').add({
         actor:_me()||_uid()||'unknown', action:action, target:String(target||''), at:_ts()
       }).catch(function(){});
     }catch(e){}
@@ -40081,11 +40054,11 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       '<p>此模組包含薪資、身分證與銀行帳號等高敏感資料，僅限公司擁有者與被指定的財務人員存取。<br>若你應有權限，請聯絡公司擁有者於「設定 → 成員」開啟「可看薪資」。</p></div>';
   }
 
-  /* 無公司工作區畫面（理論上登入用戶都有；此為極端後援，提示選/建，不存本機、不顯示預覽模式） */
-  function noWorkspaceHtml(){
+  /* 未登入畫面（v1.7.0 帳號綁定：app 本來就會導去登入，此為真取不到 uid 的極端後援，不存本機、不顯示預覽模式） */
+  function noAuthHtml(){
     return '<div class="gate-block"><div class="gic"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M12 12v4M10 14h4"/></svg></div>'+
-      '<h2>請先選擇或建立公司工作區</h2>'+
-      '<p>薪資資料會綁定你的公司工作區並安全存放於雲端。<br>請先在上方建立或進入一間公司工作區，再回到薪資模組。</p></div>';
+      '<h2>請重新登入</h2>'+
+      '<p>薪資資料綁定你的帳號並安全存放於雲端，需登入後才能存取。<br>請重新登入後再回到薪資模組。</p></div>';
   }
 
   /* ── 加退保申報提醒 ── */
@@ -40234,7 +40207,6 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   }
 
   /* ── 員工新增 / 編輯 / 刪除 ── */
-  function nextLocalId(){ return EMP.reduce(function(mx,e){ return Math.max(mx, (typeof e.id==='number'?e.id:0)); },0)+1; }
   function setVal(id,v){ var el=document.getElementById(id); if(el) el.value=(v===0||v)?v:''; }
   function gradeOptions(){ return LABOR_GRADES.map(function(g){ return '<option value="'+g+'">'+g.toLocaleString('en-US')+'</option>'; }).join(''); }
   function fillGradeSelects(){ ['pref_laborIns_sel','pref_healthIns_sel','pref_pension_sel'].forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=gradeOptions(); }); }
@@ -40296,12 +40268,12 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     var bankAcct=document.getElementById('pref_bankAcct').value.trim();
     var emp;
     if(editingEmpId!=null){ emp=EMP.filter(function(x){return x.id===editingEmpId;})[0]; }
-    else { emp={ id:nextLocalId() }; EMP.push(emp); }
+    else { emp={}; EMP.push(emp); }   // v1.7.0：不用本機 id，saveEmpCloud 會把 Firestore doc id 寫回此物件
     emp.name=name; emp.email=email; emp.base=base; emp.laborIns=laborIns; emp.healthIns=healthIns; emp.pension=pension; emp.deps=deps; emp.voluntary=voluntary; emp.hire=hire; emp.leave=leave;
     // 敏感：有填才更新遮罩 + 送後端；留空＝不變更
     var plainSecret=null;
     if(natId||bankCode||bankAcct){ plainSecret={natId:natId, bankCode:bankCode, bankAcct:bankAcct}; if(natId) emp.natIdMasked=maskId(natId); if(bankCode) emp.bankCodeMasked=maskAcct(bankCode); if(bankAcct) emp.bankAcctMasked=maskAcct(bankAcct); }
-    // 免費路線：明文留在前端物件（本機 + 雲端皆同），存完即可直接匯出轉帳檔，免重載
+    // 免費路線：明文留在前端物件，存完即可直接匯出轉帳檔，免重載
     if(plainSecret){ if(natId) emp.natId=natId; if(bankCode) emp.bankCode=bankCode; if(bankAcct) emp.bankAcct=bankAcct; }
     saveEmpCloud(emp, plainSecret, function(ok){
       if(!ok){ toast('儲存失敗（請檢查權限 / 連線）'); return; }
@@ -40400,18 +40372,16 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     M={}; touched={}; saveRunCloud();
     function step(){
       if(i>=rows.length){ closeImport(); loadAfterImport(); return; }
-      var o=rows[i++]; var emp={ id: (!_wsId? nextLocalId() : undefined), name:o.name, base:o.base, laborIns:o.laborIns, healthIns:o.healthIns, pension:o.pension, deps:o.deps, voluntary:o.voluntary, hire:o.hire, leave:o.leave, email:o.email||'' };
+      var o=rows[i++]; var emp={ id: undefined, name:o.name, base:o.base, laborIns:o.laborIns, healthIns:o.healthIns, pension:o.pension, deps:o.deps, voluntary:o.voluntary, hire:o.hire, leave:o.leave, email:o.email||'' };
       var plainSecret=(o.natId||o.bankCode||o.bankAcct)?{natId:o.natId,bankCode:o.bankCode,bankAcct:o.bankAcct}:null;
       if(plainSecret){ if(o.natId) emp.natIdMasked=maskId(o.natId); if(o.bankCode) emp.bankCodeMasked=maskAcct(o.bankCode); if(o.bankAcct) emp.bankAcctMasked=maskAcct(o.bankAcct); }
-      // 免費路線：明文留前端物件（本機 + 雲端皆同）；本機直接 push，雲端靠匯入後 loadAfterImport 重載帶回
+      // 免費路線：明文送進雲端；loadAfterImport 重載帶回 doc id + 遮罩
       if(plainSecret){ if(o.natId) emp.natId=o.natId; if(o.bankCode) emp.bankCode=o.bankCode; if(o.bankAcct) emp.bankAcct=o.bankAcct; }
-      if(!_wsId){ EMP.push(emp); }
       saveEmpCloud(emp, plainSecret, function(ok){ if(!ok) okAll=false; step(); });
     }
     function loadAfterImport(){
-      // 雲端：重新拉一次（取得 server doc id + 遮罩）；本機：直接重畫
-      if(_wsId){ loadFromCloud(function(){ renderTable(); renderEmployees(); toast((okAll?'已匯入 ':'部分匯入（有錯誤）')+EMP.length+' 位員工'); }); }
-      else { renderTable(); renderEmployees(); toast('已匯入 '+EMP.length+' 位員工'); }
+      // v1.7.0：一律雲端重載（取得 server doc id + 遮罩）
+      loadFromCloud(function(){ renderTable(); renderEmployees(); toast((okAll?'已匯入 ':'部分匯入（有錯誤）')+EMP.length+' 位員工'); });
     }
     step();
   }
@@ -40623,7 +40593,7 @@ function openPayslipPicker(){
     document.addEventListener('click',function(){ if(outMenu) outMenu.classList.remove('open'); });
     outMenu.addEventListener('click',function(e){ var mi=e.target.closest('.mi'); if(!mi) return; var out=mi.dataset.out; outMenu.classList.remove('open'); if(out==='cost') exportCost(); else if(out==='bank') exportBank(); else openPayslipPicker(); });
   }
-  function updMonth(){ var l=document.getElementById('prMLabel'); if(l) l.textContent=monthLabel(); if(_wsId){ loadFromCloud(function(){ renderTable(); }); } else renderTable(); }
+  function updMonth(){ var l=document.getElementById('prMLabel'); if(l) l.textContent=monthLabel(); loadFromCloud(function(){ renderTable(); }); }
 
   /* ════════════════════════════════════════════════════════════════════
      入口：window.renderPayroll —— renderModule('biz-payroll') 會呼叫
@@ -40633,9 +40603,8 @@ function openPayslipPicker(){
     c.classList.add('payroll-scope');
     c.innerHTML='<div class="empty"><div class="ic"><svg viewBox="0 0 24 24" stroke="currentColor"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M9 11h2M13 11h2M9 15h2M13 15h2"/></svg></div><h3>薪資模組載入中…</h3></div>';
     resolveAccess(function(canSee, mode){
-      if(mode==='noworkspace'){ c.innerHTML=noWorkspaceHtml(); return; }   // 無公司工作區：提示選/建，不走本機預覽
-      if(!canSee){ c.innerHTML=gateBlockHtml(); return; }
-      // 登入且有工作區 → 一律從雲端載入（綁帳號/公司）
+      if(mode==='noauth' || !canSee){ c.innerHTML=noAuthHtml(); return; }   // 未登入：請重新登入，不走本機
+      // 已登入（有 uid）→ 一律從帳號雲端載入（users/{uid}）
       var afterLoad=function(){
         c.innerHTML=shellHtml(mode);
         bindShell();
