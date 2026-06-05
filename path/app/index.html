@@ -39732,6 +39732,10 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     rounding:'floor', taxWithhold:false
   };
   var LABOR_GRADES=[29500,31800,33300,34800,36300,38200,40100,42000,43900,45800];
+  /* 健保投保金額分級表（2026 / 民國 115 · 衛部保字第1140153424號令 · 58 級 · 下限 29,500 上限 313,000）
+     與勞保分級表脫鉤——勞保上限 45,800，健保上限 313,000。高薪者健保須用此表向上取級，不可卡在勞保上限。
+     來源：衛福部健保署官方 2026 投保金額分級表（2026/01/01 施行）。每年隨基本工資調整第1級，餘級多年穩定。 */
+  var HEALTH_GRADES=[29500,30300,31800,33300,34800,36300,38200,40100,42000,43900,45800,48200,50600,53000,55400,57800,60800,63800,66800,69800,72800,76500,80200,83900,87600,92100,96600,101100,105600,110100,115500,120900,126300,131700,137100,142500,147900,150000,156400,162800,169200,175600,182000,189500,197000,204500,212000,219500,228200,236900,245600,254300,263000,273000,283000,293000,303000,313000];
   var ANOMALY_THRESHOLD=0.30;
 
   /* ── 模組內部狀態（每次 renderPayroll 重建 UI、狀態續用） ── */
@@ -39751,6 +39755,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
   /* ── 共用小工具（與雛形一致） ── */
   function gradeFor(salary){ for(var i=0;i<LABOR_GRADES.length;i++){ if(salary<=LABOR_GRADES[i]) return LABOR_GRADES[i]; } return LABOR_GRADES[LABOR_GRADES.length-1]; }
+  function healthGradeFor(salary){ for(var i=0;i<HEALTH_GRADES.length;i++){ if(salary<=HEALTH_GRADES[i]) return HEALTH_GRADES[i]; } return HEALTH_GRADES[HEALTH_GRADES.length-1]; }
   function floor(n){ return Math.floor(n); }
   function fmt(n){ return (n<0?'-':'')+Math.abs(Math.round(n)).toLocaleString('en-US'); }
   function num(v){ if(v===''||v==null) return 0; return parseFloat(String(v).replace(/[,\s]/g,''))||0; }
@@ -40209,13 +40214,14 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   /* ── 員工新增 / 編輯 / 刪除 ── */
   function setVal(id,v){ var el=document.getElementById(id); if(el) el.value=(v===0||v)?v:''; }
   function gradeOptions(){ return LABOR_GRADES.map(function(g){ return '<option value="'+g+'">'+g.toLocaleString('en-US')+'</option>'; }).join(''); }
-  function fillGradeSelects(){ ['pref_laborIns_sel','pref_healthIns_sel','pref_pension_sel'].forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=gradeOptions(); }); }
+  function healthGradeOptions(){ return HEALTH_GRADES.map(function(g){ return '<option value="'+g+'">'+g.toLocaleString('en-US')+'</option>'; }).join(''); }
+  function fillGradeSelects(){ ['pref_laborIns_sel','pref_pension_sel'].forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=gradeOptions(); }); var hel=document.getElementById('pref_healthIns_sel'); if(hel) hel.innerHTML=healthGradeOptions(); }
   function applyInsMode(){
     var base=num((document.getElementById('pref_base')||{}).value)||0;
     document.querySelectorAll('#prInsMode button').forEach(function(b){ b.classList.toggle('on', b.dataset.ins===insMode); });
     [['pref_laborIns_sel','pref_laborIns_hint'],['pref_healthIns_sel','pref_healthIns_hint'],['pref_pension_sel','pref_pension_hint']].forEach(function(pair){
       var sel=document.getElementById(pair[0]), hint=document.getElementById(pair[1]); if(!sel||!hint) return;
-      if(insMode==='auto'){ sel.style.display='none'; var auto=pair[0]==='pref_pension_sel'?(base||0):gradeFor(base); hint.textContent=base?('依底薪自動帶：'+auto.toLocaleString('en-US')):'填底薪後自動帶級距'; }
+      if(insMode==='auto'){ sel.style.display='none'; var auto=pair[0]==='pref_pension_sel'?(base||0):(pair[0]==='pref_healthIns_sel'?healthGradeFor(base):gradeFor(base)); hint.textContent=base?('依底薪自動帶：'+auto.toLocaleString('en-US')):'填底薪後自動帶級距'; }
       else { sel.style.display=''; hint.textContent='從級距下拉選擇'; }
     });
   }
@@ -40234,7 +40240,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       nid.value=''; nid.placeholder=e.natIdMasked? (e.natIdMasked+'（留空不變更）'):'A123456789';
       bc.value=''; bc.placeholder=e.bankCodeMasked? (e.bankCodeMasked+'（留空不變更）'):'例 822';
       ba.value=''; ba.placeholder=e.bankAcctMasked? (e.bankAcctMasked+'（留空不變更）'):'轉帳用帳號';
-      var autoLabor=gradeFor(e.base), autoHealth=gradeFor(e.base), autoPension=e.base;
+      var autoLabor=gradeFor(e.base), autoHealth=healthGradeFor(e.base), autoPension=e.base;
       var custom=(e.laborIns!==autoLabor)||(e.healthIns!==autoHealth)||(e.pension!==autoPension);
       insMode=custom?'custom':'auto';
       setVal('pref_laborIns_sel',e.laborIns); setVal('pref_healthIns_sel',e.healthIns); setVal('pref_pension_sel',e.pension);
@@ -40259,8 +40265,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     if(!name){ err.textContent='請填姓名'; document.getElementById('pref_name').focus(); return; }
     if(!base||base<=0){ err.textContent='請填底薪（大於 0）'; document.getElementById('pref_base').focus(); return; }
     var laborIns,healthIns,pension;
-    if(insMode==='custom'){ laborIns=num(document.getElementById('pref_laborIns_sel').value)||gradeFor(base); healthIns=num(document.getElementById('pref_healthIns_sel').value)||gradeFor(base); pension=num(document.getElementById('pref_pension_sel').value)||base; }
-    else { laborIns=gradeFor(base); healthIns=gradeFor(base); pension=base; }
+    if(insMode==='custom'){ laborIns=num(document.getElementById('pref_laborIns_sel').value)||gradeFor(base); healthIns=num(document.getElementById('pref_healthIns_sel').value)||healthGradeFor(base); pension=num(document.getElementById('pref_pension_sel').value)||base; }
+    else { laborIns=gradeFor(base); healthIns=healthGradeFor(base); pension=base; }
     var deps=num(document.getElementById('pref_deps').value), voluntary=num(document.getElementById('pref_voluntary').value);
     var hire=document.getElementById('pref_hire').value.trim(), leave=document.getElementById('pref_leave').value.trim();
     var natId=document.getElementById('pref_natId').value.trim().toUpperCase();
