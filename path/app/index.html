@@ -8025,6 +8025,27 @@ body.hd-locked { overflow: hidden; }
 
 /* ==================== END v1.5.0-γ.2 CSS ==================== */
 </style>
+
+<!-- PostHog Analytics (EU region) · 2026-05-22 integrated by Sophie · phc_o5gSA499 public client key -->
+<script>
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId captureTraceFeedback captureTraceMetric".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  posthog.init('phc_o5gSA499z7GYCtEdcnLr6ojL5A8wRApuaZrc4bnLkv2G', {
+    api_host: 'https://eu.i.posthog.com',
+    person_profiles: 'always',
+    capture_pageview: true,
+    capture_pageleave: true,
+    autocapture: true,
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: '[data-private], input, textarea'
+    },
+    loaded: function(ph) {
+      ph.capture('beyondpath_loaded', { version: 'v1.5.0-γ.2', region: 'eu' });
+    }
+  });
+</script>
+<!-- End PostHog Analytics -->
+
 </head>
 <body>
   <div id="landingPage"></div>
@@ -8082,6 +8103,8 @@ body.hd-locked { overflow: hidden; }
     target: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
     clipboard: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>',
     dollarSign: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
+    // 薪資模組專屬 icon：計算機語意（避免與收款 dollarSign 撞色）· line-style stroke 1.8
+    payrollCalc: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M9 11h2M13 11h2M9 15h2M13 15h2"/></svg>',
     gauge: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>',
     video: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
     footprints: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5 10 7.89 8 10 8 12h3c0-2 2-4.1 2-6.5C13 3.8 13.63 2 15.5 2c3.01 0 4.47 3.28 4.5 6 .03 2.5-1 3.5-1 5.62V16"/><path d="M7.5 16H4v2c0 1.1.9 2 2 2h1.5c1.1 0 2-.9 2-2v-2H7.5z"/><path d="M16.5 16H14v2c0 1.1.9 2 2 2h1.5c1.1 0 2-.9 2-2v-2h-3z"/></svg>',
@@ -9368,6 +9391,8 @@ body.hd-locked { overflow: hidden; }
       document.documentElement.setAttribute('data-theme', 'dark');
       localStorage.setItem('bp_theme', 'dark');
     }
+    // PostHog: theme toggle event (Sophie 2026-05-22)
+    if (window.posthog) { window.posthog.capture('theme_toggled', { to: isDark ? 'light' : 'dark' }); }
     renderThemeToggle();
     // Refresh Business module: update C colors then force React remount
     requestAnimationFrame(function() {
@@ -9962,6 +9987,7 @@ body.hd-locked { overflow: hidden; }
     'biz-contacts': 'bd',
     'biz-quotes': 'proposals',
     'biz-billing': 'invoices',
+    'biz-payroll': 'payroll',
     'biz-meetings': 'meetings',
     'biz-insights': 'analytics',
     'biz-docs': 'docs'
@@ -9975,7 +10001,7 @@ body.hd-locked { overflow: hidden; }
     'mod-diagnose': true,
     'mod-lab': false, 'mod-survey': false, 'mod-market': false, 'mod-report': false,
     'mod-tasks': true, 'mod-contacts': true,
-    'mod-quotes': false, 'mod-billing': false, 'mod-meetings': false,
+    'mod-quotes': false, 'mod-billing': false, 'mod-payroll': false, 'mod-meetings': false,
     'mod-insights': false, 'mod-docs': false
   };
 
@@ -9984,7 +10010,7 @@ body.hd-locked { overflow: hidden; }
     'mod-diagnose': 'free',
     'mod-lab': 'starter', 'mod-survey': 'starter', 'mod-market': 'starter', 'mod-report': 'starter',
     'mod-tasks': 'free', 'mod-contacts': 'free',
-    'mod-quotes': 'starter', 'mod-billing': 'pro', 'mod-meetings': 'starter',
+    'mod-quotes': 'starter', 'mod-billing': 'pro', 'mod-payroll': 'pro', 'mod-meetings': 'starter',
     'mod-insights': 'pro', 'mod-docs': 'pro'
   };
   const PLAN_RANK = { free: 0, starter: 1, pro: 2, enterprise: 3 };
@@ -10023,7 +10049,7 @@ body.hd-locked { overflow: hidden; }
       defaultModel: 'claude-opus-4-7',
       allowedModels: ['claude-opus-4-7', 'claude-sonnet-4-6'],
       highlights: ['每月 3,000 AI Credits', 'Claude Opus 4.7 預設（可切 Sonnet）', '收款管理 · 營運戰情室 · 文件庫', '團隊最多 5 人 + Claude MCP'],
-      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-meetings','mod-insights','mod-docs'],
+      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-meetings','mod-insights','mod-docs'],
       featured: true
     },
     enterprise: {
@@ -10033,7 +10059,7 @@ body.hd-locked { overflow: hidden; }
       defaultModel: 'claude-opus-4-7',
       allowedModels: ['claude-opus-4-7', 'claude-sonnet-4-6'],
       highlights: ['無限 AI Credits', 'Claude Opus 4.7 預設', 'Pro 全部功能', '團隊最多 20 人 · 管理員角色', 'API 整合 · 專屬客戶經理'],
-      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-meetings','mod-insights','mod-docs']
+      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-meetings','mod-insights','mod-docs']
     }
   };
 
@@ -10123,6 +10149,7 @@ body.hd-locked { overflow: hidden; }
     'mod-contacts': '客戶管理',
     'mod-quotes': '報價提案',
     'mod-billing': '收款管理',
+    'mod-payroll': '薪資計算',
     'mod-meetings': '會議紀錄',
     'mod-insights': '營運戰情室',
     'mod-docs': '文件庫'
@@ -10490,6 +10517,7 @@ body.hd-locked { overflow: hidden; }
       { id: 'biz-contacts', label: '客戶管理', icon: 'users', modKey: 'mod-contacts', layer: 1, q: '這個人跟我們什麼關係？' },
       { id: 'biz-quotes', label: '報價提案', icon: 'fileText', modKey: 'mod-quotes', layer: 2, q: '怎麼快速產一份專業報價？' },
       { id: 'biz-billing', label: '收款管理', icon: 'dollarSign', modKey: 'mod-billing', layer: 2, q: '錢收到了嗎？' },
+      { id: 'biz-payroll', label: '薪資', icon: 'payrollCalc', modKey: 'mod-payroll', layer: 2, q: '這個月薪水算好了嗎？' },
       { id: 'biz-meetings', label: '會議紀錄', icon: 'calendar', modKey: 'mod-meetings', layer: 2, q: '上次跟客戶講了什麼？' },
       { id: 'biz-insights', label: '營運戰情室', icon: 'activity', modKey: 'mod-insights', layer: 3, q: '公司現在狀況怎樣？' },
       { id: 'biz-docs', label: '文件庫', icon: 'folder', modKey: 'mod-docs', layer: 2, q: '那份合約在哪裡？' }
@@ -10573,6 +10601,7 @@ body.hd-locked { overflow: hidden; }
       roadmap: "biz-roadmap", planning: "biz-planning",
       mission: "biz-tasks", crm: "biz-contacts",
       quote: "biz-quotes", payment: "biz-billing",
+      payroll: "biz-payroll",
       meeting: "biz-meetings", insights: "biz-insights",
       vault: "biz-docs", settings: "settings",
       admin: "admin-applications",
@@ -11022,6 +11051,16 @@ body.hd-locked { overflow: hidden; }
       return;
     }
 
+    // biz-payroll → vanilla JS 薪資模組（not React）· 高敏感、角色 gate 在 renderPayroll 內
+    if (moduleId === 'biz-payroll') {
+      if (window._bizReactRoot) {
+        try { window._bizReactRoot.unmount(); } catch(e) {}
+        window._bizReactRoot = null;
+      }
+      renderPayroll();
+      return;
+    }
+
     // Unmount React Business module if navigating away from biz
     const isBizModule = BIZ_MODULES.includes(moduleId);
     if (!isBizModule && window._bizReactRoot) {
@@ -11051,6 +11090,10 @@ body.hd-locked { overflow: hidden; }
 
   // ==================== MODULE 1: HOME ====================
   function renderHome(activeTab) {
+    // PostHog: home tab navigation event (Sophie 2026-05-22 · 只抓使用者點 tab、不抓內部路由)
+    if (activeTab && window.posthog) {
+      window.posthog.capture('home_tab_switched', { tab: activeTab });
+    }
     const content = document.getElementById('content');
     const planLabel = state.plan === 'enterprise' ? 'Enterprise' : state.plan === 'pro' ? 'Pro' : state.plan === 'starter' ? 'Starter' : 'Free';
 
@@ -32036,6 +32079,7 @@ function loadHistory(){
             { key:'mod-contacts', label:'客戶管理', icon:'users', q:'這個人跟我們什麼關係？', minPlan:'free' },
             { key:'mod-quotes', label:'報價提案', icon:'fileText', q:'怎麼快速產一份專業報價？', minPlan:'starter' },
             { key:'mod-billing', label:'收款管理', icon:'dollarSign', q:'錢收到了嗎？', minPlan:'pro', sensitive:true },
+            { key:'mod-payroll', label:'薪資計算', icon:'payrollCalc', q:'這個月薪水算好了嗎？', minPlan:'pro', sensitive:true },
             { key:'mod-meetings', label:'會議紀錄', icon:'calendar', q:'上次跟客戶講了什麼？', minPlan:'starter' },
             { key:'mod-insights', label:'營運戰情室', icon:'activity', q:'公司現在狀況怎樣？', minPlan:'pro' },
             { key:'mod-docs', label:'文件庫', icon:'folder', q:'那份合約在哪裡？', minPlan:'pro' }
@@ -38211,6 +38255,9 @@ window._bpTryHeadlessMountFallback = _bpTryHeadlessMountFallback;
 
 <!-- File parsing CDN for Quote Import -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] SheetJS failed')"></script>
+<!-- 薪資條 PDF：html2canvas 截已渲染三段式明細（中文用系統字型、不需嵌 CJK 字型）→ jsPDF 包成 A4 PDF blob（可下載、可當 Gmail 附件） -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] html2canvas failed')"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] jsPDF failed')"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] mammoth failed')"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous" onerror="console.warn('[CDN] pdf.js failed')"></script>
 <script>if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
@@ -39413,6 +39460,1166 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   try { console.log("[hd-data-builder] loaded v1.5.0-alpha (diag/research/report)"); } catch (_) {}
 
 }());
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     薪資模組（biz-payroll）· vanilla JS · 掛 #content
+     · 計算引擎 1:1 照搬已驗證 prototype-bp（calcRow / proration / 二代健保跨月累計 / 異常紅旗）
+     · 儲存改 Firestore（workspaces/{wsId}/payroll_*），取代 localStorage
+     · 身分證 / 銀行帳號：庫裡只存密文 + 遮罩，明文走 Cloud Function（見 deploy-staging/functions/）
+     · 角色閘：owner / payrollAccessEmails 才看得到（UX 層；真正的鎖在 firestore.rules）
+     建立：2026-06-05（卡西法）
+     ════════════════════════════════════════════════════════════════════ -->
+<style id="payroll-styles">
+/* 命名空間 #content.payroll-scope，避免污染既有模組 */
+.payroll-scope .m{font-family:var(--font-mono,'JetBrains Mono','SF Mono',monospace);font-variant-numeric:tabular-nums;vertical-align:baseline;letter-spacing:-.2px}
+.payroll-scope .pr-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:16px;margin-bottom:22px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.payroll-scope .pr-title h1{display:flex;align-items:center;gap:10px;font-size:var(--text-page-title,22px);font-weight:700;color:var(--ink);line-height:1.2}
+.payroll-scope .pr-title h1 svg{width:22px;height:22px;color:var(--primary);stroke:var(--primary);fill:none;stroke-width:1.8}
+.payroll-scope .pr-title .subtitle{font-size:var(--text-caption,13px);color:var(--ink-muted);margin-top:5px}
+.payroll-scope .pr-title .subtitle .nocr{color:var(--teal);font-weight:600}
+.payroll-scope .pr-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.payroll-scope .month{display:flex;align-items:center;gap:4px}
+.payroll-scope .month .lbl{font-size:var(--text-section-title,17px);font-weight:700;color:var(--ink);min-width:118px;text-align:center}
+.payroll-scope .month button{border:1px solid var(--border);background:#fff;border-radius:var(--r-sm,10px);width:32px;height:32px;cursor:pointer;color:var(--ink-sec);font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.payroll-scope .month button:hover{border-color:var(--primary);color:var(--primary)}
+.payroll-scope .pr-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;font-size:var(--text-body,14px);font-weight:600;border-radius:12px;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);border:1px solid var(--border);background:#fff;color:var(--ink);font-family:inherit}
+.payroll-scope .pr-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.payroll-scope .pr-btn:hover{border-color:var(--border-hover)}
+.payroll-scope .pr-btn.accent{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 2px 8px rgba(124,92,252,.18)}
+.payroll-scope .pr-btn.accent:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
+.payroll-scope .pr-btn.ghost{background:transparent;color:var(--ink-sec);border:none;padding:9px 14px}
+.payroll-scope .pr-btn.ghost:hover{background:var(--bg-hover)}
+.payroll-scope .pr-btn:disabled{opacity:.45;cursor:not-allowed}
+.payroll-scope .tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.payroll-scope .tab{padding:10px 16px;font-size:var(--text-body,14px);font-weight:600;color:var(--ink-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:7px}
+.payroll-scope .tab svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.payroll-scope .tab:hover{color:var(--ink-sec)}
+.payroll-scope .tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.payroll-scope .view{display:none}
+.payroll-scope .view.active{display:block}
+.payroll-scope .biz-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:24px}
+.payroll-scope .biz-stat{background:var(--bg-card);border:none;border-radius:var(--r-lg,18px);padding:18px 20px;display:flex;align-items:center;gap:14px;transition:all .25s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow-card)}
+.payroll-scope .biz-stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.payroll-scope .biz-stat-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.payroll-scope .biz-stat-icon svg{width:18px;height:18px;stroke-width:1.9;fill:none}
+.payroll-scope .biz-stat-info{flex:1;min-width:0}
+.payroll-scope .biz-stat-label{font-size:var(--text-label,12px);color:var(--ink-muted);font-weight:500;margin-bottom:3px;letter-spacing:.3px}
+.payroll-scope .biz-stat-val{font-size:21px;font-weight:800;color:var(--ink);letter-spacing:-.4px;line-height:1.2;font-family:var(--font-mono,monospace)}
+.payroll-scope .biz-stat-val .u{font-size:12px;color:var(--ink-muted);margin-right:3px;font-family:var(--font-sans,sans-serif);font-weight:600}
+.payroll-scope .biz-stat-sub{font-size:var(--text-micro,11px);color:var(--ink-dim);margin-top:2px}
+.payroll-scope .ic-gross{background:var(--primary-light);color:var(--primary)}
+.payroll-scope .ic-ded{background:var(--rose-bg);color:var(--rose)}
+.payroll-scope .ic-net{background:var(--teal-bg);color:var(--teal)}
+.payroll-scope .ic-cost{background:var(--gold-bg);color:var(--gold)}
+.payroll-scope .pr-card{background:var(--bg-card);border:none;border-radius:var(--r-xl,24px);box-shadow:var(--shadow-card);overflow:hidden}
+.payroll-scope .tablewrap{overflow-x:auto}
+.payroll-scope table{width:100%;border-collapse:collapse}
+.payroll-scope thead th{font-size:var(--text-label,12px);font-weight:700;color:var(--ink-sec);text-align:right;padding:13px 14px;background:#fff;border-bottom:2px solid var(--primary);white-space:nowrap;letter-spacing:.2px;cursor:default}
+.payroll-scope thead th.l{text-align:left}
+.payroll-scope tbody td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:var(--text-body,14px);text-align:right;color:var(--ink);white-space:nowrap}
+.payroll-scope tbody td.l{text-align:left}
+.payroll-scope tbody tr:last-child td{border-bottom:none}
+.payroll-scope tbody tr.emp-row{cursor:pointer;transition:background .12s}
+.payroll-scope tbody tr.emp-row:hover{background:rgba(124,92,252,.08)}
+.payroll-scope tbody tr:nth-child(even).emp-row{background:#FAFAFC}
+.payroll-scope tbody tr:nth-child(even).emp-row:hover{background:rgba(124,92,252,.08)}
+.payroll-scope .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.payroll-scope .dot.ok{background:var(--teal)}.payroll-scope .dot.warn{background:var(--gold)}.payroll-scope .dot.bad{background:var(--rose)}
+.payroll-scope .name{font-weight:600}.payroll-scope .neg{color:var(--rose)}.payroll-scope .calc{color:var(--ink-sec)}
+.payroll-scope .prorate-tag,.payroll-scope .anomaly-tag{display:inline-block;font-size:10px;font-weight:600;color:var(--gold);background:var(--gold-bg);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle;font-family:var(--font-sans,sans-serif);white-space:nowrap}
+.payroll-scope .anomaly-tag .ar{font-family:var(--font-mono,monospace)}
+.payroll-scope .cellinput{width:68px;border:1.5px solid transparent;background:var(--primary-light);border-radius:var(--r-sm,10px);padding:5px 8px;text-align:right;font-family:var(--font-mono,monospace);font-size:var(--text-body,14px);color:var(--ink);outline:none;transition:all .12s}
+.payroll-scope .cellinput:focus{border-color:var(--primary);background:#fff;box-shadow:var(--shadow-glow,0 0 0 3px rgba(124,92,252,.18))}
+.payroll-scope .cellinput.touched{box-shadow:inset 0 0 0 1.5px var(--primary)}
+.payroll-scope .flagtxt{color:var(--rose);font-size:var(--text-caption,13px);font-weight:500}
+.payroll-scope tfoot td{padding:14px;font-family:var(--font-mono,monospace);font-size:var(--text-body,14px);font-weight:700;text-align:right;background:#FAFAFC;border-top:2px solid var(--border);color:var(--ink)}
+.payroll-scope tfoot td.l{text-align:left;font-family:var(--font-sans,sans-serif);font-weight:700;color:var(--ink)}
+.payroll-scope tfoot td.note{text-align:left;font-family:var(--font-sans,sans-serif);font-weight:450;color:var(--ink-muted);font-size:var(--text-caption,13px)}
+.payroll-scope .hint{font-size:var(--text-caption,13px);color:var(--ink-muted);margin-top:14px;line-height:1.7}
+.payroll-scope .hint .lg{font-weight:600}
+.payroll-scope .enroll-banner{display:none;align-items:flex-start;gap:12px;background:var(--gold-bg);border:1px solid rgba(224,138,58,.28);border-radius:var(--r-md,14px);padding:13px 16px;margin-bottom:18px;color:var(--ink-sec);font-size:var(--text-caption,13px);line-height:1.6}
+.payroll-scope .enroll-banner.show{display:flex}
+.payroll-scope .enroll-banner .eb-ic{width:30px;height:30px;border-radius:9px;background:rgba(224,138,58,.18);color:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.payroll-scope .enroll-banner .eb-ic svg{width:16px;height:16px;stroke:var(--gold);fill:none;stroke-width:1.9}
+.payroll-scope .enroll-banner .eb-body{flex:1;min-width:0}
+.payroll-scope .enroll-banner .eb-title{font-weight:700;color:var(--gold);font-size:var(--text-body,14px);margin-bottom:3px}
+.payroll-scope .enroll-banner .eb-names{margin-top:5px}
+.payroll-scope .enroll-banner .eb-names .grp{display:inline-block;margin-right:18px}
+.payroll-scope .enroll-banner .eb-names .grp b{color:var(--ink-sec);font-weight:600}
+.payroll-scope .enroll-banner .eb-tag{display:inline-block;font-size:11px;font-weight:600;border-radius:6px;padding:1px 7px;margin:0 4px 4px 0;background:#fff;border:1px solid rgba(224,138,58,.3);color:var(--ink-sec)}
+.payroll-scope .pr-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:10000;padding:24px}
+.payroll-scope .pr-overlay.open{display:flex}
+.payroll-scope .pr-modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl,24px);width:900px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;animation:scaleIn .2s cubic-bezier(.22,1,.36,1)}
+.payroll-scope .pr-modal.sm{width:600px;max-width:96vw}
+.payroll-scope .pr-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border)}
+.payroll-scope .pr-modal-header .h-nm{font-size:var(--text-page-title,22px);font-weight:700;color:var(--ink)}
+.payroll-scope .pr-modal-header .h-mo{font-size:var(--text-caption,13px);color:var(--ink-muted);margin-top:2px}
+.payroll-scope .pr-modal-close{width:32px;height:32px;border-radius:var(--r-md,14px);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:all .15s;font-size:20px}
+.payroll-scope .pr-modal-close:hover{background:var(--bg-hover);color:var(--ink)}
+.payroll-scope .pr-modal-body{flex:1;overflow-y:auto;min-height:0}
+.payroll-scope .pr-modal-pad{padding:20px 24px}
+.payroll-scope .pr-modal-footer{display:flex;gap:10px;justify-content:flex-end;padding:14px 24px;border-top:1px solid var(--border);flex-shrink:0}
+.payroll-scope .pr-2col{display:grid;grid-template-columns:3fr 2fr;gap:24px;padding:20px 24px}
+@media(max-width:720px){.payroll-scope .pr-2col{grid-template-columns:1fr}}
+.payroll-scope .sec-lab{font-size:var(--text-label,12px);font-weight:700;color:var(--ink-muted);letter-spacing:1px;margin:16px 0 8px}
+.payroll-scope .sec-lab:first-child{margin-top:0}
+.payroll-scope .line{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px dashed var(--border)}
+.payroll-scope .line .k{font-size:var(--text-body,14px);color:var(--ink-sec)}
+.payroll-scope .line .k .how{color:var(--primary);font-size:var(--text-label,12px);margin-left:6px;cursor:pointer;user-select:none}
+.payroll-scope .line .k .how:hover{text-decoration:underline}
+.payroll-scope .line .v{font-size:var(--text-body,14px)}
+.payroll-scope .line .formula{display:none;font-family:var(--font-mono,monospace);font-size:var(--text-micro,11px);color:var(--ink-muted);width:100%;margin-top:4px;line-height:1.5}
+.payroll-scope .line.show .formula{display:block}
+.payroll-scope .line.total{border-bottom:2px solid var(--ink);margin-top:4px}
+.payroll-scope .line.total .k{font-weight:700;color:var(--ink)}.payroll-scope .line.total .v{font-weight:700}
+.payroll-scope .net{display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;padding:16px 18px;background:var(--primary-light);border-radius:var(--r-md,14px)}
+.payroll-scope .net .k{font-weight:700;color:var(--primary);font-size:var(--text-card-title,15px)}
+.payroll-scope .net .v{font-family:var(--font-mono,monospace);font-size:30px;font-weight:800;color:var(--primary);letter-spacing:-.5px}
+.payroll-scope .cost-panel{background:var(--bg-app);border-radius:var(--r-md,14px);padding:18px}
+.payroll-scope .cost-panel .cp-title{font-size:var(--text-card-title,15px);font-weight:700;color:var(--ink);margin-bottom:4px}
+.payroll-scope .cost-panel .cp-sub{font-size:var(--text-micro,11px);color:var(--ink-muted);margin-bottom:14px}
+.payroll-scope .cost-panel .cp-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;font-size:var(--text-caption,13px);color:var(--ink-sec)}
+.payroll-scope .cost-panel .cp-row .v{font-family:var(--font-mono,monospace);color:var(--ink)}
+.payroll-scope .cost-panel .cp-grand{margin-top:12px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:baseline}
+.payroll-scope .cost-panel .cp-grand .k{font-weight:700;color:var(--ink)}
+.payroll-scope .cost-panel .cp-grand .v{font-family:var(--font-mono,monospace);font-size:22px;font-weight:800;color:var(--gold);letter-spacing:-.4px}
+.payroll-scope .flag-banner{background:var(--rose-bg);color:var(--rose);font-size:var(--text-caption,13px);font-weight:600;padding:10px 14px;border-radius:var(--r-sm,10px);margin-bottom:14px}
+.payroll-scope .warn-banner{background:var(--gold-bg);color:var(--gold);font-size:var(--text-caption,13px);font-weight:600;padding:10px 14px;border-radius:var(--r-sm,10px);margin-bottom:14px;line-height:1.5}
+.payroll-scope .tap-hint{font-size:var(--text-micro,11px);color:var(--ink-dim);margin-top:10px;display:flex;align-items:center;gap:6px}
+.payroll-scope .tap-hint svg{width:13px;height:13px;stroke:var(--primary);fill:none;stroke-width:1.9;flex-shrink:0}
+.payroll-scope .drop{border:2px dashed var(--border-hover);border-radius:var(--r-md,14px);padding:34px;text-align:center;color:var(--ink-sec);cursor:pointer;background:var(--bg-app);transition:all .15s}
+.payroll-scope .drop:hover{border-color:var(--primary);color:var(--primary)}
+.payroll-scope .drop b{color:var(--primary)}
+.payroll-scope .drop .di{font-size:var(--text-caption,13px);color:var(--ink-muted);display:block;margin-top:6px}
+.payroll-scope .previewtbl{margin-top:16px;max-height:280px;overflow:auto;border:1px solid var(--border);border-radius:var(--r-sm,10px)}
+.payroll-scope .previewtbl table th{padding:8px 10px;font-size:var(--text-label,12px)}
+.payroll-scope .previewtbl table td{padding:7px 10px;font-size:var(--text-caption,13px)}
+.payroll-scope .previewtbl thead th{border-bottom:2px solid var(--primary)}
+.payroll-scope .pill{display:inline-block;background:var(--teal-bg);color:var(--teal);border-radius:100px;padding:3px 12px;font-size:var(--text-caption,13px);font-weight:600}
+.payroll-scope .emp-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 16px;flex-wrap:wrap}
+.payroll-scope .emp-toolbar .left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.payroll-scope .emp-search{position:relative;display:flex;align-items:center}
+.payroll-scope .emp-search svg{position:absolute;left:11px;width:16px;height:16px;stroke:var(--ink-dim);fill:none;stroke-width:1.8;pointer-events:none}
+.payroll-scope .emp-search input{height:38px;width:240px;max-width:60vw;padding:8px 12px 8px 34px;border:1px solid var(--border);border-radius:var(--r-md,14px);font-size:var(--text-body,14px);background:var(--bg-card);color:var(--ink);outline:none;font-family:var(--font-sans,sans-serif);transition:border-color .15s}
+.payroll-scope .emp-search input:focus{border-color:var(--primary);box-shadow:var(--shadow-glow,0 0 0 3px rgba(124,92,252,.18))}
+.payroll-scope .emp-count{font-size:var(--text-caption,13px);color:var(--ink-muted);white-space:nowrap}
+.payroll-scope .emp-count b{color:var(--ink-sec);font-weight:600}
+.payroll-scope .emp-count .on{color:var(--teal);font-weight:600}.payroll-scope .emp-count .off{color:var(--ink-dim);font-weight:600}
+.payroll-scope .emp-table th.c,.payroll-scope .emp-table td.c{text-align:center}
+.payroll-scope .emp-table tbody td{padding:11px 14px}
+.payroll-scope .emp-table tbody tr{cursor:pointer;transition:background .12s}
+.payroll-scope .emp-table tbody tr:hover{background:rgba(124,92,252,.08)}
+.payroll-scope .emp-table tbody tr:nth-child(even){background:#FAFAFC}
+.payroll-scope .emp-table tbody tr:nth-child(even):hover{background:rgba(124,92,252,.08)}
+.payroll-scope .emp-table tbody tr:last-child td{border-bottom:1px solid var(--border)}
+.payroll-scope .emp-id{display:flex;align-items:center;gap:11px}
+.payroll-scope .emp-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;font-family:var(--font-sans,sans-serif)}
+.payroll-scope .emp-id-txt{min-width:0}
+.payroll-scope .emp-id-name{display:flex;align-items:center;gap:8px}
+.payroll-scope .emp-id-name .nm{font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap}
+.payroll-scope .emp-id-sub{font-size:var(--text-label,12px);color:var(--ink-muted);margin-top:2px}
+.payroll-scope .chip{display:inline-flex;align-items:center;gap:4px;font-size:var(--text-micro,11px);font-weight:600;border-radius:100px;padding:2px 9px;white-space:nowrap}
+.payroll-scope .chip.on{color:var(--teal);background:var(--teal-bg)}
+.payroll-scope .chip.off{color:var(--ink-dim);background:var(--bg-hover)}
+.payroll-scope .chip .d{width:5px;height:5px;border-radius:50%;background:currentColor}
+.payroll-scope .emp-table .strong{font-weight:700;color:var(--ink)}
+.payroll-scope .emp-acts{display:flex;gap:6px;justify-content:flex-end}
+.payroll-scope .icon-btn{width:32px;height:32px;border-radius:var(--r-sm,10px);border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-sec);transition:all .15s}
+.payroll-scope .icon-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+.payroll-scope .icon-btn:hover{border-color:var(--primary);color:var(--primary)}
+.payroll-scope .icon-btn.danger:hover{border-color:var(--rose);color:var(--rose)}
+.payroll-scope .emp-none{text-align:center;padding:40px 16px;color:var(--ink-muted);font-size:var(--text-body,14px)}
+.payroll-scope .emp-form{padding:20px 24px 6px}
+.payroll-scope .form-sec{margin-bottom:18px}
+.payroll-scope .form-sec:last-child{margin-bottom:0}
+.payroll-scope .form-sec-lab{display:flex;align-items:center;gap:7px;font-size:var(--text-label,12px);font-weight:700;color:var(--ink-muted);letter-spacing:.6px;padding-bottom:9px;margin-bottom:13px;border-bottom:1px solid var(--border)}
+.payroll-scope .form-sec-lab svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.9}
+.payroll-scope .form-sec-lab .note{margin-left:auto;font-size:var(--text-micro,11px);font-weight:500;color:var(--ink-dim);letter-spacing:0}
+.payroll-scope .form-sec.secret .form-sec-lab{color:var(--gold)}
+.payroll-scope .form-sec.secret .form-sec-lab svg{stroke:var(--gold)}
+.payroll-scope .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
+@media(max-width:560px){.payroll-scope .form-grid{grid-template-columns:1fr}}
+.payroll-scope .ff{display:flex;flex-direction:column;gap:6px;min-width:0}
+.payroll-scope .ff.full{grid-column:1 / -1}
+.payroll-scope .ff label{font-size:var(--text-label,12px);font-weight:600;color:var(--ink-sec)}
+.payroll-scope .ff label .opt{color:var(--ink-dim);font-weight:400;margin-left:4px}
+.payroll-scope .ff input,.payroll-scope .ff select{height:40px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r-sm,10px);font-size:var(--text-body,14px);background:var(--bg-input,#fff);color:var(--ink);outline:none;font-family:var(--font-sans,sans-serif);transition:border-color .15s;width:100%}
+.payroll-scope .ff select{cursor:pointer}
+.payroll-scope .ff input.num{font-family:var(--font-mono,monospace);text-align:right}
+.payroll-scope .ff input:focus,.payroll-scope .ff select:focus{border-color:var(--primary);box-shadow:var(--shadow-glow,0 0 0 3px rgba(124,92,252,.18))}
+.payroll-scope .ff .fhint{font-size:var(--text-micro,11px);color:var(--ink-dim)}
+.payroll-scope .emp-form-err{color:var(--rose);font-size:var(--text-caption,13px);font-weight:600;padding:0 24px;margin-top:2px;min-height:18px}
+.payroll-scope .seg{display:inline-flex;background:var(--bg-hover);border-radius:var(--r-sm,10px);padding:3px;gap:2px}
+.payroll-scope .seg button{border:none;background:transparent;cursor:pointer;font-family:var(--font-sans,sans-serif);font-size:var(--text-caption,13px);font-weight:600;color:var(--ink-muted);padding:6px 13px;border-radius:8px;transition:all .15s;white-space:nowrap;line-height:1}
+.payroll-scope .seg button:hover{color:var(--ink-sec)}
+.payroll-scope .seg button.on{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm)}
+.payroll-scope .seg.sm button{padding:5px 11px;font-size:var(--text-label,12px)}
+.payroll-scope .secret-note{display:flex;align-items:center;gap:8px;background:var(--gold-bg);color:var(--gold);font-size:var(--text-micro,11px);font-weight:600;padding:9px 13px;border-radius:var(--r-sm,10px);margin-top:4px;line-height:1.5}
+.payroll-scope .secret-note svg{width:14px;height:14px;stroke:var(--gold);fill:none;stroke-width:2;flex-shrink:0}
+.payroll-scope .params-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;align-items:stretch}
+@media(max-width:900px){.payroll-scope .params-grid{grid-template-columns:1fr}}
+.payroll-scope .panel{background:var(--bg-card);border:none;box-shadow:var(--shadow-card);border-radius:var(--r-xl,24px);padding:24px;display:flex;flex-direction:column}
+.payroll-scope .panel h2{font-size:var(--text-section-title,17px);font-weight:700;color:var(--ink);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.payroll-scope .panel h2 svg{width:17px;height:17px;color:var(--primary);stroke:var(--primary);fill:none;stroke-width:1.8}
+.payroll-scope .panel .desc{color:var(--ink-muted);font-size:var(--text-caption,13px);margin-bottom:14px;line-height:1.6}
+.payroll-scope .pgroup{margin-top:14px}
+.payroll-scope .pgroup:first-of-type{margin-top:0}
+.payroll-scope .pgroup-lab{font-size:var(--text-label,12px);font-weight:700;color:var(--ink-muted);letter-spacing:.5px;padding-bottom:7px;margin-bottom:2px;border-bottom:1px solid var(--border)}
+.payroll-scope .fld{display:grid;grid-template-columns:1fr 92px 30px;align-items:center;column-gap:10px;min-height:44px;padding:0 2px;border-bottom:1px dashed var(--border)}
+.payroll-scope .fld:last-child{border-bottom:none}
+.payroll-scope .fld label{font-size:var(--text-body,14px);color:var(--ink-sec);line-height:1.35}
+.payroll-scope .pr-input{padding:7px 10px;height:34px;width:100%;border:1px solid var(--border);border-radius:var(--r-sm,10px);font-size:var(--text-body,14px);background:var(--bg-input,#fff);color:var(--ink);outline:none;font-family:var(--font-mono,monospace);text-align:right;transition:border-color .15s}
+.payroll-scope .pr-input:focus{border-color:var(--primary);box-shadow:var(--shadow-glow,0 0 0 3px rgba(124,92,252,.18))}
+.payroll-scope .fld-suffix{font-size:var(--text-caption,13px);color:var(--ink-muted);font-weight:500;text-align:left}
+.payroll-scope .fld.toggle .seg{grid-column:2 / 4;justify-self:end}
+.payroll-scope .pr-input[type=number]::-webkit-outer-spin-button,.payroll-scope .pr-input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.payroll-scope .pr-input[type=number]{-moz-appearance:textfield}
+.payroll-scope .empty{text-align:center;padding:64px 24px;color:var(--ink-muted)}
+.payroll-scope .empty .ic{width:56px;height:56px;border-radius:16px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.payroll-scope .empty .ic svg{width:26px;height:26px;stroke:var(--primary);fill:none;stroke-width:1.6}
+.payroll-scope .empty h3{font-size:var(--text-section-title,17px);font-weight:700;color:var(--ink);margin-bottom:6px}
+.payroll-scope .empty p{font-size:var(--text-body,14px);margin-bottom:20px}
+.payroll-scope .empty .acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.payroll-scope .menu-pop{position:absolute;top:calc(100% + 6px);right:0;background:#fff;border:1px solid var(--border);border-radius:var(--r-md,14px);box-shadow:var(--shadow-xl);padding:6px;min-width:220px;z-index:60;display:none}
+.payroll-scope .menu-pop.open{display:block}
+.payroll-scope .menu-pop .mi{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm,10px);cursor:pointer;font-size:var(--text-body,14px);color:var(--ink)}
+.payroll-scope .menu-pop .mi:hover{background:var(--bg-hover)}
+.payroll-scope .menu-pop .mi svg{width:16px;height:16px;color:var(--primary);stroke:var(--primary);fill:none;stroke-width:1.8}
+.payroll-scope .menu-pop .mi small{display:block;font-size:var(--text-micro,11px);color:var(--ink-muted)}
+.payroll-scope .pos-rel{position:relative}
+.payroll-scope .gate-block{max-width:520px;margin:80px auto;text-align:center;background:var(--bg-card);border-radius:var(--r-xl,24px);box-shadow:var(--shadow-card);padding:48px 36px}
+.payroll-scope .gate-block .gic{width:64px;height:64px;border-radius:18px;background:var(--gold-bg);color:var(--gold);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.payroll-scope .gate-block .gic svg{width:30px;height:30px;stroke:var(--gold);fill:none;stroke-width:1.8}
+.payroll-scope .gate-block h2{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.payroll-scope .gate-block p{font-size:var(--text-body,14px);color:var(--ink-muted);line-height:1.7}
+.payroll-scope .stage-note{display:flex;align-items:flex-start;gap:10px;background:var(--primary-light);border-radius:var(--r-md,14px);padding:12px 16px;margin-bottom:18px;font-size:var(--text-caption,13px);color:var(--ink-sec);line-height:1.6}
+.payroll-scope .stage-note svg{width:18px;height:18px;stroke:var(--primary);fill:none;stroke-width:1.9;flex-shrink:0;margin-top:1px}
+.payroll-toast{position:fixed;bottom:24px;right:24px;background:var(--ink,#111122);color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;opacity:0;transform:translateY(10px);transition:all .25s;z-index:100000;box-shadow:0 12px 40px rgba(0,0,0,.18);max-width:380px}
+.payroll-toast.show{opacity:1;transform:translateY(0)}
+</style>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════
+   薪資模組 · IIFE · 對外只暴露 window.renderPayroll
+   計算引擎與 prototype-bp 1:1（calcRow/proration/二代健保/異常紅旗 完全照搬、未改數字）
+   ════════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+
+  /* ── 2026（民國 115）法定參數 · 與年度維護參數表.md 一致 ── */
+  var DEFAULT_PARAMS = {
+    minWageMonth:29500, minWageHour:196,
+    laborRate:0.125, laborEmp:0.20, laborEr:0.70,
+    healthRate:0.0517, healthEmp:0.30, healthEr:0.60, healthErDeps:1.56, depCap:3,
+    pensionEr:0.06,
+    suppRate:0.0211, suppBonusMult:4,
+    hourDiv1:30, hourDiv2:8,
+    otRate:1.34,
+    sickPct:0.50, personalPct:1.00,
+    rounding:'floor', taxWithhold:false
+  };
+  var LABOR_GRADES=[29500,31800,33300,34800,36300,38200,40100,42000,43900,45800];
+  var ANOMALY_THRESHOLD=0.30;
+
+  /* ── 模組內部狀態（每次 renderPayroll 重建 UI、狀態續用） ── */
+  var PARAMS = JSON.parse(JSON.stringify(DEFAULT_PARAMS));
+  var EMP = [];          // 員工陣列（一人一物件；庫裡一人一 doc）
+  var M = {};            // 月度異動：key=`${YYYYMM}_${empId}`
+  var touched = {};
+  var curYear=2026, curMonth=6;
+  var empFilter='';
+  var editingEmpId=null, insMode='auto';
+  var pendingRows=null;
+  var _loaded=false;     // 是否已從資料層載入
+  var _wsId=null;        // 當前 workspace id
+  var _canSeePayroll=false;
+  // 免費路線：身分證/帳號改存 Firestore 一般明文欄位（權限鎖 + Google 靜態加密保護），不再用加解密 Cloud Function；以下旗標保留為歷史相容、現無任何路徑讀取
+  var _piiBackendReady = false;
+
+  /* ── 共用小工具（與雛形一致） ── */
+  function gradeFor(salary){ for(var i=0;i<LABOR_GRADES.length;i++){ if(salary<=LABOR_GRADES[i]) return LABOR_GRADES[i]; } return LABOR_GRADES[LABOR_GRADES.length-1]; }
+  function floor(n){ return Math.floor(n); }
+  function fmt(n){ return (n<0?'-':'')+Math.abs(Math.round(n)).toLocaleString('en-US'); }
+  function num(v){ if(v===''||v==null) return 0; return parseFloat(String(v).replace(/[,\s]/g,''))||0; }
+  function daysInMonth(y,m){ return new Date(y,m,0).getDate(); }
+  function parseDate(s){ if(!s) return null; var p=String(s).trim().replace(/\//g,'-').split('-').map(function(x){return parseInt(x,10);}); if(!p[0]||!p[1]) return null; return {y:p[0],m:p[1],d:p[2]||null}; }
+  function mKey(id){ return curYear+String(curMonth).padStart(2,'0')+'_'+id; }
+  function getM(id){ var k=mKey(id); if(!M[k]) M[k]={ot:0,sick:0,personal:0,bonus:0}; return M[k]; }
+  function tKey(id){ return mKey(id); }
+  function monthLabel(){ return curYear+' 年 '+curMonth+' 月'; }
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  /* ── PII 遮罩（顯示用；完整值由 Cloud Function 即時取，不長存前端） ── */
+  function maskId(v){ if(!v) return ''; v=String(v); if(v.length<=4) return '****'; return v.slice(0,3)+'****'+v.slice(-3); }
+  function maskAcct(v){ if(!v) return ''; v=String(v); if(v.length<=4) return '****'; return '****'+v.slice(-4); }
+
+  function proration(e){
+    var total=daysInMonth(curYear,curMonth);
+    var hire=parseDate(e.hire), left=parseDate(e.leave);
+    var startDay=1,endDay=total,partial=false;
+    if(hire && hire.y===curYear && hire.m===curMonth){ startDay=hire.d||1; if(startDay>1) partial=true; }
+    if(left && left.y===curYear && left.m===curMonth){ endDay=left.d||total; if(endDay<total) partial=true; }
+    var workDays=Math.max(0,endDay-startDay+1);
+    return {workDays:workDays,total:total,ratio:workDays/total,partial:partial,startDay:startDay,endDay:endDay};
+  }
+  function activeThisMonth(e){
+    var ym=curYear*12+curMonth;
+    var hire=parseDate(e.hire), left=parseDate(e.leave);
+    if(hire && (hire.y*12+hire.m)>ym) return false;
+    if(left && (left.y*12+left.m)<ym) return false;
+    return true;
+  }
+  function cumBonusBefore(id){
+    var sum=0;
+    for(var mo=1;mo<curMonth;mo++){ var k=curYear+String(mo).padStart(2,'0')+'_'+id; if(M[k]&&M[k].bonus) sum+=(+M[k].bonus||0); }
+    return sum;
+  }
+  function netForMonthExplicit(e,y,mo){
+    var ym=y*12+mo; var hire=parseDate(e.hire), left=parseDate(e.leave);
+    if(hire && (hire.y*12+hire.m)>ym) return null;
+    if(left && (left.y*12+left.m)<ym) return null;
+    var k=y+String(mo).padStart(2,'0')+'_'+e.id; var mm=M[k]||{ot:0,sick:0,personal:0,bonus:0};
+    var total=daysInMonth(y,mo); var startDay=1,endDay=total,partial=false;
+    if(hire && hire.y===y && hire.m===mo){ startDay=hire.d||1; if(startDay>1) partial=true; }
+    if(left && left.y===y && left.m===mo){ endDay=left.d||total; if(endDay<total) partial=true; }
+    var workDays=Math.max(0,endDay-startDay+1);
+    var base=partial?floor(e.base*workDays/total):e.base;
+    var hourly=floor(e.base/PARAMS.hourDiv1/PARAMS.hourDiv2);
+    var otPay=floor(hourly*PARAMS.otRate*(mm.ot||0));
+    var sickDed=floor(hourly*PARAMS.sickPct*(mm.sick||0));
+    var persDed=floor(hourly*PARAMS.personalPct*(mm.personal||0));
+    var bonus=mm.bonus||0; var gross=base+otPay+bonus;
+    var labor=floor(e.laborIns*PARAMS.laborRate*PARAMS.laborEmp);
+    var depCnt=Math.min(e.deps||0,PARAMS.depCap);
+    var health=floor(e.healthIns*PARAMS.healthRate*PARAMS.healthEmp*(1+depCnt));
+    var pensionSelf=floor(e.pension*(e.voluntary/100||0));
+    var cumBefore=0; for(var pm=1;pm<mo;pm++){ var pk=y+String(pm).padStart(2,'0')+'_'+e.id; if(M[pk]&&M[pk].bonus) cumBefore+=(+M[pk].bonus||0); }
+    var threshold=e.healthIns*PARAMS.suppBonusMult;
+    var taxable=Math.max(0,(cumBefore+bonus)-Math.max(threshold,cumBefore));
+    var supp=floor(taxable*PARAMS.suppRate);
+    var ded=labor+health+pensionSelf+supp;
+    return gross-(sickDed+persDed)-ded;
+  }
+
+  /* ── 計算單列（與雛形 calcRow 完全一致） ── */
+  function calcRow(e){
+    var m=getM(e.id); var pr=proration(e);
+    var base=pr.partial?floor(e.base*pr.workDays/pr.total):e.base;
+    var hourly=floor(e.base/PARAMS.hourDiv1/PARAMS.hourDiv2);
+    var otPay=floor(hourly*PARAMS.otRate*(m.ot||0));
+    var sickDed=floor(hourly*PARAMS.sickPct*(m.sick||0));
+    var persDed=floor(hourly*PARAMS.personalPct*(m.personal||0));
+    var bonus=m.bonus||0; var gross=base+otPay+bonus;
+    var labor=floor(e.laborIns*PARAMS.laborRate*PARAMS.laborEmp);
+    var depCnt=Math.min(e.deps||0,PARAMS.depCap);
+    var health=floor(e.healthIns*PARAMS.healthRate*PARAMS.healthEmp*(1+depCnt));
+    var pensionSelf=floor(e.pension*(e.voluntary/100||0));
+    var suppThreshold=e.healthIns*PARAMS.suppBonusMult;
+    var suppCumBefore=cumBonusBefore(e.id);
+    var suppCumAfter=suppCumBefore+bonus;
+    var suppTaxableThisMonth=Math.max(0,suppCumAfter-Math.max(suppThreshold,suppCumBefore));
+    var supp=floor(suppTaxableThisMonth*PARAMS.suppRate);
+    var tax=0; var leave=sickDed+persDed; var ded=labor+health+pensionSelf+supp+tax;
+    var net=gross-leave-ded;
+    var erLabor=floor(e.laborIns*PARAMS.laborRate*PARAMS.laborEr);
+    var erHealth=floor(e.healthIns*PARAMS.healthRate*PARAMS.healthEr*PARAMS.healthErDeps);
+    var erPension=floor(e.pension*PARAMS.pensionEr);
+    var cost=base+otPay+bonus+erLabor+erHealth+erPension;
+    var prevY=curMonth>1?curYear:curYear-1; var prevM=curMonth>1?curMonth-1:12;
+    var prevNet=netForMonthExplicit(e,prevY,prevM); var anomaly=null;
+    if(prevNet!=null && prevNet>0){ var delta=(net-prevNet)/prevNet; if(Math.abs(delta)>=ANOMALY_THRESHOLD) anomaly={delta:delta,prevNet:prevNet,pct:Math.round(delta*100)}; }
+    var flags=[]; if(e.laborIns<PARAMS.minWageMonth) flags.push('投保低於基本工資'); if(net<0) flags.push('實發為負');
+    var status='ok'; if(flags.length) status='bad'; else if(anomaly) status='warn'; else if(pr.partial||(m.ot||m.sick||m.personal||m.bonus)) status='warn';
+    return {base:base,hourly:hourly,otPay:otPay,sickDed:sickDed,persDed:persDed,bonus:bonus,gross:gross,labor:labor,health:health,depCnt:depCnt,pensionSelf:pensionSelf,supp:supp,suppThreshold:suppThreshold,suppCumBefore:suppCumBefore,suppCumAfter:suppCumAfter,suppTaxableThisMonth:suppTaxableThisMonth,tax:tax,leave:leave,ded:ded,net:net,erLabor:erLabor,erHealth:erHealth,erPension:erPension,cost:cost,flags:flags,status:status,anomaly:anomaly,pr:pr};
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     資料層 · Firestore workspace 隔離（取代 localStorage）
+     · 員工：workspaces/{wsId}/payroll_employees/{employeeId}
+     · 月薪資單：workspaces/{wsId}/payroll_payslips/{YYYYMM}/items/{employeeId}（lock 用，這版主存 runs meta）
+     · 年度參數：workspaces/{wsId}/payroll_meta/yearParams
+     · 月度異動：workspaces/{wsId}/payroll_runs/{YYYYMM}（整月一 doc，非敏感）
+     · 身分證/帳號（免費路線）：庫裡存明文欄位 idNumber/bankCode/bankAccount + 對應遮罩
+       靠 payroll_employees 權限鎖（owner/payrollAccessEmails 才讀）+ Google 靜態加密保護，不走加解密後端
+     · 不重用會雙寫 users/{uid}/ 的 _syncToFirestore（Gate5 G7）
+     ════════════════════════════════════════════════════════════════════ */
+  function _db(){ try{ if(typeof firebase!=='undefined' && firebase.firestore) return firebase.firestore(); }catch(e){} return null; }
+  function _ws(){ try{ return window._currentWorkspaceId || null; }catch(e){ return null; } }
+  function _me(){ try{ return (window.state && window.state.user && window.state.user.email) || (firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.email) || null; }catch(e){ return null; } }
+  function _uid(){ try{ return (window.state && window.state.user && window.state.user.uid) || (firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) || null; }catch(e){ return null; } }
+  function _ts(){ try{ return firebase.firestore.FieldValue.serverTimestamp(); }catch(e){ return new Date().toISOString(); } }
+
+  /* 角色閘：owner 一律可；或 email 在 payrollAccessEmails（與 firestore.rules isPayrollRole 對齊）。
+     離線 / 無 Firestore（本機 dev、未登入）→ 視為單機試用、放行（資料只在記憶體 + 非敏感 localStorage）。 */
+  function resolveAccess(cb){
+    var db=_db(), ws=_ws(), me=_me();
+    if(!db || !ws){ _canSeePayroll=true; _wsId=null; cb(true,'local'); return; }   // 本機/離線：階段 A 試用
+    _wsId=ws;
+    db.collection('workspaces').doc(ws).get().then(function(snap){
+      var d=(snap && snap.exists)?(snap.data()||{}):{};
+      var owner=d.owner||null;
+      var list=Array.isArray(d.payrollAccessEmails)?d.payrollAccessEmails:[];
+      var ok=(owner && me && owner===me) || (me && list.indexOf(me)>=0) || (!owner); // 無 owner 欄位（舊 workspace）→ 放行，rules 仍會擋直連
+      _canSeePayroll=ok; cb(ok,'cloud');
+    }).catch(function(){ _canSeePayroll=true; cb(true,'local'); });   // 讀不到 workspace doc → 退本機試用，不卡死
+  }
+
+  /* localStorage 後援（僅非敏感資料、僅離線/本機 dev；雲端就緒時不寫敏感） */
+  var LS={ params:'bp_payroll_params', runs:'bp_payroll_runs', emp:'bp_payroll_emp_local' };
+  function persistLocal(){
+    try{
+      localStorage.setItem(LS.params, JSON.stringify(PARAMS));
+      localStorage.setItem(LS.runs, JSON.stringify(M));
+      // ⚠ 本機 dev 後援會存員工（含敏感）到 localStorage —— 僅階段 A 本機試用。
+      //   雲端模式（_wsId 有值）一律不走這條，敏感欄位永不落 localStorage。
+      if(!_wsId) localStorage.setItem(LS.emp, JSON.stringify(EMP));
+    }catch(e){ console.warn('[payroll] persistLocal 失敗', e); }
+  }
+  function loadLocal(){
+    try{
+      var p=localStorage.getItem(LS.params); if(p){ var o=JSON.parse(p); if(o&&typeof o==='object') Object.assign(PARAMS,o); }
+      var r=localStorage.getItem(LS.runs); if(r){ var m=JSON.parse(r); if(m&&typeof m==='object') M=m; }
+      if(!_wsId){ var e=localStorage.getItem(LS.emp); if(e){ var arr=JSON.parse(e); if(Array.isArray(arr)) EMP=arr; } }
+    }catch(e){ console.warn('[payroll] loadLocal 失敗', e); }
+  }
+
+  /* 從 Firestore 載入員工 + 參數 + 本月異動 */
+  function loadFromCloud(cb){
+    var db=_db(), ws=_wsId;
+    if(!db || !ws){ loadLocal(); cb&&cb(); return; }
+    var base=db.collection('workspaces').doc(ws);
+    Promise.all([
+      base.collection('payroll_employees').get().catch(function(){return null;}),
+      base.collection('payroll_meta').doc('yearParams').get().catch(function(){return null;}),
+      base.collection('payroll_runs').doc(curYear+String(curMonth).padStart(2,'0')).get().catch(function(){return null;})
+    ]).then(function(res){
+      var empSnap=res[0], metaSnap=res[1], runSnap=res[2];
+      EMP=[];
+      if(empSnap && !empSnap.empty){ empSnap.forEach(function(doc){ var d=doc.data()||{}; EMP.push(_fromCloudEmp(doc.id,d)); }); }
+      if(metaSnap && metaSnap.exists){ var md=metaSnap.data()||{}; if(md.params && typeof md.params==='object') Object.assign(PARAMS,md.params); }
+      if(runSnap && runSnap.exists){ var rd=runSnap.data()||{}; if(rd.M && typeof rd.M==='object'){ /* 合併本月 */ Object.assign(M, rd.M); } }
+      cb&&cb();
+    }).catch(function(err){ console.warn('[payroll] loadFromCloud 失敗，退本機', err); loadLocal(); cb&&cb(); });
+  }
+  /* 庫裡 doc → 前端員工物件（免費路線：身分證/帳號為一般明文欄位，直接讀回前端供轉帳檔匯出用；遮罩同步還原給清單頁） */
+  function _fromCloudEmp(id,d){
+    return {
+      id:id, name:d.name||'', base:+d.base||0,
+      laborIns:+d.laborIns||0, healthIns:+d.healthIns||0, pension:+d.pension||0,
+      deps:+d.deps||0, voluntary:+d.voluntary||0, hire:d.hire||'', leave:d.leave||'', email:d.email||'',
+      // 身分證/帳號：明文（轉帳檔匯出 + 編輯頁回填用）+ 遮罩（清單頁顯示用）
+      natId:d.idNumber||'', bankCode:d.bankCode||'', bankAcct:d.bankAccount||'',
+      natIdMasked:d.idNumberMasked||'', bankCodeMasked:d.bankCodeMasked||'', bankAcctMasked:d.bankAccountMasked||'',
+      _hasSecret: !!(d.idNumber||d.bankAccount)
+    };
+  }
+
+  /* 寫一筆員工到 Firestore（免費路線：身分證/帳號當一般明文欄位存，靠 payroll_employees 權限鎖 + Google at-rest 加密保護；不再呼叫加解密 Cloud Function） */
+  function saveEmpCloud(emp, plainSecret, cb){
+    var db=_db(), ws=_wsId;
+    if(!db || !ws){ persistLocal(); cb&&cb(true); return; }   // 本機 dev：留記憶體 + 後援
+    var nonSensitive={
+      name:emp.name, base:emp.base, laborIns:emp.laborIns, healthIns:emp.healthIns,
+      pension:emp.pension, deps:emp.deps, voluntary:emp.voluntary, hire:emp.hire||'', leave:emp.leave||'', email:emp.email||'',
+      updatedBy:_uid(), updatedAt:_ts()
+    };
+    var docRef = (emp.id && String(emp.id).length>6)
+      ? db.collection('workspaces').doc(ws).collection('payroll_employees').doc(String(emp.id))
+      : db.collection('workspaces').doc(ws).collection('payroll_employees').doc();
+    emp.id = docRef.id;
+    // 身分證/帳號：有填才更新（明文 + 遮罩一起入庫）；留空＝不變更（merge:true 不動既有值）
+    //   明文直接存一般欄位 idNumber/bankCode/bankAccount —— 同 email，靠 Firestore 權限鎖（owner/payrollAccessEmails 才讀得到）+ Google 靜態加密保護，不走解密後端（免費方案可用）。
+    //   遮罩照存（清單頁遮罩顯示用），完整值僅編輯頁可見。
+    var hasPlain = plainSecret && (plainSecret.natId || plainSecret.bankAcct || plainSecret.bankCode);
+    if(hasPlain){
+      if(plainSecret.natId){ nonSensitive.idNumber = plainSecret.natId; nonSensitive.idNumberMasked = maskId(plainSecret.natId); }
+      if(plainSecret.bankCode){ nonSensitive.bankCode = plainSecret.bankCode; nonSensitive.bankCodeMasked = maskAcct(plainSecret.bankCode); }
+      if(plainSecret.bankAcct){ nonSensitive.bankAccount = plainSecret.bankAcct; nonSensitive.bankAccountMasked = maskAcct(plainSecret.bankAcct); }
+    }
+    docRef.set(nonSensitive,{merge:true}).then(function(){ _writeAudit('emp.save', emp.id); cb&&cb(true); })
+      .catch(function(err){ console.warn('[payroll] saveEmp 寫入失敗', err); cb&&cb(false,err); });
+  }
+  function deleteEmpCloud(id, cb){
+    var db=_db(), ws=_wsId;
+    if(!db || !ws){ persistLocal(); cb&&cb(true); return; }
+    db.collection('workspaces').doc(ws).collection('payroll_employees').doc(String(id)).delete()
+      .then(function(){ _writeAudit('emp.delete', id); cb&&cb(true); })
+      .catch(function(err){ console.warn('[payroll] deleteEmp 失敗', err); cb&&cb(false,err); });
+  }
+  /* 月度異動：整月一 doc（非敏感，可整包） */
+  function saveRunCloud(){
+    var db=_db(), ws=_wsId;
+    if(!db || !ws){ persistLocal(); return; }
+    var ym=curYear+String(curMonth).padStart(2,'0');
+    var monthM={}; Object.keys(M).forEach(function(k){ if(k.indexOf(ym+'_')===0) monthM[k]=M[k]; });
+    db.collection('workspaces').doc(ws).collection('payroll_runs').doc(ym)
+      .set({M:monthM, updatedBy:_uid(), updatedAt:_ts()},{merge:true})
+      .catch(function(err){ console.warn('[payroll] saveRun 失敗', err); });
+  }
+  function saveParamsCloud(){
+    var db=_db(), ws=_wsId;
+    if(!db || !ws){ persistLocal(); return; }
+    db.collection('workspaces').doc(ws).collection('payroll_meta').doc('yearParams')
+      .set({year:curYear, params:PARAMS, updatedBy:_uid(), updatedAt:_ts()},{merge:true})
+      .catch(function(err){ console.warn('[payroll] saveParams 失敗', err); });
+  }
+  function _writeAudit(action, target){
+    var db=_db(), ws=_wsId; if(!db || !ws) return;
+    try{
+      db.collection('workspaces').doc(ws).collection('payroll_audit').add({
+        actor:_me()||_uid()||'unknown', action:action, target:String(target||''), at:_ts()
+      }).catch(function(){});
+    }catch(e){}
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
+     UI 渲染
+     ════════════════════════════════════════════════════════════════════ */
+  function content(){ return document.getElementById('content'); }
+  function toast(t){
+    var el=document.getElementById('payrollToast');
+    if(!el){ el=document.createElement('div'); el.id='payrollToast'; el.className='payroll-toast'; document.body.appendChild(el); }
+    el.textContent=t; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove('show'); },2600);
+  }
+
+  function shellHtml(mode){
+    var stage = (mode==='local')
+      ? '<div class="stage-note"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><div><b>本機預覽模式</b>（階段 A）：未連雲端工作區，資料僅存於此瀏覽器、不外流，適合試用完整功能。連線並由擁有者授權後，將改存公司隔離雲端。</div></div>'
+      : '';
+    return ''+
+    '<div class="pr-head">'+
+      '<div class="pr-title">'+
+        '<h1><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M9 11h2M13 11h2M9 15h2M13 15h2"/></svg><span>薪資計算</span></h1>'+
+        '<div class="subtitle">全公司一張表 · 自動帶上月 · 只改這個月變動 · <span class="nocr">本機計算 · 不耗 credits</span></div>'+
+      '</div>'+
+      '<div class="pr-actions" id="prActions">'+
+        '<div class="month"><button id="prMPrev" aria-label="上個月">‹</button><span class="lbl" id="prMLabel">'+monthLabel()+'</span><button id="prMNext" aria-label="下個月">›</button></div>'+
+        '<button class="pr-btn ghost" id="prBtnImport"><svg viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4M5 21h14"/></svg> 匯入員工</button>'+
+        '<button class="pr-btn" id="prBtnCalc"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h2M13 11h2M9 15h2"/></svg> 試算全部</button>'+
+        '<div class="pos-rel"><button class="pr-btn accent" id="prBtnOutput"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M5 21h14"/></svg> 產出 ▾</button>'+
+          '<div class="menu-pop" id="prOutputMenu">'+
+            '<div class="mi" data-out="payslip"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><div>員工薪資條<small>三段式明細</small></div></div>'+
+            '<div class="mi" data-out="bank"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg><div>銀行轉帳檔<small>匯出 Excel · 含實際帳號</small></div></div>'+
+            '<div class="mi" data-out="cost"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 16v-6M12 16V8M16 16v-9"/></svg><div>公司成本總表<small>公司實際人事成本（法定雇主負擔）</small></div></div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    stage+
+    '<div class="tabs">'+
+      '<div class="tab active" data-tab="board"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>薪資表</div>'+
+      '<div class="tab" data-tab="employees"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>員工資料</div>'+
+      '<div class="tab" data-tab="params"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.1-1l2-1.5-2-3.4-2.3 1a7 7 0 00-1.7-1l-.3-2.6h-4l-.3 2.6a7 7 0 00-1.7 1l-2.3-1-2 3.4 2 1.5a7 7 0 000 2l-2 1.5 2 3.4 2.3-1a7 7 0 001.7 1l.3 2.6h4l.3-2.6a7 7 0 001.7-1l2.3 1 2-3.4-2-1.5a7 7 0 00.1-1z"/></svg>年度參數</div>'+
+    '</div>'+
+    '<div class="view active" id="prView-board">'+
+      '<div class="enroll-banner" id="prEnrollBanner"><div class="eb-ic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="eb-body"><div class="eb-title" id="prEnrollTitle"></div><div id="prEnrollDetail"></div><div class="eb-names" id="prEnrollNames"></div></div></div>'+
+      '<div class="biz-stats-row">'+
+        '<div class="biz-stat"><div class="biz-stat-icon ic-gross"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M12 2v20M16 6c0-2-1.8-3.5-4-3.5S8 4 8 6s1.8 3.2 4 3.2 4 1.5 4 3.5-1.8 3.5-4 3.5-4-1.5-4-3.5"/></svg></div><div class="biz-stat-info"><div class="biz-stat-label">應發合計</div><div class="biz-stat-val"><span class="u">NT$</span><span id="prKGross">0</span></div></div></div>'+
+        '<div class="biz-stat"><div class="biz-stat-icon ic-ded"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14"/></svg></div><div class="biz-stat-info"><div class="biz-stat-label">代扣合計（勞健退・補充保費）</div><div class="biz-stat-val"><span class="u">NT$</span><span id="prKDed">0</span></div></div></div>'+
+        '<div class="biz-stat"><div class="biz-stat-icon ic-net"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 13l4 4L19 7"/></svg></div><div class="biz-stat-info"><div class="biz-stat-label">實發合計</div><div class="biz-stat-val"><span class="u">NT$</span><span id="prKNet">0</span></div></div></div>'+
+        '<div class="biz-stat"><div class="biz-stat-icon ic-cost"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M4 19V5M4 19h16M8 16v-6M12 16V9M16 16v-9"/></svg></div><div class="biz-stat-info"><div class="biz-stat-label">公司總成本</div><div class="biz-stat-val"><span class="u">NT$</span><span id="prKCost">0</span></div><div class="biz-stat-sub">含雇主勞健退負擔</div></div></div>'+
+      '</div>'+
+      '<div class="pr-card"><div class="tablewrap"><table id="prTable"><thead><tr>'+
+        '<th class="l">員工</th><th title="月底薪（到職/離職當月按在職天數比例）">底薪</th>'+
+        '<th title="加班時數（平日前 2 小時倍率 1.34）">加班(時)</th><th title="病假時數（扣半薪 50%）">病假(時)</th>'+
+        '<th title="事假時數（扣全薪 100%）">事假(時)</th><th title="獎金 / 一次性津貼">獎金</th>'+
+        '<th title="勞工保險自付額">勞保</th><th title="全民健康保險自付額">健保</th>'+
+        '<th title="代扣合計">代扣</th><th title="實發金額">實發</th>'+
+      '</tr></thead><tbody id="prBody"></tbody><tfoot><tr>'+
+        '<td class="l">合計</td><td colspan="5" class="note">只需填「加班・病假・事假・獎金」四欄，其餘自動帶入＋自動計算</td>'+
+        '<td id="prFLabor">0</td><td id="prFHealth">0</td><td id="prFDed">0</td><td id="prFNet">0</td>'+
+      '</tr></tfoot></table></div></div>'+
+      '<p class="hint"><span class="lg"><span class="dot ok"></span>正常</span>　<span class="lg"><span class="dot warn"></span>本月有異動／月中到離職／較上月變動大（非錯誤）</span>　<span class="lg"><span class="dot bad"></span>需處理（投保低於基本工資／實發為負）</span>　·　點任一列看完整薪資明細。所有金額無條件捨去到元。</p>'+
+    '</div>'+
+    '<div class="view" id="prView-employees">'+
+      '<div class="emp-toolbar"><div class="left"><div class="emp-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="prEmpSearch" type="text" placeholder="搜尋姓名…" autocomplete="off"></div><div class="emp-count" id="prEmpCount"></div></div>'+
+        '<button class="pr-btn accent" id="prBtnAddEmp"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> 新增員工</button></div>'+
+      '<div class="pr-card"><div class="tablewrap"><table class="emp-table"><thead><tr><th class="l">員工</th><th class="c" title="健保眷屬人數">眷口</th><th class="c" title="勞退自願提繳比例">自提</th><th title="月底薪">底薪</th><th title="勞保投保薪資">投保</th><th style="text-align:right">操作</th></tr></thead><tbody id="prEmpBody"></tbody></table></div></div>'+
+      '<p class="hint" style="margin-top:14px">建檔一次、長期沿用，每月薪資表自動帶入。身分證 / 銀行帳號等機密資料<b>清單只顯示遮罩</b>，完整值僅於產轉帳檔當下由後端解密、不長存前端。離職填離職日，當月自動按在職天數比例結算。</p>'+
+    '</div>'+
+    '<div class="view" id="prView-params">'+
+      '<p class="hint" style="margin:0 0 18px"><b>每年只改這一張。</b>政府通常 12 月公告隔年新制，出納照這張更新即可，薪資公式永遠不用改。目前：<b>115 年度（2026）</b>，數據已交叉比對官方。</p>'+
+      '<div class="params-grid">'+
+        '<div class="panel"><h2><svg viewBox="0 0 24 24"><path d="M5 3h9l5 5v13H5z"/><path d="M14 3v5h5"/></svg>法定參數</h2><div class="desc">政府每年公告。2026（115 年）數值已填好、經官方來源核對。改這裡，全公司薪資自動套用。</div><div id="prLegalFlds"></div></div>'+
+        '<div class="panel"><h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>公司政策</h2><div class="desc">公司自訂。目前為 Edward 指定的預設值。</div><div id="prPolicyFlds"></div></div>'+
+      '</div>'+
+    '</div>'+
+    // ── 跳窗：明細 / 匯入 / 員工編輯 ──
+    '<div class="pr-overlay" id="prDetailOverlay"><div class="pr-modal"><div class="pr-modal-header"><div><div class="h-nm" id="prDNm">—</div><div class="h-mo" id="prDMo"></div></div><button class="pr-modal-close" id="prDetailClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="pr-2col"><div id="prDLeft"></div><div id="prDRight"></div></div></div></div></div>'+
+    '<div class="pr-overlay" id="prImportOverlay"><div class="pr-modal sm"><div class="pr-modal-header"><div class="h-nm">匯入員工名冊</div><button class="pr-modal-close" id="prImportClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="pr-modal-pad"><div class="drop" id="prDrop">把 Excel 拖進來，或<b>點此選擇檔案</b><span class="di">支援 .xlsx / .xls / .csv。第一列當作欄位名稱。</span><input type="file" id="prFileInput" accept=".xlsx,.xls,.csv" style="display:none" /></div><p class="hint">不確定格式？先 <a href="#" id="prDlTemplate" style="color:var(--primary)">下載範本</a>，填好再上傳。可辨識欄位：姓名、底薪、勞保投保薪資、健保投保金額、勞退提繳工資、眷口數、勞退自願提繳%、到職日、離職日、身分證字號、銀行代號、銀行帳號。<b>身分證 / 帳號只存遮罩 + 加密（後端），不以明文入庫。</b></p><div id="prPreviewArea"></div></div></div><div class="pr-modal-footer"><button class="pr-btn ghost" id="prImpCancel">取消</button><button class="pr-btn accent" id="prImpConfirm" disabled>確認匯入</button></div></div></div>'+
+    '<div class="pr-overlay" id="prEmpOverlay"><div class="pr-modal" style="width:680px"><div class="pr-modal-header"><div><div class="h-nm" id="prEmpModalTitle">新增員工</div><div class="h-mo">建檔一次、長期沿用</div></div><button class="pr-modal-close" id="prEmpClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="emp-form">'+
+      '<div class="form-sec"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>基本</div><div class="form-grid"><div class="ff full"><label>姓名</label><input id="pref_name" type="text" placeholder="員工姓名" autocomplete="off"></div><div class="ff full"><label>Email<span class="opt">（寄薪資條用）</span></label><input id="pref_email" type="email" placeholder="例 name@company.com" autocomplete="off" inputmode="email"></div><div class="ff"><label>到職日</label><input id="pref_hire" type="date"></div><div class="ff"><label>離職日<span class="opt">（在職留空）</span></label><input id="pref_leave" type="date"></div></div></div>'+
+      '<div class="form-sec"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><path d="M12 2v20M16 6c0-2-1.8-3.5-4-3.5S8 4 8 6s1.8 3.2 4 3.2 4 1.5 4 3.5-1.8 3.5-4 3.5-4-1.5-4-3.5"/></svg>薪資</div><div class="form-grid"><div class="ff"><label>底薪（月）</label><input id="pref_base" class="num" type="number" step="100" placeholder="例 45000" inputmode="numeric"></div><div class="ff"><label>勞退自願提繳 %</label><select id="pref_voluntary"><option value="0">0%</option><option value="1">1%</option><option value="2">2%</option><option value="3">3%</option><option value="4">4%</option><option value="5">5%</option><option value="6">6%</option></select></div></div></div>'+
+      '<div class="form-sec"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg>投保<span class="seg sm" id="prInsMode" style="margin-left:auto"><button type="button" data-ins="auto">自動依底薪</button><button type="button" data-ins="custom">自訂</button></span></div><div class="form-grid">'+
+        '<div class="ff"><label>勞保投保</label><select id="pref_laborIns_sel"></select><input id="pref_laborIns" class="num" type="number" step="100" placeholder="金額" inputmode="numeric" style="display:none"><span class="fhint" id="pref_laborIns_hint"></span></div>'+
+        '<div class="ff"><label>健保投保</label><select id="pref_healthIns_sel"></select><span class="fhint" id="pref_healthIns_hint"></span></div>'+
+        '<div class="ff"><label>勞退提繳工資</label><select id="pref_pension_sel"></select><span class="fhint" id="pref_pension_hint"></span></div>'+
+        '<div class="ff"><label>健保眷口數<span class="opt">（0–5）</span></label><select id="pref_deps"><option value="0">0 口</option><option value="1">1 口</option><option value="2">2 口</option><option value="3">3 口</option><option value="4">4 口</option><option value="5">5 口</option></select></div>'+
+      '</div></div>'+
+      '<div class="form-sec secret"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>機密資料<span class="note">加密存放 · 產轉帳檔用</span></div><div class="form-grid"><div class="ff full"><label>身分證字號</label><input id="pref_natId" type="text" placeholder="A123456789" autocomplete="off" maxlength="10" style="text-transform:uppercase"></div><div class="ff"><label>銀行代號</label><input id="pref_bankCode" class="num" type="text" placeholder="例 822" autocomplete="off" maxlength="3" inputmode="numeric"></div><div class="ff"><label>銀行帳號</label><input id="pref_bankAcct" class="num" type="text" placeholder="轉帳用帳號" autocomplete="off" inputmode="numeric"></div></div><div class="secret-note" id="prSecretNote"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>這三欄以加密存放（明文不入庫）；清單頁一律遮罩顯示。</div></div>'+
+      '</div><div class="emp-form-err" id="prEmpFormErr"></div></div><div class="pr-modal-footer"><button class="pr-btn ghost" id="prEmpCancel">取消</button><button class="pr-btn accent" id="prEmpSave">儲存</button></div></div></div>';
+  }
+
+  /* 角色被擋畫面 */
+  function gateBlockHtml(){
+    return '<div class="gate-block"><div class="gic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>'+
+      '<h2>薪資模組僅限授權人員</h2>'+
+      '<p>此模組包含薪資、身分證與銀行帳號等高敏感資料，僅限公司擁有者與被指定的財務人員存取。<br>若你應有權限，請聯絡公司擁有者於「設定 → 成員」開啟「可看薪資」。</p></div>';
+  }
+
+  /* ── 加退保申報提醒 ── */
+  function renderEnrollBanner(){
+    var banner=document.getElementById('prEnrollBanner'); if(!banner) return;
+    var hires=[], leaves=[];
+    EMP.forEach(function(e){ var h=parseDate(e.hire), l=parseDate(e.leave);
+      if(h && h.y===curYear && h.m===curMonth) hires.push({name:e.name,d:h.d});
+      if(l && l.y===curYear && l.m===curMonth) leaves.push({name:e.name,d:l.d}); });
+    var n=hires.length+leaves.length;
+    if(!n){ banner.classList.remove('show'); return; }
+    document.getElementById('prEnrollTitle').textContent='本月有 '+n+' 位異動：到職 '+hires.length+' 位、離職 '+leaves.length+' 位 — 記得辦理加保／退保申報';
+    document.getElementById('prEnrollDetail').textContent='請至勞保局／健保署辦理（加保須到職當日、退保須離職當日）。';
+    var hTag=hires.map(function(x){ return '<span class="eb-tag">＋ '+esc(x.name)+(x.d?' ('+curMonth+'/'+x.d+')':'')+'</span>'; }).join('');
+    var lTag=leaves.map(function(x){ return '<span class="eb-tag">− '+esc(x.name)+(x.d?' ('+curMonth+'/'+x.d+')':'')+'</span>'; }).join('');
+    document.getElementById('prEnrollNames').innerHTML=(hires.length?'<span class="grp"><b>加保：</b>'+hTag+'</span>':'')+(leaves.length?'<span class="grp"><b>退保：</b>'+lTag+'</span>':'');
+    banner.classList.add('show');
+  }
+
+  /* ── 薪資表 ── */
+  function renderTable(){
+    renderEnrollBanner();
+    var body=document.getElementById('prBody'); if(!body) return; body.innerHTML='';
+    var roster=EMP.filter(activeThisMonth);
+    var tG=0,tD=0,tN=0,tL=0,tH=0,tC=0;
+    if(!roster.length){
+      body.innerHTML='<tr><td colspan="10" style="padding:0;border:none"><div class="empty"><div class="ic"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></div><h3>這個月還沒有在職員工</h3><p>先把員工加進來，之後每月自動帶入。</p><div class="acts"><button class="pr-btn accent" id="prEmptyImport"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.8"><path d="M12 3v12M8 11l4 4 4-4"/></svg> 從 Excel 匯入</button></div></div></td></tr>';
+      ['prKGross','prKDed','prKNet','prKCost','prFLabor','prFHealth','prFDed','prFNet'].forEach(function(i){ var el=document.getElementById(i); if(el) el.textContent='0'; });
+      var ib=document.getElementById('prEmptyImport'); if(ib) ib.addEventListener('click',openImport);
+      return;
+    }
+    roster.forEach(function(e){
+      var r=calcRow(e); tG+=r.gross; tD+=r.ded; tN+=r.net; tL+=r.labor; tH+=r.health; tC+=r.cost;
+      var tr=document.createElement('tr'); tr.className='emp-row'; tr.dataset.id=e.id;
+      var proTag=r.pr.partial?'<span class="prorate-tag" title="月中到/離職，已按在職天數比例計薪">在職 '+r.pr.workDays+'/'+r.pr.total+' 天</span>':'';
+      var anomTag=r.anomaly?'<span class="anomaly-tag" title="本月實發較上月變動 '+(r.anomaly.pct>0?'+':'')+r.anomaly.pct+'%（非錯誤，請確認是否預期）">較上月 <span class="ar">'+(r.anomaly.pct>0?'+':'')+r.anomaly.pct+'%</span></span>':'';
+      if(r.flags.length){
+        tr.innerHTML='<td class="l"><span class="dot bad"></span><span class="name">'+esc(e.name)+'</span>'+proTag+anomTag+'</td><td><span class="m">'+fmt(r.base)+'</span></td><td colspan="7" class="flagtxt" style="text-align:left">⚠ '+r.flags.join('・')+'</td><td><span class="m neg">'+fmt(r.net)+'</span></td>';
+      } else {
+        tr.innerHTML='<td class="l"><span class="dot '+r.status+'"></span><span class="name">'+esc(e.name)+'</span>'+proTag+anomTag+'</td>'+
+          '<td><span class="m">'+fmt(r.base)+'</span></td>'+
+          '<td><input class="cellinput '+tch(e.id,'ot')+'" data-id="'+e.id+'" data-f="ot" value="'+(getM(e.id).ot||'')+'" placeholder="0" inputmode="decimal"></td>'+
+          '<td><input class="cellinput '+tch(e.id,'sick')+'" data-id="'+e.id+'" data-f="sick" value="'+(getM(e.id).sick||'')+'" placeholder="0" inputmode="decimal"></td>'+
+          '<td><input class="cellinput '+tch(e.id,'personal')+'" data-id="'+e.id+'" data-f="personal" value="'+(getM(e.id).personal||'')+'" placeholder="0" inputmode="decimal"></td>'+
+          '<td><input class="cellinput '+tch(e.id,'bonus')+'" data-id="'+e.id+'" data-f="bonus" value="'+(getM(e.id).bonus||'')+'" placeholder="0" inputmode="decimal"></td>'+
+          '<td class="calc"><span class="m">'+fmt(r.labor)+'</span></td><td class="calc"><span class="m">'+fmt(r.health)+'</span></td>'+
+          '<td class="calc"><span class="m">'+fmt(r.ded)+'</span></td><td><span class="m" style="font-weight:700">'+fmt(r.net)+'</span></td>';
+      }
+      body.appendChild(tr);
+    });
+    document.getElementById('prKGross').textContent=fmt(tG);
+    document.getElementById('prKDed').textContent=fmt(tD);
+    document.getElementById('prKNet').textContent=fmt(tN);
+    document.getElementById('prKCost').textContent=fmt(tC);
+    document.getElementById('prFLabor').textContent=fmt(tL);
+    document.getElementById('prFHealth').textContent=fmt(tH);
+    document.getElementById('prFDed').textContent=fmt(tD);
+    document.getElementById('prFNet').textContent=fmt(tN);
+    bindInputs();
+  }
+  function tch(id,f){ var k=tKey(id); return (touched[k]&&touched[k][f])?'touched':''; }
+  function bindInputs(){
+    var ins=document.querySelectorAll('#prBody .cellinput');
+    ins.forEach(function(inp){
+      inp.addEventListener('input',function(){
+        var id=+inp.dataset.id, f=inp.dataset.f;
+        getM(id)[f]=parseFloat(inp.value)||0;
+        var k=tKey(id); if(!touched[k]) touched[k]={}; touched[k][f]=!!inp.value;
+        saveRunCloud();
+        var sel=inp.selectionStart; renderTable();
+        var again=document.querySelector('#prBody .cellinput[data-id="'+id+'"][data-f="'+f+'"]');
+        if(again){ again.focus(); try{ again.setSelectionRange(sel,sel); }catch(_){} }
+      });
+      inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); var all=Array.prototype.slice.call(document.querySelectorAll('#prBody .cellinput[data-f="'+inp.dataset.f+'"]')); var i=all.indexOf(inp); if(all[i+1]) all[i+1].focus(); } });
+      inp.addEventListener('click',function(e){ e.stopPropagation(); });
+    });
+    document.querySelectorAll('#prBody tr.emp-row').forEach(function(tr){ tr.addEventListener('click',function(){ openDetail(+tr.dataset.id); }); });
+  }
+
+  /* ── 單人明細 ── */
+  function openDetail(id){
+    var e=EMP.filter(function(x){return x.id===id;})[0]; if(!e) return; var r=calcRow(e);
+    document.getElementById('prDNm').textContent=e.name;
+    document.getElementById('prDMo').textContent=monthLabel()+(r.pr.partial?'　·　在職 '+r.pr.workDays+'/'+r.pr.total+' 天':'');
+    var L=[];
+    L.push('<div class="sec-lab">應發</div>');
+    if(r.pr.partial) L.push(lineF('底薪（按比例）',r.base,'月底薪 '+fmt(e.base)+' × 在職 '+r.pr.workDays+' 天 ÷ 當月 '+r.pr.total+' 天，無條件捨去'));
+    else L.push(line('底薪',r.base));
+    if(r.otPay) L.push(lineF('加班費',r.otPay,'時薪 '+r.hourly+' × '+PARAMS.otRate+' × '+getM(id).ot+' 小時，無條件捨去'));
+    if(r.bonus) L.push(line('獎金 / 津貼',r.bonus));
+    if(r.sickDed) L.push(lineF('病假扣款','-'+fmt(r.sickDed),'時薪 '+r.hourly+' × 50% × '+getM(id).sick+' 小時',true));
+    if(r.persDed) L.push(lineF('事假扣款','-'+fmt(r.persDed),'時薪 '+r.hourly+' × 100% × '+getM(id).personal+' 小時',true));
+    L.push(lineTotal('應發合計',r.gross-r.leave));
+    L.push('<div class="sec-lab">應扣（代扣）</div>');
+    L.push(lineF('勞保自付',r.labor,'投保 '+fmt(e.laborIns)+' × 12.5% × 20%'));
+    L.push(lineF('健保自付',r.health,'投保 '+fmt(e.healthIns)+' × 5.17% × 30% × '+(1+r.depCnt)+'（本人'+(r.depCnt?'＋'+r.depCnt+' 眷':'')+'）'));
+    if(r.pensionSelf) L.push(lineF('勞退自願提繳',r.pensionSelf,'提繳工資 '+fmt(e.pension)+' × '+e.voluntary+'%（免稅）'));
+    if(r.supp) L.push(lineF('二代健保補充保費',r.supp,'高額獎金採全年累計：<br>門檻＝當月投保 '+fmt(e.healthIns)+' × 4 ＝ '+fmt(r.suppThreshold)+'<br>今年本月前累計獎金 '+fmt(r.suppCumBefore)+'，加本月 '+fmt(r.bonus)+' ＝ '+fmt(r.suppCumAfter)+'<br>本月新跨過門檻 '+fmt(r.suppTaxableThisMonth)+' × 2.11% ＝ '+fmt(r.supp)));
+    L.push(line('所得稅','0',true));
+    L.push(lineTotal('應扣合計',r.ded));
+    var leftHtml='';
+    if(r.flags.length) leftHtml+='<div class="flag-banner">⚠ '+r.flags.join('・')+'</div>';
+    if(r.anomaly) leftHtml+='<div class="warn-banner">🟠 本月實發 '+fmt(r.net)+' 較上月 '+fmt(r.anomaly.prevNet)+' 變動 '+(r.anomaly.pct>0?'+':'')+r.anomaly.pct+'%（達 '+Math.round(ANOMALY_THRESHOLD*100)+'% 提醒門檻）。這不是錯誤，請確認是否為預期。</div>';
+    leftHtml+=L.join('');
+    leftHtml+='<div class="net"><div class="k">實發</div><div class="v">NT$ '+fmt(r.net)+'</div></div>';
+    leftHtml+='<div class="tap-hint"><svg viewBox="0 0 24 24"><path d="M9 11.5V6a1.5 1.5 0 013 0v5M12 11V4.5a1.5 1.5 0 013 0V11M15 11V7a1.5 1.5 0 013 0v6a6 6 0 01-6 6h-1.5a4 4 0 01-3-1.5L6 14"/></svg>點任一筆金額旁的「怎麼來的」可展開計算方式</div>';
+    document.getElementById('prDLeft').innerHTML=leftHtml;
+    document.getElementById('prDRight').innerHTML='<div class="cost-panel"><div class="cp-title">給老闆看的成本</div><div class="cp-sub">這位員工本月公司實際支出（含雇主負擔）</div><div class="cp-row"><span>員工應發</span><span class="v">'+fmt(r.gross)+'</span></div><div class="cp-row"><span>雇主勞保（70%）</span><span class="v">'+fmt(r.erLabor)+'</span></div><div class="cp-row"><span>雇主健保（60%×1.56）</span><span class="v">'+fmt(r.erHealth)+'</span></div><div class="cp-row"><span>雇主勞退（6%）</span><span class="v">'+fmt(r.erPension)+'</span></div><div class="cp-grand"><span class="k">公司月成本</span><span class="v">NT$ '+fmt(r.cost)+'</span></div></div>';
+    document.querySelectorAll('#prDLeft .how').forEach(function(h){ h.addEventListener('click',function(ev){ ev.target.closest('.line').classList.toggle('show'); }); });
+    document.getElementById('prDetailOverlay').classList.add('open');
+  }
+  function line(k,v,muted){ return '<div class="line"><div class="k">'+k+'</div><div class="v '+(muted?'muted':'')+'"><span class="m">'+(typeof v==='number'?fmt(v):v)+'</span></div></div>'; }
+  function lineF(k,v,f,neg){ return '<div class="line"><div class="k">'+k+'<span class="how">怎麼來的</span></div><div class="v '+(neg?'neg':'')+'"><span class="m">'+(typeof v==='number'?fmt(v):v)+'</span></div><div class="formula">'+f+'</div></div>'; }
+  function lineTotal(k,v){ return '<div class="line total"><div class="k">'+k+'</div><div class="v"><span class="m">'+fmt(v)+'</span></div></div>'; }
+
+  /* ── 員工資料表 ── */
+  var AVATAR_COLORS=[{bg:'#EDE7FE',fg:'#6A4BE8'},{bg:'#E4F4F0',fg:'#157A69'},{bg:'#FCEAE0',fg:'#C26A1F'},{bg:'#FDE6EC',fg:'#C23456'},{bg:'#E6EEFB',fg:'#3A5B9E'},{bg:'#EAF3E2',fg:'#4E7A2C'},{bg:'#F3E8FB',fg:'#8B45C2'},{bg:'#FBF0DD',fg:'#9A7515'}];
+  function hashStr(s){ var h=0; for(var i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))|0; } return Math.abs(h); }
+  function avatarOf(name){ var c=AVATAR_COLORS[hashStr(name||'?')%AVATAR_COLORS.length]; var ch=(name||'?').trim().charAt(0)||'?'; return '<span class="emp-avatar" style="background:'+c.bg+';color:'+c.fg+'">'+esc(ch)+'</span>'; }
+  function empStatus(e){ var ym=curYear*12+curMonth; var hire=parseDate(e.hire), left=parseDate(e.leave); if(hire && (hire.y*12+hire.m)>ym) return 'pending'; if(left && (left.y*12+left.m)<ym) return 'left'; return 'active'; }
+  function renderEmployees(){
+    var body=document.getElementById('prEmpBody'); var cnt=document.getElementById('prEmpCount'); if(!body) return;
+    var on=0,off=0; EMP.forEach(function(e){ if(empStatus(e)==='left') off++; else on++; });
+    cnt.innerHTML=EMP.length?('共 <b>'+EMP.length+'</b> 位 · <span class="on">'+on+' 在職</span> / <span class="off">'+off+' 離職</span>'):'尚無員工';
+    var q=empFilter.trim().toLowerCase();
+    var list=q?EMP.filter(function(e){ return (e.name||'').toLowerCase().indexOf(q)>=0; }):EMP;
+    body.innerHTML='';
+    if(!EMP.length){ body.innerHTML='<tr><td colspan="6" style="padding:0;border:none"><div class="empty"><div class="ic"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg></div><h3>還沒有員工</h3><p>先把員工加進來，之後每月自動帶入薪資表。</p><div class="acts"><button class="pr-btn accent" id="prEmpEmptyImport">從 Excel 匯入</button><button class="pr-btn" id="prEmpEmptyTpl">下載範本</button></div></div></td></tr>';
+      var b1=document.getElementById('prEmpEmptyImport'); if(b1) b1.addEventListener('click',openImport);
+      var b2=document.getElementById('prEmpEmptyTpl'); if(b2) b2.addEventListener('click',downloadTemplate);
+      return; }
+    if(!list.length){ body.innerHTML='<tr><td colspan="6"><div class="emp-none">查無「'+esc(empFilter)+'」相關的員工</div></td></tr>'; return; }
+    list.forEach(function(e){
+      var st=empStatus(e);
+      var chip=st==='left'?'<span class="chip off"><span class="d"></span>已離職</span>':st==='pending'?'<span class="chip off"><span class="d"></span>未到職</span>':'<span class="chip on"><span class="d"></span>在職</span>';
+      var sub=e.hire?('到職 '+e.hire+(e.leave?'　·　離職 '+e.leave:'')):(e.leave?'離職 '+e.leave:'—');
+      var tr=document.createElement('tr'); tr.dataset.id=e.id;
+      tr.innerHTML='<td class="l"><div class="emp-id">'+avatarOf(e.name)+'<div class="emp-id-txt"><div class="emp-id-name"><span class="nm">'+esc(e.name)+'</span>'+chip+'</div><div class="emp-id-sub">'+esc(sub)+'</div></div></div></td>'+
+        '<td class="c">'+(e.deps||0)+'</td><td class="c">'+(e.voluntary||0)+'%</td><td><span class="m strong">'+fmt(e.base)+'</span></td><td><span class="m">'+fmt(e.laborIns)+'</span></td>'+
+        '<td><div class="emp-acts"><button class="icon-btn" title="編輯" data-edit="'+e.id+'"><svg viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 00-3-3L5 17v3z"/><path d="M13.5 6.5l3 3"/></svg></button><button class="icon-btn danger" title="刪除" data-del="'+e.id+'"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13"/></svg></button></div></td>';
+      body.appendChild(tr);
+    });
+    body.querySelectorAll('tr[data-id]').forEach(function(tr){ tr.addEventListener('click',function(){ openEmpModal(+tr.dataset.id); }); });
+    body.querySelectorAll('[data-edit]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); openEmpModal(+b.dataset.edit); }); });
+    body.querySelectorAll('[data-del]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); deleteEmp(+b.dataset.del); }); });
+  }
+
+  /* ── 員工新增 / 編輯 / 刪除 ── */
+  function nextLocalId(){ return EMP.reduce(function(mx,e){ return Math.max(mx, (typeof e.id==='number'?e.id:0)); },0)+1; }
+  function setVal(id,v){ var el=document.getElementById(id); if(el) el.value=(v===0||v)?v:''; }
+  function gradeOptions(){ return LABOR_GRADES.map(function(g){ return '<option value="'+g+'">'+g.toLocaleString('en-US')+'</option>'; }).join(''); }
+  function fillGradeSelects(){ ['pref_laborIns_sel','pref_healthIns_sel','pref_pension_sel'].forEach(function(id){ var el=document.getElementById(id); if(el) el.innerHTML=gradeOptions(); }); }
+  function applyInsMode(){
+    var base=num((document.getElementById('pref_base')||{}).value)||0;
+    document.querySelectorAll('#prInsMode button').forEach(function(b){ b.classList.toggle('on', b.dataset.ins===insMode); });
+    [['pref_laborIns_sel','pref_laborIns_hint'],['pref_healthIns_sel','pref_healthIns_hint'],['pref_pension_sel','pref_pension_hint']].forEach(function(pair){
+      var sel=document.getElementById(pair[0]), hint=document.getElementById(pair[1]); if(!sel||!hint) return;
+      if(insMode==='auto'){ sel.style.display='none'; var auto=pair[0]==='pref_pension_sel'?(base||0):gradeFor(base); hint.textContent=base?('依底薪自動帶：'+auto.toLocaleString('en-US')):'填底薪後自動帶級距'; }
+      else { sel.style.display=''; hint.textContent='從級距下拉選擇'; }
+    });
+  }
+  function openEmpModal(id){
+    editingEmpId=(id!=null && id!==undefined && typeof id!=='object')?id:null;
+    document.getElementById('prEmpFormErr').textContent=''; fillGradeSelects();
+    var titleEl=document.getElementById('prEmpModalTitle');
+    var allFields=['pref_name','pref_email','pref_base','pref_hire','pref_leave','pref_natId','pref_bankCode','pref_bankAcct'];
+    if(editingEmpId!=null){
+      var e=EMP.filter(function(x){return x.id===editingEmpId;})[0];
+      titleEl.textContent='編輯員工 · '+e.name;
+      setVal('pref_name',e.name); setVal('pref_email',e.email||''); setVal('pref_base',e.base); setVal('pref_hire',e.hire||''); setVal('pref_leave',e.leave||'');
+      setVal('pref_deps',e.deps||0); setVal('pref_voluntary',e.voluntary||0);
+      // 敏感：顯示遮罩 placeholder、不填明文（編輯時留空＝不變更）
+      var nid=document.getElementById('pref_natId'), bc=document.getElementById('pref_bankCode'), ba=document.getElementById('pref_bankAcct');
+      nid.value=''; nid.placeholder=e.natIdMasked? (e.natIdMasked+'（留空不變更）'):'A123456789';
+      bc.value=''; bc.placeholder=e.bankCodeMasked? (e.bankCodeMasked+'（留空不變更）'):'例 822';
+      ba.value=''; ba.placeholder=e.bankAcctMasked? (e.bankAcctMasked+'（留空不變更）'):'轉帳用帳號';
+      var autoLabor=gradeFor(e.base), autoHealth=gradeFor(e.base), autoPension=e.base;
+      var custom=(e.laborIns!==autoLabor)||(e.healthIns!==autoHealth)||(e.pension!==autoPension);
+      insMode=custom?'custom':'auto';
+      setVal('pref_laborIns_sel',e.laborIns); setVal('pref_healthIns_sel',e.healthIns); setVal('pref_pension_sel',e.pension);
+    } else {
+      titleEl.textContent='新增員工';
+      allFields.forEach(function(i){ var el=document.getElementById(i); if(el){ el.value=''; } });
+      document.getElementById('pref_natId').placeholder='A123456789';
+      document.getElementById('pref_bankCode').placeholder='例 822';
+      document.getElementById('pref_bankAcct').placeholder='轉帳用帳號';
+      document.getElementById('pref_deps').value='0'; document.getElementById('pref_voluntary').value='0'; insMode='auto';
+    }
+    applyInsMode();
+    document.getElementById('prEmpOverlay').classList.add('open');
+    setTimeout(function(){ var n=document.getElementById('pref_name'); if(n) n.focus(); },50);
+  }
+  function closeEmpModal(){ document.getElementById('prEmpOverlay').classList.remove('open'); editingEmpId=null; }
+  function saveEmp(){
+    var name=document.getElementById('pref_name').value.trim();
+    var email=document.getElementById('pref_email').value.trim();
+    var base=num(document.getElementById('pref_base').value);
+    var err=document.getElementById('prEmpFormErr');
+    if(!name){ err.textContent='請填姓名'; document.getElementById('pref_name').focus(); return; }
+    if(!base||base<=0){ err.textContent='請填底薪（大於 0）'; document.getElementById('pref_base').focus(); return; }
+    var laborIns,healthIns,pension;
+    if(insMode==='custom'){ laborIns=num(document.getElementById('pref_laborIns_sel').value)||gradeFor(base); healthIns=num(document.getElementById('pref_healthIns_sel').value)||gradeFor(base); pension=num(document.getElementById('pref_pension_sel').value)||base; }
+    else { laborIns=gradeFor(base); healthIns=gradeFor(base); pension=base; }
+    var deps=num(document.getElementById('pref_deps').value), voluntary=num(document.getElementById('pref_voluntary').value);
+    var hire=document.getElementById('pref_hire').value.trim(), leave=document.getElementById('pref_leave').value.trim();
+    var natId=document.getElementById('pref_natId').value.trim().toUpperCase();
+    var bankCode=document.getElementById('pref_bankCode').value.trim();
+    var bankAcct=document.getElementById('pref_bankAcct').value.trim();
+    var emp;
+    if(editingEmpId!=null){ emp=EMP.filter(function(x){return x.id===editingEmpId;})[0]; }
+    else { emp={ id:nextLocalId() }; EMP.push(emp); }
+    emp.name=name; emp.email=email; emp.base=base; emp.laborIns=laborIns; emp.healthIns=healthIns; emp.pension=pension; emp.deps=deps; emp.voluntary=voluntary; emp.hire=hire; emp.leave=leave;
+    // 敏感：有填才更新遮罩 + 送後端；留空＝不變更
+    var plainSecret=null;
+    if(natId||bankCode||bankAcct){ plainSecret={natId:natId, bankCode:bankCode, bankAcct:bankAcct}; if(natId) emp.natIdMasked=maskId(natId); if(bankCode) emp.bankCodeMasked=maskAcct(bankCode); if(bankAcct) emp.bankAcctMasked=maskAcct(bankAcct); }
+    // 免費路線：明文留在前端物件（本機 + 雲端皆同），存完即可直接匯出轉帳檔，免重載
+    if(plainSecret){ if(natId) emp.natId=natId; if(bankCode) emp.bankCode=bankCode; if(bankAcct) emp.bankAcct=bankAcct; }
+    saveEmpCloud(emp, plainSecret, function(ok){
+      if(!ok){ toast('儲存失敗（請檢查權限 / 連線）'); return; }
+      toast((editingEmpId!=null?'已更新「':'已新增「')+name+'」');
+      closeEmpModal(); renderEmployees(); renderTable();
+    });
+  }
+  function deleteEmp(id){
+    var e=EMP.filter(function(x){return x.id===id;})[0]; if(!e) return;
+    if(!confirm('確定刪除「'+e.name+'」？此操作無法復原。')) return;
+    deleteEmpCloud(id, function(ok){
+      if(!ok){ toast('刪除失敗（請檢查權限）'); return; }
+      EMP=EMP.filter(function(x){return x.id!==id;}); renderEmployees(); renderTable(); toast('已刪除「'+e.name+'」');
+    });
+  }
+
+  /* ── 年度參數 ── */
+  var LEGAL_GROUPS=[
+    {title:'基本工資',flds:[{key:'minWageMonth',label:'月薪',kind:'num',step:'100',suffix:'元'},{key:'minWageHour',label:'時薪',kind:'num',step:'1',suffix:'元'}]},
+    {title:'勞保',flds:[{key:'laborRate',label:'費率',kind:'pct',step:'0.01',suffix:'%'},{key:'laborEmp',label:'員工負擔',kind:'pct',step:'1',suffix:'%'},{key:'laborEr',label:'雇主負擔',kind:'pct',step:'1',suffix:'%'}]},
+    {title:'健保',flds:[{key:'healthRate',label:'費率',kind:'pct',step:'0.01',suffix:'%'},{key:'healthEmp',label:'員工負擔',kind:'pct',step:'1',suffix:'%'},{key:'healthEr',label:'雇主負擔',kind:'pct',step:'1',suffix:'%'},{key:'healthErDeps',label:'平均眷口',kind:'mult',step:'0.01',suffix:'×'},{key:'depCap',label:'眷口上限',kind:'num',step:'1',suffix:'口'}]},
+    {title:'勞退',flds:[{key:'pensionEr',label:'雇主提繳',kind:'pct',step:'1',suffix:'%'}]},
+    {title:'二代健保',flds:[{key:'suppRate',label:'補充保費率',kind:'pct',step:'0.01',suffix:'%'},{key:'suppBonusMult',label:'高額獎金門檻（投保×）',kind:'mult',step:'1',suffix:'倍'}]}
+  ];
+  var POLICY_GROUPS=[
+    {title:'時薪',flds:[{key:'hourDiv1',label:'除數 ①（月薪 ÷）',kind:'num',step:'1',suffix:''},{key:'hourDiv2',label:'除數 ②（再 ÷）',kind:'num',step:'1',suffix:''}]},
+    {title:'請假扣薪',flds:[{key:'sickPct',label:'病假',kind:'pct',step:'1',suffix:'%'},{key:'personalPct',label:'事假',kind:'pct',step:'1',suffix:'%'}]},
+    {title:'加班',flds:[{key:'otRate',label:'平日倍率',kind:'mult',step:'0.01',suffix:'×'}]}
+  ];
+  var ALL_FLDS=LEGAL_GROUPS.concat(POLICY_GROUPS).reduce(function(a,g){ return a.concat(g.flds); },[]);
+  function paramDisp(fld){ var v=PARAMS[fld.key]; if(fld.kind==='pct') return +(v*100).toFixed(4); return v; }
+  function paramRow(fld){ var val=paramDisp(fld); return '<div class="fld"><label>'+fld.label+'</label><input class="pr-input" data-pkey="'+fld.key+'" data-kind="'+fld.kind+'" type="number" step="'+fld.step+'" value="'+val+'"><span class="fld-suffix">'+(fld.suffix||'')+'</span></div>'; }
+  function paramGroup(g){ return '<div class="pgroup"><div class="pgroup-lab">'+g.title+'</div>'+g.flds.map(paramRow).join('')+'</div>'; }
+  function toggleRow(label,key,opts,note){ var cur=PARAMS[key]; var btns=opts.map(function(o){ return '<button type="button" data-tkey="'+key+'" data-tval="'+o.val+'" class="'+(cur===o.val?'on':'')+'">'+o.txt+'</button>'; }).join(''); return '<div class="fld toggle" title="'+note+'"><label>'+label+'</label><span class="seg sm">'+btns+'</span></div>'; }
+  function renderParams(){
+    if(PARAMS.rounding==null) PARAMS.rounding='floor'; if(PARAMS.taxWithhold==null) PARAMS.taxWithhold=false;
+    document.getElementById('prLegalFlds').innerHTML=LEGAL_GROUPS.map(paramGroup).join('');
+    document.getElementById('prPolicyFlds').innerHTML=POLICY_GROUPS.map(paramGroup).join('')+'<div class="pgroup"><div class="pgroup-lab">其他</div>'+toggleRow('進位方式','rounding',[{val:'floor',txt:'無條件捨去'},{val:'round',txt:'四捨五入'}],'進階：接計算待正式版')+toggleRow('所得稅代扣','taxWithhold',[{val:false,txt:'關閉'},{val:true,txt:'開啟'}],'進階：接計算待正式版')+'</div>';
+    bindParamInputs(); bindParamToggles();
+  }
+  function bindParamInputs(){
+    document.querySelectorAll('#prView-params .pr-input[data-pkey]').forEach(function(inp){
+      inp.addEventListener('change',function(){
+        var key=inp.dataset.pkey, kind=inp.dataset.kind; var v=parseFloat(inp.value);
+        if(isNaN(v)){ v=paramDisp(ALL_FLDS.filter(function(x){return x.key===key;})[0]); inp.value=v; }
+        PARAMS[key]=(kind==='pct')?v/100:v; saveParamsCloud(); renderTable();
+        toast('已套用「'+inp.closest('.fld').querySelector('label').textContent+'」並重新試算');
+      });
+    });
+  }
+  function bindParamToggles(){
+    document.querySelectorAll('#prView-params .seg button[data-tkey]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var key=b.dataset.tkey, val=b.dataset.tval; if(val==='true') val=true; else if(val==='false') val=false;
+        PARAMS[key]=val; b.parentElement.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); });
+        saveParamsCloud(); toast('已記錄「'+b.closest('.fld').querySelector('label').textContent+'」設定（進階：接計算待正式版）');
+      });
+    });
+  }
+
+  /* ── Excel 匯入 ── */
+  var headerMap={'姓名':'name','名字':'name','員工姓名':'name','底薪':'base','本薪':'base','月薪':'base','勞保投保薪資':'laborIns','勞保投保':'laborIns','勞保':'laborIns','健保投保金額':'healthIns','健保投保':'healthIns','健保':'healthIns','勞退提繳工資':'pension','勞退提繳':'pension','勞退':'pension','眷口數':'deps','眷口':'deps','眷屬':'deps','勞退自願提繳%':'voluntary','自願提繳':'voluntary','自提':'voluntary','到職日':'hire','到職':'hire','到職日期':'hire','離職日':'leave','離職':'leave','離職日期':'leave','身分證字號':'natId','身分證':'natId','身份證字號':'natId','身份證':'natId','銀行代號':'bankCode','銀行代碼':'bankCode','銀行帳號':'bankAcct','帳號':'bankAcct','轉帳帳號':'bankAcct','電子郵件':'email','Email':'email','email':'email','信箱':'email','郵件':'email'};
+  function openImport(){ var ov=document.getElementById('prImportOverlay'); ov.classList.add('open'); document.getElementById('prPreviewArea').innerHTML=''; document.getElementById('prImpConfirm').disabled=true; pendingRows=null; }
+  function closeImport(){ document.getElementById('prImportOverlay').classList.remove('open'); }
+  function handleFile(file){
+    if(typeof XLSX==='undefined'){ toast('Excel 解析元件尚未載入，請稍候再試'); return; }
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      var wb=XLSX.read(ev.target.result,{type:'binary'}); var ws=wb.Sheets[wb.SheetNames[0]];
+      var json=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!json.length){ toast('檔案沒有資料'); return; }
+      var mapped=json.map(function(row){ var o={}; Object.keys(row).forEach(function(k){ var key=headerMap[String(k).trim()]; if(key) o[key]=row[k]; }); return o; }).filter(function(o){ return o.name; });
+      if(!mapped.length){ toast('找不到「姓名」欄，請參考範本'); return; }
+      pendingRows=mapped.map(function(o){ return { name:String(o.name).trim(), base:num(o.base), laborIns:num(o.laborIns)||gradeFor(num(o.base)), healthIns:num(o.healthIns)||gradeFor(num(o.base)), pension:num(o.pension)||num(o.base), deps:num(o.deps), voluntary:num(o.voluntary), hire:o.hire?String(o.hire).trim():'', leave:o.leave?String(o.leave).trim():'', natId:o.natId?String(o.natId).trim().toUpperCase():'', bankCode:o.bankCode?String(o.bankCode).trim():'', bankAcct:o.bankAcct?String(o.bankAcct).trim():'', email:o.email?String(o.email).trim():'' }; });
+      renderPreview(pendingRows); document.getElementById('prImpConfirm').disabled=false;
+    };
+    reader.readAsBinaryString(file);
+  }
+  function renderPreview(rows){
+    var h='<div class="pill">辨識到 '+rows.length+' 位員工</div><div class="previewtbl"><table><thead><tr><th class="l">姓名</th><th>底薪</th><th>勞保</th><th>健保</th><th>眷口</th><th>自提%</th></tr></thead><tbody>';
+    rows.slice(0,50).forEach(function(r){ h+='<tr><td class="l">'+esc(r.name)+'</td><td style="text-align:right"><span class="m">'+fmt(r.base)+'</span></td><td style="text-align:right"><span class="m">'+fmt(r.laborIns)+'</span></td><td style="text-align:right"><span class="m">'+fmt(r.healthIns)+'</span></td><td style="text-align:right">'+r.deps+'</td><td style="text-align:right">'+r.voluntary+'</td></tr>'; });
+    h+='</tbody></table></div><p class="hint">未填投保金額者，系統自動依底薪對應級距帶入（可事後修改）。身分證 / 帳號將以加密存放、不以明文入庫。</p>';
+    document.getElementById('prPreviewArea').innerHTML=h;
+  }
+  function confirmImport(){
+    if(!pendingRows) return;
+    var rows=pendingRows; var i=0; var okAll=true;
+    // 重設月度暫存（換名冊）
+    M={}; touched={}; saveRunCloud();
+    function step(){
+      if(i>=rows.length){ closeImport(); loadAfterImport(); return; }
+      var o=rows[i++]; var emp={ id: (!_wsId? nextLocalId() : undefined), name:o.name, base:o.base, laborIns:o.laborIns, healthIns:o.healthIns, pension:o.pension, deps:o.deps, voluntary:o.voluntary, hire:o.hire, leave:o.leave, email:o.email||'' };
+      var plainSecret=(o.natId||o.bankCode||o.bankAcct)?{natId:o.natId,bankCode:o.bankCode,bankAcct:o.bankAcct}:null;
+      if(plainSecret){ if(o.natId) emp.natIdMasked=maskId(o.natId); if(o.bankCode) emp.bankCodeMasked=maskAcct(o.bankCode); if(o.bankAcct) emp.bankAcctMasked=maskAcct(o.bankAcct); }
+      // 免費路線：明文留前端物件（本機 + 雲端皆同）；本機直接 push，雲端靠匯入後 loadAfterImport 重載帶回
+      if(plainSecret){ if(o.natId) emp.natId=o.natId; if(o.bankCode) emp.bankCode=o.bankCode; if(o.bankAcct) emp.bankAcct=o.bankAcct; }
+      if(!_wsId){ EMP.push(emp); }
+      saveEmpCloud(emp, plainSecret, function(ok){ if(!ok) okAll=false; step(); });
+    }
+    function loadAfterImport(){
+      // 雲端：重新拉一次（取得 server doc id + 遮罩）；本機：直接重畫
+      if(_wsId){ loadFromCloud(function(){ renderTable(); renderEmployees(); toast((okAll?'已匯入 ':'部分匯入（有錯誤）')+EMP.length+' 位員工'); }); }
+      else { renderTable(); renderEmployees(); toast('已匯入 '+EMP.length+' 位員工'); }
+    }
+    step();
+  }
+  function downloadTemplate(){
+    if(typeof XLSX==='undefined'){ toast('Excel 元件尚未載入'); return; }
+    var data=[['姓名','底薪','勞保投保薪資','健保投保金額','勞退提繳工資','眷口數','勞退自願提繳%','到職日','離職日','電子郵件','身分證字號','銀行代號','銀行帳號'],['王小明',60000,45800,45800,60000,0,0,'2022-03-01','','wang@company.com','A123456789','822','0123456789012'],['李美華',38000,38200,38200,38000,2,6,'2023-08-01','','lee@company.com','B234567890','700','00112345678901']];
+    var ws=XLSX.utils.aoa_to_sheet(data); var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'員工名冊'); XLSX.writeFile(wb,'BeyondPath薪資_員工匯入範本.xlsx');
+  }
+
+  /* ── 產出 ── */
+  function exportCost(){
+    if(typeof XLSX==='undefined'){ toast('Excel 元件尚未載入'); return; }
+    var roster=EMP.filter(activeThisMonth);
+    var rows=[['員工','應發','勞保自付','健保自付','勞退自提','補充保費','代扣','實發','雇主勞保','雇主健保','雇主勞退','公司成本']];
+    roster.forEach(function(e){ var r=calcRow(e); rows.push([e.name,r.gross,r.labor,r.health,r.pensionSelf,r.supp,r.ded,r.net,r.erLabor,r.erHealth,r.erPension,r.cost]); });
+    var ws=XLSX.utils.aoa_to_sheet(rows); var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,monthLabel().replace(/ /g,''));
+    XLSX.writeFile(wb,'BeyondPath薪資_公司成本表_'+curYear+String(curMonth).padStart(2,'0')+'.xlsx'); toast('已匯出公司成本總表'); _writeAudit('export.cost', monthLabel());
+  }
+  /* 轉帳檔（免費路線）：身分證/帳號為一般明文欄位，純前端直接讀真帳號產檔（本機 / 雲端同一路徑，不呼叫任何解密後端） */
+  function exportBank(){
+    if(typeof XLSX==='undefined'){ toast('Excel 元件尚未載入'); return; }
+    var roster=EMP.filter(activeThisMonth);
+    var rows=[['員工','銀行代號','銀行帳號','實發金額']]; var missing=0;
+    roster.forEach(function(e){ var r=calcRow(e); var code=e.bankCode||'', acct=e.bankAcct||''; if(!code||!acct) missing++; rows.push([e.name,code,acct,r.net]); });
+    _writeBankXlsx(rows);
+    _writeAudit('export.bank', monthLabel());
+    toast(missing?('已匯出轉帳檔 · 有 '+missing+' 位缺銀行代號/帳號'):'已匯出轉帳檔 · 含實際帳號，可上傳網銀');
+  }
+  function _writeBankXlsx(rows){
+    var ws=XLSX.utils.aoa_to_sheet(rows);
+    for(var i=1;i<rows.length;i++){ ['B','C'].forEach(function(col){ var c=ws[col+(i+1)]; if(c){ c.t='s'; c.v=String(c.v); } }); }
+    var wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'轉帳檔'); XLSX.writeFile(wb,'BeyondPath薪資_轉帳檔_'+curYear+String(curMonth).padStart(2,'0')+'.xlsx');
+  }
+
+
+/* ============================================================
+   員工薪資條 PDF（三段式：應發 / 應扣 / 實發 + 雇主成本）
+   做法：建乾淨離屏版面 → html2canvas 截圖（中文走系統字型、不需嵌 CJK 字型）→ jsPDF A4 直式包成 PDF blob。
+   genPayslipPDF(emp) → Promise<{blob, filename}>：永遠回 blob（供日後 Gmail 夾帶）；opts.download=true → 同時下載
+   ============================================================ */
+function payslipPeriodLabel(){ return curYear+' 年 '+String(curMonth).padStart(2,'0')+' 月'; }
+function payslipFileName(emp){ return 'BeyondPath薪資條_'+emp.name+'_'+curYear+String(curMonth).padStart(2,'0')+'.pdf'; }
+function esc2(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* 建乾淨薪資條 DOM（離屏，A4 比例、白底、繁中、台幣） */
+function buildPayslipNode(emp){
+  var r = calcRow(emp);
+  function row(k,v,opt){ opt=opt||{}; return '<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #EFEAE0;'+(opt.strong?'font-weight:700;':'')+'"><span style="color:'+(opt.muted?'#9A8F7C':'#3A3329')+'">'+k+'</span><span style="font-family:JetBrains Mono,monospace;color:'+(opt.neg?'#B4452E':(opt.strong?'#1F1A12':'#3A3329'))+'">'+v+'</span></div>'; }
+  function sec(t){ return '<div style="font-size:12px;font-weight:700;color:#6A4BE8;letter-spacing:.04em;margin:16px 0 4px">'+t+'</div>'; }
+  var earn = [];
+  if(r.pr.partial) earn.push(row('底薪（在職 '+r.pr.workDays+'/'+r.pr.total+' 天按比例）', fmt(r.base)));
+  else earn.push(row('底薪', fmt(r.base)));
+  if(r.otPay) earn.push(row('加班費', fmt(r.otPay)));
+  if(r.bonus) earn.push(row('獎金 / 津貼', fmt(r.bonus)));
+  if(r.sickDed) earn.push(row('病假扣款', '-'+fmt(r.sickDed), {neg:true}));
+  if(r.persDed) earn.push(row('事假扣款', '-'+fmt(r.persDed), {neg:true}));
+  earn.push(row('應發合計', fmt(r.gross - r.leave), {strong:true}));
+  var ded = [];
+  ded.push(row('勞保自付', fmt(r.labor)));
+  ded.push(row('健保自付', fmt(r.health)));
+  if(r.pensionSelf) ded.push(row('勞退自願提繳', fmt(r.pensionSelf)));
+  if(r.supp) ded.push(row('二代健保補充保費', fmt(r.supp)));
+  ded.push(row('所得稅', '0', {muted:true}));
+  ded.push(row('應扣合計', fmt(r.ded), {strong:true}));
+  var node = document.createElement('div');
+  node.style.cssText = 'position:fixed;left:-9999px;top:0;width:760px;background:#FFFDF8;color:#3A3329;font-family:Noto Sans TC,Inter,sans-serif;padding:48px 52px;box-sizing:border-box;';
+  node.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #6A4BE8;padding-bottom:16px;margin-bottom:8px"><div><div style="font-size:22px;font-weight:800;color:#1F1A12">薪資明細表</div><div style="font-size:13px;color:#9A8F7C;margin-top:3px">Payslip · BeyondPath</div></div><div style="text-align:right"><div style="font-size:15px;font-weight:700;color:#1F1A12">'+esc2(emp.name)+'</div><div style="font-size:13px;color:#9A8F7C;margin-top:3px">'+payslipPeriodLabel()+'</div>'+(emp.email?'<div style="font-size:11px;color:#B7AD9A;margin-top:2px">'+esc2(emp.email)+'</div>':'')+'</div></div>'
+    + sec('應發') + earn.join('')
+    + sec('應扣（代扣）') + ded.join('')
+    + '<div style="display:flex;justify-content:space-between;align-items:center;background:#EDE7FE;border-radius:10px;padding:14px 18px;margin-top:18px"><span style="font-size:15px;font-weight:700;color:#4A2FB8">實發</span><span style="font-size:22px;font-weight:800;color:#4A2FB8;font-family:JetBrains Mono,monospace">NT$ '+fmt(r.net)+'</span></div>'
+    + '<div style="margin-top:20px;border:1px solid #EFEAE0;border-radius:10px;padding:14px 18px"><div style="font-size:12px;font-weight:700;color:#9A8F7C;margin-bottom:8px">公司負擔（雇主成本）</div>'
+    +   row('雇主勞保（70%）', fmt(r.erLabor))
+    +   row('雇主健保（60%×1.56）', fmt(r.erHealth))
+    +   row('雇主勞退（6%）', fmt(r.erPension))
+    +   row('公司月成本', 'NT$ '+fmt(r.cost), {strong:true})
+    + '</div>'
+    + '<div style="margin-top:22px;font-size:11px;color:#B7AD9A;text-align:center;line-height:1.6">本表所有金額無條件捨去到元 · 由 BeyondPath 薪資模組產生 · '+payslipPeriodLabel()+'</div>';
+  return node;
+}
+
+/* 產單人薪資條 PDF → Promise<{blob, filename}>；opts.download=true 同時下載 */
+function genPayslipPDF(emp, opts){
+  opts = opts || {};
+  return new Promise(function(resolve, reject){
+    if(typeof html2canvas==='undefined' || !window.jspdf || !window.jspdf.jsPDF){
+      toast('PDF 元件尚未載入，請稍候或重新整理'); reject(new Error('pdf libs not ready')); return;
+    }
+    var node = buildPayslipNode(emp);
+    document.body.appendChild(node);
+    html2canvas(node, {scale:2, backgroundColor:'#FFFDF8', useCORS:true, logging:false}).then(function(canvas){
+      try{
+        var jsPDF = window.jspdf.jsPDF;
+        var pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+        var pw = pdf.internal.pageSize.getWidth();
+        var ph = pdf.internal.pageSize.getHeight();
+        var margin = 12;
+        var imgW = pw - margin*2;
+        var imgH = canvas.height * imgW / canvas.width;
+        var img = canvas.toDataURL('image/jpeg', 0.92);
+        if(imgH <= ph - margin*2){
+          pdf.addImage(img, 'JPEG', margin, margin, imgW, imgH);
+        } else {
+          var pageContentH = ph - margin*2;
+          var sliceCanvasH = canvas.width * pageContentH / imgW;
+          var rendered = 0;
+          while(rendered < canvas.height){
+            var slice = document.createElement('canvas');
+            slice.width = canvas.width;
+            slice.height = Math.min(sliceCanvasH, canvas.height - rendered);
+            slice.getContext('2d').drawImage(canvas, 0, rendered, canvas.width, slice.height, 0, 0, canvas.width, slice.height);
+            var sImgH = slice.height * imgW / slice.width;
+            if(rendered>0) pdf.addPage();
+            pdf.addImage(slice.toDataURL('image/jpeg',0.92), 'JPEG', margin, margin, imgW, sImgH);
+            rendered += slice.height;
+          }
+        }
+        var filename = payslipFileName(emp);
+        var blob = pdf.output('blob');
+        if(opts.download) pdf.save(filename);
+        resolve({blob:blob, filename:filename});
+      }catch(err){ reject(err); }
+      finally{ if(node.parentNode) node.parentNode.removeChild(node); }
+    }).catch(function(err){ if(node.parentNode) node.parentNode.removeChild(node); toast('產 PDF 失敗：'+(err&&err.message||err)); reject(err); });
+  });
+}
+
+/* 點「員工薪資條」→ 列出本月在職員工：每人各下載 + 全部一次下載（staging 版 · pr-* class） */
+function openPayslipPicker(){
+  var roster = EMP.filter(activeThisMonth);
+  if(!roster.length){ toast('本月沒有在職員工'); return; }
+  var ov = document.getElementById('prPayslipOverlay');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.className = 'pr-overlay'; ov.id = 'prPayslipOverlay';
+    ov.innerHTML = '<div class="pr-modal sm"><div class="pr-modal-header"><div><div class="h-nm">下載薪資條 PDF</div><div class="h-mo" id="prPayslipMo"></div></div><button class="pr-modal-close" id="prPayslipClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="pr-modal-pad"><div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="pr-btn accent" id="prPayslipAll">全部一次下載</button></div><div id="prPayslipList" style="max-height:48vh;overflow-y:auto"></div><p class="hint" style="margin-top:12px">每份 PDF 為三段式明細（應發 / 應扣 / 實發 + 公司負擔），繁中、台幣。日後可一鍵以公司 Gmail 寄給員工。</p></div></div></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', function(e){ if(e.target.id==='prPayslipOverlay') ov.classList.remove('open'); });
+    document.getElementById('prPayslipClose').addEventListener('click', function(){ ov.classList.remove('open'); });
+  }
+  document.getElementById('prPayslipMo').textContent = payslipPeriodLabel()+' · 在職 '+roster.length+' 位';
+  var allBtn = document.getElementById('prPayslipAll');
+  allBtn.textContent = '全部一次下載（'+roster.length+' 份）';
+  var list = document.getElementById('prPayslipList');
+  list.innerHTML = roster.map(function(e){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><span>'+esc(e.name)+(e.email?' <span style="color:var(--ink-muted);font-size:12px">'+esc(e.email)+'</span>':'')+'</span><button class="pr-btn ghost" data-payslip="'+e.id+'">下載</button></div>';
+  }).join('');
+  list.querySelectorAll('[data-payslip]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var emp = EMP.filter(function(x){return x.id===b.dataset.payslip || x.id===+b.dataset.payslip;})[0]; if(!emp) return;
+      b.textContent='產生中…'; b.disabled=true;
+      genPayslipPDF(emp, {download:true}).then(function(){ b.textContent='已下載'; setTimeout(function(){ b.textContent='下載'; b.disabled=false; },1500); }).catch(function(){ b.textContent='重試'; b.disabled=false; });
+    });
+  });
+  allBtn.onclick = function(){
+    allBtn.disabled=true; allBtn.textContent='產生中…';
+    var i=0;
+    function next(){
+      if(i>=roster.length){ allBtn.textContent='全部一次下載（'+roster.length+' 份）'; allBtn.disabled=false; toast('已產出 '+roster.length+' 份薪資條 PDF'); return; }
+      genPayslipPDF(roster[i], {download:true}).then(function(){ i++; setTimeout(next, 350); }).catch(function(){ i++; setTimeout(next, 350); });
+    }
+    next();
+  };
+  ov.classList.add('open');
+}
+
+
+  /* ── 事件綁定（每次 render 後一次） ── */
+  function bindShell(){
+    document.querySelectorAll('#content .tab').forEach(function(t){
+      t.addEventListener('click',function(){
+        document.querySelectorAll('#content .tab').forEach(function(x){ x.classList.remove('active'); }); t.classList.add('active');
+        document.querySelectorAll('#content .view').forEach(function(v){ v.classList.remove('active'); });
+        document.getElementById('prView-'+t.dataset.tab).classList.add('active');
+        var act=document.getElementById('prActions'); if(act) act.style.visibility=(t.dataset.tab==='board')?'visible':'hidden';
+        if(t.dataset.tab==='employees') renderEmployees();
+        if(t.dataset.tab==='params') renderParams();
+      });
+    });
+    document.getElementById('prMPrev').addEventListener('click',function(){ if(curMonth>1) curMonth--; else { curMonth=12; curYear--; } updMonth(); });
+    document.getElementById('prMNext').addEventListener('click',function(){ if(curMonth<12) curMonth++; else { curMonth=1; curYear++; } updMonth(); });
+    document.getElementById('prBtnCalc').addEventListener('click',function(){ renderTable(); toast('已試算 '+EMP.filter(activeThisMonth).length+' 位 · 紅綠燈已更新'); });
+    document.getElementById('prBtnImport').addEventListener('click',openImport);
+    document.getElementById('prBtnAddEmp').addEventListener('click',function(){ openEmpModal(); });
+    document.getElementById('prEmpSearch').addEventListener('input',function(e){ empFilter=e.target.value; renderEmployees(); });
+    // detail modal
+    document.getElementById('prDetailClose').addEventListener('click',function(){ document.getElementById('prDetailOverlay').classList.remove('open'); });
+    document.getElementById('prDetailOverlay').addEventListener('click',function(e){ if(e.target.id==='prDetailOverlay') document.getElementById('prDetailOverlay').classList.remove('open'); });
+    // import modal
+    document.getElementById('prImportClose').addEventListener('click',closeImport);
+    document.getElementById('prImpCancel').addEventListener('click',closeImport);
+    document.getElementById('prImportOverlay').addEventListener('click',function(e){ if(e.target.id==='prImportOverlay') closeImport(); });
+    document.getElementById('prDrop').addEventListener('click',function(){ document.getElementById('prFileInput').click(); });
+    document.getElementById('prDrop').addEventListener('dragover',function(e){ e.preventDefault(); });
+    document.getElementById('prDrop').addEventListener('drop',function(e){ e.preventDefault(); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+    document.getElementById('prFileInput').addEventListener('change',function(e){ if(e.target.files[0]) handleFile(e.target.files[0]); });
+    document.getElementById('prDlTemplate').addEventListener('click',function(e){ e.preventDefault(); downloadTemplate(); });
+    document.getElementById('prImpConfirm').addEventListener('click',confirmImport);
+    // emp modal
+    document.getElementById('prEmpClose').addEventListener('click',closeEmpModal);
+    document.getElementById('prEmpCancel').addEventListener('click',closeEmpModal);
+    document.getElementById('prEmpSave').addEventListener('click',saveEmp);
+    document.getElementById('prEmpOverlay').addEventListener('click',function(e){ if(e.target.id==='prEmpOverlay') closeEmpModal(); });
+    document.querySelectorAll('#prInsMode button').forEach(function(b){ b.addEventListener('click',function(){ insMode=b.dataset.ins; applyInsMode(); }); });
+    document.getElementById('pref_base').addEventListener('input',function(){ if(insMode==='auto') applyInsMode(); });
+    // output menu
+    var outBtn=document.getElementById('prBtnOutput'), outMenu=document.getElementById('prOutputMenu');
+    outBtn.addEventListener('click',function(e){ e.stopPropagation(); outMenu.classList.toggle('open'); });
+    document.addEventListener('click',function(){ if(outMenu) outMenu.classList.remove('open'); });
+    outMenu.addEventListener('click',function(e){ var mi=e.target.closest('.mi'); if(!mi) return; var out=mi.dataset.out; outMenu.classList.remove('open'); if(out==='cost') exportCost(); else if(out==='bank') exportBank(); else openPayslipPicker(); });
+  }
+  function updMonth(){ var l=document.getElementById('prMLabel'); if(l) l.textContent=monthLabel(); if(_wsId){ loadFromCloud(function(){ renderTable(); }); } else renderTable(); }
+
+  /* ════════════════════════════════════════════════════════════════════
+     入口：window.renderPayroll —— renderModule('biz-payroll') 會呼叫
+     ════════════════════════════════════════════════════════════════════ */
+  window.renderPayroll = function(){
+    var c=content(); if(!c) return;
+    c.classList.add('payroll-scope');
+    c.innerHTML='<div class="empty"><div class="ic"><svg viewBox="0 0 24 24" stroke="currentColor"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M9 11h2M13 11h2M9 15h2M13 15h2"/></svg></div><h3>薪資模組載入中…</h3></div>';
+    resolveAccess(function(canSee, mode){
+      if(!canSee){ c.innerHTML=gateBlockHtml(); return; }
+      // 載入資料（雲端或本機）
+      var afterLoad=function(){
+        c.innerHTML=shellHtml(mode);
+        bindShell();
+        renderTable();
+        _loaded=true;
+      };
+      if(mode==='cloud' && _wsId){ loadFromCloud(afterLoad); }
+      else { loadLocal(); afterLoad(); }
+    });
+  };
+
+})();
 </script>
 </body>
 </html>
