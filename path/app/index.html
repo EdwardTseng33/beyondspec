@@ -40206,9 +40206,9 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
         '<td><div class="emp-acts"><button class="icon-btn" title="編輯" data-edit="'+e.id+'"><svg viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 00-3-3L5 17v3z"/><path d="M13.5 6.5l3 3"/></svg></button><button class="icon-btn danger" title="刪除" data-del="'+e.id+'"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13"/></svg></button></div></td>';
       body.appendChild(tr);
     });
-    body.querySelectorAll('tr[data-id]').forEach(function(tr){ tr.addEventListener('click',function(){ openEmpModal(+tr.dataset.id); }); });
-    body.querySelectorAll('[data-edit]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); openEmpModal(+b.dataset.edit); }); });
-    body.querySelectorAll('[data-del]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); deleteEmp(+b.dataset.del); }); });
+    body.querySelectorAll('tr[data-id]').forEach(function(tr){ tr.addEventListener('click',function(){ openEmpModal(tr.dataset.id); }); });
+    body.querySelectorAll('[data-edit]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); openEmpModal(b.dataset.edit); }); });
+    body.querySelectorAll('[data-del]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); deleteEmp(b.dataset.del); }); });
   }
 
   /* ── 員工新增 / 編輯 / 刪除 ── */
@@ -40299,7 +40299,6 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   /* ── 年度參數 ── */
   /* 法定參數（主畫面）：只列「直接影響員工每月實發結算」的項目 */
   var LEGAL_GROUPS=[
-    {title:'基本工資（法定最低 · 非個別員工薪資）',flds:[{key:'minWageMonth',label:'月薪下限',kind:'num',step:'100',suffix:'元'},{key:'minWageHour',label:'時薪下限',kind:'num',step:'1',suffix:'元'}]},
     {title:'勞保',flds:[{key:'laborRate',label:'費率',kind:'pct',step:'0.01',suffix:'%'},{key:'laborEmp',label:'員工負擔',kind:'pct',step:'1',suffix:'%'}]},
     {title:'健保',flds:[{key:'healthRate',label:'費率',kind:'pct',step:'0.01',suffix:'%'},{key:'healthEmp',label:'員工負擔',kind:'pct',step:'1',suffix:'%'},{key:'depCap',label:'眷口上限',kind:'num',step:'1',suffix:'口'}]},
     {title:'二代健保',flds:[{key:'suppRate',label:'補充保費率',kind:'pct',step:'0.01',suffix:'%'},{key:'suppBonusMult',label:'高額獎金門檻（投保×）',kind:'mult',step:'1',suffix:'倍'}]}
