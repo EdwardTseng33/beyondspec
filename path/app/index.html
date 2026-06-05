@@ -40023,7 +40023,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       '<div class="emp-toolbar"><div class="left"><div class="emp-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="prEmpSearch" type="text" placeholder="搜尋姓名…" autocomplete="off"></div><div class="emp-count" id="prEmpCount"></div></div>'+
         '<button class="pr-btn accent" id="prBtnAddEmp"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> 新增員工</button></div>'+
       '<div class="pr-card"><div class="tablewrap"><table class="emp-table"><thead><tr><th class="l">員工</th><th class="c" title="健保眷屬人數">眷口</th><th class="c" title="勞退自願提繳比例">自提</th><th title="月底薪">底薪</th><th title="勞保投保薪資">投保</th><th style="text-align:right">操作</th></tr></thead><tbody id="prEmpBody"></tbody></table></div></div>'+
-      '<p class="hint" style="margin-top:14px">建檔一次、長期沿用，每月薪資表自動帶入。身分證 / 銀行帳號等機密資料<b>清單只顯示遮罩</b>，完整值僅授權財務人員（公司擁有者／被指定的可看薪資成員）可見，並安全存放於公司隔離的雲端。離職填離職日，當月自動按在職天數比例結算。</p>'+
+      '<p class="hint" style="margin-top:14px">建檔一次、長期沿用，每月薪資表自動帶入。身分證 / 銀行帳號等機密欄位，清單只顯示末幾碼，完整號碼只有你看得到。離職填離職日，當月自動按在職天數比例結算。</p>'+
     '</div>'+
     '<div class="view" id="prView-params">'+
       '<p class="hint" style="margin:0 0 18px"><b>每年只改這一張。</b>政府通常 12 月公告隔年新制，出納照這張更新即可，薪資公式永遠不用改。目前：<b>115 年度（2026）</b>，數據已交叉比對官方。</p>'+
@@ -40038,7 +40038,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     '</div>'+
     // ── 跳窗：明細 / 匯入 / 員工編輯 ──
     '<div class="pr-overlay" id="prDetailOverlay"><div class="pr-modal"><div class="pr-modal-header"><div><div class="h-nm" id="prDNm">—</div><div class="h-mo" id="prDMo"></div></div><button class="pr-modal-close" id="prDetailClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="pr-2col"><div id="prDLeft"></div><div id="prDRight"></div></div></div></div></div>'+
-    '<div class="pr-overlay" id="prImportOverlay"><div class="pr-modal sm"><div class="pr-modal-header"><div class="h-nm">匯入員工名冊</div><button class="pr-modal-close" id="prImportClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="pr-modal-pad"><div class="drop" id="prDrop">把 Excel 拖進來，或<b>點此選擇檔案</b><span class="di">支援 .xlsx / .xls / .csv。第一列當作欄位名稱。</span><input type="file" id="prFileInput" accept=".xlsx,.xls,.csv" style="display:none" /></div><p class="hint">不確定格式？先 <a href="#" id="prDlTemplate" style="color:var(--primary)">下載範本</a>，填好再上傳。可辨識欄位：姓名、底薪、勞保投保薪資、健保投保金額、勞退提繳工資、眷口數、勞退自願提繳%、到職日、離職日、身分證字號、銀行代號、銀行帳號。<b>身分證 / 帳號安全存放於公司隔離雲端，僅授權財務可讀，清單頁一律遮罩顯示。</b></p><div id="prPreviewArea"></div></div></div><div class="pr-modal-footer"><button class="pr-btn ghost" id="prImpCancel">取消</button><button class="pr-btn accent" id="prImpConfirm" disabled>確認匯入</button></div></div></div>'+
+    '<div class="pr-overlay" id="prImportOverlay"><div class="pr-modal sm"><div class="pr-modal-header"><div class="h-nm">匯入員工名冊</div><button class="pr-modal-close" id="prImportClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="pr-modal-pad"><div class="drop" id="prDrop">把 Excel 拖進來，或<b>點此選擇檔案</b><span class="di">支援 .xlsx / .xls / .csv。第一列當作欄位名稱。</span><input type="file" id="prFileInput" accept=".xlsx,.xls,.csv" style="display:none" /></div><p class="hint">不確定格式？先 <a href="#" id="prDlTemplate" style="color:var(--primary)">下載範本</a>，填好再上傳。可辨識欄位：姓名、底薪、勞保投保薪資、健保投保金額、勞退提繳工資、眷口數、勞退自願提繳%、到職日、離職日、身分證字號、銀行代號、銀行帳號。<b>身分證 / 帳號：清單只顯示末幾碼。</b></p><div id="prPreviewArea"></div></div></div><div class="pr-modal-footer"><button class="pr-btn ghost" id="prImpCancel">取消</button><button class="pr-btn accent" id="prImpConfirm" disabled>確認匯入</button></div></div></div>'+
     '<div class="pr-overlay" id="prEmpOverlay"><div class="pr-modal" style="width:680px"><div class="pr-modal-header"><div><div class="h-nm" id="prEmpModalTitle">新增員工</div><div class="h-mo">建檔一次、長期沿用</div></div><button class="pr-modal-close" id="prEmpClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="emp-form">'+
       '<div class="form-sec"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>基本</div><div class="form-grid"><div class="ff full"><label>姓名</label><input id="pref_name" type="text" placeholder="員工姓名" autocomplete="off"></div><div class="ff full"><label>Email<span class="opt">（寄薪資條用）</span></label><input id="pref_email" type="email" placeholder="例 name@company.com" autocomplete="off" inputmode="email"></div><div class="ff"><label>到職日</label><input id="pref_hire" type="date"></div><div class="ff"><label>離職日<span class="opt">（在職留空）</span></label><input id="pref_leave" type="date"></div></div></div>'+
       '<div class="form-sec"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><path d="M12 2v20M16 6c0-2-1.8-3.5-4-3.5S8 4 8 6s1.8 3.2 4 3.2 4 1.5 4 3.5-1.8 3.5-4 3.5-4-1.5-4-3.5"/></svg>薪資</div><div class="form-grid"><div class="ff"><label>底薪（月）</label><input id="pref_base" class="num" type="number" step="100" placeholder="例 45000" inputmode="numeric"></div><div class="ff"><label>勞退自願提繳 %</label><select id="pref_voluntary"><option value="0">0%</option><option value="1">1%</option><option value="2">2%</option><option value="3">3%</option><option value="4">4%</option><option value="5">5%</option><option value="6">6%</option></select></div></div></div>'+
@@ -40048,7 +40048,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
         '<div class="ff"><label>勞退提繳工資</label><select id="pref_pension_sel"></select><span class="fhint" id="pref_pension_hint"></span></div>'+
         '<div class="ff"><label>健保眷口數<span class="opt">（0–5）</span></label><select id="pref_deps"><option value="0">0 口</option><option value="1">1 口</option><option value="2">2 口</option><option value="3">3 口</option><option value="4">4 口</option><option value="5">5 口</option></select></div>'+
       '</div></div>'+
-      '<div class="form-sec secret"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>機密資料<span class="note">公司隔離雲端 · 產轉帳檔用</span></div><div class="form-grid"><div class="ff full"><label>身分證字號</label><input id="pref_natId" type="text" placeholder="A123456789" autocomplete="off" maxlength="10" style="text-transform:uppercase"></div><div class="ff"><label>銀行代號</label><input id="pref_bankCode" class="num" type="text" placeholder="例 822" autocomplete="off" maxlength="3" inputmode="numeric"></div><div class="ff"><label>銀行帳號</label><input id="pref_bankAcct" class="num" type="text" placeholder="轉帳用帳號" autocomplete="off" inputmode="numeric"></div></div><div class="secret-note" id="prSecretNote"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>這三欄安全存放於公司隔離雲端，僅授權財務可讀；清單頁一律遮罩顯示。</div></div>'+
+      '<div class="form-sec secret"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>機密資料<span class="note">製作銀行轉帳檔用</span></div><div class="form-grid"><div class="ff full"><label>身分證字號</label><input id="pref_natId" type="text" placeholder="A123456789" autocomplete="off" maxlength="10" style="text-transform:uppercase"></div><div class="ff"><label>銀行代號</label><input id="pref_bankCode" class="num" type="text" placeholder="例 822" autocomplete="off" maxlength="3" inputmode="numeric"></div><div class="ff"><label>銀行帳號</label><input id="pref_bankAcct" class="num" type="text" placeholder="轉帳用帳號" autocomplete="off" inputmode="numeric"></div></div><div class="secret-note" id="prSecretNote"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>清單只顯示末幾碼，完整號碼只有你看得到。</div></div>'+
       '</div><div class="emp-form-err" id="prEmpFormErr"></div></div><div class="pr-modal-footer"><button class="pr-btn ghost" id="prEmpCancel">取消</button><button class="pr-btn accent" id="prEmpSave">儲存</button></div></div></div>';
   }
 
@@ -40063,7 +40063,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   function noAuthHtml(){
     return '<div class="gate-block"><div class="gic"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M12 12v4M10 14h4"/></svg></div>'+
       '<h2>請重新登入</h2>'+
-      '<p>薪資資料綁定你的帳號並安全存放於雲端，需登入後才能存取。<br>請重新登入後再回到薪資模組。</p></div>';
+      '<p>薪資資料需登入後才能查看。<br>請重新登入後再回到薪資模組。</p></div>';
   }
 
   /* ── 加退保申報提醒 ── */
@@ -40299,7 +40299,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   /* ── 年度參數 ── */
   /* 法定參數（主畫面）：只列「直接影響員工每月實發結算」的項目 */
   var LEGAL_GROUPS=[
-    {title:'基本工資',flds:[{key:'minWageMonth',label:'月薪',kind:'num',step:'100',suffix:'元'},{key:'minWageHour',label:'時薪',kind:'num',step:'1',suffix:'元'}]},
+    {title:'基本工資（法定最低 · 非個別員工薪資）',flds:[{key:'minWageMonth',label:'月薪下限',kind:'num',step:'100',suffix:'元'},{key:'minWageHour',label:'時薪下限',kind:'num',step:'1',suffix:'元'}]},
     {title:'勞保',flds:[{key:'laborRate',label:'費率',kind:'pct',step:'0.01',suffix:'%'},{key:'laborEmp',label:'員工負擔',kind:'pct',step:'1',suffix:'%'}]},
     {title:'健保',flds:[{key:'healthRate',label:'費率',kind:'pct',step:'0.01',suffix:'%'},{key:'healthEmp',label:'員工負擔',kind:'pct',step:'1',suffix:'%'},{key:'depCap',label:'眷口上限',kind:'num',step:'1',suffix:'口'}]},
     {title:'二代健保',flds:[{key:'suppRate',label:'補充保費率',kind:'pct',step:'0.01',suffix:'%'},{key:'suppBonusMult',label:'高額獎金門檻（投保×）',kind:'mult',step:'1',suffix:'倍'}]}
@@ -40368,7 +40368,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   function renderPreview(rows){
     var h='<div class="pill">辨識到 '+rows.length+' 位員工</div><div class="previewtbl"><table><thead><tr><th class="l">姓名</th><th>底薪</th><th>勞保</th><th>健保</th><th>眷口</th><th>自提%</th></tr></thead><tbody>';
     rows.slice(0,50).forEach(function(r){ h+='<tr><td class="l">'+esc(r.name)+'</td><td style="text-align:right"><span class="m">'+fmt(r.base)+'</span></td><td style="text-align:right"><span class="m">'+fmt(r.laborIns)+'</span></td><td style="text-align:right"><span class="m">'+fmt(r.healthIns)+'</span></td><td style="text-align:right">'+r.deps+'</td><td style="text-align:right">'+r.voluntary+'</td></tr>'; });
-    h+='</tbody></table></div><p class="hint">未填投保金額者，系統自動依底薪對應級距帶入（可事後修改）。身分證 / 帳號將安全存放於公司隔離雲端，僅授權財務可讀，清單頁遮罩顯示。</p>';
+    h+='</tbody></table></div><p class="hint">未填投保金額者，系統自動依底薪對應級距帶入（可事後修改）。身分證 / 帳號：清單只顯示末幾碼。</p>';
     document.getElementById('prPreviewArea').innerHTML=h;
   }
   function confirmImport(){
