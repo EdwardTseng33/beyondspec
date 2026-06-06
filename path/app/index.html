@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.7.2</div>
+        <div class="sidebar-version">v1.7.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -40301,7 +40301,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     var ins=document.querySelectorAll('#prBody .cellinput');
     ins.forEach(function(inp){
       inp.addEventListener('input',function(){
-        var id=+inp.dataset.id, f=inp.dataset.f;
+        var id=inp.dataset.id, f=inp.dataset.f;
         getM(id)[f]=parseFloat(inp.value)||0;
         var k=tKey(id); if(!touched[k]) touched[k]={}; touched[k][f]=!!inp.value;
         saveRunCloud();
@@ -40312,7 +40312,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); var all=Array.prototype.slice.call(document.querySelectorAll('#prBody .cellinput[data-f="'+inp.dataset.f+'"]')); var i=all.indexOf(inp); if(all[i+1]) all[i+1].focus(); } });
       inp.addEventListener('click',function(e){ e.stopPropagation(); });
     });
-    document.querySelectorAll('#prBody tr.emp-row').forEach(function(tr){ tr.addEventListener('click',function(){ openDetail(+tr.dataset.id); }); });
+    document.querySelectorAll('#prBody tr.emp-row').forEach(function(tr){ tr.addEventListener('click',function(){ openDetail(tr.dataset.id); }); });
   }
 
   /* ════ 薪資表獎金 chip 下拉（§4.7 固定 / §4.8 績效雙模式）════ */
@@ -40383,16 +40383,16 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   function _closeAllBonusPops(){ document.querySelectorAll('#prBody .bc-pop').forEach(function(p){ if(p.parentNode) p.parentNode.removeChild(p); }); }
   function bindBonusCells(){
     document.querySelectorAll('#prBody .bonus-cell').forEach(function(cell){ cell.addEventListener('click',function(ev){ ev.stopPropagation(); }); });
-    document.querySelectorAll('#prBody [data-bc-fixed]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); var id=+b.dataset.bcFixed; var e=EMP.filter(function(x){return x.id===id;})[0]; if(!e) return; var cell=b.closest('.bonus-cell'); var already=cell.querySelector('[data-bc-pop="fixed"]'); _closeAllBonusPops(); if(!already) _openFixedPop(e,cell); }); });
-    document.querySelectorAll('#prBody [data-bc-perf]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); var id=+b.dataset.bcPerf; var e=EMP.filter(function(x){return x.id===id;})[0]; if(!e) return; var cell=b.closest('.bonus-cell'); var already=cell.querySelector('[data-bc-pop="perf"]'); _closeAllBonusPops(); if(!already) _openPerfPop(e,cell); }); });
-    document.querySelectorAll('#prBody [data-bc-rm-fixed]').forEach(function(x){ x.addEventListener('click',function(ev){ ev.stopPropagation(); var cell=x.closest('.bonus-cell'); var id=+cell.dataset.bcId; var m=getM(id); _removeItem(m,x.dataset.bcRmFixed); syncBonusField(m); saveRunCloud(); renderTable(); }); });
-    document.querySelectorAll('#prBody [data-bc-rm-perf]').forEach(function(x){ x.addEventListener('click',function(ev){ ev.stopPropagation(); var cell=x.closest('.bonus-cell'); var id=+cell.dataset.bcId; var m=getM(id); _removeItem(m,x.dataset.bcRmPerf); syncBonusField(m); saveRunCloud(); renderTable(); }); });
+    document.querySelectorAll('#prBody [data-bc-fixed]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); var id=b.dataset.bcFixed; var e=EMP.filter(function(x){return String(x.id)===String(id);})[0]; if(!e) return; var cell=b.closest('.bonus-cell'); var already=cell.querySelector('[data-bc-pop="fixed"]'); _closeAllBonusPops(); if(!already) _openFixedPop(e,cell); }); });
+    document.querySelectorAll('#prBody [data-bc-perf]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); var id=b.dataset.bcPerf; var e=EMP.filter(function(x){return String(x.id)===String(id);})[0]; if(!e) return; var cell=b.closest('.bonus-cell'); var already=cell.querySelector('[data-bc-pop="perf"]'); _closeAllBonusPops(); if(!already) _openPerfPop(e,cell); }); });
+    document.querySelectorAll('#prBody [data-bc-rm-fixed]').forEach(function(x){ x.addEventListener('click',function(ev){ ev.stopPropagation(); var cell=x.closest('.bonus-cell'); var id=cell.dataset.bcId; var m=getM(id); _removeItem(m,x.dataset.bcRmFixed); syncBonusField(m); saveRunCloud(); renderTable(); }); });
+    document.querySelectorAll('#prBody [data-bc-rm-perf]').forEach(function(x){ x.addEventListener('click',function(ev){ ev.stopPropagation(); var cell=x.closest('.bonus-cell'); var id=cell.dataset.bcId; var m=getM(id); _removeItem(m,x.dataset.bcRmPerf); syncBonusField(m); saveRunCloud(); renderTable(); }); });
   }
   document.addEventListener('click',function(){ _closeAllBonusPops(); });
 
   /* ── 單人明細 ── */
   function openDetail(id){
-    var e=EMP.filter(function(x){return x.id===id;})[0]; if(!e) return; var r=calcRow(e);
+    var e=EMP.filter(function(x){return String(x.id)===String(id);})[0]; if(!e) return; var r=calcRow(e);
     document.getElementById('prDNm').textContent=e.name;
     document.getElementById('prDMo').textContent=monthLabel()+(r.pr.partial?'　·　在職 '+r.pr.workDays+'/'+r.pr.total+' 天':'');
     var L=[];
