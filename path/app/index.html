@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.8.3</div>
+        <div class="sidebar-version">v1.8.4</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -40701,7 +40701,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
         ? '<span class="bm-dual">每月在薪資表填入</span>'
         : '<span class="bm-amt-wrap"><span class="lbl">金額</span><input type="number" class="bm-amt" data-bm-amt="'+esc(it.id)+'" value="'+(it.amount||0)+'" step="100" min="0"></span>';
       var delCell = it.builtin
-        ? '<span class="bm-lock" title="系統內建項目：可改名改值，不可刪">🔒</span>'
+        ? ''
         : '<button type="button" class="bm-del" data-bm-del="'+esc(it.id)+'" title="刪除此項目">✕</button>';
       return '<div class="bm-row" data-bm-id="'+esc(it.id)+'">'+
         '<span class="bm-icon" data-bm-icon="'+esc(it.id)+'">'+iconEmoji(it.icon)+
@@ -40709,8 +40709,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
         '</span>'+
         '<input type="text" class="bm-label" data-bm-label="'+esc(it.id)+'" value="'+esc(it.label)+'" placeholder="獎金名稱">'+
         amtCell+
-        '<span class="bm-nature'+(it.nature==='regular'?' regular':'')+'">'+
-          '<button type="button" class="bm-nat-btn" data-bm-nat="'+esc(it.id)+'" title="'+natureLabel(it)+'">⚙ 系統已設定 ✓　<span class="bm-adv">進階 ▾</span></button>'+
+        '<span class="bm-nature">'+
+          '<button type="button" class="bm-nat-btn" data-bm-nat="'+esc(it.id)+'" title="'+natureLabel(it)+'">進階設定 ▾</button>'+
           '<span class="bm-nat-pop" data-nat-pop="'+esc(it.id)+'">'+
             '<div class="toggleRow"><span>性質</span><span class="seg sm"><button type="button" data-flag="nature" data-fval="nonRegular" class="'+(it.nature==='nonRegular'?'on':'')+'">非經常</button><button type="button" data-flag="nature" data-fval="regular" class="'+(it.nature==='regular'?'on':'')+'">經常</button></span></div>'+
             '<div class="toggleRow"><span>併入投保（提醒）</span><span class="seg sm"><button type="button" data-flag="inInsurance" data-fval="false" class="'+(!it.inInsurance?'on':'')+'">否</button><button type="button" data-flag="inInsurance" data-fval="true" class="'+(it.inInsurance?'on':'')+'">是</button></span></div>'+
