@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.8.2</div>
+        <div class="sidebar-version">v1.8.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -40305,18 +40305,18 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       var tr=document.createElement('tr'); tr.className='emp-row'; tr.dataset.id=e.id;
       var proTag=r.pr.partial?'<span class="prorate-tag" title="月中到/離職，已按在職天數比例計薪">在職 '+r.pr.workDays+'/'+r.pr.total+' 天</span>':'';
       var anomTag=r.anomaly?'<span class="anomaly-tag" title="本月實發較上月變動 '+(r.anomaly.pct>0?'+':'')+r.anomaly.pct+'%（非錯誤，請確認是否預期）">較上月 <span class="ar">'+(r.anomaly.pct>0?'+':'')+r.anomaly.pct+'%</span></span>':'';
-      if(r.flags.length){
-        tr.innerHTML='<td class="l"><span class="dot bad"></span><span class="name">'+esc(e.name)+'</span>'+proTag+anomTag+'</td><td><span class="m">'+fmt(r.base)+'</span></td><td colspan="7" class="flagtxt" style="text-align:left">⚠ '+r.flags.join('・')+'</td><td><span class="m neg">'+fmt(r.net)+'</span></td>';
-      } else {
-        tr.innerHTML='<td class="l"><span class="dot '+r.status+'"></span><span class="name">'+esc(e.name)+'</span>'+proTag+anomTag+'</td>'+
-          '<td><span class="m">'+fmt(r.base)+'</span></td>'+
-          '<td><input class="cellinput '+tch(e.id,'ot')+'" data-id="'+e.id+'" data-f="ot" value="'+(getM(e.id).ot||'')+'" placeholder="0" inputmode="decimal"></td>'+
-          '<td><input class="cellinput '+tch(e.id,'sick')+'" data-id="'+e.id+'" data-f="sick" value="'+(getM(e.id).sick||'')+'" placeholder="0" inputmode="decimal"></td>'+
-          '<td><input class="cellinput '+tch(e.id,'personal')+'" data-id="'+e.id+'" data-f="personal" value="'+(getM(e.id).personal||'')+'" placeholder="0" inputmode="decimal"></td>'+
-          '<td class="bonus-td">'+bonusCellHtml(e)+'</td>'+
-          '<td class="calc"><span class="m">'+fmt(r.labor)+'</span></td><td class="calc"><span class="m">'+fmt(r.health)+'</span></td>'+
-          '<td class="calc"><span class="m">'+fmt(r.ded)+'</span></td><td><span class="m" style="font-weight:700">'+fmt(r.net)+'</span></td>';
-      }
+      var flagTag=r.flags.length?'<span title="'+esc(r.flags.join('・'))+'" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:rgba(225,29,72,.1);color:var(--rose);font-size:12px;font-weight:600;white-space:nowrap">⚠ '+esc(r.flags.join('・'))+'</span>':'';
+      var dotCls=r.flags.length?'bad':r.status;
+      var netCls=(r.net<0)?'m neg':'m';
+      /* 永遠顯示可編輯格子：旗標(實發為負/投保低於基本工資)只當警告標籤、不鎖列，否則用戶救不回來（Edward 6/7 catch） */
+      tr.innerHTML='<td class="l"><span class="dot '+dotCls+'"></span><span class="name">'+esc(e.name)+'</span>'+proTag+anomTag+flagTag+'</td>'+
+        '<td><span class="m">'+fmt(r.base)+'</span></td>'+
+        '<td><input class="cellinput '+tch(e.id,'ot')+'" data-id="'+e.id+'" data-f="ot" value="'+(getM(e.id).ot||'')+'" placeholder="0" inputmode="decimal"></td>'+
+        '<td><input class="cellinput '+tch(e.id,'sick')+'" data-id="'+e.id+'" data-f="sick" value="'+(getM(e.id).sick||'')+'" placeholder="0" inputmode="decimal"></td>'+
+        '<td><input class="cellinput '+tch(e.id,'personal')+'" data-id="'+e.id+'" data-f="personal" value="'+(getM(e.id).personal||'')+'" placeholder="0" inputmode="decimal"></td>'+
+        '<td class="bonus-td">'+bonusCellHtml(e)+'</td>'+
+        '<td class="calc"><span class="m">'+fmt(r.labor)+'</span></td><td class="calc"><span class="m">'+fmt(r.health)+'</span></td>'+
+        '<td class="calc"><span class="m">'+fmt(r.ded)+'</span></td><td><span class="'+netCls+'" style="font-weight:700">'+fmt(r.net)+'</span></td>';
       body.appendChild(tr);
     });
     document.getElementById('prKGross').textContent=fmt(tG);
