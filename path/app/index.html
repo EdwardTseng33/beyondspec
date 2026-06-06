@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.7.1</div>
+        <div class="sidebar-version">v1.7.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -39465,8 +39465,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 <!-- ════════════════════════════════════════════════════════════════════
      薪資模組（biz-payroll）· vanilla JS · 掛 #content
      · 計算引擎 1:1 照搬已驗證 prototype-bp（calcRow / proration / 二代健保跨月累計 / 異常紅旗）
-     · 儲存改 Firestore（workspaces/{wsId}/payroll_*），取代 localStorage
-     · 身分證 / 銀行帳號：庫裡只存密文 + 遮罩，明文走 Cloud Function（見 deploy-staging/functions/）
+     · 儲存改 Firestore（users/{uid}/payroll_*，帳號綁定），取代 localStorage
+     · 身分證 / 銀行帳號（免費路線）：存 Firestore 一般明文欄位 + 遮罩，靠帳號權限鎖 + Google 靜態加密保護（無 Cloud Function 加解密；見 L39837）
      · 角色閘：owner / payrollAccessEmails 才看得到（UX 層；真正的鎖在 firestore.rules）
      建立：2026-06-05（卡西法）
      ════════════════════════════════════════════════════════════════════ -->
@@ -39790,6 +39790,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 .payroll-scope .bc-opt .bc-conv{font-size:11px;color:var(--primary);font-family:var(--font-mono,monospace);white-space:nowrap}
 .payroll-scope .bc-foot{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;color:var(--ink-sec);display:flex;justify-content:space-between;align-items:center}
 .payroll-scope .bc-hint{font-size:11px;color:var(--ink-muted);margin-top:5px;line-height:1.5}
+.payroll-scope .bc-note{font-size:11px;color:var(--ink-muted);font-weight:400}
+.payroll-scope .bm-nat-btn .bm-adv{font-size:11px;color:var(--ink-muted);opacity:.85}
 @media(max-width:640px){.payroll-scope .bm-row{flex-wrap:wrap}.payroll-scope .bm-row .bm-label{flex:1 1 100%;order:2}.payroll-scope .bc-pop{min-width:240px;left:auto;right:0}}
 </style>
 
@@ -40329,7 +40331,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     var perfSum=0; for(var pi=0;pi<sp.perf.length;pi++) perfSum+=(+sp.perf[pi].amount||0);
     var fixedChips=sp.fixed.map(function(it){ var mi=bonusMenuById(it.menuId)||{}; return '<span class="bchip">'+iconEmoji(mi.icon)+esc(mi.label||'獎金')+' '+fmt(+it.amount||0)+'<span class="x" data-bc-rm-fixed="'+esc(it.menuId)+'">✕</span></span>'; }).join('');
     var fixedTrigger='<div class="bcg"><button type="button" class="bc-trigger'+(sp.fixed.length?' has':'')+'" data-bc-fixed="'+e.id+'">'+(sp.fixed.length?(fixedChips+'<span class="bc-sum">'+fmt(fixedSum)+'</span>'):'＋ 固定獎金 ▾')+'</button></div>';
-    var perfChips=sp.perf.map(function(it){ var mi=bonusMenuById(it.menuId)||{}; var tag=(it.mode==='rate')?(esc(mi.label||'績效')+' '+(+it.rate||0)+'%→'+fmt(+it.amount||0)):(esc(mi.label||'績效')+' '+fmt(+it.amount||0)); return '<span class="bchip">'+iconEmoji(mi.icon)+tag+'<span class="x" data-bc-rm-perf="'+esc(it.menuId)+'">✕</span></span>'; }).join('');
+    var perfChips=sp.perf.map(function(it){ var mi=bonusMenuById(it.menuId)||{}; var tag=(it.mode==='rate')?(esc(mi.label||'績效')+' '+(+it.rate||0)+'% → '+fmt(+it.amount||0)):(esc(mi.label||'績效')+' '+fmt(+it.amount||0)+' 元'); return '<span class="bchip">'+iconEmoji(mi.icon)+tag+'<span class="x" data-bc-rm-perf="'+esc(it.menuId)+'">✕</span></span>'; }).join('');
     var perfTrigger='<div class="bcg"><button type="button" class="bc-trigger'+(sp.perf.length?' has':'')+'" data-bc-perf="'+e.id+'">'+(sp.perf.length?(perfChips+'<span class="bc-sum">'+fmt(perfSum)+'</span>'):'＋ 績效 ▾')+'</button></div>';
     return '<div class="bonus-cell" data-bc-id="'+e.id+'">'+fixedTrigger+perfTrigger+'</div>';
   }
@@ -40343,7 +40345,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     }).join('');
     var sum=0; var sp=_splitItems(m); for(var i=0;i<sp.fixed.length;i++) sum+=(+sp.fixed[i].amount||0);
     var pop=document.createElement('div'); pop.className='bc-pop open'; pop.setAttribute('data-bc-pop','fixed');
-    pop.innerHTML='<div class="bc-title">固定獎金（可複選）</div>'+rows+'<div class="bc-foot"><span>本列固定合計</span><span>'+fmt(sum)+'</span></div>';
+    pop.innerHTML='<div class="bc-title">固定獎金（可複選）</div><div class="bc-hint">三節、全勤等固定金額項目</div>'+rows+'<div class="bc-foot"><span>本列固定合計</span><span>'+fmt(sum)+'</span></div>';
     _attachPop(e,cell,pop);
   }
   function _openPerfPop(e,cell){
@@ -40356,7 +40358,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       var conv=(on&&it.mode==='rate')?('→ '+fmt(+it.amount||0)):'';
       var seg='<span class="seg sm"><button type="button" data-pf-mode="rate" data-pf-id="'+esc(mi.id)+'" class="'+(mode==='rate'?'on':'')+'">填%</button><button type="button" data-pf-mode="amount" data-pf-id="'+esc(mi.id)+'" class="'+(mode==='amount'?'on':'')+'">填金額</button></span>';
       var inputCell=(mode==='rate')?('<input type="number" class="bc-in" data-pf-rate="'+esc(mi.id)+'" value="'+rateV+'" step="1" min="0" placeholder="%" '+(on?'':'disabled')+'><span class="bc-conv" data-pf-conv="'+esc(mi.id)+'">'+conv+'</span>'):('<input type="number" class="bc-in" data-pf-amt="'+esc(mi.id)+'" value="'+amtV+'" step="100" min="0" placeholder="金額" '+(on?'':'disabled')+'>');
-      return '<div class="bc-opt"><input type="checkbox" class="bc-chk" data-pf-chk="'+esc(mi.id)+'" '+(on?'checked':'')+'><span class="bc-nm" data-pf-chk2="'+esc(mi.id)+'">'+iconEmoji(mi.icon)+' '+esc(mi.label)+'</span>'+seg+inputCell+'</div>';
+      return '<div class="bc-opt"><input type="checkbox" class="bc-chk" data-pf-chk="'+esc(mi.id)+'" '+(on?'checked':'')+'><span class="bc-nm" data-pf-chk2="'+esc(mi.id)+'">'+iconEmoji(mi.icon)+' '+esc(mi.label)+(mi.id==='yearend'?' <span class="bc-note">(可填%或金額)</span>':'')+'</span>'+seg+inputCell+'</div>';
     }).join('');
     var sum=0; var sp=_splitItems(m); for(var i=0;i<sp.perf.length;i++) sum+=(+sp.perf[i].amount||0);
     var pop=document.createElement('div'); pop.className='bc-pop open'; pop.setAttribute('data-bc-pop','perf');
@@ -40371,7 +40373,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     function commit(){ syncBonusField(m); saveRunCloud(); renderTable(); }
     pop.querySelectorAll('[data-fx-chk]').forEach(function(c){ c.addEventListener('change',function(ev){ ev.stopPropagation(); var id=c.dataset.fxChk; var mi=bonusMenuById(id); if(c.checked){ if(!_itemByMenu(m,id)) bonusItemsOf(m).push({menuId:id,mode:'amount',amount:(+mi.amount||0),rate:null}); } else { _removeItem(m,id); } commit(); }); });
     pop.querySelectorAll('[data-fx-chk2]').forEach(function(nm){ nm.addEventListener('click',function(ev){ ev.stopPropagation(); var cb=pop.querySelector('[data-fx-chk="'+nm.dataset.fxChk2+'"]'); if(cb){ cb.checked=!cb.checked; var evt=document.createEvent('Event'); evt.initEvent('change',true,true); cb.dispatchEvent(evt); } }); });
-    pop.querySelectorAll('[data-fx-amt]').forEach(function(inp){ inp.addEventListener('click',function(ev){ ev.stopPropagation(); }); inp.addEventListener('change',function(ev){ ev.stopPropagation(); var it=_itemByMenu(m,inp.dataset.fxAmt); if(it){ it.amount=Math.max(0,parseInt(inp.value,10)||0); commit(); } }); });
+    pop.querySelectorAll('[data-fx-amt]').forEach(function(inp){ inp.addEventListener('click',function(ev){ ev.stopPropagation(); }); inp.addEventListener('input',function(ev){ ev.stopPropagation(); var it=_itemByMenu(m,inp.dataset.fxAmt); if(it){ it.amount=Math.max(0,parseInt(inp.value,10)||0); syncBonusField(m); saveRunCloud(); } }); inp.addEventListener('blur',function(ev){ ev.stopPropagation(); var it=_itemByMenu(m,inp.dataset.fxAmt); if(it){ it.amount=Math.max(0,parseInt(inp.value,10)||0); commit(); } }); });
     pop.querySelectorAll('[data-pf-chk]').forEach(function(c){ c.addEventListener('change',function(ev){ ev.stopPropagation(); var id=c.dataset.pfChk; if(c.checked){ if(!_itemByMenu(m,id)) bonusItemsOf(m).push({menuId:id,mode:'amount',amount:0,rate:null}); } else { _removeItem(m,id); } commit(); }); });
     pop.querySelectorAll('[data-pf-chk2]').forEach(function(nm){ nm.addEventListener('click',function(ev){ ev.stopPropagation(); var cb=pop.querySelector('[data-pf-chk="'+nm.dataset.pfChk2+'"]'); if(cb){ cb.checked=!cb.checked; var evt=document.createEvent('Event'); evt.initEvent('change',true,true); cb.dispatchEvent(evt); } }); });
     pop.querySelectorAll('[data-pf-mode]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); var id=b.dataset.pfId, mode=b.dataset.pfMode; var it=_itemByMenu(m,id); if(!it){ bonusItemsOf(m).push({menuId:id,mode:mode,amount:0,rate:null}); it=_itemByMenu(m,id); } it.mode=mode; if(mode==='rate'){ it.amount=_calcRateAmount(e,it); } commit(); }); });
@@ -40411,7 +40413,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     /* 獎金升級：補充費逐筆累計說明（§4.9-4.10-3） */
     if(r.supp){ var _sf='門檻＝當月投保 '+fmt(e.healthIns)+' × 4 ＝ '+fmt(r.suppThreshold)+'<br>今年本月前累計（計補充費獎金）'+fmt(r.suppCumBefore); var _sd=r.suppDetail||[]; if(_sd.length){ _sf+='<br>—— 本月逐筆 ——'; for(var _sk=0;_sk<_sd.length;_sk++){ _sf+='<br>'+esc(_sd[_sk].label)+' '+fmt(_sd[_sk].amount)+'：計費基數 '+fmt(_sd[_sk].feeBase)+' × 2.11% ＝ '+fmt(_sd[_sk].supp); } } else { _sf+='<br>本月新跨過門檻 '+fmt(r.suppTaxableThisMonth)+' × 2.11% ＝ '+fmt(r.supp); } L.push(lineF('二代健保補充保費',r.supp,_sf)); }
     /* 獎金升級：所得稅一次性預扣5%真值（§4.9-4.10-2） */
-    if(r.tax>0){ var _td=r.taxDetail||[]; var _tf=''; for(var _tk=0;_tk<_td.length;_tk++){ if(_tk) _tf+='<br>'; _tf+=esc(_td[_tk].label)+' '+fmt(_td[_tk].amount)+' &gt; '+fmt(PARAMS.bonusWithholdThreshold)+'，就源預扣 5% ＝ '+fmt(_td[_tk].tax); } _tf+='<br><span style="color:var(--ink-muted)">非最終稅負，報稅可抵減、多退少補</span>'; L.push(lineF('所得稅（一次性預扣5%）','-'+fmt(r.tax),_tf,true)); } else { L.push(line('所得稅','0',true)); }
+    if(r.tax>0){ var _td=r.taxDetail||[]; var _tf=''; for(var _tk=0;_tk<_td.length;_tk++){ if(_tk) _tf+='<br>'; _tf+='暫扣 '+fmt(_td[_tk].tax)+'（'+esc(_td[_tk].label)+' '+fmt(_td[_tk].amount)+' 超過 '+fmt(PARAMS.bonusWithholdThreshold)+'，暫扣 5% 作預付稅金）'; } _tf+='<br><span style="color:var(--ink-muted)">報稅時多退少補</span>'; L.push(lineF('所得稅（一次性預扣5%）','-'+fmt(r.tax),_tf,true)); } else { L.push(line('所得稅','0',true)); }
     L.push(lineTotal('應扣合計',r.ded));
     var leftHtml='';
     if(r.flags.length) leftHtml+='<div class="flag-banner">⚠ '+r.flags.join('・')+'</div>';
@@ -40617,7 +40619,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     var sorted=BONUS_MENU.slice().sort(function(a,b){ return (a.order||0)-(b.order||0); });
     host.innerHTML=sorted.map(function(it){
       var amtCell = it.dualMode
-        ? '<span class="bm-dual">%／金額（薪資表切）</span>'
+        ? '<span class="bm-dual">每月在薪資表填入</span>'
         : '<span class="bm-amt-wrap"><span class="lbl">金額</span><input type="number" class="bm-amt" data-bm-amt="'+esc(it.id)+'" value="'+(it.amount||0)+'" step="100" min="0"></span>';
       var delCell = it.builtin
         ? '<span class="bm-lock" title="系統內建項目：可改名改值，不可刪">🔒</span>'
@@ -40629,7 +40631,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
         '<input type="text" class="bm-label" data-bm-label="'+esc(it.id)+'" value="'+esc(it.label)+'" placeholder="獎金名稱">'+
         amtCell+
         '<span class="bm-nature'+(it.nature==='regular'?' regular':'')+'">'+
-          '<button type="button" class="bm-nat-btn" data-bm-nat="'+esc(it.id)+'">'+natureLabel(it)+' ▾</button>'+
+          '<button type="button" class="bm-nat-btn" data-bm-nat="'+esc(it.id)+'" title="'+natureLabel(it)+'">⚙ 系統已設定 ✓　<span class="bm-adv">進階 ▾</span></button>'+
           '<span class="bm-nat-pop" data-nat-pop="'+esc(it.id)+'">'+
             '<div class="toggleRow"><span>性質</span><span class="seg sm"><button type="button" data-flag="nature" data-fval="nonRegular" class="'+(it.nature==='nonRegular'?'on':'')+'">非經常</button><button type="button" data-flag="nature" data-fval="regular" class="'+(it.nature==='regular'?'on':'')+'">經常</button></span></div>'+
             '<div class="toggleRow"><span>併入投保（提醒）</span><span class="seg sm"><button type="button" data-flag="inInsurance" data-fval="false" class="'+(!it.inInsurance?'on':'')+'">否</button><button type="button" data-flag="inInsurance" data-fval="true" class="'+(it.inInsurance?'on':'')+'">是</button></span></div>'+
