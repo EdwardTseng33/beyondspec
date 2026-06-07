@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.8.4</div>
+        <div class="sidebar-version">v1.8.5</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -39527,10 +39527,10 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 .payroll-scope .ic-ded{background:var(--rose-bg);color:var(--rose)}
 .payroll-scope .ic-net{background:var(--teal-bg);color:var(--teal)}
 .payroll-scope .ic-cost{background:var(--gold-bg);color:var(--gold)}
-.payroll-scope .pr-card{background:var(--bg-card);border:none;border-radius:var(--r-xl,24px);box-shadow:var(--shadow-card);overflow:hidden}
-.payroll-scope .tablewrap{overflow-x:auto}
-.payroll-scope table{width:100%;border-collapse:collapse}
-.payroll-scope thead th{font-size:var(--text-label,12px);font-weight:700;color:var(--ink-sec);text-align:right;padding:13px 14px;background:#fff;border-bottom:2px solid var(--primary);white-space:nowrap;letter-spacing:.2px;cursor:default}
+.payroll-scope .pr-card{background:var(--bg-card);border:none;border-radius:var(--r-xl,24px);box-shadow:var(--shadow-card);overflow:clip}
+.payroll-scope .tablewrap{overflow:auto;max-height:min(70vh,720px)}
+.payroll-scope table{width:100%;border-collapse:separate;border-spacing:0}
+.payroll-scope thead th{font-size:var(--text-label,12px);font-weight:700;color:var(--ink-sec);text-align:right;padding:13px 14px;background:#fff;border-bottom:2px solid var(--primary);white-space:nowrap;letter-spacing:.2px;cursor:default;position:sticky;top:0;z-index:6}
 .payroll-scope thead th.l{text-align:left}
 .payroll-scope tbody td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:var(--text-body,14px);text-align:right;color:var(--ink);white-space:nowrap}
 .payroll-scope tbody td.l{text-align:left}
@@ -39544,11 +39544,12 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 .payroll-scope .name{font-weight:600}.payroll-scope .neg{color:var(--rose)}.payroll-scope .calc{color:var(--ink-sec)}
 .payroll-scope .prorate-tag,.payroll-scope .anomaly-tag{display:inline-block;font-size:10px;font-weight:600;color:var(--gold);background:var(--gold-bg);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle;font-family:var(--font-sans,sans-serif);white-space:nowrap}
 .payroll-scope .anomaly-tag .ar{font-family:var(--font-mono,monospace)}
-.payroll-scope .cellinput{width:68px;border:1.5px solid transparent;background:var(--primary-light);border-radius:var(--r-sm,10px);padding:5px 8px;text-align:right;font-family:var(--font-mono,monospace);font-size:var(--text-body,14px);color:var(--ink);outline:none;transition:all .12s}
+.payroll-scope .cellinput{width:68px;border:1.5px solid transparent;background:var(--primary-light);border-radius:var(--r-sm,10px);padding:5px 8px;text-align:right;font-family:var(--font-mono,monospace);font-size:var(--text-body,14px);color:var(--ink);outline:none;transition:all .12s;box-shadow:inset 0 -1.5px 0 rgba(124,92,252,.25)}
+.payroll-scope .cellinput:hover{box-shadow:inset 0 0 0 1.5px var(--primary-light,rgba(124,92,252,.35))}
 .payroll-scope .cellinput:focus{border-color:var(--primary);background:#fff;box-shadow:var(--shadow-glow,0 0 0 3px rgba(124,92,252,.18))}
 .payroll-scope .cellinput.touched{box-shadow:inset 0 0 0 1.5px var(--primary)}
 .payroll-scope .flagtxt{color:var(--rose);font-size:var(--text-caption,13px);font-weight:500}
-.payroll-scope tfoot td{padding:14px;font-family:var(--font-mono,monospace);font-size:var(--text-body,14px);font-weight:700;text-align:right;background:#FAFAFC;border-top:2px solid var(--border);color:var(--ink)}
+.payroll-scope tfoot td{padding:14px;font-family:var(--font-mono,monospace);font-size:var(--text-body,14px);font-weight:700;text-align:right;background:#FAFAFC;border-top:2px solid var(--border);color:var(--ink);position:sticky;bottom:0;z-index:5}
 .payroll-scope tfoot td.l{text-align:left;font-family:var(--font-sans,sans-serif);font-weight:700;color:var(--ink)}
 .payroll-scope tfoot td.note{text-align:left;font-family:var(--font-sans,sans-serif);font-weight:450;color:var(--ink-muted);font-size:var(--text-caption,13px)}
 .payroll-scope .hint{font-size:var(--text-caption,13px);color:var(--ink-muted);margin-top:14px;line-height:1.7}
@@ -39748,7 +39749,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 .payroll-scope .bm-row .bm-amt-wrap .lbl{font-size:var(--text-caption,12px);color:var(--ink-muted)}
 .payroll-scope .bm-row .bm-amt{width:96px;text-align:right;padding:6px 8px;height:32px;border:1px solid var(--border);border-radius:var(--r-sm,9px);font-family:var(--font-mono,monospace);font-size:13px;background:var(--bg-input,#fff);color:var(--ink);outline:none}
 .payroll-scope .bm-row .bm-amt:focus{border-color:var(--primary)}
-.payroll-scope .bm-row .bm-dual{width:120px;text-align:center;font-size:12px;color:var(--ink-muted);font-style:italic}
+.payroll-scope .bm-row .bm-dual{width:auto;min-width:96px;text-align:right;white-space:nowrap;font-size:12px;color:var(--ink-muted);font-style:italic}
 .payroll-scope .bm-nature{position:relative;flex:0 0 auto}
 .payroll-scope .bm-nature .bm-nat-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--bg-subtle,#faf8f3);font-size:12px;color:var(--ink-sec);cursor:pointer;white-space:nowrap}
 .payroll-scope .bm-nature .bm-nat-btn:hover{border-color:var(--primary)}
@@ -39797,14 +39798,15 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 .payroll-scope .bicon{display:inline-block;vertical-align:middle;color:var(--ink-muted);flex:0 0 auto}
 /* 單一入口（收合態） */
 .payroll-scope .bc-entry{display:inline-flex;align-items:center;gap:5px;width:100%;box-sizing:border-box;cursor:pointer;font-size:12px;color:var(--ink-muted);padding:5px 9px;border-radius:8px;border:1px dashed var(--border);background:transparent;min-height:30px;text-align:left;line-height:1.2}
-.payroll-scope .bc-entry:hover{border-color:var(--primary);color:var(--primary)}
+.payroll-scope .bc-entry:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
 .payroll-scope .bc-entry.has{border-style:solid;color:var(--ink);background:var(--bg-card,#fff)}
 .payroll-scope .bc-entry .bc-plus{font-weight:600}
 .payroll-scope .bc-entry .bc-lead{color:var(--ink-muted);font-size:11px}
 .payroll-scope .bc-entry .bc-amt{font-family:var(--font-mono,monospace);font-weight:700;color:var(--ink)}
 .payroll-scope .bc-entry .bc-dot{color:var(--ink-dim);margin:0 1px}
 .payroll-scope .bc-entry .bc-cnt{color:var(--ink-muted);font-size:11px}
-.payroll-scope .bc-entry .bc-caret{margin-left:auto;color:var(--ink-muted);font-size:14px}
+.payroll-scope .bc-entry .bc-caret{margin-left:auto;color:var(--ink-muted);font-size:13px;align-self:center;transition:transform .12s}
+.payroll-scope .bc-entry.has:hover .bc-caret{transform:translateX(2px);color:var(--primary)}
 /* 合併面板 head */
 .payroll-scope .bc-pop .bc-head{display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:6px;border-bottom:1px solid var(--border)}
 .payroll-scope .bc-pop .bc-htitle{font-size:13px;font-weight:700;color:var(--ink)}
@@ -39829,6 +39831,22 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 .payroll-scope .bc-seg button.on{background:var(--primary);color:#fff}
 /* 底部即時合計 */
 .payroll-scope .bc-pop .bc-foot-v{font-family:var(--font-mono,monospace);font-weight:700;color:var(--ink)}
+/* ===== v1.8.5 獎金面板 modal 化（接 .pr-overlay/.pr-modal 系統）===== */
+.payroll-scope .bonus-modal{width:440px;max-width:92vw;max-height:82vh}
+.payroll-scope .bonus-modal .h-nm{font-size:17px}
+.payroll-scope .bonus-modal .h-mo{font-size:13px;color:var(--ink-muted)}
+.payroll-scope .bonus-modal .pr-modal-body{padding:8px 20px 4px}
+.payroll-scope .bonus-foot{justify-content:space-between;align-items:center}
+.payroll-scope .bonus-foot .bf-lab{font-size:13px;color:var(--ink-sec);font-weight:600}
+.payroll-scope .bonus-foot .bf-val{font-family:var(--font-mono,monospace);font-size:16px;font-weight:800;color:var(--ink)}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media(max-width:640px){
+ .payroll-scope .bonus-overlay{align-items:flex-end;padding:0}
+ .payroll-scope .bonus-modal{width:100%;max-width:100%;max-height:88vh;border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.18);animation:sheetUp .24s cubic-bezier(.22,1,.36,1)}
+ .payroll-scope .bonus-modal .pr-modal-header{padding:16px 18px 12px}
+ .payroll-scope .bonus-modal .pr-modal-body{padding:4px 18px}
+ .payroll-scope .bonus-modal .pr-modal-footer{padding:14px 18px calc(14px + env(safe-area-inset-bottom,0px))}
+}
 @media(max-width:640px){.payroll-scope .bm-row{flex-wrap:wrap}.payroll-scope .bm-row .bm-label{flex:1 1 100%;order:2}.payroll-scope .bc-pop{position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;min-width:0;max-height:80vh;overflow-y:auto;border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.18);z-index:120;padding:14px 14px 22px}.payroll-scope .bc-pop .bc-opt{padding:9px 2px}.payroll-scope .bc-opt .bc-in{flex:1 1 auto;min-width:0}.payroll-scope .bc-seg{flex:0 0 auto}.payroll-scope .bc-opt .bc-conv{flex:0 0 auto}}
 </style>
 
@@ -40243,6 +40261,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     '</div>'+
     // ── 跳窗：明細 / 匯入 / 員工編輯 ──
     '<div class="pr-overlay" id="prDetailOverlay"><div class="pr-modal"><div class="pr-modal-header"><div><div class="h-nm" id="prDNm">—</div><div class="h-mo" id="prDMo"></div></div><button class="pr-modal-close" id="prDetailClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="pr-2col"><div id="prDLeft"></div><div id="prDRight"></div></div></div></div></div>'+
+    '<div class="pr-overlay bonus-overlay" id="prBonusOverlay"><div class="pr-modal bonus-modal"><div class="pr-modal-header"><div><div class="h-nm" id="prBonusTitle">設定獎金</div><div class="h-mo" id="prBonusName"></div></div><button class="pr-modal-close" id="prBonusClose" data-bc-close="1" aria-label="關閉">×</button></div><div class="pr-modal-body" id="prBonusBody" data-bc-body></div><div class="pr-modal-footer bonus-foot"><span class="bf-lab">本人本月獎金合計</span><span class="bf-val" id="prBonusFoot" data-bc-foot>NT$0</span></div></div></div>'+
     '<div class="pr-overlay" id="prImportOverlay"><div class="pr-modal sm"><div class="pr-modal-header"><div class="h-nm">匯入員工名冊</div><button class="pr-modal-close" id="prImportClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="pr-modal-pad"><div class="drop" id="prDrop">把 Excel 拖進來，或<b>點此選擇檔案</b><span class="di">支援 .xlsx / .xls / .csv。第一列當作欄位名稱。</span><input type="file" id="prFileInput" accept=".xlsx,.xls,.csv" style="display:none" /></div><p class="hint">不確定格式？先 <a href="#" id="prDlTemplate" style="color:var(--primary)">下載範本</a>，填好再上傳。可辨識欄位：姓名、底薪、勞保投保薪資、健保投保金額、勞退提繳工資、眷口數、勞退自願提繳%、到職日、離職日、身分證字號、銀行代號、銀行帳號。<b>身分證 / 帳號：清單只顯示末幾碼。</b></p><div id="prPreviewArea"></div></div></div><div class="pr-modal-footer"><button class="pr-btn ghost" id="prImpCancel">取消</button><button class="pr-btn accent" id="prImpConfirm" disabled>確認匯入</button></div></div></div>'+
     '<div class="pr-overlay" id="prEmpOverlay"><div class="pr-modal" style="width:680px"><div class="pr-modal-header"><div><div class="h-nm" id="prEmpModalTitle">新增員工</div><div class="h-mo">建檔一次、長期沿用</div></div><button class="pr-modal-close" id="prEmpClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="emp-form">'+
       '<div class="form-sec"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>基本</div><div class="form-grid"><div class="ff full"><label>姓名</label><input id="pref_name" type="text" placeholder="員工姓名" autocomplete="off"></div><div class="ff full"><label>Email<span class="opt">（日後寄薪資條用）</span></label><input id="pref_email" type="email" placeholder="例 name@company.com" autocomplete="off" inputmode="email"></div><div class="ff"><label>到職日</label><input id="pref_hire" type="date"></div><div class="ff"><label>離職日<span class="opt">（在職留空）</span></label><input id="pref_leave" type="date"></div></div></div>'+
@@ -40394,19 +40413,18 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     return '<div class="bc-sec"><div class="bc-sec-hd"><span class="bc-sec-t">固定獎金</span><span class="bc-sec-d">三節、全勤等固定金額</span></div>'+fixedRows+'</div>'+
       '<div class="bc-sec"><div class="bc-sec-hd"><span class="bc-sec-t">績效類</span><span class="bc-sec-d">可填 % 或金額（以底薪 '+fmt(+e.base||0)+' 計）</span></div>'+perfRows+'</div>';
   }
-  function _openBonusPop(e,cell){
+  function _openBonusPop(e){
     ensureBonusMenu(); var m=getM(e.id);
-    var pop=document.createElement('div'); pop.className='bc-pop open'; pop.setAttribute('data-bc-pop','bonus');
-    pop.innerHTML=
-      '<div class="bc-head"><span class="bc-htitle">設定獎金</span><span class="bc-hname">'+esc(e.name||'')+'</span><button type="button" class="bc-close" data-bc-close="1">✕</button></div>'+
-      '<div class="bc-body" data-bc-body>'+_bcSectionsHtml(e,m)+'</div>'+
-      '<div class="bc-foot"><span>本列獎金合計</span><span class="bc-foot-v" data-bc-foot>'+fmt(_bcTotal(m))+'</span></div>';
-    _attachBonusPop(e,cell,pop);
+    var ov=document.getElementById('prBonusOverlay'); if(!ov) return;
+    var nameEl=document.getElementById('prBonusName'); if(nameEl) nameEl.textContent=(e.name||'');
+    var bodyEl=document.getElementById('prBonusBody'); if(bodyEl) bodyEl.innerHTML=_bcSectionsHtml(e,m);
+    var footEl=document.getElementById('prBonusFoot'); if(footEl) footEl.textContent='NT$'+fmt(_bcTotal(m));
+    /* 內部互動邏輯一律沿用：傳 modal 根 ov 當 query root（含 [data-bc-body]/[data-bc-foot]/[data-bc-close]），toggle/setMode/setAmt/setRate/bindRows/rerender 一個字不動 */
+    _attachBonusPop(e,ov);
+    ov.classList.add('open');
   }
-  function _attachBonusPop(e,cell,pop){
-    _closeAllBonusPops();
-    cell.appendChild(pop);
-    pop.addEventListener('click',function(ev){ ev.stopPropagation(); });
+  function _attachBonusPop(e,pop){
+    /* pop = #prBonusOverlay modal 根；下方所有 pop.querySelector 對此根運作。內部資料邏輯保持原樣 */
     var m=getM(e.id);
     function foot(){ var ft=pop.querySelector('[data-bc-foot]'); if(ft) ft.textContent=fmt(_bcTotal(m)); }
     function persist(){ syncBonusField(m); saveRunCloud(); }
@@ -40428,7 +40446,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     }
     function rerender(){ var body=pop.querySelector('[data-bc-body]'); if(body){ body.innerHTML=_bcSectionsHtml(e,m); bindRows(); } foot(); }
     bindRows();
-    pop.querySelectorAll('[data-bc-close]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); _closeAllBonusPops(); renderTable(); }); });
+    pop.querySelectorAll('[data-bc-close]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); _closeBonusModal(); }); });
   }
   function _rerenderPerfRow(e,m,id,pop){
     var mi=bonusMenuById(id); if(!mi) return;
@@ -40443,12 +40461,12 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     fresh.querySelectorAll('[data-pf-amt]').forEach(function(inp){ inp.addEventListener('click',function(ev){ ev.stopPropagation(); }); inp.addEventListener('input',function(ev){ ev.stopPropagation(); var it=_itemByMenu(m,inp.dataset.pfAmt); if(it){ it.mode='amount'; it.amount=Math.max(0,parseInt(inp.value,10)||0); it.rate=null; syncBonusField(m); saveRunCloud(); var ft=pop.querySelector('[data-bc-foot]'); if(ft) ft.textContent=fmt(_bcTotal(m)); } }); });
   }
   function _closeAllBonusPops(){ document.querySelectorAll('#prBody .bc-pop').forEach(function(p){ if(p.parentNode) p.parentNode.removeChild(p); }); }
+  function _closeBonusModal(){ var ov=document.getElementById('prBonusOverlay'); if(ov) ov.classList.remove('open'); renderTable(); }
   function bindBonusCells(){
     /* v1.8.0 單一入口：點「＋ 獎金」/「獎金 NT$X · N 項」開合併面板。保留 String(x.id)===String(id) 文字編號修復、禁用 +id。 */
     document.querySelectorAll('#prBody .bonus-cell').forEach(function(cell){ cell.addEventListener('click',function(ev){ ev.stopPropagation(); }); });
-    document.querySelectorAll('#prBody [data-bc-open]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); var id=b.dataset.bcOpen; var e=EMP.filter(function(x){return String(x.id)===String(id);})[0]; if(!e) return; var cell=b.closest('.bonus-cell'); var already=cell.querySelector('[data-bc-pop="bonus"]'); _closeAllBonusPops(); if(!already) _openBonusPop(e,cell); }); });
+    document.querySelectorAll('#prBody [data-bc-open]').forEach(function(b){ b.addEventListener('click',function(ev){ ev.stopPropagation(); var id=b.dataset.bcOpen; var e=EMP.filter(function(x){return String(x.id)===String(id);})[0]; if(!e) return; _openBonusPop(e); }); });
   }
-  document.addEventListener('click',function(){ _closeAllBonusPops(); });
 
   /* ── 單人明細 ── */
   function openDetail(id){
@@ -40698,7 +40716,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     var sorted=BONUS_MENU.slice().sort(function(a,b){ return (a.order||0)-(b.order||0); });
     host.innerHTML=sorted.map(function(it){
       var amtCell = it.dualMode
-        ? '<span class="bm-dual">每月在薪資表填入</span>'
+        ? '<span class="bm-dual">薪資表逐月填</span>'
         : '<span class="bm-amt-wrap"><span class="lbl">金額</span><input type="number" class="bm-amt" data-bm-amt="'+esc(it.id)+'" value="'+(it.amount||0)+'" step="100" min="0"></span>';
       var delCell = it.builtin
         ? ''
@@ -41030,6 +41048,9 @@ function openPayslipPicker(){
     // detail modal
     document.getElementById('prDetailClose').addEventListener('click',function(){ document.getElementById('prDetailOverlay').classList.remove('open'); });
     document.getElementById('prDetailOverlay').addEventListener('click',function(e){ if(e.target.id==='prDetailOverlay') document.getElementById('prDetailOverlay').classList.remove('open'); });
+    // bonus modal close: × 鈕在 _attachBonusPop 內綁定（data-bc-close）；這裡補點遮罩 + ESC
+    document.getElementById('prBonusOverlay').addEventListener('click',function(e){ if(e.target.id==='prBonusOverlay') _closeBonusModal(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ var bo=document.getElementById('prBonusOverlay'); if(bo&&bo.classList.contains('open')) _closeBonusModal(); } });
     // import modal
     document.getElementById('prImportClose').addEventListener('click',closeImport);
     document.getElementById('prImpCancel').addEventListener('click',closeImport);
