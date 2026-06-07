@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.8.5</div>
+        <div class="sidebar-version">v1.9.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -39986,7 +39986,9 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     var bonus=mm.bonus||0; var gross=base+otPay+bonus;
     var labor=floor(e.laborIns*PARAMS.laborRate*PARAMS.laborEmp);
     var depCnt=Math.min(e.deps||0,PARAMS.depCap);
-    var health=floor(e.healthIns*PARAMS.healthRate*PARAMS.healthEmp*(1+depCnt));
+    /* 健保身分：owner（公司負責人/雇主）自付全額 100%，一般受僱員工維持 30% */
+    var hShare=(e.healthRole==='owner')?1:PARAMS.healthEmp;
+    var health=floor(e.healthIns*PARAMS.healthRate*hShare*(1+depCnt));
     var pensionSelf=floor(e.pension*(e.voluntary/100||0));
     var cumBefore=0; for(var pm=1;pm<mo;pm++){ var pk=y+String(pm).padStart(2,'0')+'_'+e.id; if(M[pk]&&M[pk].bonus) cumBefore+=(+M[pk].bonus||0); }
     var threshold=e.healthIns*PARAMS.suppBonusMult;
@@ -40007,7 +40009,9 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     syncBonusField(m); var bonus=bonusSum(m); var gross=base+otPay+bonus;  /* 獎金升級：bonus＝明細加總 */
     var labor=floor(e.laborIns*PARAMS.laborRate*PARAMS.laborEmp);
     var depCnt=Math.min(e.deps||0,PARAMS.depCap);
-    var health=floor(e.healthIns*PARAMS.healthRate*PARAMS.healthEmp*(1+depCnt));
+    /* 健保身分：owner（公司負責人/雇主）自付全額 100%，一般受僱員工維持 30% */
+    var hShare=(e.healthRole==='owner')?1:PARAMS.healthEmp;
+    var health=floor(e.healthIns*PARAMS.healthRate*hShare*(1+depCnt));
     var pensionSelf=floor(e.pension*(e.voluntary/100||0));
     /* ── 二代健保補充保費（§4.10-3）：月內逐筆「單次 vs 超4倍 取較小值」 ──
        cumBefore 只算 inSupplement 的本月前累計；逐筆順序＝bonusItems 陣列順序。
@@ -40046,7 +40050,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     var leave=sickDed+persDed; var ded=labor+health+pensionSelf+supp+tax;
     var net=gross-leave-ded;
     var erLabor=floor(e.laborIns*PARAMS.laborRate*PARAMS.laborEr);
-    var erHealth=floor(e.healthIns*PARAMS.healthRate*PARAMS.healthEr*PARAMS.healthErDeps);
+    var erHealth=(e.healthRole==='owner')?0:floor(e.healthIns*PARAMS.healthRate*PARAMS.healthEr*PARAMS.healthErDeps);
     var erPension=floor(e.pension*PARAMS.pensionEr);
     var cost=base+otPay+bonus+erLabor+erHealth+erPension;
     var prevY=curMonth>1?curYear:curYear-1; var prevM=curMonth>1?curMonth-1:12;
@@ -40123,7 +40127,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     return {
       id:id, name:d.name||'', base:+d.base||0,
       laborIns:+d.laborIns||0, healthIns:+d.healthIns||0, pension:+d.pension||0,
-      deps:+d.deps||0, voluntary:+d.voluntary||0, hire:d.hire||'', leave:d.leave||'', email:d.email||'',
+      deps:+d.deps||0, voluntary:+d.voluntary||0, healthRole:(d.healthRole==='owner'?'owner':'employee'), hire:d.hire||'', leave:d.leave||'', email:d.email||'',
       natId:d.idNumber||'', bankCode:d.bankCode||'', bankAcct:d.bankAccount||'',
       natIdMasked:d.idNumberMasked||'', bankCodeMasked:d.bankCodeMasked||'', bankAcctMasked:d.bankAccountMasked||'',
       _hasSecret: !!(d.idNumber||d.bankAccount)
@@ -40136,7 +40140,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     if(!base){ cb&&cb(false); return; }   // 無 uid：不存本機，回失敗讓 UI 提示
     var nonSensitive={
       name:emp.name, base:emp.base, laborIns:emp.laborIns, healthIns:emp.healthIns,
-      pension:emp.pension, deps:emp.deps, voluntary:emp.voluntary, hire:emp.hire||'', leave:emp.leave||'', email:emp.email||'',
+      pension:emp.pension, deps:emp.deps, voluntary:emp.voluntary, healthRole:(emp.healthRole==='owner'?'owner':'employee'), hire:emp.hire||'', leave:emp.leave||'', email:emp.email||'',
       updatedBy:_uid(), updatedAt:_ts()
     };
     var docRef = (emp.id && String(emp.id).length>6)
@@ -40270,7 +40274,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
         '<div class="ff"><label>勞保投保</label><select id="pref_laborIns_sel"></select><input id="pref_laborIns" class="num" type="number" step="100" placeholder="金額" inputmode="numeric" style="display:none"><span class="fhint" id="pref_laborIns_hint"></span></div>'+
         '<div class="ff"><label>健保投保</label><select id="pref_healthIns_sel"></select><span class="fhint" id="pref_healthIns_hint"></span></div>'+
         '<div class="ff"><label>勞退提繳工資</label><select id="pref_pension_sel"></select><span class="fhint" id="pref_pension_hint"></span></div>'+
-        '<div class="ff"><label>健保眷口數<span class="opt">（0–5）</span></label><select id="pref_deps"><option value="0">0 口</option><option value="1">1 口</option><option value="2">2 口</option><option value="3">3 口</option><option value="4">4 口</option><option value="5">5 口</option></select></div>'+
+        '<div class="ff"><label>本人名下健保眷口數<span class="opt">（0–5）</span></label><select id="pref_deps"><option value="0">0 口</option><option value="1">1 口</option><option value="2">2 口</option><option value="3">3 口</option><option value="4">4 口</option><option value="5">5 口</option></select><span class="fhint">填掛在這位員工名下投保的健保眷屬數；分頭保掛在配偶／他人名下的不算。超過 3 口系統自動以 3 口計。</span></div>'+'<div class="ff"><label>健保身份</label><select id="pref_healthRole"><option value="employee">受僱員工</option><option value="owner">公司負責人／雇主</option></select><span class="fhint">公司負責人本人在自家公司投保，健保需自付全額（沒有雇主幫出的部分）；勞保／勞退依實際投保情形填。</span></div>'+
       '</div></div>'+
       '<div class="form-sec secret"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>機密資料<span class="note">製作銀行轉帳檔用</span></div><div class="form-grid"><div class="ff full"><label>身分證字號</label><input id="pref_natId" type="text" placeholder="A123456789" autocomplete="off" maxlength="10" style="text-transform:uppercase"></div><div class="ff"><label>銀行代號</label><input id="pref_bankCode" class="num" type="text" placeholder="例 822" autocomplete="off" maxlength="3" inputmode="numeric"></div><div class="ff"><label>銀行帳號</label><input id="pref_bankAcct" class="num" type="text" placeholder="轉帳用帳號" autocomplete="off" inputmode="numeric"></div></div><div class="secret-note" id="prSecretNote"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>清單只顯示末幾碼，完整號碼只有你看得到。</div></div>'+
       '</div><div class="emp-form-err" id="prEmpFormErr"></div></div><div class="pr-modal-footer"><button class="pr-btn ghost" id="prEmpCancel">取消</button><button class="pr-btn accent" id="prEmpSave">儲存</button></div></div></div>';
@@ -40486,7 +40490,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     L.push(lineTotal('應發合計',r.gross-r.leave));
     L.push('<div class="sec-lab">應扣（代扣）</div>');
     L.push(lineF('勞保自付',r.labor,'投保 '+fmt(e.laborIns)+' × 12.5% × 20%'));
-    L.push(lineF('健保自付',r.health,'投保 '+fmt(e.healthIns)+' × 5.17% × 30% × '+(1+r.depCnt)+'（本人'+(r.depCnt?'＋'+r.depCnt+' 眷':'')+'）'));
+    L.push(lineF('健保自付',r.health,'投保 '+fmt(e.healthIns)+' × 5.17% × '+(e.healthRole==='owner'?'100%':'30%')+' × '+(1+r.depCnt)+'（本人'+(r.depCnt?'＋本人名下 '+r.depCnt+' 眷':'')+'）'));
     if(r.pensionSelf) L.push(lineF('勞退自願提繳',r.pensionSelf,'提繳工資 '+fmt(e.pension)+' × '+e.voluntary+'%（免稅）'));
     /* 獎金升級：補充費逐筆累計說明（§4.9-4.10-3） */
     if(r.supp){ var _sf='門檻＝當月投保 '+fmt(e.healthIns)+' × 4 ＝ '+fmt(r.suppThreshold)+'<br>今年本月前累計（計補充費獎金）'+fmt(r.suppCumBefore); var _sd=r.suppDetail||[]; if(_sd.length){ _sf+='<br>—— 本月逐筆 ——'; for(var _sk=0;_sk<_sd.length;_sk++){ _sf+='<br>'+esc(_sd[_sk].label)+' '+fmt(_sd[_sk].amount)+'：計費基數 '+fmt(_sd[_sk].feeBase)+' × 2.11% ＝ '+fmt(_sd[_sk].supp); } } else { _sf+='<br>本月新跨過門檻 '+fmt(r.suppTaxableThisMonth)+' × 2.11% ＝ '+fmt(r.supp); } L.push(lineF('二代健保補充保費',r.supp,_sf)); }
@@ -40563,7 +40567,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       var e=EMP.filter(function(x){return x.id===editingEmpId;})[0];
       titleEl.textContent='編輯員工 · '+e.name;
       setVal('pref_name',e.name); setVal('pref_email',e.email||''); setVal('pref_base',e.base); setVal('pref_hire',e.hire||''); setVal('pref_leave',e.leave||'');
-      setVal('pref_deps',e.deps||0); setVal('pref_voluntary',e.voluntary||0);
+      setVal('pref_deps',e.deps||0); setVal('pref_voluntary',e.voluntary||0); setVal('pref_healthRole',e.healthRole||'employee');
       // 敏感：顯示遮罩 placeholder、不填明文（編輯時留空＝不變更）
       var nid=document.getElementById('pref_natId'), bc=document.getElementById('pref_bankCode'), ba=document.getElementById('pref_bankAcct');
       nid.value=''; nid.placeholder=e.natIdMasked? (e.natIdMasked+'（留空不變更）'):'A123456789';
@@ -40579,7 +40583,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       document.getElementById('pref_natId').placeholder='A123456789';
       document.getElementById('pref_bankCode').placeholder='例 822';
       document.getElementById('pref_bankAcct').placeholder='轉帳用帳號';
-      document.getElementById('pref_deps').value='0'; document.getElementById('pref_voluntary').value='0'; insMode='auto';
+      document.getElementById('pref_deps').value='0'; document.getElementById('pref_voluntary').value='0'; var _hr=document.getElementById('pref_healthRole'); if(_hr) _hr.value='employee'; insMode='auto';
     }
     applyInsMode();
     document.getElementById('prEmpOverlay').classList.add('open');
@@ -40597,6 +40601,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     if(insMode==='custom'){ laborIns=num(document.getElementById('pref_laborIns_sel').value)||gradeFor(base); healthIns=num(document.getElementById('pref_healthIns_sel').value)||healthGradeFor(base); pension=num(document.getElementById('pref_pension_sel').value)||base; }
     else { laborIns=gradeFor(base); healthIns=healthGradeFor(base); pension=base; }
     var deps=num(document.getElementById('pref_deps').value), voluntary=num(document.getElementById('pref_voluntary').value);
+    var healthRole=(document.getElementById('pref_healthRole')||{}).value==='owner'?'owner':'employee';
     var hire=document.getElementById('pref_hire').value.trim(), leave=document.getElementById('pref_leave').value.trim();
     var natId=document.getElementById('pref_natId').value.trim().toUpperCase();
     var bankCode=document.getElementById('pref_bankCode').value.trim();
@@ -40604,7 +40609,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     var emp;
     if(editingEmpId!=null){ emp=EMP.filter(function(x){return x.id===editingEmpId;})[0]; }
     else { emp={}; EMP.push(emp); }   // v1.7.0：不用本機 id，saveEmpCloud 會把 Firestore doc id 寫回此物件
-    emp.name=name; emp.email=email; emp.base=base; emp.laborIns=laborIns; emp.healthIns=healthIns; emp.pension=pension; emp.deps=deps; emp.voluntary=voluntary; emp.hire=hire; emp.leave=leave;
+    emp.name=name; emp.email=email; emp.base=base; emp.laborIns=laborIns; emp.healthIns=healthIns; emp.pension=pension; emp.deps=deps; emp.voluntary=voluntary; emp.healthRole=healthRole; emp.hire=hire; emp.leave=leave;
     // 敏感：有填才更新遮罩 + 送後端；留空＝不變更
     var plainSecret=null;
     if(natId||bankCode||bankAcct){ plainSecret={natId:natId, bankCode:bankCode, bankAcct:bankAcct}; if(natId) emp.natIdMasked=maskId(natId); if(bankCode) emp.bankCodeMasked=maskAcct(bankCode); if(bankAcct) emp.bankAcctMasked=maskAcct(bankAcct); }
@@ -40756,7 +40761,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   document.addEventListener('click',function(){ var h=document.getElementById('prBonusMenu'); if(h){ h.querySelectorAll('.icon-pop.open,.bm-nat-pop.open').forEach(function(p){ p.classList.remove('open'); }); } });
 
   /* ── Excel 匯入 ── */
-  var headerMap={'姓名':'name','名字':'name','員工姓名':'name','底薪':'base','本薪':'base','月薪':'base','勞保投保薪資':'laborIns','勞保投保':'laborIns','勞保':'laborIns','健保投保金額':'healthIns','健保投保':'healthIns','健保':'healthIns','勞退提繳工資':'pension','勞退提繳':'pension','勞退':'pension','眷口數':'deps','眷口':'deps','眷屬':'deps','勞退自願提繳%':'voluntary','自願提繳':'voluntary','自提':'voluntary','到職日':'hire','到職':'hire','到職日期':'hire','離職日':'leave','離職':'leave','離職日期':'leave','身分證字號':'natId','身分證':'natId','身份證字號':'natId','身份證':'natId','銀行代號':'bankCode','銀行代碼':'bankCode','銀行帳號':'bankAcct','帳號':'bankAcct','轉帳帳號':'bankAcct','電子郵件':'email','Email':'email','email':'email','信箱':'email','郵件':'email'};
+  var headerMap={'姓名':'name','名字':'name','員工姓名':'name','底薪':'base','本薪':'base','月薪':'base','勞保投保薪資':'laborIns','勞保投保':'laborIns','勞保':'laborIns','健保投保金額':'healthIns','健保投保':'healthIns','健保':'healthIns','勞退提繳工資':'pension','勞退提繳':'pension','勞退':'pension','眷口數':'deps','眷口':'deps','眷屬':'deps','本人名下健保眷口數':'deps','健保身分':'healthRole','健保身份':'healthRole','身分':'healthRole','勞退自願提繳%':'voluntary','自願提繳':'voluntary','自提':'voluntary','到職日':'hire','到職':'hire','到職日期':'hire','離職日':'leave','離職':'leave','離職日期':'leave','身分證字號':'natId','身分證':'natId','身份證字號':'natId','身份證':'natId','銀行代號':'bankCode','銀行代碼':'bankCode','銀行帳號':'bankAcct','帳號':'bankAcct','轉帳帳號':'bankAcct','電子郵件':'email','Email':'email','email':'email','信箱':'email','郵件':'email'};
   function openImport(){ var ov=document.getElementById('prImportOverlay'); ov.classList.add('open'); document.getElementById('prPreviewArea').innerHTML=''; document.getElementById('prImpConfirm').disabled=true; pendingRows=null; }
   function closeImport(){ document.getElementById('prImportOverlay').classList.remove('open'); }
   function handleFile(file){
@@ -40768,14 +40773,14 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       if(!json.length){ toast('檔案沒有資料'); return; }
       var mapped=json.map(function(row){ var o={}; Object.keys(row).forEach(function(k){ var key=headerMap[String(k).trim()]; if(key) o[key]=row[k]; }); return o; }).filter(function(o){ return o.name; });
       if(!mapped.length){ toast('找不到「姓名」欄，請參考範本'); return; }
-      pendingRows=mapped.map(function(o){ return { name:String(o.name).trim(), base:num(o.base), laborIns:num(o.laborIns)||gradeFor(num(o.base)), healthIns:num(o.healthIns)||gradeFor(num(o.base)), pension:num(o.pension)||num(o.base), deps:num(o.deps), voluntary:num(o.voluntary), hire:o.hire?String(o.hire).trim():'', leave:o.leave?String(o.leave).trim():'', natId:o.natId?String(o.natId).trim().toUpperCase():'', bankCode:o.bankCode?String(o.bankCode).trim():'', bankAcct:o.bankAcct?String(o.bankAcct).trim():'', email:o.email?String(o.email).trim():'' }; });
+      pendingRows=mapped.map(function(o){ var _hrRaw=String(o.healthRole||'').trim(); var _hr=(/負責人|雇主|owner|自營/i.test(_hrRaw))?'owner':'employee'; var _hRawIns=num(o.healthIns); return { name:String(o.name).trim(), base:num(o.base), laborIns:num(o.laborIns)||gradeFor(num(o.base)), healthIns:_hRawIns?healthGradeFor(_hRawIns):healthGradeFor(num(o.base)), healthInsRaw:_hRawIns, healthRole:_hr, pension:num(o.pension)||num(o.base), deps:num(o.deps), voluntary:num(o.voluntary), hire:o.hire?String(o.hire).trim():'', leave:o.leave?String(o.leave).trim():'', natId:o.natId?String(o.natId).trim().toUpperCase():'', bankCode:o.bankCode?String(o.bankCode).trim():'', bankAcct:o.bankAcct?String(o.bankAcct).trim():'', email:o.email?String(o.email).trim():'' }; });
       renderPreview(pendingRows); document.getElementById('prImpConfirm').disabled=false;
     };
     reader.readAsBinaryString(file);
   }
   function renderPreview(rows){
     var h='<div class="pill">辨識到 '+rows.length+' 位員工</div><div class="previewtbl"><table><thead><tr><th class="l">姓名</th><th>底薪</th><th>勞保</th><th>健保</th><th>眷口</th><th>自提%</th></tr></thead><tbody>';
-    rows.slice(0,50).forEach(function(r){ h+='<tr><td class="l">'+esc(r.name)+'</td><td style="text-align:right"><span class="m">'+fmt(r.base)+'</span></td><td style="text-align:right"><span class="m">'+fmt(r.laborIns)+'</span></td><td style="text-align:right"><span class="m">'+fmt(r.healthIns)+'</span></td><td style="text-align:right">'+r.deps+'</td><td style="text-align:right">'+r.voluntary+'</td></tr>'; });
+    rows.slice(0,50).forEach(function(r){ h+='<tr><td class="l">'+esc(r.name)+'</td><td style="text-align:right"><span class="m">'+fmt(r.base)+'</span></td><td style="text-align:right"><span class="m">'+fmt(r.laborIns)+'</span></td><td style="text-align:right"><span class="m">'+fmt(r.healthIns)+'</span>'+((r.healthInsRaw&&r.healthInsRaw!==r.healthIns)?'<span style="display:block;font-size:10px;color:#C0392B">原 '+fmt(r.healthInsRaw)+' 已對級</span>':'')+'</td><td style="text-align:right">'+r.deps+'</td><td style="text-align:right">'+r.voluntary+'</td></tr>'; });
     h+='</tbody></table></div><p class="hint">未填投保金額者，系統自動依底薪對應級距帶入（可事後修改）。身分證 / 帳號：清單只顯示末幾碼。</p>';
     document.getElementById('prPreviewArea').innerHTML=h;
   }
@@ -40786,7 +40791,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     M={}; touched={}; saveRunCloud();
     function step(){
       if(i>=rows.length){ closeImport(); loadAfterImport(); return; }
-      var o=rows[i++]; var emp={ id: undefined, name:o.name, base:o.base, laborIns:o.laborIns, healthIns:o.healthIns, pension:o.pension, deps:o.deps, voluntary:o.voluntary, hire:o.hire, leave:o.leave, email:o.email||'' };
+      var o=rows[i++]; var emp={ id: undefined, name:o.name, base:o.base, laborIns:o.laborIns, healthIns:o.healthIns, pension:o.pension, deps:o.deps, voluntary:o.voluntary, healthRole:(o.healthRole==='owner'?'owner':'employee'), hire:o.hire, leave:o.leave, email:o.email||'' };
       var plainSecret=(o.natId||o.bankCode||o.bankAcct)?{natId:o.natId,bankCode:o.bankCode,bankAcct:o.bankAcct}:null;
       if(plainSecret){ if(o.natId) emp.natIdMasked=maskId(o.natId); if(o.bankCode) emp.bankCodeMasked=maskAcct(o.bankCode); if(o.bankAcct) emp.bankAcctMasked=maskAcct(o.bankAcct); }
       // 免費路線：明文送進雲端；loadAfterImport 重載帶回 doc id + 遮罩
