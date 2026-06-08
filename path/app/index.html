@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.9.1</div>
+        <div class="sidebar-version">v1.9.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -10039,7 +10039,7 @@ body.hd-locked { overflow: hidden; }
       credits: 600,
       defaultModel: 'claude-sonnet-4-6',
       allowedModels: ['claude-sonnet-4-6', 'claude-opus-4-7'],
-      highlights: ['每月 600 AI Credits', 'Claude Sonnet 4.6 / Opus 4.7 切換', 'Lab 研究 · 問卷引擎 · 市場探測', '報價提案 · 會議紀錄', '客戶無上限'],
+      highlights: ['每月 600 AI Credits', 'Claude Sonnet 4.6 / Opus 4.8 切換', 'Lab 研究 · 問卷引擎 · 市場探測', '報價提案 · 會議紀錄', '客戶無上限'],
       modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-meetings']
     },
     pro: {
@@ -10048,7 +10048,7 @@ body.hd-locked { overflow: hidden; }
       credits: 3000,
       defaultModel: 'claude-opus-4-7',
       allowedModels: ['claude-opus-4-7', 'claude-sonnet-4-6'],
-      highlights: ['每月 3,000 AI Credits', 'Claude Opus 4.7 預設（可切 Sonnet）', '收款管理 · 營運戰情室 · 文件庫', '團隊最多 5 人 + Claude MCP'],
+      highlights: ['每月 3,000 AI Credits', 'Claude Opus 4.8 預設（可切 Sonnet）', '收款管理 · 營運戰情室 · 文件庫', '團隊最多 5 人 + Claude MCP'],
       modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-meetings','mod-insights','mod-docs'],
       featured: true
     },
@@ -10058,7 +10058,7 @@ body.hd-locked { overflow: hidden; }
       credits: 'unlimited',
       defaultModel: 'claude-opus-4-7',
       allowedModels: ['claude-opus-4-7', 'claude-sonnet-4-6'],
-      highlights: ['無限 AI Credits', 'Claude Opus 4.7 預設', 'Pro 全部功能', '團隊最多 20 人 · 管理員角色', 'API 整合 · 專屬客戶經理'],
+      highlights: ['無限 AI Credits', 'Claude Opus 4.8 預設', 'Pro 全部功能', '團隊最多 20 人 · 管理員角色', 'API 整合 · 專屬客戶經理'],
       modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-meetings','mod-insights','mod-docs']
     }
   };
@@ -10075,7 +10075,7 @@ body.hd-locked { overflow: hidden; }
     },
     'claude-opus-4-7': {
       id: 'claude-opus-4-7',
-      name: 'Claude Opus 4.7',
+      name: 'Claude Opus 4.8',
       tagline: '最強推理，複雜任務首選',
       pricing: { input: 5, output: 25 },
       contextWindow: 1000000,
@@ -32209,7 +32209,7 @@ function loadHistory(){
                   <div style="font-size:11px;color:var(--ink-muted);margin-top:1px">${MODEL_CATALOG['claude-sonnet-4-6'].tagline}</div>
                 </div>
               </div>
-              <div style="font-size:11px;color:var(--ink-muted);margin-top:8px;padding:0 2px;line-height:1.5">升級 Starter / Pro 可切換至 Opus 4.7（最強推理）</div>
+              <div style="font-size:11px;color:var(--ink-muted);margin-top:8px;padding:0 2px;line-height:1.5">升級 Starter / Pro 可切換至 Opus 4.8（最強推理）</div>
             ` : `
               ${bpSelect({id:'aiModelSelect', style:'width:100%;font-size:14px', onChange:'setAIModel', options: modelOptions.map(m => ({value:m.id, label:m.label, selected: aiModel===m.id}))})}
               <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:color-mix(in srgb,var(--primary) 6%,transparent);border-radius:var(--r-sm);border:1px solid color-mix(in srgb,var(--primary) 18%,transparent)">
@@ -39591,6 +39591,15 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 .payroll-scope .pr-modal-footer{display:flex;gap:10px;justify-content:flex-end;padding:14px 24px;border-top:1px solid var(--border);flex-shrink:0}
 .payroll-scope .pr-2col{display:grid;grid-template-columns:3fr 2fr;gap:24px;padding:20px 24px}
 @media(max-width:720px){.payroll-scope .pr-2col{grid-template-columns:1fr}}
+.payroll-scope .mobile-ro-hint{display:none}
+@media(max-width:640px){
+  /* 手機唯讀：薪資只當老闆看的摘要，藏編輯鈕 + 鎖輸入格 */
+  .payroll-scope #prBtnImport,.payroll-scope #prBtnCalc,.payroll-scope .pr-actions .pos-rel{display:none!important}
+  .payroll-scope #prBody .cellinput{background:transparent!important;box-shadow:none!important;border-color:transparent!important;color:var(--ink-sec);pointer-events:none;-webkit-user-select:none;user-select:none;cursor:default;padding:5px 4px}
+  .payroll-scope #prBody .cellinput.touched{box-shadow:none!important}
+  .payroll-scope .mobile-ro-hint{display:flex;align-items:center;gap:8px;margin:0 0 14px;padding:10px 14px;background:var(--primary-light);border:1px solid var(--border);border-radius:var(--r-md,14px);font-size:var(--text-caption,13px);color:var(--ink-sec);line-height:1.5}
+  .payroll-scope .mobile-ro-hint svg{width:16px;height:16px;flex:0 0 16px;stroke:var(--primary);fill:none;stroke-width:1.8}
+}
 .payroll-scope .sec-lab{font-size:var(--text-label,12px);font-weight:700;color:var(--ink-muted);letter-spacing:1px;margin:16px 0 8px}
 .payroll-scope .sec-lab:first-child{margin-top:0}
 .payroll-scope .line{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px dashed var(--border)}
@@ -40213,7 +40222,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       '<div class="pr-actions" id="prActions">'+
         '<div class="month"><button id="prMPrev" aria-label="上個月">‹</button><span class="lbl" id="prMLabel">'+monthLabel()+'</span><button id="prMNext" aria-label="下個月">›</button></div>'+
         '<button class="pr-btn ghost" id="prBtnImport"><svg viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4M5 21h14"/></svg> 匯入員工</button>'+
-        '<button class="pr-btn" id="prBtnCalc"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h2M13 11h2M9 15h2"/></svg> 試算全部</button>'+
+        '<button class="pr-btn" id="prBtnCalc"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h2M13 11h2M9 15h2"/></svg> 重新整理紅綠燈</button>'+
         '<div class="pos-rel"><button class="pr-btn accent" id="prBtnOutput"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M5 21h14"/></svg> 產出 ▾</button>'+
           '<div class="menu-pop" id="prOutputMenu">'+
             '<div class="mi" data-out="payslip"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><div>員工薪資條<small>三段式明細</small></div></div>'+
@@ -40236,6 +40245,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
         '<div class="biz-stat is-primary"><div class="biz-stat-icon ic-ded"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M5 12h14"/></svg></div><div class="biz-stat-info"><div class="biz-stat-label">代扣合計 · 要繳政府</div><div class="biz-stat-val"><span class="u">NT$</span><span id="prKDed">0</span></div><div class="biz-stat-sub">勞健退・補充保費</div></div></div>'+
         '<div class="biz-stat is-muted"><div class="biz-stat-icon ic-gross"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M12 2v20M16 6c0-2-1.8-3.5-4-3.5S8 4 8 6s1.8 3.2 4 3.2 4 1.5 4 3.5-1.8 3.5-4 3.5-4-1.5-4-3.5"/></svg></div><div class="biz-stat-info"><div class="biz-stat-label">應發合計 · 參考</div><div class="biz-stat-val"><span class="u">NT$</span><span id="prKGross">0</span></div></div></div>'+
       '</div></div>'+
+      '<div class="mobile-ro-hint"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>手機版只能檢視。要編輯加班・病假・事假・獎金，請用電腦版開啟。</span></div>'+
       '<div class="pr-card"><div class="tablewrap"><table id="prTable"><thead><tr>'+
         '<th class="l">員工</th><th title="月底薪（到職/離職當月按在職天數比例）">底薪</th>'+
         '<th title="加班時數（平日前 2 小時倍率 1.34）">加班(時)</th><th title="病假時數（扣半薪 50%）">病假(時)</th>'+
@@ -40370,6 +40380,32 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       });
       inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); var all=Array.prototype.slice.call(document.querySelectorAll('#prBody .cellinput[data-f="'+inp.dataset.f+'"]')); var i=all.indexOf(inp); if(all[i+1]) all[i+1].focus(); } });
       inp.addEventListener('click',function(e){ e.stopPropagation(); });
+      /* 整欄貼上：剪貼簿多行（從 Excel 整欄複製）→ 沿該欄逐格往下填（標準試算表行為，ES5） */
+      inp.addEventListener('paste',function(ev){
+        var txt=(ev.clipboardData||window.clipboardData).getData('text');
+        if(!txt) return;
+        var rows=txt.replace(/\r/g,'').split('\n');
+        while(rows.length>1 && rows[rows.length-1].replace(/\s/g,'')==='') rows.pop();
+        if(rows.length<=1) return;
+        ev.preventDefault();
+        var f=inp.dataset.f;
+        var colInputs=Array.prototype.slice.call(document.querySelectorAll('#prBody .cellinput[data-f="'+f+'"]'));
+        var startIdx=colInputs.indexOf(inp);
+        if(startIdx<0) return;
+        for(var i=0;i<rows.length;i++){
+          var cell=colInputs[startIdx+i];
+          if(!cell) break;
+          var v=Math.max(0,Math.min(240,parseFloat(String(rows[i]).replace(/[,\s]/g,''))||0));
+          var cid=cell.dataset.id;
+          getM(cid)[f]=v;
+          var k=tKey(cid); if(!touched[k]) touched[k]={}; touched[k][f]=!!v;
+        }
+        saveRunCloud();
+        renderTable();
+        var lastIdx=Math.min(startIdx+rows.length-1,colInputs.length-1);
+        var lastCell=document.querySelectorAll('#prBody .cellinput[data-f="'+f+'"]')[lastIdx];
+        if(lastCell) lastCell.focus();
+      });
     });
     document.querySelectorAll('#prBody tr.emp-row').forEach(function(tr){ tr.addEventListener('click',function(){ openDetail(tr.dataset.id); }); });
   }
@@ -41055,7 +41091,7 @@ function openPayslipPicker(){
     });
     document.getElementById('prMPrev').addEventListener('click',function(){ if(curMonth>1) curMonth--; else { curMonth=12; curYear--; } updMonth(); });
     document.getElementById('prMNext').addEventListener('click',function(){ if(curMonth<12) curMonth++; else { curMonth=1; curYear++; } updMonth(); });
-    document.getElementById('prBtnCalc').addEventListener('click',function(){ renderTable(); toast('已試算 '+EMP.filter(activeThisMonth).length+' 位 · 紅綠燈已更新'); });
+    document.getElementById('prBtnCalc').addEventListener('click',function(){ renderTable(); toast('紅綠燈已重新整理（金額本來就即時算好了）'); });
     document.getElementById('prBtnImport').addEventListener('click',openImport);
     document.getElementById('prBtnAddEmp').addEventListener('click',function(){ openEmpModal(); });
     /* 獎金升級：新增獎金項目（builtin:false，預設非經常·扣稅·算補充費·最常見） */
