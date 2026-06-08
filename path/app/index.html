@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.9.0</div>
+        <div class="sidebar-version">v1.9.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -40143,7 +40143,11 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       pension:emp.pension, deps:emp.deps, voluntary:emp.voluntary, healthRole:(emp.healthRole==='owner'?'owner':'employee'), hire:emp.hire||'', leave:emp.leave||'', email:emp.email||'',
       updatedBy:_uid(), updatedAt:_ts()
     };
-    var docRef = (emp.id && String(emp.id).length>6)
+    /* 2026-06-08 修：編輯既有員工一律打回原 doc。舊版用 String(emp.id).length>6 判斷，
+       導致短/數字/遷移 id（如 "1"、"emp7"）的既有員工被當新增、另開新 doc，
+       更新跑到新 doc、原 doc 沒變 → 重開/重載看到舊資料。改用「emp.id 是否已存在」判斷：
+       有 id＝既有員工→doc(id)；無 id＝真正新增→doc() 取 Firestore auto-id。 */
+    var docRef = emp.id
       ? base.collection('payroll_employees').doc(String(emp.id))
       : base.collection('payroll_employees').doc();
     emp.id = docRef.id;
@@ -40617,7 +40621,14 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     if(plainSecret){ if(natId) emp.natId=natId; if(bankCode) emp.bankCode=bankCode; if(bankAcct) emp.bankAcct=bankAcct; }
     saveEmpCloud(emp, plainSecret, function(ok){
       if(!ok){ toast('儲存失敗（請檢查權限 / 連線）'); return; }
-      toast((editingEmpId!=null?'已更新「':'已新增「')+name+'」');
+      /* 2026-06-08 加：改了敏感欄（身分證/銀行帳號）時，明確回報新末四碼，
+         讓使用者存完當下就能確認 PII 更新生效（敏感欄存後輸入框留空，否則看不出有沒有存到）。 */
+      var msg=(editingEmpId!=null?'已更新「':'已新增「')+name+'」';
+      var confirms=[];
+      if(bankAcct && emp.bankAcctMasked){ confirms.push('銀行帳號末四碼 '+emp.bankAcctMasked); }
+      if(natId && emp.natIdMasked){ confirms.push('身分證 '+emp.natIdMasked); }
+      if(confirms.length){ msg+='：✓ '+confirms.join('、')+' 已更新'; }
+      toast(msg);
       closeEmpModal(); renderEmployees(); renderTable();
     });
   }
