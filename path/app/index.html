@@ -10149,7 +10149,7 @@ body.hd-locked { overflow: hidden; }
     'mod-contacts': '客戶管理',
     'mod-quotes': '報價提案',
     'mod-billing': '收款管理',
-    'mod-payroll': '薪資計算',
+    'mod-payroll': '算薪水',
     'mod-meetings': '會議紀錄',
     'mod-insights': '營運戰情室',
     'mod-docs': '文件庫'
@@ -10517,7 +10517,7 @@ body.hd-locked { overflow: hidden; }
       { id: 'biz-contacts', label: '客戶管理', icon: 'users', modKey: 'mod-contacts', layer: 1, q: '這個人跟我們什麼關係？' },
       { id: 'biz-quotes', label: '報價提案', icon: 'fileText', modKey: 'mod-quotes', layer: 2, q: '怎麼快速產一份專業報價？' },
       { id: 'biz-billing', label: '收款管理', icon: 'dollarSign', modKey: 'mod-billing', layer: 2, q: '錢收到了嗎？' },
-      { id: 'biz-payroll', label: '薪資', icon: 'payrollCalc', modKey: 'mod-payroll', layer: 2, q: '這個月薪水算好了嗎？' },
+      { id: 'biz-payroll', label: '算薪水', icon: 'payrollCalc', modKey: 'mod-payroll', layer: 2, q: '這個月薪水算好了嗎？' },
       { id: 'biz-meetings', label: '會議紀錄', icon: 'calendar', modKey: 'mod-meetings', layer: 2, q: '上次跟客戶講了什麼？' },
       { id: 'biz-insights', label: '營運戰情室', icon: 'activity', modKey: 'mod-insights', layer: 3, q: '公司現在狀況怎樣？' },
       { id: 'biz-docs', label: '文件庫', icon: 'folder', modKey: 'mod-docs', layer: 2, q: '那份合約在哪裡？' }
@@ -32079,7 +32079,7 @@ function loadHistory(){
             { key:'mod-contacts', label:'客戶管理', icon:'users', q:'這個人跟我們什麼關係？', minPlan:'free' },
             { key:'mod-quotes', label:'報價提案', icon:'fileText', q:'怎麼快速產一份專業報價？', minPlan:'starter' },
             { key:'mod-billing', label:'收款管理', icon:'dollarSign', q:'錢收到了嗎？', minPlan:'pro', sensitive:true },
-            { key:'mod-payroll', label:'薪資計算', icon:'payrollCalc', q:'這個月薪水算好了嗎？', minPlan:'pro', sensitive:true },
+            { key:'mod-payroll', label:'算薪水', icon:'payrollCalc', q:'這個月薪水算好了嗎？', minPlan:'pro', sensitive:true },
             { key:'mod-meetings', label:'會議紀錄', icon:'calendar', q:'上次跟客戶講了什麼？', minPlan:'starter' },
             { key:'mod-insights', label:'營運戰情室', icon:'activity', q:'公司現在狀況怎樣？', minPlan:'pro' },
             { key:'mod-docs', label:'文件庫', icon:'folder', q:'那份合約在哪裡？', minPlan:'pro' }
@@ -40216,7 +40216,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     return ''+
     '<div class="pr-head">'+
       '<div class="pr-title">'+
-        '<h1><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M9 11h2M13 11h2M9 15h2M13 15h2"/></svg><span>薪資計算</span></h1>'+
+        '<h1><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M9 11h2M13 11h2M9 15h2M13 15h2"/></svg><span>算薪水</span></h1>'+
         '<div class="subtitle">全公司一張表 · 自動帶上月 · 只改這個月變動</div>'+
       '</div>'+
       '<div class="pr-actions" id="prActions">'+
