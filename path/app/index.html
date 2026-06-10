@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.10.0</div>
+        <div class="sidebar-version">v1.10.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -40299,7 +40299,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     '<div class="pr-overlay bonus-overlay" id="prBonusOverlay"><div class="pr-modal bonus-modal"><div class="pr-modal-header"><div><div class="h-nm" id="prBonusTitle">設定獎金</div><div class="h-mo" id="prBonusName"></div></div><button class="pr-modal-close" id="prBonusClose" data-bc-close="1" aria-label="關閉">×</button></div><div class="pr-modal-body" id="prBonusBody" data-bc-body></div><div class="pr-modal-footer bonus-foot"><span class="bf-lab">本人本月獎金合計</span><span class="bf-val" id="prBonusFoot" data-bc-foot>NT$0</span></div></div></div>'+
     '<div class="pr-overlay" id="prImportOverlay"><div class="pr-modal sm"><div class="pr-modal-header"><div class="h-nm">匯入員工名冊</div><button class="pr-modal-close" id="prImportClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="pr-modal-pad"><div class="drop" id="prDrop">把 Excel 拖進來，或<b>點此選擇檔案</b><span class="di">支援 .xlsx / .xls / .csv。第一列當作欄位名稱。</span><input type="file" id="prFileInput" accept=".xlsx,.xls,.csv" style="display:none" /></div><p class="hint">不確定格式？先 <a href="#" id="prDlTemplate" style="color:var(--primary)">下載範本</a>，填好再上傳。可辨識欄位：姓名、底薪、勞保投保薪資、健保投保金額、勞退提繳工資、眷口數、勞退自願提繳%、到職日、離職日、身分證字號、銀行代號、銀行帳號。<b>身分證 / 帳號：清單只顯示末幾碼。</b></p><div id="prPreviewArea"></div></div></div><div class="pr-modal-footer"><button class="pr-btn ghost" id="prImpCancel">取消</button><button class="pr-btn accent" id="prImpConfirm" disabled>確認匯入</button></div></div></div>'+
     '<div class="pr-overlay" id="prEmpOverlay"><div class="pr-modal" style="width:680px"><div class="pr-modal-header"><div><div class="h-nm" id="prEmpModalTitle">新增員工</div><div class="h-mo">建檔一次、長期沿用</div></div><button class="pr-modal-close" id="prEmpClose" aria-label="關閉">×</button></div><div class="pr-modal-body"><div class="emp-form">'+
-      '<div class="form-sec"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>基本</div><div class="form-grid"><div class="ff full"><label>姓名</label><input id="pref_name" type="text" placeholder="員工姓名" autocomplete="off"></div><div class="ff full"><label>Email<span class="opt">（日後寄薪資條用）</span></label><input id="pref_email" type="email" placeholder="例 name@company.com" autocomplete="off" inputmode="email"></div><div class="ff"><label>到職日</label><input id="pref_hire" type="date"></div><div class="ff"><label>離職日<span class="opt">（在職留空）</span></label><input id="pref_leave" type="date"></div></div></div>'+
+      '<div class="form-sec"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>基本</div><div class="form-grid"><div class="ff full"><label>姓名</label><input id="pref_name" type="text" placeholder="員工姓名" autocomplete="off"></div><div class="ff full"><label>Email<span class="opt">（登入打卡的身分鑰匙）</span></label><input id="pref_email" type="email" placeholder="例 name@company.com" autocomplete="off" inputmode="email"><span class="fhint">填了信箱，員工就能用 Google 登入打卡。</span></div><div class="ff full"><label>直屬主管<span class="opt">（決定請假送誰批）</span></label><select id="pref_managerEmail"><option value="">— 暫不指定 —</option></select><span class="fhint">主管欄決定他請假送誰批；選項是名冊裡其他員工與你（老闆）。</span></div><div class="ff"><label>到職日</label><input id="pref_hire" type="date"></div><div class="ff"><label>離職日<span class="opt">（在職留空）</span></label><input id="pref_leave" type="date"></div></div></div>'+
       '<div class="form-sec"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><path d="M12 2v20M16 6c0-2-1.8-3.5-4-3.5S8 4 8 6s1.8 3.2 4 3.2 4 1.5 4 3.5-1.8 3.5-4 3.5-4-1.5-4-3.5"/></svg>薪資</div><div class="form-grid"><div class="ff"><label>底薪（月）</label><input id="pref_base" class="num" type="number" step="100" placeholder="例 45000" inputmode="numeric"></div><div class="ff"><label>勞退自願提繳 %</label><select id="pref_voluntary"><option value="0">0%</option><option value="1">1%</option><option value="2">2%</option><option value="3">3%</option><option value="4">4%</option><option value="5">5%</option><option value="6">6%</option></select></div></div></div>'+
       '<div class="form-sec"><div class="form-sec-lab"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></svg>投保<span class="seg sm" id="prInsMode" style="margin-left:auto"><button type="button" data-ins="auto">自動依底薪</button><button type="button" data-ins="custom">自訂</button></span></div><div class="form-grid">'+
         '<div class="ff"><label>勞保投保</label><select id="pref_laborIns_sel"></select><input id="pref_laborIns" class="num" type="number" step="100" placeholder="金額" inputmode="numeric" style="display:none"><span class="fhint" id="pref_laborIns_hint"></span></div>'+
@@ -40590,6 +40590,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       var st=empStatus(e);
       var chip=st==='left'?'<span class="chip off"><span class="d"></span>已離職</span>':st==='pending'?'<span class="chip off"><span class="d"></span>未到職</span>':'<span class="chip on"><span class="d"></span>在職</span>';
       var sub=e.hire?('到職 '+e.hire+(e.leave?'　·　離職 '+e.leave:'')):(e.leave?'離職 '+e.leave:'—');
+      if(e.email){ sub+='　·　'+esc(e.email); }   // 顯示登入信箱（主管欄僅編輯時可見，避免表格過擠）
       var tr=document.createElement('tr'); tr.dataset.id=e.id;
       tr.innerHTML='<td class="l"><div class="emp-id">'+avatarOf(e.name)+'<div class="emp-id-txt"><div class="emp-id-name"><span class="nm">'+esc(e.name)+'</span>'+chip+'</div><div class="emp-id-sub">'+esc(sub)+'</div></div></div></td>'+
         '<td class="c">'+(e.deps||0)+'</td><td class="c">'+(e.voluntary||0)+'%</td><td><span class="m strong">'+fmt(e.base)+'</span></td><td><span class="m">'+fmt(e.laborIns)+'</span></td>'+
@@ -40615,6 +40616,25 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       else { sel.style.display=''; hint.textContent='從級距下拉選擇'; }
     });
   }
+  /* managerEmail 下拉：列名冊其他員工(有 email 者) + 老闆(登入者) · 編輯時排除自己 */
+  function ownerEmail(){
+    try{ if(window.firebase && firebase.auth && firebase.auth().currentUser){ return firebase.auth().currentUser.email||''; } }catch(_){}
+    return '';
+  }
+  function fillManagerOptions(currentEmpId, selectedEmail){
+    var sel=document.getElementById('pref_managerEmail'); if(!sel) return;
+    var seen={}, html='<option value="">— 暫不指定 —</option>';
+    var oe=ownerEmail();
+    if(oe){ seen[oe.toLowerCase()]=1; html+='<option value="'+oe+'">老闆（我）· '+oe+'</option>'; }
+    for(var i=0;i<EMP.length;i++){
+      var x=EMP[i]; if(!x||!x.email) continue;
+      if(currentEmpId!=null && x.id===currentEmpId) continue;   // 不能當自己的主管
+      var key=String(x.email).toLowerCase(); if(seen[key]) continue; seen[key]=1;
+      html+='<option value="'+x.email+'">'+(x.name||x.email)+' · '+x.email+'</option>';
+    }
+    sel.innerHTML=html;
+    sel.value=(selectedEmail||'');
+  }
   function openEmpModal(id){
     editingEmpId=(id!=null && id!==undefined && typeof id!=='object')?id:null;
     document.getElementById('prEmpFormErr').textContent=''; fillGradeSelects();
@@ -40624,6 +40644,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       var e=EMP.filter(function(x){return x.id===editingEmpId;})[0];
       titleEl.textContent='編輯員工 · '+e.name;
       setVal('pref_name',e.name); setVal('pref_email',e.email||''); setVal('pref_base',e.base); setVal('pref_hire',e.hire||''); setVal('pref_leave',e.leave||'');
+      fillManagerOptions(editingEmpId, e.managerEmail||'');
       setVal('pref_deps',e.deps||0); setVal('pref_voluntary',e.voluntary||0); setVal('pref_healthRole',e.healthRole||'employee');
       // 敏感：顯示遮罩 placeholder、不填明文（編輯時留空＝不變更）
       var nid=document.getElementById('pref_natId'), bc=document.getElementById('pref_bankCode'), ba=document.getElementById('pref_bankAcct');
@@ -40641,6 +40662,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       document.getElementById('pref_bankCode').placeholder='例 822';
       document.getElementById('pref_bankAcct').placeholder='轉帳用帳號';
       document.getElementById('pref_deps').value='0'; document.getElementById('pref_voluntary').value='0'; var _hr=document.getElementById('pref_healthRole'); if(_hr) _hr.value='employee'; insMode='auto';
+      fillManagerOptions(null, '');
     }
     applyInsMode();
     document.getElementById('prEmpOverlay').classList.add('open');
@@ -40650,10 +40672,12 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   function saveEmp(){
     var name=document.getElementById('pref_name').value.trim();
     var email=document.getElementById('pref_email').value.trim();
+    var managerEmail=(document.getElementById('pref_managerEmail')||{}).value||'';
     var base=num(document.getElementById('pref_base').value);
     var err=document.getElementById('prEmpFormErr');
     if(!name){ err.textContent='請填姓名'; document.getElementById('pref_name').focus(); return; }
     if(!base||base<=0){ err.textContent='請填底薪（大於 0）'; document.getElementById('pref_base').focus(); return; }
+    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ err.textContent='Email 格式怪怪的，再確認一下'; document.getElementById('pref_email').focus(); return; }
     var laborIns,healthIns,pension;
     if(insMode==='custom'){ laborIns=num(document.getElementById('pref_laborIns_sel').value)||gradeFor(base); healthIns=num(document.getElementById('pref_healthIns_sel').value)||healthGradeFor(base); pension=num(document.getElementById('pref_pension_sel').value)||base; }
     else { laborIns=gradeFor(base); healthIns=healthGradeFor(base); pension=base; }
@@ -40666,7 +40690,7 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     var emp;
     if(editingEmpId!=null){ emp=EMP.filter(function(x){return x.id===editingEmpId;})[0]; }
     else { emp={}; EMP.push(emp); }   // v1.7.0：不用本機 id，saveEmpCloud 會把 Firestore doc id 寫回此物件
-    emp.name=name; emp.email=email; emp.base=base; emp.laborIns=laborIns; emp.healthIns=healthIns; emp.pension=pension; emp.deps=deps; emp.voluntary=voluntary; emp.healthRole=healthRole; emp.hire=hire; emp.leave=leave;
+    emp.name=name; emp.email=email; emp.managerEmail=managerEmail; emp.base=base; emp.laborIns=laborIns; emp.healthIns=healthIns; emp.pension=pension; emp.deps=deps; emp.voluntary=voluntary; emp.healthRole=healthRole; emp.hire=hire; emp.leave=leave;
     // 敏感：有填才更新遮罩 + 送後端；留空＝不變更
     var plainSecret=null;
     if(natId||bankCode||bankAcct){ plainSecret={natId:natId, bankCode:bankCode, bankAcct:bankAcct}; if(natId) emp.natIdMasked=maskId(natId); if(bankCode) emp.bankCodeMasked=maskAcct(bankCode); if(bankAcct) emp.bankAcctMasked=maskAcct(bankAcct); }
