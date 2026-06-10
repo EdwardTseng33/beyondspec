@@ -95,7 +95,7 @@
           arr.push({
             id: 'pch_' + sObj.ms + '_seed' + i,
             type: sObj.type,
-            employeeEmail: Settings.employeeEmail,
+            employeeEmail: (window.BPCloud && BPCloud.getState().user) ? BPCloud.getState().user.email : '',
             clockTimeMs: sObj.ms,
             distance: sObj.dist,
             locationStatus: 'in_range',
@@ -111,8 +111,6 @@
   })();
   var Settings = {
     company: '誠品物流（內湖）',
-    employeeName: '美玲',
-    employeeEmail: 'meiling@demo.beyondpath.tw',
     site: { lat: 25.0784, lng: 121.5745, radiusM: 300 }
   };
   var SimGeo = {
@@ -155,12 +153,18 @@
     return durationLabel(mins);
   }
   var contentEl, toastEl, greetingEl, themeBtnEl;
+  // ── 雲端狀態（雲端為真相、本地為離線快取）──
+  var _cloudReady = false;      // Firebase SDK + auth resolved
+  var _cloudUser = null;        // { email, name, uid, photoURL }
+  var _cloudOnline = false;     // 最近一次讀寫雲端是否成功（決定顯示線上/離線）
+  var _cloudRecords = [];       // 從雲端拉回的打卡紀錄（render 用這份）
+  var _loadingRecords = false;
   var liveClockTimer = null;
   function el(id){ return document.getElementById(id); }
   function todayPunches(){
     var todayMs = ServerTime.now().getTime();
     var tk = dayKey(todayMs);
-    return PunchStore.list().filter(function(r){ return dayKey(r.clockTimeMs) === tk; });
+    return allRecords().filter(function(r){ return dayKey(r.clockTimeMs) === tk; });
   }
   function lastTodayType(){
     var tp = todayPunches();
@@ -202,7 +206,7 @@
   function weekWorkMinutes(){
     var nowMs = ServerTime.now().getTime();
     var startMs = weekStartMs(nowMs);
-    var all = PunchStore.list();
+    var all = allRecords();
     var byDay = {}, i, r, k;
     for (i = 0; i < all.length; i++) {
       r = all[i];
@@ -224,53 +228,64 @@
     setTimeout(function(){ toastEl.classList.remove('show'); }, 3000);
   }
   function doPunch(type){
-    var clockTimeMs = ServerTime.now().getTime();
+    if (!_cloudUser) { showToast('請先登入再打卡', 'warn'); return; }
     var pos = SimGeo.getPosition();
     var geo = Geo.resolveAgainstSite(pos.lat, pos.lng, Settings.site);
-    var rec = PunchStore.append({
+    var verb = (type === 'in') ? '上班打卡' : '下班打卡';
+    BPCloud.appendPunch({
       type: type,
-      employeeEmail: Settings.employeeEmail,
-      clockTimeMs: clockTimeMs,
+      employeeEmail: _cloudUser.email,
+      clockTimeMs: BPCloud.nowMs(),
       distance: geo.distance,
       locationStatus: geo.locationStatus,
       isBackfill: false
+    }).then(function(res){
+      if (res.online) {
+        if (geo.locationStatus === 'out_of_range') {
+          showToast(verb + ' 完成 · 超出範圍（' + geo.distance + ' 公尺），已記錄', 'warn');
+        } else {
+          showToast(verb + ' 完成', 'ok');
+        }
+      } else {
+        showToast(res.message || (verb + ' 已暫存（離線），連上自動補傳'), 'warn');
+      }
+      reloadRecords(false);
+      if (contentEl) { try { contentEl.scrollTop = 0; } catch (e) {} }
+      if (window.scrollTo) { try { window.scrollTo(0, 0); } catch (e) {} }
     });
-    var timeStr = fmtTime(rec.clockTimeMs);
-    var verb = (type === 'in') ? '上班打卡' : '下班打卡';
-    if (geo.locationStatus === 'out_of_range') {
-      showToast(verb + ' ' + timeStr + ' · 超出範圍（' + geo.distance + ' 公尺），已記錄', 'warn');
-    } else {
-      showToast(verb + ' ' + timeStr + ' 完成', 'ok');
-    }
-    render();
-    // 打卡後把畫面捲回頂部，讓員工立刻看到狀態變化（已打卡上班 / 工時提示），免以為沒打到又重打（美玲痛點）
-    if (contentEl) { try { contentEl.scrollTop = 0; } catch (e) {} }
-    if (window.scrollTo) { try { window.scrollTo(0, 0); } catch (e) {} }
   }
+
   function doBackfill(){
+    if (!_cloudUser) { showToast('請先登入再補打卡', 'warn'); return; }
     if (!backfillTimeStr) { showToast('請先選擇補打卡的日期與時間', 'warn'); return; }
     var ms = new Date(backfillTimeStr).getTime();
     if (isNaN(ms)) { showToast('時間格式不正確，請重新選擇', 'warn'); return; }
-    var nowMs = ServerTime.now().getTime();
+    var nowMs = BPCloud.nowMs();
     if (ms > nowMs) { showToast('補打卡不能選未來時間', 'warn'); return; }
-    var rec = PunchStore.append({
+    var verb = (backfillType === 'in') ? '上班' : '下班';
+    BPCloud.appendPunch({
       type: backfillType,
-      employeeEmail: Settings.employeeEmail,
+      employeeEmail: _cloudUser.email,
       clockTimeMs: ms,
       distance: null,
       locationStatus: 'no_location',
       isBackfill: true
+    }).then(function(res){
+      if (res.online) {
+        showToast('已補登 ' + fmtDateFull(ms) + ' ' + fmtTime(ms) + ' ' + verb, 'ok');
+      } else {
+        showToast(res.message || '補登已暫存（離線），連上自動補傳', 'warn');
+      }
+      backfillTimeStr = '';
+      backfillOpen = false;
+      reloadRecords(false);
+      if (contentEl) { try { contentEl.scrollTop = 0; } catch (e) {} }
+      if (window.scrollTo) { try { window.scrollTo(0, 0); } catch (e) {} }
     });
-    var verb = (backfillType === 'in') ? '上班' : '下班';
-    showToast('已補登 ' + fmtDateFull(rec.clockTimeMs) + ' ' + fmtTime(rec.clockTimeMs) + ' ' + verb + '，可在下方紀錄看到', 'ok');
-    backfillTimeStr = '';
-    backfillOpen = false; // 補登成功就收起補打卡區，讓使用者注意力回到結果
-    render();
-    // 捲回頂部：toast 在視窗底部固定顯示，使用者在頁面中段也看得到狀態變化（美玲/小陳痛點）
-    if (contentEl) { try { contentEl.scrollTop = 0; } catch (e) {} }
-    if (window.scrollTo) { try { window.scrollTo(0, 0); } catch (e) {} }
   }
+
   function render(){
+    renderTopbarActions();
     var nowMs = ServerTime.now().getTime();
     var last = lastTodayType();
     var canIn = (last !== 'in');
@@ -387,24 +402,18 @@
     h += '        <button class="sim-btn' + (SimGeo.mode === 'out' ? ' active' : '') + '" id="simOut">超出範圍</button>';
     h += '      </div>';
     h += '    </div>';
-    h += '    <div class="sim-row">';
-    h += '      <span class="sim-label">手機時間竄改</span>';
-    h += '      <div class="sim-toggle">';
-    h += '        <button class="sim-btn' + (ServerTime.getSkew() === 0 ? ' active' : '') + '" id="skewOff">正常</button>';
-    h += '        <button class="sim-btn' + (ServerTime.getSkew() !== 0 ? ' active' : '') + '" id="skewOn">手機快 3 小時</button>';
-    h += '      </div>';
-    h += '    </div>';
-    h += '    <div class="sim-hint">打卡時間一律採用模擬伺服器時間。把手機調快 3 小時也不會改變記錄時間 ─ 這就是防竄改機制。</div>';
+    h += '    <div class="sim-hint">打卡時間一律以雲端伺服器時間為準（serverTimestamp），改手機時間無效，這就是防代打機制。</div>';
     h += '    <div class="sim-row" style="margin-top:6px">';
-    h += '      <span class="sim-label">重設示範</span>';
-    h += '      <div class="sim-toggle"><button class="sim-btn" id="resetBtn">清除紀錄</button></div>';
+    h += '      <span class="sim-label">重新從雲端載入</span>';
+    h += '      <div class="sim-toggle"><button class="sim-btn" id="reloadBtn">重新整理</button></div>';
     h += '    </div>';
     h += '  </div>';
     h += '</details>';
     return h;
   }
+
   function renderRecords(){
-    var records = PunchStore.list();
+    var records = allRecords();
     if (!records.length) {
       return '<div class="card empty-state">'
            + '<div class="empty-ico">' + IC.clock + '</div>'
@@ -485,11 +494,8 @@
     var simIn = el('simIn'), simOut = el('simOut');
     if (simIn) simIn.onclick = function(){ SimGeo.mode = 'in'; render(); };
     if (simOut) simOut.onclick = function(){ SimGeo.mode = 'out'; render(); };
-    var skewOff = el('skewOff'), skewOn = el('skewOn');
-    if (skewOff) skewOff.onclick = function(){ ServerTime.setSimulatedSkew(0); render(); };
-    if (skewOn) skewOn.onclick = function(){ ServerTime.setSimulatedSkew(0); showToast('手機已調快 3 小時 ─ 但打卡時間仍以伺服器時間為準', 'warn'); render(); };
-    var resetBtn = el('resetBtn');
-    if (resetBtn) resetBtn.onclick = function(){ PunchStore._resetForDemo(); showToast('紀錄已清除（僅示範用）', 'ok'); render(); };
+    var reloadBtn = el('reloadBtn');
+    if (reloadBtn) reloadBtn.onclick = function(){ showToast('正在從雲端重新載入…', 'ok'); reloadRecords(true); };
   }
   function startLiveClock(){
     if (liveClockTimer) { clearInterval(liveClockTimer); }
@@ -517,8 +523,115 @@
   function setGreeting(){
     var h = ServerTime.now().getHours();
     var g = (h < 12) ? '早安' : (h < 18) ? '午安' : '晚安';
-    greetingEl.textContent = g + '，' + Settings.employeeName;
+    var nm = (_cloudUser && _cloudUser.name) ? _cloudUser.name : '同事';
+    if (greetingEl) greetingEl.textContent = g + '，' + nm;
   }
+  // ════════════════════════════════════════════════════════════
+  // 雲端 auth 整合
+  // ════════════════════════════════════════════════════════════
+  function showLoginOverlay(show){
+    var ov = el('loginOverlay');
+    if (ov) { ov.hidden = !show; }
+    var shell = el('appShell');
+    if (shell) { shell.style.visibility = show ? 'hidden' : 'visible'; }
+  }
+  function setLoginMsg(text, kind){
+    var m = el('loginMsg');
+    if (!m) return;
+    if (!text) { m.hidden = true; return; }
+    m.hidden = false;
+    m.className = 'login-msg ' + (kind === 'err' ? 'err' : 'info');
+    m.innerHTML = text;
+  }
+  function bindLoginButton(){
+    var btn = el('loginBtn');
+    if (!btn) return;
+    btn.onclick = function(){
+      setLoginMsg('<span class="login-spinner"></span>正在開啟 Google 登入…', 'info');
+      BPCloud.signIn().then(function(){
+        // onAuthChange 會接手後續（隱藏 overlay + 渲染）
+        setLoginMsg('', null);
+      })['catch'](function(err){
+        var msg = (err && err.message) || '';
+        if (/popup|cancel|closed/i.test(msg)) {
+          setLoginMsg('登入視窗被關掉了，點上面按鈕再試一次。', 'info');
+        } else if (/disallowed_useragent|user-agent/i.test(msg)) {
+          setLoginMsg('你正在 LINE / FB 內建瀏覽器中，Google 不允許在這裡登入。請用 Safari 或 Chrome 開啟本頁。', 'err');
+        } else {
+          setLoginMsg('登入沒成功：' + msg + '。請再試一次或檢查網路。', 'err');
+        }
+      });
+    };
+  }
+  function onCloudAuthChange(s){
+    _cloudReady = s.ready;
+    _cloudUser = s.user;
+    if (s.isSignedIn) {
+      showLoginOverlay(false);
+      setGreeting();
+      reloadRecords(true);
+    } else {
+      // SDK ready 且確定沒登入 → 顯示登入頁；SDK 還沒 resolved → 也顯示登入頁（不卡 loading）
+      if (s.authResolved) {
+        showLoginOverlay(true);
+        bindLoginButton();
+        if (!s.ready) {
+          setLoginMsg('連不上登入服務（可能是網路或擋了 Google）。連上網後重新整理即可。', 'err');
+        }
+      }
+    }
+  }
+  // 從雲端重拉紀錄 → 更新 _cloudRecords → 重繪
+  function reloadRecords(showLoading){
+    if (_loadingRecords) return;
+    _loadingRecords = true;
+    if (showLoading) { render(); }
+    BPCloud.listPunches().then(function(res){
+      _loadingRecords = false;
+      _cloudOnline = res.online === true;
+      _cloudRecords = res.records || [];
+      render();
+    })['catch'](function(){
+      _loadingRecords = false;
+      _cloudOnline = false;
+      render();
+    });
+  }
+
+  // 雲端紀錄當資料源（取代原本的 PunchStore.list 本地讀取）
+  function allRecords(){ return _cloudRecords || []; }
+
+  // 更新 topbar：使用者 chip + 雲端狀態 pill + 登出
+  function renderTopbarActions(){
+    var actions = document.querySelector('.topbar-actions');
+    if (!actions) return;
+    var html = '';
+    if (_cloudUser) {
+      var ava = _cloudUser.photoURL
+        ? '<span class="uc-ava"><img src="' + _cloudUser.photoURL + '" referrerpolicy="no-referrer" alt=""></span>'
+        : '<span class="uc-ava">' + ((_cloudUser.name || '?').charAt(0).toUpperCase()) + '</span>';
+      var cloudPill = _cloudOnline
+        ? '<span class="cloud-pill on">' + IC.check + ' 已連雲端</span>'
+        : '<span class="cloud-pill off">' + IC.mapPin + ' 離線暫存</span>';
+      html += cloudPill;
+      html += '<span class="user-chip" title="' + (_cloudUser.email || '') + '">' + ava
+            + '<span class="uc-name">' + (_cloudUser.name || '') + '</span></span>';
+      html += '<button class="icon-btn" id="logoutBtn" title="登出" aria-label="登出">' + IC.logout + '</button>';
+    }
+    html += '<button class="icon-btn" id="themeBtn" title="切換深色模式" aria-label="切換深色模式">'
+          + (document.documentElement.getAttribute('data-theme') === 'dark' ? IC.sun : IC.moon) + '</button>';
+    actions.innerHTML = html;
+    themeBtnEl = el('themeBtn');
+    if (themeBtnEl) themeBtnEl.onclick = toggleTheme;
+    var lo = el('logoutBtn');
+    if (lo) lo.onclick = function(){
+      BPCloud.signOut().then(function(){
+        _cloudUser = null; _cloudRecords = []; _cloudOnline = false;
+        showLoginOverlay(true); bindLoginButton();
+      });
+    };
+  }
+
   function boot(){
     contentEl = el('content');
     toastEl = el('toast');
@@ -530,10 +643,18 @@
     } catch (e) {}
     themeBtnEl.onclick = toggleTheme;
     applyThemeIcon();
-    setGreeting();
-    ensureCleanDemo();
-    render();
+    bindLoginButton();
+    // 先把畫面藏起來、等 auth 狀態決定顯示登入頁還是打卡頁（避免閃一下未登入的空畫面）
+    showLoginOverlay(true);
+    // 掛雲端登入狀態監聽 + 啟動 Firebase
+    if (window.BPCloud) {
+      BPCloud.onAuthChange(onCloudAuthChange);
+      BPCloud.init();
+    } else {
+      setLoginMsg('系統元件載入失敗，請重新整理頁面。', 'err');
+    }
   }
+
   // 首次載入 / 偵測到髒示範資料時，整理成一份乾淨示範（解 aji/Peter 第一印象崩壞 HIGH）
   // 規則：① store 空 → 種乾淨示範；② 一次性整理旗標未設且今日資料像示範灌水(>6 筆 or 同分鐘重複) → 重種一次。
   function ensureCleanDemo(){
@@ -569,10 +690,12 @@
     boot();
   }
   window.__BP_ATT__ = {
-    ServerTime: ServerTime, Geo: Geo, PunchStore: PunchStore,
-    Settings: Settings, SimGeo: SimGeo, doPunch: doPunch, doBackfill: doBackfill,
+    Geo: Geo, Settings: Settings, SimGeo: SimGeo,
+    doPunch: doPunch, doBackfill: doBackfill,
     todayWorkMinutes: todayWorkMinutes,
-    seedClean: function(){ PunchStore._resetForDemo(); render(); },
+    reloadRecords: reloadRecords,
+    getCloudState: function(){ return window.BPCloud ? BPCloud.getState() : null; },
+    getRecords: function(){ return _cloudRecords; },
     setBackfill: function(timeStr, type){ backfillTimeStr = timeStr; backfillType = type || 'in'; }
   };
 })();
