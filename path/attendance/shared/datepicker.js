@@ -215,6 +215,8 @@
       "  transition:background .12s,color .12s;}",
       ".bdp-pick-cell:hover{background:var(--primary-light,rgba(124,92,252,.14));}",
       ".bdp-pick-cell.bdp-cur{background:var(--primary,#7C5CFC);color:#fff;font-weight:700;}",
+      "/* 必修#1：年/月選擇格補 focus-visible，根治『當前年』吃瀏覽器預設黑色 focus ring（女巫紅線#7） */",
+      ".bdp-pick-cell:focus-visible{outline:2px solid var(--primary,#7C5CFC);outline-offset:-2px;border-radius:var(--r-sm,10px);}",
       "/* v1.2 年份單欄長清單：雙 class 後代特異度勝原 .bdp-pick-grid 單 class grid，只覆寫年那份 */",
       ".bdp-pick-y .bdp-pick-grid{display:block;grid-template-columns:none;max-height:264px;",
       "  overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px;}",

@@ -115,7 +115,7 @@
          + "</span></div>";
     h += "  <label class=\"field-label\" for=\"lvReason\">事由（選填）</label>";
     h += "  <textarea class=\"lv-textarea\" id=\"lvReason\" placeholder=\"簡單說明即可\">" + esc(draft.reason) + "</textarea>";
-    h += "  <button class=\"lv-submit\" id=\"lvSubmit\">" + IC.send + " 送出申請</button>";
+    h += "  <button class=\"lv-submit\" id=\"lvSubmit\">" + IC.send + " 申請請假</button>";
     h += "</div>";
     return h;
   }
@@ -128,7 +128,7 @@
 
   function renderMyRequests(list){
     if (!list.length) {
-      return "<div class=\"card empty-state\"><div class=\"empty-ico\">" + IC.calendar + "</div><div class=\"empty-title\">還沒有請假紀錄</div><div class=\"empty-state-text\">上面填一張送出看看。</div></div>";
+      return "<div class=\"card empty-state\"><div class=\"empty-ico\">" + IC.calendar + "</div><div class=\"empty-title\">還沒有請假紀錄</div><div class=\"empty-state-text\">有需要的話，點上方假別申請一張。</div></div>";
     }
     var h = "";
     for (var i = 0; i < list.length; i++) {
@@ -187,7 +187,7 @@
     /* pending approvals */
     html += "<div class=\"section-title\"><span>待我批准</span>" + (pending.length ? "<span class=\"count-pill\">" + pending.length + " 件</span>" : "") + "</div>";
     if (!pending.length) {
-      html += "<div class=\"card empty-state\"><div class=\"empty-ico\">" + IC.inbox + "</div><div class=\"empty-title\">目前沒有待批准的請假</div><div class=\"empty-state-text\">有新申請會出現在這裡，並通知你。</div></div>";
+      html += "<div class=\"card empty-state\"><div class=\"empty-ico\">" + IC.inbox + "</div><div class=\"empty-title\">目前沒有待批假單，都處理完了</div><div class=\"empty-state-text\">有新申請會出現在這裡，並通知你。</div></div>";
     } else {
       for (var i = 0; i < pending.length; i++) {
         html += renderApprovalCard(pending[i]);
@@ -349,6 +349,19 @@
     if (ed < sd) { showToast("結束日期不能早於開始日期", "warn"); return; }
     var hrs = draft.hours;
     if (hrs !== "" && (isNaN(Number(hrs)) || Number(hrs) <= 0)) { showToast("時數請填正整數，或留空用預設", "warn"); return; }
+    // 防呆5 / S5-B：特休不足，送出前就擋（不等送出才報錯）。只有在 entitled 已知（>0）時才擋，
+    // 鏡像缺到職日、基準同步中（entitled=0）時不誤擋所有特休——誠實不假擋。
+    if (draft.leaveType === "annual") {
+      var bal = C.annualBalance({ employeeName: _me.name, employeeEmail: _me.email, hireDate: null }, new Date());
+      if (bal.entitled > 0) {
+        var reqHrs = (hrs === "" ? C.defaultHours(draft.startDate, draft.endDate) : Number(hrs));
+        var reqDays = Math.round((reqHrs / 8) * 100) / 100;
+        if (reqDays > bal.remaining) {
+          showToast("特休只剩 " + bal.remaining + " 天，你選的天數（" + reqDays + " 天）不夠扣。可以改選「事假（無薪）」或縮短天數。", "warn");
+          return;
+        }
+      }
+    }
     if (!window.LeaveCloud || !LeaveCloud.ready()) { showToast("尚未連上雲端，請稍後再試", "err"); return; }
     var typeName = C.leaveTypeName(draft.leaveType);
     LeaveCloud.submit({
@@ -362,7 +375,7 @@
       reason: draft.reason
     }).then(function(res){
       if (res.ok) {
-        showToast("已送出 " + typeName + " 申請，等待主管批准", "ok");
+        showToast("請假申請已送出，等主管核准", "ok");
         draft = { leaveType: "annual", startDate: "", endDate: "", hours: "", reason: "" };
         reloadAll();
       } else {
@@ -595,12 +608,40 @@
     reloadAll();
   }
 
+  // ── LINE / FB 等 App 內建瀏覽器偵測（S1-F）：Google OAuth 在這些 WebView 會被擋，先引導外開。自寫、不依賴主站。──
+  function _isInAppBrowser(){
+    var ua = navigator.userAgent || "";
+    return /FBAN|FBAV|FB_IAB|Instagram|Line\/|LIFF|MicroMessenger|WeChat|Twitter|Snapchat|Pinterest|TikTok/i.test(ua);
+  }
+  function _showWebViewGuide(){
+    var ov = el("loginOverlay");
+    if (!ov) { ov = document.createElement("div"); ov.id = "loginOverlay"; ov.className = "login-overlay"; document.body.appendChild(ov); }
+    ov.hidden = false;
+    var shell = el("appShell"); if (shell) { shell.style.visibility = "hidden"; }
+    var url = ""; try { url = window.location.href; } catch (e) {}
+    var h = "<div class=\"login-card\">";
+    h += "<div class=\"login-logo\">" + IC.calendar + "</div>";
+    h += "<div class=\"login-brand\">BeyondPath 出缺勤</div>";
+    h += "<div class=\"login-title\">請用瀏覽器開啟</div>";
+    h += "<div class=\"login-sub\">這個畫面是從 LINE / FB 內建瀏覽器打開的，Google 登入在這裡沒辦法用——這不是你的問題。<br><br>請點畫面<b>右上角的 ··· （或分享鈕）</b>，選「<b>用預設瀏覽器開啟</b>」，就能正常登入。</div>";
+    if (url) {
+      h += "<div class=\"guide-email-row\"><span class=\"guide-email\" id=\"guideUrl\">" + esc(url) + "</span>";
+      h += "<button class=\"guide-copy\" id=\"guideCopyUrlBtn\">複製網址</button></div>";
+      h += "<div class=\"login-foot\">複製不到也沒關係——直接照上面「···→用瀏覽器開啟」就好。</div>";
+    }
+    h += "</div>";
+    ov.innerHTML = h;
+    var cb = el("guideCopyUrlBtn"); if (cb) cb.onclick = function(){ _copyText(url, cb); };
+  }
+
   function boot(){
     contentEl = el("content"); toastEl = el("toast"); greetingEl = el("greeting");
     themeBtnEl = el("themeBtn"); roleSwitchEl = el("roleSwitch"); roleHintEl = el("roleHint");
     try { var t = localStorage.getItem("bp_att_theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
     if (themeBtnEl) themeBtnEl.onclick = toggleTheme;
     applyThemeIcon();
+    // S1-F：App 內建瀏覽器 → 先給「用瀏覽器開啟」引導，不啟動 Firebase（OAuth 會被擋）
+    if (_isInAppBrowser()) { _showWebViewGuide(); return; }
     bindLoginButton();
     showLoginOverlay(true);
     if (window.BPIdentity) {

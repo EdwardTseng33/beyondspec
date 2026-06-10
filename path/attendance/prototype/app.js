@@ -174,38 +174,74 @@
     toastEl.classList.add('show');
     setTimeout(function(){ toastEl.classList.remove('show'); }, 3000);
   }
+  // 樂觀打卡（体験 S2-C/F/G/H + 防呆1/7）：
+  //  1) 先擋重複打卡（防呆1：本機=雲端真相雙查）
+  //  2) 立即顯示「完成」成功 toast（不等 GPS、不等雲端）→ 員工 3 秒內拿到回饋
+  //  3) 背景跑 GPS（硬上限 5 秒，逾時不阻擋）→ 寫雲端（clockTime 用 server 時間）
+  //  4) 只有「不在範圍 / 拿不到定位 / 雲端沒存到」才補一則狀態 toast；在範圍則不再二次打擾
+  var _punching = false;
   function doPunch(type){
-    if (!_me) { showToast('請先登入再打卡', 'warn'); return; }
+    if (!_cloudUser) { showToast('請先登入再打卡', 'warn'); return; }
+    if (_punching) { return; }                       // 防連點兩次同一鈕
+    // 防呆1：重複打卡擋下（今天同類型已打過）— S2-I
+    var lastType = lastTodayType();
+    if (type === 'in' && lastType === 'in') {
+      var lastIn = _firstTodayTimeOf('in');
+      showToast('你今天上班已經打過卡了' + (lastIn ? '（' + lastIn + '）' : ''), 'warn');
+      return;
+    }
+    if (type === 'out' && lastType !== 'in') {
+      showToast('要先打上班卡，才能打下班卡', 'warn');
+      return;
+    }
+    _punching = true;
     var verb = (type === 'in') ? '上班打卡' : '下班打卡';
-    // 真 GPS：拿到座標 → 算距離；拿不到（拒絕/逾時/不支援）→ 仍可打卡，標記「無定位」
+    var nowMs = BPCloud.nowMs();
+    // ── 步驟 2：立即樂觀成功 toast（含時間）──
+    showToast(verb + ' 完成 ' + fmtTime(nowMs), 'ok');
+    // ── 步驟 3：背景 GPS（5 秒硬上限，逾時照常打卡）──
     _withGeo(function(geo){
       BPCloud.appendPunch({
         type: type,
-        employeeEmail: _me.email,
-        clockTimeMs: BPCloud.nowMs(),
+        employeeEmail: _cloudUser.email,
+        clockTimeMs: nowMs,
         distance: geo.distance,
         locationStatus: geo.locationStatus,
         isBackfill: false
       }).then(function(res){
-        if (res.online) {
-          if (geo.locationStatus === 'out_of_range') {
-            showToast(verb + ' 完成 · 超出範圍（' + geo.distance + ' 公尺），已記錄', 'warn');
-          } else if (geo.locationStatus === 'no_location') {
-            showToast(verb + ' 完成 · 這次拿不到定位，已照常記錄', 'warn');
-          } else {
-            showToast(verb + ' 完成', 'ok');
-          }
-        } else {
-          showToast(res.message || (verb + ' 已暫存（離線），連上自動補傳'), 'warn');
+        _punching = false;
+        // ── 步驟 4：只有需要提醒時才補 toast ──
+        if (!res.online) {
+          showToast(res.message || (verb + ' 已存這台手機（離線），連上自動補傳'), 'warn');
+        } else if (geo.locationStatus === 'out_of_range') {
+          showToast('打卡成功，但偵測到你不在公司附近，已標記給 HR 確認', 'warn');
+        } else if (geo.locationStatus === 'denied') {
+          showToast('已打卡，無法取得位置（你可能拒絕了定位權限），已標記', 'warn');
+        } else if (geo.locationStatus === 'timeout' || geo.locationStatus === 'no_location') {
+          showToast('已打卡，這次定位未完成，已照常記錄', 'warn');
         }
+        // 在範圍（in_range）：成功 toast 已給，不再二次打擾
         reloadRecords(false);
         if (contentEl) { try { contentEl.scrollTop = 0; } catch (e) {} }
         if (window.scrollTo) { try { window.scrollTo(0, 0); } catch (e) {} }
+      })['catch'](function(){
+        _punching = false;
+        showToast(verb + ' 送出時出了點問題，請截圖回報 HR', 'warn');
       });
     });
   }
+  // 今天某類型第一筆的時間（給重複打卡 toast 顯示「09:03」）
+  function _firstTodayTimeOf(type){
+    var tp = todayPunches();
+    var t = null;
+    for (var i = 0; i < tp.length; i++) {
+      if (tp[i].type === type) { t = tp[i].clockTimeMs; }   // tp 由新到舊，留最後一筆=最早
+    }
+    return t ? fmtTime(t) : null;
+  }
 
-  // 取得目前定位並對打卡點算距離；任何失敗都回 no_location（不擋打卡）
+  // 取得目前定位並對打卡點算距離；任何失敗都不擋打卡（樂觀流已先成功）。
+  // 硬上限 5 秒（防呆7）：就算 geolocation 整個 hang 住，也一定在 5 秒內回 timeout 讓雲端照常寫。
   function _withGeo(cb){
     if (!navigator.geolocation) {
       cb({ distance: null, locationStatus: 'no_location' });
@@ -213,27 +249,33 @@
     }
     var done = false;
     function finish(result){ if (done) return; done = true; cb(result); }
+    var capTimer = setTimeout(function(){ finish({ distance: null, locationStatus: 'timeout' }); }, 5000);
+    function finishClear(result){ try { clearTimeout(capTimer); } catch (e) {} finish(result); }
     navigator.geolocation.getCurrentPosition(
       function(pos){
         try {
           var geo = Geo.resolveAgainstSite(pos.coords.latitude, pos.coords.longitude, Settings.site);
-          finish(geo);
+          finishClear(geo);
         } catch (e) {
-          finish({ distance: null, locationStatus: 'no_location' });
+          finishClear({ distance: null, locationStatus: 'no_location' });
         }
       },
-      function(){ finish({ distance: null, locationStatus: 'no_location' }); },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+      function(err){
+        // 權限被拒（code 1）→ denied；其餘（逾時/取不到 code 2/3）→ timeout，文案不同
+        var denied = err && err.code === 1;
+        finishClear({ distance: null, locationStatus: denied ? 'denied' : 'timeout' });
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
     );
   }
 
   function doBackfill(){
     if (!_cloudUser) { showToast('請先登入再補打卡', 'warn'); return; }
-    if (!backfillTimeStr) { showToast('請先選擇補打卡的日期與時間', 'warn'); return; }
+    if (!backfillTimeStr) { showToast('請先選好補打卡的日期和時間', 'warn'); return; }
     var ms = new Date(backfillTimeStr).getTime();
     if (isNaN(ms)) { showToast('時間格式不正確，請重新選擇', 'warn'); return; }
     var nowMs = BPCloud.nowMs();
-    if (ms > nowMs) { showToast('補打卡不能選未來時間', 'warn'); return; }
+    if (ms > nowMs) { showToast('不能補打卡未來的時間，請確認日期和時間是否填對了', 'warn'); return; }
     var verb = (backfillType === 'in') ? '上班' : '下班';
     BPCloud.appendPunch({
       type: backfillType,
@@ -244,7 +286,7 @@
       isBackfill: true
     }).then(function(res){
       if (res.online) {
-        showToast('已補登 ' + fmtDateFull(ms) + ' ' + fmtTime(ms) + ' ' + verb, 'ok');
+        showToast('補打卡申請已送出，HR 確認後生效（' + fmtDateFull(ms) + ' ' + fmtTime(ms) + ' ' + verb + '）', 'ok');
       } else {
         showToast(res.message || '補登已暫存（離線），連上自動補傳', 'warn');
       }
@@ -353,7 +395,7 @@
     h += '      <button class="bf-type-btn' + inActive + '" id="bfTypeIn">' + IC.login + ' 上班</button>';
     h += '      <button class="bf-type-btn' + outActive + '" id="bfTypeOut">' + IC.logout + ' 下班</button>';
     h += '    </div>';
-    h += '    <button class="bf-submit" id="bfSubmit">' + IC.check + ' 確認補登</button>';
+    h += '    <button class="bf-submit" id="bfSubmit">' + IC.check + ' 送出補打卡申請</button>';
     h += '  </div>';
     h += '</details>';
     return h;
@@ -396,10 +438,17 @@
           metaHtml = '<span class="loc-tag ' + locCls + '">' + IC.mapPin + locLabel + '</span>'
                    + '<span>&middot; 距公司 ' + item.distance + ' 公尺</span>';
         } else {
-          // 「無定位」對現場員工像被質疑 → 改中性「手動補登 · 未記錄定位」（試用回饋 low）
-          locCls = 'out'; locLabel = '手動補登';
-          metaHtml = '<span class="loc-tag ' + locCls + '">' + IC.calendar + locLabel + '</span>'
-                   + '<span>&middot; 這筆未記錄定位</span>';
+          // 無定位：補登 → 標「手動補登」；即時打卡但沒拿到 GPS（拒絕/逾時）→ 中性「未記錄定位」，不暗示被質疑（試用回饋 low）
+          locCls = 'out';
+          if (item.isBackfill) {
+            locLabel = '手動補登';
+            metaHtml = '<span class="loc-tag ' + locCls + '">' + IC.calendar + locLabel + '</span>'
+                     + '<span>&middot; 這筆未記錄定位</span>';
+          } else {
+            locLabel = '未記錄定位';
+            metaHtml = '<span class="loc-tag ' + locCls + '">' + IC.mapPin + locLabel + '</span>'
+                     + '<span>&middot; 這次定位沒完成，已照常記錄</span>';
+          }
         }
         // 紀錄列 icon 與上方打卡按鈕同語言：上班=login(進)、下班=logout(出)，不再上下班都用同一個時鐘（女巫一致性）
         var recIcon = (item.type === 'in') ? IC.login : IC.logout;
@@ -672,6 +721,44 @@
     };
   }
 
+  // ── LINE / FB 等 App 內建瀏覽器偵測（S1-F）：Google OAuth 在這些 WebView 會被擋，
+  //    與其讓員工卡在登入失敗，不如先引導他「用外部瀏覽器開啟」。自寫、不依賴主站。──
+  function _isInAppBrowser(){
+    var ua = navigator.userAgent || '';
+    return /FBAN|FBAV|FB_IAB|Instagram|Line\/|LIFF|MicroMessenger|WeChat|Twitter|Snapchat|Pinterest|TikTok/i.test(ua);
+  }
+  function _showWebViewGuide(){
+    var ov = el('loginOverlay');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'loginOverlay';
+      ov.className = 'login-overlay';
+      document.body.appendChild(ov);
+    }
+    ov.hidden = false;
+    var shell = el('appShell');
+    if (shell) { shell.style.visibility = 'hidden'; }
+    var url = '';
+    try { url = window.location.href; } catch (e) {}
+    var html = '';
+    html += '<div class="login-card">';
+    html += '  <div class="login-logo">' + IC.login + '</div>';
+    html += '  <div class="login-brand">BeyondPath 出缺勤</div>';
+    html += '  <div class="login-title">請用瀏覽器開啟</div>';
+    html += '  <div class="login-sub">這個畫面是從 LINE / FB 內建瀏覽器打開的，Google 登入在這裡沒辦法用——這不是你的問題。<br><br>請點畫面<b>右上角的 ··· （或分享鈕）</b>，選「<b>用預設瀏覽器開啟</b>」，就能正常登入打卡。</div>';
+    if (url) {
+      html += '  <div class="guide-email-row">';
+      html += '    <span class="guide-email" id="guideUrl">' + url + '</span>';
+      html += '    <button class="guide-copy" id="guideCopyUrlBtn">複製網址</button>';
+      html += '  </div>';
+      html += '  <div class="login-foot">複製不到也沒關係——直接照上面「···→用瀏覽器開啟」就好。</div>';
+    }
+    html += '</div>';
+    ov.innerHTML = html;
+    var cb = el('guideCopyUrlBtn');
+    if (cb) cb.onclick = function(){ _copyText(url, cb); };
+  }
+
   function boot(){
     contentEl = el('content');
     toastEl = el('toast');
@@ -683,6 +770,8 @@
     } catch (e) {}
     themeBtnEl.onclick = toggleTheme;
     applyThemeIcon();
+    // S1-F：App 內建瀏覽器 → 先給「用瀏覽器開啟」引導，不啟動 Firebase（OAuth 會被擋）
+    if (_isInAppBrowser()) { _showWebViewGuide(); return; }
     bindLoginButton();
     // 先把畫面藏起來、等 auth 狀態決定顯示登入頁還是打卡頁（避免閃一下未登入的空畫面）
     showLoginOverlay(true);

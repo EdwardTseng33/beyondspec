@@ -121,7 +121,8 @@ html,body{
 .lv-submit:hover{background:var(--primary-hover);transform:translateY(-1px)}
 .lv-submit:active{transform:scale(.98)}
 .lv-submit:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
-.balance-card{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-hover) 100%);color:#fff;padding:24px;border-radius:var(--r-xl);margin-bottom:16px;box-shadow:0 8px 24px rgba(124,92,252,.3)}
+/* 必修#2：禁兩個紫之間的 linear-gradient（女巫紅線#5）→ 實色 var(--primary) + 極淡同色白光徑向（規格指定寫法），不是紫漸層 */
+.balance-card{background:radial-gradient(120% 120% at 80% 0%,rgba(255,255,255,.12),transparent 50%),var(--primary);color:#fff;padding:24px;border-radius:var(--r-xl);margin-bottom:16px;box-shadow:0 8px 24px rgba(124,92,252,.3)}
 .balance-top{display:flex;align-items:center;gap:8px;font-size:var(--text-caption);font-weight:600;opacity:.92;margin-bottom:8px}
 .balance-top svg{width:16px;height:16px;flex-shrink:0}
 .balance-remain{font-size:46px;font-weight:800;line-height:1;letter-spacing:-1px;font-variant-numeric:tabular-nums}
@@ -172,8 +173,8 @@ html,body{
 .empty-state{text-align:center;padding:34px 20px;color:var(--ink-muted)}
 .empty-state svg{width:42px;height:42px;color:var(--ink-dim);margin-bottom:12px}
 .empty-state-text{font-size:var(--text-body);font-weight:500}
-.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(120px);background:var(--ink);color:var(--bg-card);padding:14px 22px;border-radius:var(--r-md);box-shadow:var(--shadow-xl);font-size:var(--text-body);font-weight:600;z-index:2000;display:flex;align-items:center;gap:10px;max-width:90vw;transition:transform .35s cubic-bezier(.16,1,.3,1);pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0)}
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(120px);background:var(--ink);color:var(--bg-card);padding:14px 22px;border-radius:var(--r-md);box-shadow:var(--shadow-xl);font-size:var(--text-body);font-weight:600;z-index:2000;display:flex;align-items:center;gap:10px;max-width:90vw;transition:transform .35s cubic-bezier(.16,1,.3,1),opacity .2s ease;pointer-events:none;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .toast svg{width:20px;height:20px;flex-shrink:0}
 .toast.ok svg{color:#5BE0A0}
 .toast.warn svg{color:#FFD479}
