@@ -77,7 +77,7 @@
     html += "  </div>";
     html += "</div>";
     // 「示範數字」改成獨立明顯提醒卡（不再是特休卡底部的小灰字），算薪的人一眼看到、不會把數字當真（med 痛點）
-    html += "<div class=\"demo-note\">" + IC.info + "<span>特休天數依<b>到職日與勞基法年資</b>自動核算。你的特休基準正在與人資名冊同步中，數字會自動更新。</span></div>";
+    html += "<div class=\"demo-note\">" + IC.info + "<span><span class=\"demo-tag\">示範數字</span>上面的特休天數是<b>示範值</b>，實際以公司名冊的到職日與勞基法年資為準。你的特休基準正在與名冊同步中，同步後數字會自動更新。</span></div>";
 
     /* leave request form */
     html += renderLeaveForm();
@@ -86,6 +86,27 @@
     html += "<div class=\"section-title\"><span>我的請假紀錄</span>" + (mine.length ? "<span class=\"count-pill\">" + mine.length + " 筆</span>" : "") + "</div>";
     html += renderMyRequests(mine);
     return html;
+  }
+
+  // F5 helper：算「共 X 天」（含頭尾，借 leave-core dayKeysInRange，與天數/時數同一套邏輯，不另造算法）
+  function dayCountText(startStr, endStr){
+    if (!startStr) return "";
+    var s = startStr, e = endStr || startStr;
+    var sd = C.parseDate(s), ed = C.parseDate(e);
+    if (!sd || !ed) return "";
+    if (ed < sd) return "結束日不能早於開始日";       // 即時提示（送出前另有硬擋）
+    var n = C.dayKeysInRange(s, e).length;            // 含頭尾的日曆天數
+    return "共 " + n + " 天";
+  }
+  function dayCountHtml(startStr, endStr){
+    var txt = dayCountText(startStr, endStr);
+    if (!txt) return "";
+    var bad = (txt.indexOf("不能") >= 0);
+    return "<span class=\"dc-pill" + (bad ? " bad" : "") + "\">" + IC.calendar + " " + esc(txt) + "</span>";
+  }
+  function updateDayCount(){
+    var box = el("lvDayCount");
+    if (box) { box.innerHTML = dayCountHtml(draft.startDate, draft.endDate); }
   }
 
   function renderLeaveForm(){
@@ -105,6 +126,8 @@
     h += "    <div><label class=\"field-label\" for=\"lvStart\">開始日期</label><input class=\"lv-input\" type=\"date\" id=\"lvStart\" value=\"" + esc(draft.startDate) + "\"></div>";
     h += "    <div><label class=\"field-label\" for=\"lvEnd\">結束日期</label><input class=\"lv-input\" type=\"date\" id=\"lvEnd\" value=\"" + esc(draft.endDate) + "\"></div>";
     h += "  </div>";
+    // F5（路徑二承諾）：起訖任一變動即時顯示「共 X 天」（含頭尾）。初始用 draft 既有值算，render 重繪後也保持。
+    h += "  <div class=\"day-count\" id=\"lvDayCount\">" + dayCountHtml(draft.startDate, draft.endDate) + "</div>";
     h += "  <label class=\"field-label\" for=\"lvHours\">時數（請整天免填）</label>";
     h += "  <input class=\"lv-input\" type=\"number\" id=\"lvHours\" min=\"1\" step=\"1\" inputmode=\"numeric\" placeholder=\"整天免填，系統自動算每天 8 小時\" value=\"" + esc(draft.hours) + "\">";
     // 合併兩段重複說明成一段條列，急著請假也能 3 秒看完（試用回饋 med）
@@ -336,6 +359,19 @@
     for (var i = 0; i < chips.length; i++) {
       chips[i].onclick = function(){ readDraftFromDom(); draft.leaveType = this.getAttribute("data-type"); render(); };
     }
+    // F5：選完開始日 → 若結束日空白或早於開始日，自動帶入＝開始日；起訖任一變動即時更新「共 X 天」。
+    //     BDPicker 寫回 hidden input 後會 dispatch change（bubbles），故掛在原始 input.onchange 即可接到。
+    var st = el("lvStart"), en = el("lvEnd");
+    if (st) st.onchange = function(){
+      draft.startDate = st.value;
+      if (en) {
+        var noEnd = !en.value;
+        var endEarlier = en.value && C.parseDate(en.value) && C.parseDate(st.value) && C.parseDate(en.value) < C.parseDate(st.value);
+        if (noEnd || endEarlier) { en.value = st.value; draft.endDate = st.value; }
+      }
+      updateDayCount();
+    };
+    if (en) en.onchange = function(){ draft.endDate = en.value; updateDayCount(); };
     var sub = el("lvSubmit");
     if (sub) sub.onclick = doSubmit;
   }

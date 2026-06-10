@@ -216,7 +216,7 @@
         } else if (geo.locationStatus === 'out_of_range') {
           showToast('打卡成功，但偵測到你不在公司附近，已標記給 HR 確認', 'warn');
         } else if (geo.locationStatus === 'denied') {
-          showToast('已打卡，無法取得位置（你可能拒絕了定位權限），已標記', 'warn');
+          showToast('已打卡，沒抓到位置，已幫你標記', 'warn');
         } else if (geo.locationStatus === 'timeout' || geo.locationStatus === 'no_location') {
           showToast('已打卡，這次定位未完成，已照常記錄', 'warn');
         }
@@ -405,8 +405,8 @@
     if (!records.length) {
       return '<div class="card empty-state">'
            + '<div class="empty-ico">' + IC.clock + '</div>'
-           + '<div class="empty-title">還沒有打卡紀錄</div>'
-           + '<div class="empty-state-text">點上面的「上班打卡」開始第一筆。</div></div>';
+           + '<div class="empty-title">今天是你在系統的第一天！</div>'
+           + '<div class="empty-state-text">打卡就能開始累積紀錄。</div></div>';
     }
     var groups = [];
     var byKey = {};
