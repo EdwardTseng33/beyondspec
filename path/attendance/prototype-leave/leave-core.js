@@ -100,87 +100,18 @@
     return to === STATUS.APPROVED || to === STATUS.REJECTED;
   }
 
-  var LeaveStore = (function () {
-    var KEY = "bp_attendance_leaves_trial_v1";
-    var mem = null;
-    function hasLS() { return (typeof localStorage !== "undefined" && localStorage !== null); }
-    function loadRaw() {
-      if (hasLS()) {
-        try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : []; }
-        catch (e) { return []; }
-      }
-      return mem ? mem.slice() : [];
-    }
-    function persist(arr) {
-      if (hasLS()) { try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch (e) {} }
-      else { mem = arr.slice(); }
-    }
-    function genId(ms) { return "lv_" + ms + "_" + Math.random().toString(36).slice(2, 7); }
-    function nowMs() { return Date.now(); }
-    function clone(o) { return JSON.parse(JSON.stringify(o)); }
-    function freeze(o) { try { return Object.freeze(clone(o)); } catch (e) { return o; } }
-
-    return {
-      submit: function (req) {
-        var arr = loadRaw();
-        var created = nowMs();
-        var record = {
-          id: genId(created),
-          employeeName: req.employeeName,
-          employeeEmail: req.employeeEmail,
-          leaveType: req.leaveType,
-          startDate: req.startDate,
-          endDate: req.endDate,
-          hours: (req.hours === undefined || req.hours === null) ? null : Number(req.hours),
-          reason: req.reason || "",
-          status: STATUS.PENDING,
-          createdAtMs: created,
-          decidedAtMs: null,
-          decidedBy: null,
-          decisionNote: ""
-        };
-        arr.push(clone(record));
-        persist(arr);
-        return freeze(record);
-      },
-      decide: function (id, toStatus, deciderName, note) {
-        var arr = loadRaw();
-        var changed = null;
-        for (var i = 0; i < arr.length; i++) {
-          if (arr[i].id === id) {
-            if (!canTransition(arr[i].status, toStatus)) {
-              return { ok: false, reason: "此單狀態為 " + statusName(arr[i].status) + " 無法再次裁決" };
-            }
-            arr[i].status = toStatus;
-            arr[i].decidedAtMs = nowMs();
-            arr[i].decidedBy = deciderName || "主管";
-            arr[i].decisionNote = note || "";
-            changed = arr[i];
-            break;
-          }
-        }
-        if (!changed) return { ok: false, reason: "找不到這筆申請" };
-        persist(arr);
-        return { ok: true, record: freeze(changed) };
-      },
-      list: function () {
-        return loadRaw().sort(function (a, b) { return b.createdAtMs - a.createdAtMs; }).map(freeze);
-      },
-      listByEmployee: function (email) {
-        return this.list().filter(function (r) { return r.employeeEmail === email; });
-      },
-      listPending: function () {
-        return this.list().filter(function (r) { return r.status === STATUS.PENDING; });
-      },
-      listApproved: function () {
-        return this.list().filter(function (r) { return r.status === STATUS.APPROVED; });
-      },
-      _resetForDemo: function () { persist([]); mem = null; }
-    };
-  })();
+  // 雲端為真相：請假紀錄由 leave-cloud.js 載入後注入這裡，純計算函式都吃這份。
+  var _records = [];            // 全部相關 record（前端已轉形狀）
+  var _roster = [];             // 名冊鏡像 [{name,email,managerEmail,isActive}]
+  function setRecords(arr) { _records = arr ? arr.slice() : []; }
+  function setRoster(arr) { _roster = arr ? arr.slice() : []; }
+  function allRecords() { return _records.slice(); }
+  function listApprovedRecords() {
+    return _records.filter(function (r) { return r.status === STATUS.APPROVED; });
+  }
 
   function annualUsedDays(email, year) {
-    var approved = LeaveStore.listApproved();
+    var approved = listApprovedRecords();
     var used = 0;
     for (var i = 0; i < approved.length; i++) {
       var r = approved[i];
@@ -204,7 +135,7 @@
     return { entitled: entitled, used: used, remaining: remaining, year: year };
   }
   function approvedCountOnDay(dayKeyStr, excludeEmail) {
-    var approved = LeaveStore.listApproved();
+    var approved = listApprovedRecords();
     var names = [];
     for (var i = 0; i < approved.length; i++) {
       var r = approved[i];
@@ -229,19 +160,13 @@
   }
 
   /* === 團隊名冊（示範）：主管視角需要『今天誰在 / 誰請假 / 各人特休還剩幾天』，
-     原本只有當日請假數，沒有在崗人力與團隊特休總覽（aji/Peter/美玲 HIGH）。 === */
-  var TEAM = [
-    { employeeName: "美玲", employeeEmail: "meiling@demo.beyondpath.tw", hireDate: "2024-06-01" },
-    { employeeName: "小華", employeeEmail: "hua@demo.beyondpath.tw",     hireDate: "2022-03-15" },
-    { employeeName: "阿明", employeeEmail: "ming@demo.beyondpath.tw",    hireDate: "2019-09-01" },
-    { employeeName: "婉婷", employeeEmail: "wan@demo.beyondpath.tw",     hireDate: "2025-01-10" },
-    { employeeName: "志強", employeeEmail: "chiang@demo.beyondpath.tw", hireDate: "2017-06-20" }
-  ];
-  function teamSize() { return TEAM.length; }
+     原本只有當日請假數，沒有在崗人力與團隊特休總覽（試用回饋 HIGH）。 === */
+  // TEAM 改由名冊鏡像注入（setRoster）；以下函式皆以 _roster 為準。
+  function teamSize() { return _roster.length; }
   // 今日在崗概況：總人數 / 今天請假人數 / 在崗人數 + 請假名單
   function todayHeadcount(dayKeyStr) {
     var info = approvedCountOnDay(dayKeyStr, null);
-    var total = TEAM.length;
+    var total = _roster.length;
     var onLeave = info.count;
     var present = total - onLeave;
     if (present < 0) present = 0;
@@ -251,9 +176,11 @@
   function teamAnnualOverview(asOf) {
     var ref = asOf || new Date();
     var rows = [];
-    for (var i = 0; i < TEAM.length; i++) {
-      var b = annualBalance(TEAM[i], ref);
-      rows.push({ employeeName: TEAM[i].employeeName, employeeEmail: TEAM[i].employeeEmail,
+    for (var i = 0; i < _roster.length; i++) {
+      // 鏡像不含到職日（敏感留在名冊本體）→ 特休基準後續接；這版以申請單累計，entitled 暫以 0 顯示佔位。
+      var emp = { employeeName: _roster[i].name, employeeEmail: _roster[i].email, hireDate: _roster[i].hireDate || null };
+      var b = annualBalance(emp, ref);
+      rows.push({ employeeName: emp.employeeName, employeeEmail: emp.employeeEmail,
         entitled: b.entitled, used: b.used, remaining: b.remaining });
     }
     return rows;
@@ -269,7 +196,7 @@
       var info = approvedCountOnDay(key, null);
       if (info.count > 0) {
         out.push({ dayKey: key, label: fmtDateZh(key), count: info.count, names: info.names,
-          present: Math.max(0, TEAM.length - info.count) });
+          present: Math.max(0, _roster.length - info.count) });
       }
     }
     return out;
@@ -281,8 +208,9 @@
     parseDate: parseDate, dateKey: dateKey, fmtDateZh: fmtDateZh,
     dayKeysInRange: dayKeysInRange, defaultHours: defaultHours, monthsBetween: monthsBetween,
     annualEntitlement: annualEntitlement, annualUsedDays: annualUsedDays, annualBalance: annualBalance,
-    approvedCountOnDay: approvedCountOnDay, overlapForRequest: overlapForRequest, LeaveStore: LeaveStore,
-    TEAM: TEAM, teamSize: teamSize, todayHeadcount: todayHeadcount, teamAnnualOverview: teamAnnualOverview, upcomingLeave: upcomingLeave
+    approvedCountOnDay: approvedCountOnDay, overlapForRequest: overlapForRequest,
+    setRecords: setRecords, setRoster: setRoster, allRecords: allRecords, listApprovedRecords: listApprovedRecords,
+    teamSize: teamSize, todayHeadcount: todayHeadcount, teamAnnualOverview: teamAnnualOverview, upcomingLeave: upcomingLeave
   };
   if (typeof module !== "undefined" && module.exports) { module.exports = API; }
   root.LeaveCore = API;

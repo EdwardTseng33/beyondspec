@@ -20,12 +20,16 @@
     sun: "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"5\"/><line x1=\"12\" y1=\"1\" x2=\"12\" y2=\"3\"/><line x1=\"12\" y1=\"21\" x2=\"12\" y2=\"23\"/><line x1=\"4.2\" y1=\"4.2\" x2=\"5.6\" y2=\"5.6\"/><line x1=\"18.4\" y1=\"18.4\" x2=\"19.8\" y2=\"19.8\"/><line x1=\"1\" y1=\"12\" x2=\"3\" y2=\"12\"/><line x1=\"21\" y1=\"12\" x2=\"23\" y2=\"12\"/><line x1=\"4.2\" y1=\"19.8\" x2=\"5.6\" y2=\"18.4\"/><line x1=\"18.4\" y1=\"5.6\" x2=\"19.8\" y2=\"4.2\"/></svg>"
   };
 
-  /* demo: current employee (the logged-in one on the employee face) */
-  var ME = { employeeName: "美玲", employeeEmail: "meiling@demo.beyondpath.tw", hireDate: "2024-06-01" };
-  var MANAGER_NAME = "Peter";
+  /* 身分由 identity.js（名冊鏡像）解析；不再寫死任何人。 */
+  var _id = null;            // BPIdentity 身分快照
+  var _me = { name: "", email: "", managerEmail: "" };  // 當前登入者（員工視角）
+  var _view = "employee";    // 目前看哪張臉：employee | manager（僅在身分允許時可切）
+  /* 雲端載入的資料 */
+  var _mine = [];            // 我自己的申請
+  var _forManager = [];      // 指派給我的單（主管視角）
+  var _roster = [];          // 名冊鏡像
+  var _loading = false;
 
-  /* view state */
-  var role = "employee";     // employee | manager
   var draft = { leaveType: "annual", startDate: "", endDate: "", hours: "", reason: "" };
 
   var contentEl, toastEl, greetingEl, themeBtnEl, roleSwitchEl, roleHintEl;
@@ -59,8 +63,8 @@
 
   /* ============ EMPLOYEE FACE ============ */
   function renderEmployee(){
-    var bal = C.annualBalance(ME, new Date());
-    var mine = C.LeaveStore.listByEmployee(ME.employeeEmail);
+    var bal = C.annualBalance({ employeeName: _me.name, employeeEmail: _me.email, hireDate: null }, new Date());
+    var mine = _mine;
     var html = "";
 
     /* balance hero (employee first thing -- 幫員工不管員工) */
@@ -72,8 +76,8 @@
     html += "    <div class=\"balance-sub-item\"><div class=\"balance-sub-num\">" + bal.used + "</div><div class=\"balance-sub-label\">已使用（天）</div></div>";
     html += "  </div>";
     html += "</div>";
-    // 「示範數字」改成獨立明顯提醒卡（不再是特休卡底部的小灰字），算薪的美玲/阿志一眼看到、不會把數字當真（med 痛點）
-    html += "<div class=\"demo-note\">" + IC.info + "<span><b>這是試用示範數字</b>（到職日先用 " + esc(ME.hireDate) + "）。正式上線後，到職日由人資設定，特休天數依<b>勞基法年資</b>自動核算。</span></div>";
+    // 「示範數字」改成獨立明顯提醒卡（不再是特休卡底部的小灰字），算薪的人一眼看到、不會把數字當真（med 痛點）
+    html += "<div class=\"demo-note\">" + IC.info + "<span>特休天數依<b>到職日與勞基法年資</b>自動核算。你的特休基準正在與人資名冊同步中，數字會自動更新。</span></div>";
 
     /* leave request form */
     html += renderLeaveForm();
@@ -103,7 +107,7 @@
     h += "  </div>";
     h += "  <label class=\"field-label\" for=\"lvHours\">時數（請整天免填）</label>";
     h += "  <input class=\"lv-input\" type=\"number\" id=\"lvHours\" min=\"1\" step=\"1\" inputmode=\"numeric\" placeholder=\"整天免填，系統自動算每天 8 小時\" value=\"" + esc(draft.hours) + "\">";
-    // 合併兩段重複說明成一段條列，急著請假也能 3 秒看完（小陳/阿婷 med）
+    // 合併兩段重複說明成一段條列，急著請假也能 3 秒看完（試用回饋 med）
     h += "  <div class=\"field-hint\">" + IC.info + "<span>"
          + "<b>請整天</b>：時數留空（系統自動每天 8 小時）。<br>"
          + "<b>只請一天</b>：結束日期免填。<br>"
@@ -147,10 +151,10 @@
 
   /* ============ MANAGER FACE ============ */
   function renderManager(){
-    var pending = C.LeaveStore.listPending();
+    var pending = _forManager.filter(function(r){ return r.status === "pending"; });
     var html = "";
 
-    /* 今日人力概況：改成『在崗 / 請假 / 總數』三段，主管批假最在意『今天還有幾個人在』（aji/Peter HIGH） */
+    /* 今日人力概況：改成『在崗 / 請假 / 總數』三段，主管批假最在意『今天還有幾個人在』（試用回饋 HIGH） */
     var tk = todayKey();
     var hc = C.todayHeadcount(tk);
     html += "<div class=\"today-card\">";
@@ -165,7 +169,7 @@
     } else {
       html += "  <div class=\"today-names\">今天全員到齊，沒有人請假。</div>";
     }
-    /* 接下來 7 天人力缺口：有人請假的日子才列，幫主管排隔天班（Peter HIGH） */
+    /* 接下來 7 天人力缺口：有人請假的日子才列，幫主管排隔天班（試用回饋 HIGH） */
     var up = C.upcomingLeave(7);
     html += "  <div class=\"upcoming\">";
     html += "    <div class=\"upcoming-hd\">" + IC.calendar + " 接下來 7 天請假</div>";
@@ -190,8 +194,8 @@
       }
     }
 
-    /* recently decided（解「核准後就消失、沒地方查核對」痛點 — 阿志） */
-    var decided = C.LeaveStore.list().filter(function(r){ return r.status !== "pending"; });
+    /* recently decided（解「核准後就消失、沒地方查核對」痛點） */
+    var decided = _forManager.filter(function(r){ return r.status !== "pending"; });
     if (decided.length) {
       html += "<div class=\"section-title\"><span>近期已處理</span><span class=\"count-pill\">" + decided.length + " 件</span></div>";
       var show = decided.slice(0, 8);
@@ -199,14 +203,14 @@
         html += renderDecidedRow(show[k]);
       }
     }
-    /* 團隊特休總覽：主管/算薪一眼看每人剩幾天（美玲/aji HIGH，原本要跨頁查） */
+    /* 團隊特休總覽：主管/算薪一眼看每人剩幾天（試用回饋 HIGH） */
     html += renderTeamAnnual();
-    /* 特休折現：Pro 功能入口（原本完全看不到，aji 月底要算換錢找不到 — med） */
+    /* 特休折現：Pro 功能入口（原本完全看不到，月底算換錢找不到 — med） */
     html += "<div class=\"pro-entry\">"
          + "<div class=\"pro-entry-main\"><div class=\"pro-title\">" + IC.info + " 特休未休折現 <span class=\"pro-tag\">Pro</span></div>"
          + "<div class=\"pro-desc\">年底把員工沒休完的特休換算成工資，系統自動算金額。升級 Pro 後在這裡操作。</div></div>"
          + "</div>";
-    /* 把「之後餵給薪資」改成具體說明：何時生效、去哪看、會算什麼（aji med — 模糊比沒說更不安） */
+    /* 把「之後餵給薪資」改成具體說明：何時生效、去哪看、會算什麼（試用回饋 med — 模糊比沒說更不安） */
     html += "<div class=\"divider-note\">核准後這筆假會<b>立刻記到該員工的出勤</b>；月底結算時，特休 / 請假時數會<b>自動帶進薪資試算</b>，你可在「薪資」頁逐筆核對。員工也會收到核准通知。</div>";
     return html;
   }
@@ -227,7 +231,7 @@
     return h;
   }
 
-  /* 團隊特休總覽卡：列出每位成員剩餘 / 已用特休，主管算薪 / 排休一眼看（美玲/aji HIGH） */
+  /* 團隊特休總覽卡：列出每位成員剩餘 / 已用特休，主管算薪 / 排休一眼看（試用回饋 HIGH） */
   function renderTeamAnnual(){
     var rows = C.teamAnnualOverview(new Date());
     var h = "";
@@ -280,31 +284,43 @@
   }
 
   /* ============ RENDER DISPATCH + EVENTS ============ */
-  function renderRoleSwitch(){
-    var emp = (role === "employee") ? " active" : "";
-    var mgr = (role === "manager") ? " active" : "";
+  function renderFaceSwitch(){
+    // 只有「同時是主管」的人才需要切換兩張臉；純員工不顯示切換、直接員工臉。
+    var canManage = _id && _id.isManager;
+    if (!canManage) {
+      roleSwitchEl.innerHTML = "";
+      roleHintEl.textContent = "員工視角：看自己的特休餘額、線上請假、追蹤申請狀態";
+      return;
+    }
+    var emp = (_view === "employee") ? " active" : "";
+    var mgr = (_view === "manager") ? " active" : "";
     roleSwitchEl.innerHTML =
-      "<button class=\"role-btn" + emp + "\" data-role=\"employee\">" + IC.user + " 員工（美玲）</button>" +
-      "<button class=\"role-btn" + mgr + "\" data-role=\"manager\">" + IC.shield + " 主管（Peter）</button>";
-    roleHintEl.textContent = (role === "employee")
+      "<button class=\"role-btn" + emp + "\" data-view=\"employee\">" + IC.user + " 我的請假</button>" +
+      "<button class=\"role-btn" + mgr + "\" data-view=\"manager\">" + IC.shield + " 待我批准</button>";
+    roleHintEl.textContent = (_view === "employee")
       ? "員工視角：看自己的特休餘額、線上請假、追蹤申請狀態"
-      : "主管視角：你正以「" + MANAGER_NAME + "」身分審核底下員工的請假（下方名字是申請人，不是你）";
+      : "主管視角：審核指派給你的請假（下方名字是申請人，不是你）";
     var btns = roleSwitchEl.querySelectorAll(".role-btn");
     for (var i = 0; i < btns.length; i++) {
-      btns[i].onclick = function(){ role = this.getAttribute("data-role"); render(); };
+      btns[i].onclick = function(){ _view = this.getAttribute("data-view"); render(); };
     }
   }
 
   function render(){
     var hr = new Date().getHours();
     var greet = (hr < 12) ? "早安" : (hr < 18) ? "午安" : "晚安";
-    greetingEl.textContent = (role === "employee") ? (greet + "，" + ME.employeeName) : ("出勤管理 · " + MANAGER_NAME);
-    renderRoleSwitch();
-    contentEl.innerHTML = (role === "employee") ? renderEmployee() : renderManager();
-    // render 後立即同步升級新插入的日期欄位，不等 MutationObserver（async）。
-    // 根治『re-render 後短暫空窗點欄位沒反應、像壞掉』(Peter/aji/阿婷『點欄位沒開、跳頁、壞掉』根因之一)。
+    var showManager = (_view === "manager" && _id && _id.isManager);
+    greetingEl.textContent = showManager
+      ? "出勤管理 · " + (_me.name || "主管")
+      : (greet + "，" + (_me.name || "同事"));
+    renderFaceSwitch();
+    if (_loading) {
+      contentEl.innerHTML = "<div class=\"card empty-state\"><div class=\"empty-ico\">" + IC.clock + "</div><div class=\"empty-title\">載入中…</div><div class=\"empty-state-text\">正在從雲端讀取你的資料。</div></div>";
+      return;
+    }
+    contentEl.innerHTML = showManager ? renderManager() : renderEmployee();
     if (window.BDPicker) { try { BDPicker.upgradeAll(contentEl); } catch (e) {} }
-    if (role === "employee") bindEmployee(); else bindManager();
+    if (showManager) bindManager(); else bindEmployee();
   }
 
   function readDraftFromDom(){
@@ -333,22 +349,28 @@
     if (ed < sd) { showToast("結束日期不能早於開始日期", "warn"); return; }
     var hrs = draft.hours;
     if (hrs !== "" && (isNaN(Number(hrs)) || Number(hrs) <= 0)) { showToast("時數請填正整數，或留空用預設", "warn"); return; }
-    var rec = C.LeaveStore.submit({
-      employeeName: ME.employeeName,
-      employeeEmail: ME.employeeEmail,
+    if (!window.LeaveCloud || !LeaveCloud.ready()) { showToast("尚未連上雲端，請稍後再試", "err"); return; }
+    var typeName = C.leaveTypeName(draft.leaveType);
+    LeaveCloud.submit({
+      employeeName: _me.name,
+      employeeEmail: _me.email,
+      managerEmail: _me.managerEmail,
       leaveType: draft.leaveType,
       startDate: draft.startDate,
       endDate: draft.endDate,
       hours: (hrs === "" ? null : Number(hrs)),
       reason: draft.reason
+    }).then(function(res){
+      if (res.ok) {
+        showToast("已送出 " + typeName + " 申請，等待主管批准", "ok");
+        draft = { leaveType: "annual", startDate: "", endDate: "", hours: "", reason: "" };
+        reloadAll();
+      } else {
+        showToast(res.reason || "送出失敗，請再試一次", "err");
+      }
+      if (contentEl) { try { contentEl.scrollTop = 0; } catch (e) {} }
+      if (window.scrollTo) { try { window.scrollTo(0, 0); } catch (e) {} }
     });
-    showToast("已送出 " + C.leaveTypeName(rec.leaveType) + " 申請，等待主管批准", "ok");
-    draft = { leaveType: "annual", startDate: "", endDate: "", hours: "", reason: "" };
-    render();
-    // 送出後捲回頂部：讓使用者看到 toast + 下方「我的請假紀錄」多一筆「待批准」，確認真的送出了
-    // （小陳/Peter「送出後不確定成功沒、表單就清空」HIGH）
-    if (contentEl) { try { contentEl.scrollTop = 0; } catch (e) {} }
-    if (window.scrollTo) { try { window.scrollTo(0, 0); } catch (e) {} }
   }
 
   /* ---------- 自製確認對話框（取代 window.prompt / confirm 的原生灰窗，統一紫系 UI） ---------- */
@@ -404,21 +426,22 @@
       btns[i].onclick = function(){
         var id = this.getAttribute("data-id");
         var act = this.getAttribute("data-act");
-        var rec = findPending(id);
+        var rec = findById(id);
         if (!rec) { showToast("找不到這筆申請", "err"); render(); return; }
         var dateStr = C.fmtDateZh(rec.startDate) + (rec.endDate !== rec.startDate ? " ─ " + C.fmtDateZh(rec.endDate) : "");
         if (act === "approve") {
-          // 批假是有效力的動作 → 先確認，避免滑快誤觸（Peter 痛點）
+          // 批假是有效力的動作 → 先確認，避免滑快誤觸（試用回饋）
           openModal({
             kind: "approve",
             title: "確定要核准嗎？",
             bodyHtml: "核准 <b>" + esc(rec.employeeName) + "</b> 的 <b>" + esc(C.leaveTypeName(rec.leaveType)) + "</b><br>" + esc(dateStr) + " · " + hoursLabel(rec),
             confirmLabel: "確定核准",
             onConfirm: function(){
-              var d = C.LeaveStore.decide(id, "approved", MANAGER_NAME, "");
-              if (d.ok) showToast("已核准 " + d.record.employeeName + " 的" + C.leaveTypeName(d.record.leaveType) + "（已通知員工）", "ok");
-              else showToast(d.reason, "err");
-              render();
+              LeaveCloud.decide(id, "approved", _me.name, "").then(function(d){
+                if (d.ok) showToast("已核准 " + rec.employeeName + " 的" + C.leaveTypeName(rec.leaveType) + "（已通知員工）", "ok");
+                else showToast(d.reason, "err");
+                reloadAll();
+              });
             }
           });
         } else {
@@ -429,10 +452,11 @@
             withNote: true,
             confirmLabel: "確定退件",
             onConfirm: function(note){
-              var d2 = C.LeaveStore.decide(id, "rejected", MANAGER_NAME, note || "");
-              if (d2.ok) showToast("已退件 " + d2.record.employeeName + " 的申請（已通知員工）", "warn");
-              else showToast(d2.reason, "err");
-              render();
+              LeaveCloud.decide(id, "rejected", _me.name, note || "").then(function(d2){
+                if (d2.ok) showToast("已退件 " + rec.employeeName + " 的申請（已通知員工）", "warn");
+                else showToast(d2.reason, "err");
+                reloadAll();
+              });
             }
           });
         }
@@ -440,12 +464,8 @@
     }
   }
 
-  function findPending(id){
-    var list = C.LeaveStore.listPending();
-    for (var i = 0; i < list.length; i++) { if (list[i].id === id) { return list[i]; } }
-    // 也找已決的（理論上按鈕只在 pending 出現，但保險）
-    var all = C.LeaveStore.list();
-    for (var j = 0; j < all.length; j++) { if (all[j].id === id) { return all[j]; } }
+  function findById(id){
+    for (var i = 0; i < _forManager.length; i++) { if (_forManager[i].id === id) { return _forManager[i]; } }
     return null;
   }
 
@@ -466,50 +486,137 @@
     applyThemeIcon();
   }
 
-  // 相對日期工具：用今天為基準算 yyyy-mm-dd，讓示範資料永遠落在合理區間（今天 / 接下來幾天）
-  function relDate(offset){
-    var d = new Date();
-    d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + offset);
-    return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate());
+  // ============ 身分 + 登入 overlay ============
+  function showLoginOverlay(show){
+    var ov = el("loginOverlay");
+    var shell = el("appShell");
+    if (ov) { ov.hidden = !show; }
+    if (shell) { shell.style.visibility = show ? "hidden" : "visible"; }
   }
-  // 首次載入種一份乾淨示範：一筆今天的已核准假(讓今日人力概況有數字) + 一筆 3 天後待批准(讓主管有事可批 + 接下來7天有料)
-  function seedDemoIfEmpty(){
-    var FLAG = "bp_leave_demo_seed_v1";
-    var seeded = false;
-    try { seeded = localStorage.getItem(FLAG) === "1"; } catch (e) {}
-    if (seeded) { return; }
-    if (C.LeaveStore.list().length > 0) { try { localStorage.setItem(FLAG, "1"); } catch (e) {} return; }
-    // 今天：小華事假已核准（今日人力概況顯示請假 1 / 在崗 4）
-    var a = C.LeaveStore.submit({ employeeName:"小華", employeeEmail:"hua@demo.beyondpath.tw", leaveType:"personal", startDate:relDate(0), endDate:relDate(0), hours:null, reason:"家裡有事" });
-    C.LeaveStore.decide(a.id, "approved", MANAGER_NAME, "");
-    // 3 天後：婉婷特休已核准（接下來 7 天請假預覽有料）
-    var b = C.LeaveStore.submit({ employeeName:"婉婷", employeeEmail:"wan@demo.beyondpath.tw", leaveType:"annual", startDate:relDate(3), endDate:relDate(3), hours:null, reason:"" });
-    C.LeaveStore.decide(b.id, "approved", MANAGER_NAME, "");
-    // 一筆待批准：阿明特休（讓主管視角有一張卡可以批 / 退）
-    C.LeaveStore.submit({ employeeName:"阿明", employeeEmail:"ming@demo.beyondpath.tw", leaveType:"annual", startDate:relDate(5), endDate:relDate(6), hours:null, reason:"連假出遊" });
-    try { localStorage.setItem(FLAG, "1"); } catch (e) {}
+  function setLoginMsg(text, kind){
+    var m = el("loginMsg");
+    if (!m) return;
+    if (!text) { m.hidden = true; return; }
+    m.hidden = false;
+    m.className = "login-msg " + (kind === "err" ? "err" : "info");
+    m.innerHTML = text;
   }
+  function bindLoginButton(){
+    var btn = el("loginBtn");
+    if (!btn) return;
+    btn.onclick = function(){
+      setLoginMsg("<span class=\"login-spinner\"></span>正在開啟 Google 登入…", "info");
+      BPIdentity.signIn().then(function(){ setLoginMsg("", null); })
+      ["catch"](function(err){
+        var msg = (err && err.message) || "";
+        if (/popup|cancel|closed/i.test(msg)) setLoginMsg("登入視窗被關掉了，再點一次。", "info");
+        else if (/disallowed_useragent|user-agent/i.test(msg)) setLoginMsg("你正在 LINE / FB 內建瀏覽器中，請改用 Safari 或 Chrome 開啟。", "err");
+        else setLoginMsg("登入沒成功：" + msg, "err");
+      });
+    };
+  }
+  function showGuidanceOverlay(show){
+    var ov = el("guidanceOverlay");
+    var shell = el("appShell");
+    if (!show) { if (ov) ov.hidden = true; if (shell) shell.style.visibility = "visible"; return; }
+    if (shell) shell.style.visibility = "hidden";
+    var myEmail = (_id && _id.account) ? _id.account.email : "";
+    var title, desc;
+    if (_id && _id.errorKind === "network") { title = "現在連不上網路"; desc = "連上網路後重新整理這一頁就可以了。"; }
+    else if (_id && _id.errorKind === "index-missing") { title = "系統正在開通中"; desc = "出勤資料庫索引尚未建立完成，請稍候或聯絡管理員。"; }
+    else { title = "你的帳號還沒加入公司名冊"; desc = "請老闆在 BeyondPath「算薪水 → 員工檔案」把這個信箱填進你的資料，加好後重新整理就能用了。"; }
+    if (!ov) { ov = document.createElement("div"); ov.id = "guidanceOverlay"; ov.className = "login-overlay"; document.body.appendChild(ov); }
+    ov.hidden = false;
+    var h = "<div class=\"login-card\">";
+    h += "<div class=\"login-logo\">" + IC.shield + "</div>";
+    h += "<div class=\"login-brand\">BeyondPath 出缺勤</div>";
+    h += "<div class=\"login-title\">" + title + "</div>";
+    h += "<div class=\"login-sub\">" + desc + "</div>";
+    if (myEmail) {
+      h += "<div class=\"guide-email-row\"><span class=\"guide-email\" id=\"guideEmail\">" + esc(myEmail) + "</span>";
+      h += "<button class=\"guide-copy\" id=\"guideCopyBtn\">複製信箱</button></div>";
+    }
+    h += "<button class=\"login-btn\" id=\"guideRetryBtn\" style=\"margin-top:16px\">重新整理</button>";
+    h += "<button class=\"guide-signout\" id=\"guideSignoutBtn\">換一個帳號登入</button>";
+    h += "</div>";
+    ov.innerHTML = h;
+    var cb = el("guideCopyBtn"); if (cb) cb.onclick = function(){ _copyText(myEmail, cb); };
+    var rb = el("guideRetryBtn"); if (rb) rb.onclick = function(){ try { location.reload(); } catch (e) {} };
+    var sb = el("guideSignoutBtn"); if (sb) sb.onclick = function(){
+      BPIdentity.signOut().then(function(){ _id = null; showGuidanceOverlay(false); showLoginOverlay(true); bindLoginButton(); });
+    };
+  }
+  function _copyText(text, btn){
+    function done(){ if (btn){ var o=btn.textContent; btn.textContent="已複製"; setTimeout(function(){ btn.textContent=o; },1500); } }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done)["catch"](function(){ _copyFallback(text,done); });
+      else _copyFallback(text, done);
+    } catch (e) { _copyFallback(text, done); }
+  }
+  function _copyFallback(text, done){
+    try { var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); done(); } catch (e) {}
+  }
+
+  // ============ 雲端資料載入 ============
+  function reloadAll(){
+    if (_loading) { return; }
+    if (!window.LeaveCloud || !LeaveCloud.ready()) { return; }
+    _loading = true; render();
+    var jobs = [ LeaveCloud.listMine(), LeaveCloud.listRoster() ];
+    if (_id && _id.isManager) { jobs.push(LeaveCloud.listForManager()); } else { jobs.push(Promise.resolve({ ok:true, records:[] })); }
+    Promise.all(jobs).then(function(res){
+      _mine = (res[0] && res[0].records) ? res[0].records : [];
+      _roster = (res[1] && res[1].roster) ? res[1].roster : [];
+      _forManager = (res[2] && res[2].records) ? res[2].records : [];
+      // 餵給 leave-core 純計算（特休餘額 / 當日人力 / 團隊總覽）
+      // 員工餘額用自己的單；主管視角的人力 / 總覽用 manager 視野 + 名冊
+      var combined = _mine.slice();
+      for (var i=0;i<_forManager.length;i++){ var dup=false; for(var j=0;j<combined.length;j++){ if(combined[j].id===_forManager[i].id){dup=true;break;} } if(!dup) combined.push(_forManager[i]); }
+      C.setRecords(combined);
+      C.setRoster(_roster);
+      _loading = false; render();
+    })["catch"](function(){ _loading = false; render(); });
+  }
+
+  // ============ 身分變化 ============
+  function onIdentityChange(s){
+    _id = s;
+    if (s.account) { _me = { name: s.employeeName || s.account.name, email: s.account.email, managerEmail: s.managerEmail || "" }; }
+    if (window.LeaveCloud) { LeaveCloud.setContext(s.account, s.wsId); }
+    if (!s.isSignedIn) {
+      if (s.authResolved) { showGuidanceOverlay(false); showLoginOverlay(true); bindLoginButton(); if (!s.ready) setLoginMsg("連不上登入服務，連上網後重新整理即可。", "err"); }
+      return;
+    }
+    if (s.resolving) { showLoginOverlay(false); showGuidanceOverlay(false); return; }
+    if (s.friendly || s.errorKind) { showLoginOverlay(false); showGuidanceOverlay(true); return; }
+    // 有身分：純員工預設員工臉；同時是主管的人預設也先看自己的請假
+    showLoginOverlay(false); showGuidanceOverlay(false);
+    if (!_id.isManager) { _view = "employee"; }
+    reloadAll();
+  }
+
   function boot(){
     contentEl = el("content"); toastEl = el("toast"); greetingEl = el("greeting");
     themeBtnEl = el("themeBtn"); roleSwitchEl = el("roleSwitch"); roleHintEl = el("roleHint");
     try { var t = localStorage.getItem("bp_att_theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
-    themeBtnEl.onclick = toggleTheme;
+    if (themeBtnEl) themeBtnEl.onclick = toggleTheme;
     applyThemeIcon();
-    seedDemoIfEmpty();
-    render();
+    bindLoginButton();
+    showLoginOverlay(true);
+    if (window.BPIdentity) {
+      BPIdentity.onChange(onIdentityChange);
+      BPIdentity.init();
+    } else {
+      setLoginMsg("系統元件載入失敗，請重新整理頁面。", "err");
+    }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 
   window.__BP_LEAVE__ = {
-    setRole: function(r){ role = r; render(); },
-    me: ME, core: C,
-    seedDemo: function(){
-      C.LeaveStore._resetForDemo();
-      var a = C.LeaveStore.submit({ employeeName:"美玲", employeeEmail:ME.employeeEmail, leaveType:"annual", startDate:"2026-06-20", endDate:"2026-06-20", hours:8, reason:"家裡有事" });
-      C.LeaveStore.decide(a.id, "approved", MANAGER_NAME, "");
-      C.LeaveStore.submit({ employeeName:"小華", employeeEmail:"hua@demo.beyondpath.tw", leaveType:"sick", startDate:"2026-06-20", endDate:"2026-06-21", hours:16, reason:"感冒看醫生" });
-      render();
-    }
+    getIdentity: function(){ return _id; },
+    getMine: function(){ return _mine; },
+    getForManager: function(){ return _forManager; },
+    core: C
   };
 })();

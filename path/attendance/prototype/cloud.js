@@ -1,8 +1,9 @@
 /* ════════════════════════════════════════════════════════════════════
    BeyondPath 出缺勤 · 雲端接線層（cloud.js）
    卡西法（CTO）· 2026-06-10 · 正式版第一段：打卡頁接主站同一顆 Firebase
-   - 與主站 app.html 同一個 Firebase 專案（beyond-business-ca9da）、Google 登入、
-     同一份 workspace 成員機制（員工 = workspace member，靠 memberEmails array-contains）
+   - 與主站 app.html 同一個 Firebase 專案（beyond-business-ca9da）、Google 登入
+   - 身分 + wsId 由 identity.js（名冊鏡像）統一解析後，透過 setContext 注入；
+     cloud.js 本身不解 workspace、不建 workspace、不碰 memberEmails（契約：鏡像為唯一身分源）
    - 資料模型：workspaces/{wsId}/attendance_punches/{id}
    - clockTime 一律用 serverTimestamp（防改機）
    - 離線/讀不到/被拒絕：優雅處理不白屏，fallback localStorage 暫存佇列
@@ -58,60 +59,23 @@
         firebase.initializeApp(FIREBASE_CONFIG);
       }
       _state.ready = true;
+      _state.authResolved = true;
     } catch (e) {
       _state.ready = false;
       _state.authResolved = true;
       _notifyAuth();
       return;
     }
-    firebase.auth().onAuthStateChanged(function (fbUser) {
-      _state.authResolved = true;
-      if (fbUser) {
-        _state.user = {
-          email: fbUser.email || '',
-          name: fbUser.displayName || (fbUser.email ? fbUser.email.split('@')[0] : '同事'),
-          uid: fbUser.uid,
-          photoURL: fbUser.photoURL || ''
-        };
-        _resolveWorkspace(fbUser).then(function () {
-          _notifyAuth();
-          _flushOfflineQueue();
-        });
-      } else {
-        _state.user = null;
-        _state.wsId = null;
-        _notifyAuth();
-      }
-    });
+    _notifyAuth();
   }
 
-  function _resolveWorkspace(fbUser) {
-    if (!fbUser || !fbUser.email) return Promise.resolve(null);
-    var db = firebase.firestore();
-    return db.collection('workspaces')
-      .where('memberEmails', 'array-contains', fbUser.email)
-      .limit(1).get()
-      .then(function (snap) {
-        if (!snap.empty) { _state.wsId = snap.docs[0].id; return _state.wsId; }
-        var memberObj = {
-          email: fbUser.email,
-          name: fbUser.displayName || '',
-          picture: fbUser.photoURL || '',
-          roleId: null,
-          joinedAt: new Date().toISOString()
-        };
-        return db.collection('workspaces').add({
-          name: '我的工作室',
-          owner: fbUser.email,
-          members: [memberObj],
-          memberEmails: [fbUser.email],
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(function (ref) { _state.wsId = ref.id; return _state.wsId; });
-      })['catch'](function (err) {
-        try { console.warn('[BPCloud] resolveWorkspace failed: ' + (err && err.message)); } catch (_) {}
-        _state.wsId = null;
-        return null;
-      });
+  // 由 identity.js 注入當前帳號 + wsId（名冊鏡像為唯一身分源；cloud.js 不自己解 workspace）。
+  function _setContext(account, wsId) {
+    _state.user = account || null;
+    _state.wsId = wsId || null;
+    _state.authResolved = true;
+    _notifyAuth();
+    if (_state.user && _state.wsId) { _flushOfflineQueue(); }
   }
 
   function _humanizeError(err) {
@@ -181,6 +145,8 @@
   var BPCloud = {
 
     init: function () { _init(); },
+
+    setContext: function (account, wsId) { _setContext(account, wsId); },
 
     onAuthChange: function (fn) {
       if (typeof fn === 'function') {

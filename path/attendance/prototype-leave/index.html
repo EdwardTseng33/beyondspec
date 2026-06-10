@@ -295,12 +295,54 @@ body.overlay-open .bottom-nav{pointer-events:none}
   display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
 .empty-state .empty-ico svg{width:30px;height:30px;color:var(--ink-dim);margin:0}
 .empty-state .empty-title{font-size:var(--text-card-title);font-weight:800;color:var(--ink-sec);margin-bottom:4px}
+/* === 登入畫面 overlay（正式版；未登入蓋滿，登入後隱藏）=== */
+.login-overlay{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(1200px 600px at 50% -10%, rgba(124,92,252,.16), transparent 60%),var(--bg-app)}
+.login-overlay[hidden]{display:none}
+.login-card{width:100%;max-width:380px;background:var(--bg-card);border-radius:var(--r-xl);box-shadow:var(--shadow-xl);padding:32px 28px;text-align:center}
+.login-logo{width:56px;height:56px;border-radius:var(--r-lg);margin:0 auto 18px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center}
+.login-logo svg{width:28px;height:28px}
+.login-brand{font-size:var(--text-caption);font-weight:700;color:var(--primary);letter-spacing:.5px;margin-bottom:6px}
+.login-title{font-size:var(--text-page-title);font-weight:800;color:var(--ink);margin-bottom:8px;letter-spacing:-.3px}
+.login-sub{font-size:var(--text-body);color:var(--ink-muted);line-height:1.6;margin-bottom:26px}
+.login-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px 20px;border:1px solid var(--border);border-radius:var(--r-md);cursor:pointer;background:var(--bg-card);color:var(--ink);font-family:inherit;font-size:15px;font-weight:700;transition:all .15s}
+.login-btn:hover{background:var(--bg-hover);border-color:var(--border-hover)}
+.login-btn:active{transform:scale(.98)}
+.login-btn img{width:20px;height:20px}
+.login-msg{margin-top:16px;font-size:var(--text-caption);line-height:1.6;padding:11px 14px;border-radius:var(--r-sm);text-align:left}
+.login-msg.err{background:var(--danger-bg);color:var(--danger)}
+.login-msg.info{background:var(--primary-light);color:var(--ink-sec)}
+.login-foot{margin-top:22px;font-size:var(--text-label);color:var(--ink-dim);line-height:1.6}
+.login-spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:lspin .7s linear infinite;vertical-align:middle;margin-right:7px}
+@keyframes lspin{to{transform:rotate(360deg)}}
+/* 不在名冊 友善引導頁 */
+.guide-email-row{display:flex;align-items:center;gap:8px;margin-top:18px;background:var(--bg-app);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+.guide-email{flex:1;min-width:0;font-size:var(--text-caption);font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.guide-copy{flex-shrink:0;font-family:inherit;font-size:var(--text-label);font-weight:700;padding:7px 13px;border-radius:var(--r-sm);border:1px solid var(--primary);background:var(--primary-light);color:var(--primary);cursor:pointer;transition:all .15s}
+.guide-copy:hover{background:var(--primary);color:#fff}
+.guide-signout{width:100%;margin-top:10px;font-family:inherit;font-size:var(--text-label);font-weight:600;padding:10px;border-radius:var(--r-md);border:none;background:transparent;color:var(--ink-muted);cursor:pointer;transition:all .15s}
+.guide-signout:hover{color:var(--ink);background:var(--bg-hover)}
 </style>
 </head>
 <body>
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
+    <div class="login-brand">BeyondPath 出缺勤</div>
+    <div class="login-title">請假與特休</div>
+    <div class="login-sub">用公司給你的 Google 帳號登入，<br>線上請假、查特休餘額，主管可在這批准。</div>
+    <button class="login-btn" id="loginBtn">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+      使用 Google 帳號登入
+    </button>
+    <div class="login-msg info" id="loginMsg" hidden></div>
+    <div class="login-foot">第一次登入若看到「還沒加入名冊」，請把 Google 信箱給你的 HR 加入即可。</div>
+  </div>
+</div>
 <div class="app-shell" id="appShell">
   <div class="trial-banner" id="trialBanner">
-    這是試用體驗。可在下方切換「員工美玲 / 主管 Peter」兩種視角。正式上線換成你公司的人，資料只存這台。
+    用公司給你的 Google 帳號登入，就能線上請假、查特休餘額；主管可在這裡批准。
   </div>
   <div class="topbar">
     <div class="topbar-left">
@@ -327,9 +369,15 @@ body.overlay-open .bottom-nav{pointer-events:none}
 </div>
 <div class="toast" id="toast"></div>
 <div id="modalRoot"></div>
-<script src="../shared/datepicker.js?v=r3"></script>
+<script src="../shared/datepicker.js?v=bpath1"></script>
 <script>BDPicker.init();</script>
-<script src="leave-core.js?v=r3"></script>
-<script src="leave.js?v=r3"></script>
+<!-- Firebase SDK（與主站 app.html 同版本 10.14.1 compat）-->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" crossorigin="anonymous" onerror="console.warn('[CDN] Firebase App failed')"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" crossorigin="anonymous" onerror="console.warn('[CDN] Firebase Auth failed')"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" crossorigin="anonymous" onerror="console.warn('[CDN] Firebase Firestore failed')"></script>
+<script src="../prototype/identity.js?v=bpath1"></script>
+<script src="leave-cloud.js?v=bpath1"></script>
+<script src="leave-core.js?v=bpath1"></script>
+<script src="leave.js?v=bpath1"></script>
 </body>
 </html>

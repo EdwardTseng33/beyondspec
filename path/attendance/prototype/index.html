@@ -339,6 +339,14 @@ body.overlay-open .bottom-nav{pointer-events:none}
 .cloud-pill.on{background:var(--success-bg);color:var(--success)}
 .cloud-pill.off{background:var(--gold-bg);color:var(--gold)}
 .cloud-pill svg{width:11px;height:11px;flex-shrink:0}
+/* === 不在名冊 友善引導頁：信箱 + 一鍵複製 === */
+.guide-email-row{display:flex;align-items:center;gap:8px;margin-top:18px;background:var(--bg-app);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+.guide-email{flex:1;min-width:0;font-size:var(--text-caption);font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;font-variant-numeric:tabular-nums}
+.guide-copy{flex-shrink:0;font-family:inherit;font-size:var(--text-label);font-weight:700;padding:7px 13px;border-radius:var(--r-sm);border:1px solid var(--primary);background:var(--primary-light);color:var(--primary);cursor:pointer;transition:all .15s}
+.guide-copy:hover{background:var(--primary);color:#fff}
+.guide-copy:active{transform:scale(.97)}
+.guide-signout{width:100%;margin-top:10px;font-family:inherit;font-size:var(--text-label);font-weight:600;padding:10px;border-radius:var(--r-md);border:none;background:transparent;color:var(--ink-muted);cursor:pointer;transition:all .15s}
+.guide-signout:hover{color:var(--ink);background:var(--bg-hover)}
 
 </style>
 </head>
@@ -392,7 +400,8 @@ body.overlay-open .bottom-nav{pointer-events:none}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" crossorigin="anonymous" onerror="console.warn('[CDN] Firebase App failed')"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" crossorigin="anonymous" onerror="console.warn('[CDN] Firebase Auth failed')"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" crossorigin="anonymous" onerror="console.warn('[CDN] Firebase Firestore failed')"></script>
-<script src="cloud.js?v=cloud1"></script>
-<script src="app.js?v=cloud1"></script>
+<script src="identity.js?v=bpath1"></script>
+<script src="cloud.js?v=bpath1"></script>
+<script src="app.js?v=bpath1"></script>
 </body>
 </html>
