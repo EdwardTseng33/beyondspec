@@ -611,7 +611,7 @@
       bodyDesc = '請老闆把你的信箱加進公司名冊後，再重新整理。';
     } else if (s2.errorKind === 'index-missing') {
       bodyTitle = '系統正在開通中';
-      bodyDesc = '出勤資料庫索引尚未建立完成，請稍候或聯絡管理員。';
+      bodyDesc = '公司端還有一步設定（出勤資料庫索引正在建立）。完成後重新整理這一頁就能打卡了。';
     } else {
       bodyTitle = '你的帳號還沒加入公司名冊';
       bodyDesc = '請老闆在 BeyondPath「算薪水 → 員工檔案」把這個信箱填進你的資料，加好後重新整理這一頁就能打卡了。';

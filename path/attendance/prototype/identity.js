@@ -5,9 +5,15 @@
    - payroll writes slim mirror to workspaces/{ownerUid}/attendance_roster/{emailLower}
    - mirror fields only: name, email, managerEmail, isActive (emails lowercased)
    - identity SOLE source = mirror. never reads master roster or sensitive data.
-   - wsId: collectionGroup attendance_roster where docId == my email -> parent ws id (= owner uid)
-   - NEEDS Firestore collectionGroup index on attendance_roster.
+   - wsId: collectionGroup attendance_roster where email == my email -> parent ws id (= owner uid)
+     (was documentId()==email; Firestore rejects a single-segment docId on a collectionGroup
+      query with a SYNCHRONOUS throw that escapes the promise chain -> half-rendered page.
+      field query is index-safe; a missing index returns a catchable failed-precondition.)
+   - NEEDS Firestore collectionGroup index on attendance_roster, field "email" ASC.
    - self not found -> friendly guidance page. never blank, never fake data.
+   - HARD RULE: identity resolution is wrapped in try/catch so ANY error (sync OR async)
+     lands on the friendly "system being set up" page. three states only:
+     login / full content / guidance. a half-rendered screen must never exist.
    ES5 only (Safari 13). exposes window.BPIdentity only. */
 (function () {
   'use strict';
@@ -67,59 +73,82 @@
       _identity.ready = false; _identity.authResolved = true; _notify(); return;
     }
     firebase.auth().onAuthStateChanged(function (fbUser) {
-      _identity.authResolved = true;
-      if (fbUser) {
-        var emailRaw = fbUser.email || '';
-        _identity.isSignedIn = true;
-        _identity.account = {
-          email: emailRaw.toLowerCase(),
-          rawEmail: emailRaw,
-          name: fbUser.displayName || (emailRaw ? emailRaw.split('@')[0] : 'colleague'),
-          uid: fbUser.uid,
-          photoURL: fbUser.photoURL || ''
-        };
-        _resolveIdentity();
-      } else {
-        _identity.isSignedIn = false; _identity.account = null;
-        _resetIdentityFlags(); _notify();
+      // OUTERMOST NET: anything synchronous in here that throws must still land on a
+      // resolved, friendly state. three states only: login / content / guidance.
+      try {
+        _identity.authResolved = true;
+        if (fbUser) {
+          var emailRaw = fbUser.email || '';
+          _identity.isSignedIn = true;
+          _identity.account = {
+            email: emailRaw.toLowerCase(),
+            rawEmail: emailRaw,
+            name: fbUser.displayName || (emailRaw ? emailRaw.split('@')[0] : 'colleague'),
+            uid: fbUser.uid,
+            photoURL: fbUser.photoURL || ''
+          };
+          _resolveIdentity();
+        } else {
+          _identity.isSignedIn = false; _identity.account = null;
+          _resetIdentityFlags(); _notify();
+        }
+      } catch (e) {
+        _identity.resolving = false;
+        _classifyError(e);
+        if (!_identity.errorKind) { _identity.friendly = true; }
+        _notify();
       }
     });
   }
 
   function _resolveIdentity() {
     if (!_identity.ready || !_identity.account) { _notify(); return; }
-    var db = firebase.firestore();
-    var myEmail = _identity.account.email;
-    _resetIdentityFlags();
-    _identity.resolving = true;
-    _notify();
-    db.collectionGroup('attendance_roster')
-      .where(firebase.firestore.FieldPath.documentId(), '==', myEmail)
-      .limit(5).get()
-      .then(function (snap) {
-        var selfDoc = null;
-        snap.forEach(function (doc) {
-          if (!selfDoc) {
-            var d = doc.data() || {};
-            if (d.isActive !== false) { selfDoc = doc; }
-          }
+    // HARD GUARD: wrap the whole body. building/running a Firestore query can throw
+    // SYNCHRONOUSLY (e.g. an illegal collectionGroup docId path), and that throw would
+    // escape the promise chain below and stall the consumer on a half-rendered screen.
+    // any sync error here -> friendly guidance page, never blank.
+    try {
+      var db = firebase.firestore();
+      var myEmail = _identity.account.email;
+      _resetIdentityFlags();
+      _identity.resolving = true;
+      _notify();
+      // field query (NOT documentId): the mirror doc carries an 'email' field, so this is
+      // index-safe and a missing index degrades to a catchable failed-precondition below.
+      db.collectionGroup('attendance_roster')
+        .where('email', '==', myEmail)
+        .limit(5).get()
+        .then(function (snap) {
+          var selfDoc = null;
+          snap.forEach(function (doc) {
+            if (!selfDoc) {
+              var d = doc.data() || {};
+              if (d.isActive !== false) { selfDoc = doc; }
+            }
+          });
+          if (!selfDoc) { return _resolveOwnerFallback(db, myEmail); }
+          var selfData = selfDoc.data() || {};
+          var wsId = _wsIdFromRosterRef(selfDoc.ref);
+          _identity.wsId = wsId;
+          _identity.isEmployee = true;
+          _identity.employeeName = selfData.name || _identity.account.name;
+          _identity.managerEmail = (selfData.managerEmail || '').toLowerCase() || null;
+          return _resolveManagerAndHR(db, wsId, myEmail);
+        })
+        .then(function () { _identity.resolving = false; _notify(); })
+        ['catch'](function (err) {
+          _identity.resolving = false;
+          _classifyError(err);
+          if (!_identity.errorKind) { _identity.friendly = true; }
+          _notify();
         });
-        if (!selfDoc) { return _resolveOwnerFallback(db, myEmail); }
-        var selfData = selfDoc.data() || {};
-        var wsId = _wsIdFromRosterRef(selfDoc.ref);
-        _identity.wsId = wsId;
-        _identity.isEmployee = true;
-        _identity.employeeName = selfData.name || _identity.account.name;
-        _identity.managerEmail = (selfData.managerEmail || '').toLowerCase() || null;
-        return _resolveManagerAndHR(db, wsId, myEmail);
-      })
-      .then(function () { _identity.resolving = false; _notify(); })
-      ['catch'](function (err) {
-        _identity.resolving = false;
-        _classifyError(err);
-        if (!_identity.errorKind) { _identity.friendly = true; }
-        _notify();
-      });
+    } catch (e) {
+      // synchronous failure anywhere above (query construction, SDK state, etc.)
+      _identity.resolving = false;
+      _classifyError(e);
+      if (!_identity.errorKind) { _identity.friendly = true; }
+      _notify();
+    }
   }
 
   function _wsIdFromRosterRef(ref) {
