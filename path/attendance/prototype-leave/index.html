@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BeyondPath 出勤 · 請假與特休（試用版）</title>
+<style>
+:root{
+  --primary:#7C5CFC;--primary-hover:#6A4BE8;--primary-light:rgba(124,92,252,.14);
+  --bg-app:#F5F5F8;--bg-card:#FFF;--bg-input:#FFF;--bg-hover:#E8E8EC;--bg-overlay:rgba(0,0,0,.45);
+  --border:#E2E2EA;--border-hover:#CCCCD6;
+  --ink:#111122;--ink-sec:#44445E;--ink-muted:#66667A;--ink-dim:#9999AA;--ink-placeholder:#9999AA;
+  --gold:#E08A3A;--gold-bg:rgba(224,138,58,.14);
+  --danger:#D94462;--danger-bg:rgba(217,68,98,.12);
+  /* 統一語意正向色＝PATH 封閉五色青 #1BA891；success / info 同值（全站只有一種「成功/正向」綠，不再 #2BA672 vs #1BA891 兩套） */
+  --ok:#1BA891;--ok-bg:rgba(27,168,145,.12);
+  --success:#1BA891;--success-bg:rgba(27,168,145,.12);
+  --info:#1BA891;--info-bg:rgba(27,168,145,.12);
+  /* 日曆週末色：與 danger 拉開，請假情境週末不被誤讀成「不可選/錯誤日」 */
+  --rose:#C76B7A;--rose-bg:rgba(199,107,122,.12);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.04);--shadow-card:0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 28px rgba(0,0,0,.08);--shadow-xl:0 12px 40px rgba(0,0,0,.10);
+  --r-sm:10px;--r-md:14px;--r-lg:18px;--r-xl:24px;
+  --text-page-title:22px;--text-card-title:15px;--text-body:14px;--text-caption:13px;--text-label:12px;--text-micro:11px;--text-lg:22px;
+  --fw-body:450;--fw-body-strong:600;--fw-title:700;--fw-label:600;
+  --motion-instant:80ms;--motion-fast:120ms;--motion-normal:180ms;--motion-smooth:280ms;
+  --ease-out:cubic-bezier(.4,0,.2,1);--ease-smooth:cubic-bezier(.22,1,.36,1);
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:36px;--space-7:48px;
+}
+[data-theme="dark"]{
+  --bg-app:#0D0D14;--bg-card:#1A1A24;--bg-input:#13131C;--bg-hover:#24243A;--bg-overlay:rgba(0,0,0,.65);
+  --border:#2A2A3A;--border-hover:#3A3A4A;
+  --ink:#F0F0F5;--ink-sec:#B8B8CC;--ink-muted:#9A9AB4;--ink-dim:#7C7C95;--ink-placeholder:#7C7C95;
+  --gold-bg:rgba(224,138,58,.2);--danger-bg:rgba(217,68,98,.2);
+  --ok-bg:rgba(27,168,145,.2);--success-bg:rgba(27,168,145,.2);--info-bg:rgba(27,168,145,.2);
+  --rose:#D98A97;--rose-bg:rgba(217,138,151,.18);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.2);--shadow-card:0 2px 8px rgba(0,0,0,.3);
+  --shadow-lg:0 4px 20px rgba(0,0,0,.4);--shadow-xl:0 8px 32px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:100%;min-height:100%;
+  font-family:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif;
+  background:var(--bg-app);color:var(--ink);
+  transition:background .25s cubic-bezier(.4,0,.2,1),color .25s cubic-bezier(.4,0,.2,1);
+  font-size:16px;line-height:1.6;font-weight:450;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  overscroll-behavior:none;
+}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+.app-shell{width:100%;max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-app);overflow-x:hidden}
+.trial-banner{
+  background:var(--gold-bg);color:var(--gold);
+  font-size:var(--text-label);font-weight:600;text-align:center;
+  padding:7px 14px;line-height:1.4;border-bottom:1px solid var(--border);
+}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;gap:10px}
+.topbar-left{display:flex;flex-direction:column;gap:2px;min-width:0}
+.brand{font-size:var(--text-caption);font-weight:700;color:var(--primary);letter-spacing:.5px}
+.greeting{font-size:var(--text-page-title);font-weight:800;color:var(--ink);letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.icon-btn{
+  width:38px;height:38px;border-radius:var(--r-md);border:1px solid var(--border);
+  background:var(--bg-card);color:var(--ink-muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;
+}
+.icon-btn:hover{background:var(--bg-hover);color:var(--ink);border-color:var(--border-hover)}
+.icon-btn svg{width:18px;height:18px}
+.role-switch{display:flex;gap:6px;padding:0 20px 10px}
+.role-btn{
+  flex:1 1 0;min-width:0;font-family:inherit;font-size:var(--text-caption);font-weight:700;
+  padding:9px 8px;border-radius:var(--r-md);border:1px solid var(--border);
+  background:var(--bg-card);color:var(--ink-muted);cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.role-btn svg{width:15px;height:15px;flex-shrink:0}
+.role-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 4px 12px rgba(124,92,252,.28)}
+.role-hint{font-size:11px;color:var(--ink-dim);text-align:center;padding:0 20px 6px;line-height:1.4}
+.content{flex:1;min-width:0;padding:4px 20px 36px;overflow-y:auto;overflow-x:hidden}
+.card{
+  background:var(--bg-card);border:none;border-radius:var(--r-xl);
+  padding:22px;margin-bottom:16px;box-shadow:var(--shadow-card);
+  transition:all .25s cubic-bezier(.4,0,.2,1);max-width:100%;
+}
+.section-title{
+  font-size:var(--text-label);font-weight:700;color:var(--ink-muted);
+  letter-spacing:.5px;text-transform:uppercase;margin:14px 2px 12px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.section-title .count-pill{font-size:11px;font-weight:700;color:var(--primary);background:var(--primary-light);padding:2px 9px;border-radius:100px;text-transform:none;letter-spacing:0}
+/* === components: form / balance / list === */
+.field-label{font-size:var(--text-label);font-weight:600;color:var(--ink-sec);margin-bottom:6px;display:block}
+.lv-input,.lv-select,.lv-textarea{
+  width:100%;font-family:inherit;font-size:var(--text-body);font-weight:600;color:var(--ink);
+  background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:11px 14px;margin-bottom:14px;transition:border-color .15s;
+}
+.lv-textarea{font-weight:500;min-height:72px;resize:none;line-height:1.5}
+.lv-input:focus,.lv-select:focus,.lv-textarea:focus{outline:none;border-color:var(--primary)}
+.lv-input:focus-visible,.lv-select:focus-visible,.lv-textarea:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+.date-row{display:flex;flex-direction:column;gap:0}
+.date-row > div{flex:1 1 0;min-width:0}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.type-chip{
+  font-family:inherit;font-size:var(--text-caption);font-weight:700;
+  padding:10px 4px;border-radius:var(--r-sm);border:1px solid var(--border);
+  background:var(--bg-card);color:var(--ink-muted);cursor:pointer;transition:all .15s;text-align:center;min-width:0;
+}
+.type-chip.active{background:var(--primary-light);color:var(--primary);border-color:var(--primary)}
+.type-chip:hover:not(.active){border-color:var(--border-hover);color:var(--ink)}
+.card-head{display:flex;align-items:center;gap:8px;font-size:var(--text-card-title);font-weight:800;color:var(--ink);margin-bottom:4px}
+.card-head svg{width:18px;height:18px;color:var(--primary);flex-shrink:0}
+.card-desc{font-size:var(--text-label);color:var(--ink-muted);line-height:1.5;margin-bottom:16px}
+.lv-submit{
+  width:100%;font-family:inherit;font-size:var(--text-body);font-weight:700;
+  padding:14px;border:none;border-radius:var(--r-md);cursor:pointer;
+  background:var(--primary);color:#fff;transition:all .2s;box-shadow:0 4px 14px rgba(124,92,252,.28);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.lv-submit svg{width:16px;height:16px;flex-shrink:0}
+.lv-submit:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.lv-submit:active{transform:scale(.98)}
+.lv-submit:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.balance-card{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-hover) 100%);color:#fff;padding:24px;border-radius:var(--r-xl);margin-bottom:16px;box-shadow:0 8px 24px rgba(124,92,252,.3)}
+.balance-top{display:flex;align-items:center;gap:8px;font-size:var(--text-caption);font-weight:600;opacity:.92;margin-bottom:8px}
+.balance-top svg{width:16px;height:16px;flex-shrink:0}
+.balance-remain{font-size:46px;font-weight:800;line-height:1;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.balance-remain small{font-size:18px;font-weight:700;margin-left:4px}
+.balance-sub{display:flex;gap:18px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.22)}
+.balance-sub-item{flex:1}
+.balance-sub-num{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.balance-sub-label{font-size:11px;opacity:.85;font-weight:600;margin-top:2px}
+.balance-note{font-size:11px;opacity:.8;margin-top:12px;line-height:1.4;display:flex;align-items:flex-start;gap:5px}
+.balance-note svg{width:13px;height:13px;flex-shrink:0;margin-top:1px}
+.demo-note{display:flex;align-items:flex-start;gap:8px;font-size:var(--text-caption);color:var(--ink-sec);background:var(--gold-bg);border:1px solid rgba(224,138,58,.28);border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;line-height:1.55}
+.demo-note svg{width:16px;height:16px;flex-shrink:0;color:var(--gold);margin-top:1px}
+.demo-note b{color:var(--ink);font-weight:700}
+.lv-row{display:flex;align-items:center;gap:13px;padding:14px 16px;background:var(--bg-card);border-radius:var(--r-md);margin-bottom:9px;box-shadow:var(--shadow-sm)}
+.lv-row-icon{width:42px;height:42px;border-radius:var(--r-sm);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.lv-row-icon.annual{background:var(--primary-light);color:var(--primary)}
+.lv-row-icon.other{background:var(--info-bg);color:var(--info)}
+.lv-row-main{flex:1;min-width:0}
+.lv-row-title{font-size:var(--text-body);font-weight:700;color:var(--ink);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.lv-row-meta{font-size:var(--text-label);color:var(--ink-muted);margin-top:3px;line-height:1.45}
+.lv-row-meta .reason{color:var(--ink-sec)}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap}
+.badge svg{width:11px;height:11px;flex-shrink:0}
+.badge.pending{background:var(--gold-bg);color:var(--gold)}
+.badge.approved{background:var(--success-bg);color:var(--success)}
+.badge.rejected{background:var(--danger-bg);color:var(--danger)}
+.appr-card{background:var(--bg-card);border-radius:var(--r-xl);padding:18px;margin-bottom:14px;box-shadow:var(--shadow-card)}
+.appr-head{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.appr-avatar{width:40px;height:40px;border-radius:50%;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0}
+.appr-who{flex:1;min-width:0}
+.appr-name{font-size:var(--text-body);font-weight:800;color:var(--ink)}
+.appr-when{font-size:var(--text-label);color:var(--ink-muted);margin-top:1px}
+.appr-detail{font-size:var(--text-caption);color:var(--ink-sec);line-height:1.6;background:var(--bg-app);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:12px}
+.appr-detail b{color:var(--ink);font-weight:700}
+.appr-staffing{display:flex;align-items:flex-start;gap:7px;font-size:var(--text-label);font-weight:600;padding:10px 13px;border-radius:var(--r-sm);margin-bottom:12px;line-height:1.5}
+.appr-staffing svg{width:15px;height:15px;flex-shrink:0;margin-top:1px}
+.appr-staffing.clear{background:var(--success-bg);color:var(--success)}
+.appr-staffing.warn{background:var(--gold-bg);color:var(--gold)}
+.appr-actions{display:flex;gap:14px}
+.appr-btn{flex:1;font-family:inherit;font-weight:700;font-size:var(--text-body);padding:12px;border-radius:var(--r-md);cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;border:none}
+.appr-btn svg{width:16px;height:16px;flex-shrink:0}
+/* 核准主鈕改用品牌紫（主要動作）；綠只留給「已核准」狀態徽章、紅只留給退件 → 同畫面強色從 4 降到紫+紅兩個，焦點清楚（女巫色彩痛點） */
+.appr-btn.approve{background:var(--primary);color:#fff;flex:2;box-shadow:0 4px 12px rgba(124,92,252,.26)}
+.appr-btn.approve:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.appr-btn.reject{background:var(--bg-card);color:var(--ink-sec);border:1px solid var(--border)}
+.appr-btn.reject:hover{background:var(--bg-hover);border-color:var(--border-hover);color:var(--danger)}
+.appr-btn:active{transform:scale(.98)}
+.empty-state{text-align:center;padding:34px 20px;color:var(--ink-muted)}
+.empty-state svg{width:42px;height:42px;color:var(--ink-dim);margin-bottom:12px}
+.empty-state-text{font-size:var(--text-body);font-weight:500}
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(120px);background:var(--ink);color:var(--bg-card);padding:14px 22px;border-radius:var(--r-md);box-shadow:var(--shadow-xl);font-size:var(--text-body);font-weight:600;z-index:2000;display:flex;align-items:center;gap:10px;max-width:90vw;transition:transform .35s cubic-bezier(.16,1,.3,1);pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast svg{width:20px;height:20px;flex-shrink:0}
+.toast.ok svg{color:#5BE0A0}
+.toast.warn svg{color:#FFD479}
+.toast.err svg{color:#FF8FA3}
+.today-card{background:var(--bg-card);border-radius:var(--r-xl);padding:20px;margin-bottom:16px;box-shadow:var(--shadow-card)}
+.today-num-row{display:flex;align-items:baseline;gap:8px;margin:6px 0 4px}
+.today-num{font-size:38px;font-weight:800;color:var(--primary);line-height:1;font-variant-numeric:tabular-nums}
+.today-num-unit{font-size:var(--text-body);font-weight:700;color:var(--ink-sec)}
+.today-names{font-size:var(--text-caption);color:var(--ink-muted);line-height:1.6;margin-top:6px}
+/* === 今日人力概況：在崗/請假/總數三欄（aji/Peter HIGH） === */
+.hc-row{display:flex;gap:10px;margin:10px 0 4px}
+.hc-cell{flex:1 1 0;min-width:0;background:var(--bg-app);border-radius:var(--r-md);padding:12px 8px;text-align:center}
+.hc-num{font-size:30px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.hc-num.present{color:var(--success)}
+.hc-num.leave{color:var(--gold)}
+.hc-num.total{color:var(--ink-sec)}
+.hc-lbl{font-size:var(--text-label);font-weight:600;color:var(--ink-muted);margin-top:5px}
+/* 接下來 7 天請假預覽（Peter HIGH 排隔天班） */
+.upcoming{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.upcoming-hd{display:flex;align-items:center;gap:6px;font-size:var(--text-label);font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.upcoming-hd svg{width:14px;height:14px;flex-shrink:0}
+.upcoming-empty{font-size:var(--text-caption);color:var(--ink-dim);line-height:1.5}
+.upcoming-row{display:flex;gap:10px;align-items:baseline;padding:6px 0;font-size:var(--text-caption);line-height:1.5}
+.up-day{flex:0 0 auto;font-weight:700;color:var(--ink-sec);min-width:64px}
+.up-info{flex:1 1 0;min-width:0;color:var(--ink-muted)}
+/* === 團隊特休總覽卡（美玲/aji HIGH） === */
+.team-annual{padding:16px 18px}
+.ta-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.ta-row:last-child{border-bottom:none}
+.ta-name{flex:0 0 auto;width:48px;font-size:var(--text-body);font-weight:700;color:var(--ink)}
+.ta-bar-wrap{flex:1 1 0;min-width:0;height:8px;background:var(--bg-hover);border-radius:100px;overflow:hidden}
+.ta-bar{height:100%;background:var(--primary);border-radius:100px;transition:width .3s var(--ease-out)}
+.ta-remain{flex:0 0 auto;font-size:var(--text-caption);color:var(--ink-sec);font-weight:600;white-space:nowrap}
+.ta-remain b{font-size:var(--text-card-title);font-weight:800;color:var(--primary)}
+.ta-remain.low b{color:var(--gold)}
+.ta-of{color:var(--ink-dim);font-weight:600;margin-left:2px}
+.ta-foot{font-size:11px;color:var(--ink-dim);margin-top:10px;line-height:1.5}
+/* === 特休折現 Pro 入口（aji med） === */
+.pro-entry{display:flex;gap:12px;align-items:center;background:var(--gold-bg);border:1px solid rgba(224,138,58,.28);border-radius:var(--r-md);padding:14px 16px;margin-bottom:14px}
+.pro-entry-main{flex:1 1 0;min-width:0}
+.pro-title{display:flex;align-items:center;gap:7px;font-size:var(--text-body);font-weight:800;color:var(--ink)}
+.pro-title svg{width:16px;height:16px;flex-shrink:0;color:var(--gold)}
+.pro-tag{font-size:10px;font-weight:800;color:#fff;background:var(--gold);padding:2px 8px;border-radius:100px;letter-spacing:.5px}
+.pro-desc{font-size:var(--text-caption);color:var(--ink-sec);line-height:1.5;margin-top:5px}
+.divider-note b{color:var(--ink-sec);font-weight:700}
+.divider-note{font-size:11px;color:var(--ink-dim);text-align:center;padding:8px 0 0;line-height:1.5}
+@media (max-width:420px){
+  .content{padding:4px 14px 30px}
+  .balance-remain{font-size:40px}
+  .type-chip{font-size:12px;padding:9px 2px}
+}
+/* 桌面/大螢幕：與打卡頁一致，手機 app 置中卡片化外框 + 柔和品牌底，辦公室電腦看不再空洞（女巫/阿志痛點） */
+@media (min-width:560px){
+  body{background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(124,92,252,.10), transparent 60%),
+    var(--bg-app);}
+  .app-shell{
+    max-width:440px;margin:28px auto;min-height:auto;
+    border-radius:var(--r-xl);overflow:hidden;
+    box-shadow:0 24px 60px rgba(17,17,34,.12),0 4px 16px rgba(17,17,34,.06);
+    border:1px solid var(--border);
+  }
+  .bottom-nav{position:static}
+}
+[data-theme="dark"] body{background:
+  radial-gradient(1200px 600px at 50% -10%, rgba(124,92,252,.16), transparent 60%),
+  var(--bg-app);}
+
+
+/* === 底部導覽列：與打卡頁互通 === */
+/* 防穿透鐵閘：任何浮層（確認框 / 日曆）開啟時，底部導覽完全不可點，
+   根治「按取消/點日曆卻誤觸 nav 跳到別頁」（阿婷/Peter/小陳痛點 — 即使浮層蓋住也多一層保險） */
+body.overlay-open .bottom-nav{pointer-events:none}
+.bottom-nav{position:sticky;bottom:0;z-index:50;display:flex;gap:6px;
+  background:var(--bg-card);border-top:1px solid var(--border);
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));margin-top:auto;
+  box-shadow:0 -4px 16px rgba(0,0,0,.05)}
+.bottom-nav a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  padding:8px 4px;border-radius:var(--r-md);text-decoration:none;cursor:pointer;
+  font-size:var(--text-label);font-weight:700;color:var(--ink-muted);transition:all .15s;background:transparent;border:none}
+.bottom-nav a svg{width:21px;height:21px}
+.bottom-nav a:hover{background:var(--bg-hover);color:var(--ink)}
+.bottom-nav a.active{color:var(--primary)}
+.bottom-nav a.active svg{color:var(--primary)}
+[data-theme="dark"] .bottom-nav{box-shadow:0 -4px 16px rgba(0,0,0,.3)}
+/* === 確認對話框（取代瀏覽器原生 prompt/confirm，統一紫系 UI） === */
+.modal-backdrop{position:fixed;inset:0;z-index:3000;background:var(--bg-overlay);
+  display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:1}
+@media (min-width:481px){.modal-backdrop{align-items:center;padding:20px}}
+.modal-card{background:var(--bg-card);width:100%;max-width:420px;border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:var(--shadow-xl)}
+@media (min-width:481px){.modal-card{border-radius:var(--r-xl)}}
+.modal-title{display:flex;align-items:center;gap:9px;font-size:var(--text-card-title);font-weight:800;color:var(--ink);margin-bottom:6px}
+.modal-title svg{width:20px;height:20px;flex-shrink:0}
+.modal-title.approve svg{color:var(--primary)}
+.modal-title.reject svg{color:var(--danger)}
+.modal-body{font-size:var(--text-body);color:var(--ink-sec);line-height:1.6;margin-bottom:16px}
+.modal-body b{color:var(--ink);font-weight:700}
+.modal-textarea{width:100%;font-family:inherit;font-size:var(--text-body);color:var(--ink);
+  background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:11px 14px;margin-bottom:16px;min-height:64px;resize:vertical;line-height:1.5}
+.modal-textarea:focus{outline:none;border-color:var(--primary)}
+.modal-actions{display:flex;gap:10px}
+.modal-btn{flex:1;font-family:inherit;font-weight:700;font-size:var(--text-body);padding:13px;
+  border-radius:var(--r-md);cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;border:none}
+.modal-btn svg{width:16px;height:16px;flex-shrink:0}
+.modal-btn.cancel{background:var(--bg-card);color:var(--ink-sec);border:1px solid var(--border)}
+.modal-btn.cancel:hover{background:var(--bg-hover)}
+.modal-btn.confirm-approve{background:var(--primary);color:#fff;flex:1.4}
+.modal-btn.confirm-approve:hover{background:var(--primary-hover)}
+.modal-btn.confirm-reject{background:var(--danger);color:#fff;flex:1.4}
+.modal-btn.confirm-reject:hover{filter:brightness(1.05)}
+.modal-btn:active{transform:scale(.98)}
+.field-hint{display:flex;align-items:flex-start;gap:7px;font-size:var(--text-label);color:var(--ink-muted);line-height:1.5;margin:-6px 0 14px;padding:9px 12px;background:var(--bg-app);border-radius:var(--r-sm)}
+.field-hint svg{width:14px;height:14px;flex-shrink:0;color:var(--primary);margin-top:1px}
+.field-hint b{color:var(--ink-sec);font-weight:700}
+/* 空狀態 icon circle 容器（符合女巫自家空狀態規範） */
+.empty-state .empty-ico{width:64px;height:64px;border-radius:50%;background:var(--bg-hover);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.empty-state .empty-ico svg{width:30px;height:30px;color:var(--ink-dim);margin:0}
+.empty-state .empty-title{font-size:var(--text-card-title);font-weight:800;color:var(--ink-sec);margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="app-shell" id="appShell">
+  <div class="trial-banner" id="trialBanner">
+    這是試用體驗。可在下方切換「員工美玲 / 主管 Peter」兩種視角。正式上線換成你公司的人，資料只存這台。
+  </div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="brand">BeyondPath 出勤</span>
+      <span class="greeting" id="greeting">請假與特休</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="themeBtn" title="切換深色模式" aria-label="切換深色模式"></button>
+    </div>
+  </div>
+  <div class="role-switch" id="roleSwitch"></div>
+  <div class="role-hint" id="roleHint"></div>
+  <div class="content" id="content"></div>
+  <nav class="bottom-nav" aria-label="主功能導覽">
+    <a href="../prototype/index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      打卡
+    </a>
+    <a class="active" href="index.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      請假 / 特休
+    </a>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+<div id="modalRoot"></div>
+<script src="../shared/datepicker.js?v=r3"></script>
+<script>BDPicker.init();</script>
+<script src="leave-core.js?v=r3"></script>
+<script src="leave.js?v=r3"></script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BDPicker Demo v1.1.0 — 日期/時間選擇器自動升級器</title>
+<style>
+:root{
+  --primary:#7C5CFC;--primary-hover:#6A4BE8;--primary-light:rgba(124,92,252,.14);--primary-glow:rgba(124,92,252,.28);
+  --bg-app:#F5F5F8;--bg-card:#FFF;--bg-sidebar:#6B4FCF;--bg-input:#FFF;--bg-hover:#E8E8EC;--bg-overlay:rgba(0,0,0,.45);
+  --ink:#111122;--ink-sec:#44445E;--ink-muted:#66667A;--ink-dim:#9999AA;--ink-placeholder:#9999AA;
+  --border:#E2E2EA;--border-hover:#CCCCD6;
+  --teal:#1BA891;--teal-bg:rgba(27,168,145,.14);--rose:#C76B7A;--rose-bg:rgba(199,107,122,.12);
+  --gold:#E08A3A;--gold-bg:rgba(224,138,58,.14);--violet:#7C5CFC;--violet-bg:rgba(124,92,252,.14);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.04);--shadow-card:0 4px 16px rgba(0,0,0,.06);--shadow-lg:0 8px 28px rgba(0,0,0,.08);--shadow-xl:0 12px 40px rgba(0,0,0,.10);
+  --sidebar-w:80px;--r-sm:10px;--r-md:14px;--r-lg:18px;--r-xl:24px;
+  --text-xs:14px;--text-sm:16px;--text-base:17px;--text-lg:22px;--text-xl:28px;--text-2xl:36px;--text-3xl:48px;
+  --text-page-title:22px;--text-section-title:17px;--text-card-title:15px;
+  --text-body:14px;--text-caption:13px;--text-label:12px;--text-micro:11px;
+  --fw-body:450;--fw-body-strong:600;--fw-title:700;--fw-label:600;
+  --motion-instant:80ms;--motion-fast:120ms;--motion-normal:180ms;--motion-smooth:280ms;--motion-slow:400ms;--motion-spring:350ms;
+  --ease-out:cubic-bezier(0.4,0,0.2,1);--ease-smooth:cubic-bezier(0.22,1,0.36,1);--ease-spring:cubic-bezier(0.34,1.56,0.64,1);
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:36px;--space-7:48px;
+}
+[data-theme="dark"]{
+  --bg-app:#0D0D14;--bg-card:#1A1A24;--bg-sidebar:#4A35A0;--bg-input:#1A1A24;--bg-hover:#24243A;--bg-overlay:rgba(0,0,0,.65);
+  --ink:#F0F0F5;--ink-sec:#B8B8CC;--ink-muted:#8888A0;--ink-dim:#6A6A80;--ink-placeholder:#585870;
+  --border:#2A2A3A;--border-hover:#3A3A4A;
+  --rose:#D98A97;--rose-bg:rgba(217,138,151,.18);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg-app);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif;font-size:var(--text-body);padding:32px 16px;transition:background .3s;}
+.wrap{max-width:560px;margin:0 auto;}
+h1{font-size:var(--text-xl);margin:0 0 4px;}
+.sub{color:var(--ink-muted);margin:0 0 28px;font-size:var(--text-caption);}
+.card{background:var(--bg-card);border:none;border-radius:var(--r-lg);box-shadow:var(--shadow-card);padding:24px;margin-bottom:20px;}
+.card-title{font-size:var(--text-card-title);font-weight:var(--fw-title);margin:0 0 16px;color:var(--ink);}
+.fld{margin-bottom:18px;}
+.fld:last-child{margin-bottom:0;}
+label{display:block;font-size:var(--text-label);font-weight:var(--fw-label);color:var(--ink-sec);margin-bottom:7px;}
+.toolbar{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;}
+.toolbar button{padding:9px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--bg-card);color:var(--ink);cursor:pointer;font-size:var(--text-caption);font-weight:600;}
+.toolbar button:hover{border-color:var(--primary);color:var(--primary);}
+.log{background:var(--bg-app);border:1px dashed var(--border);border-radius:var(--r-sm);padding:14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--ink-sec);white-space:pre-wrap;word-break:break-all;min-height:60px;}
+.log b{color:var(--teal);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>BDPicker 自動升級器 Demo <span style="font-size:var(--text-caption);color:var(--ink-muted);">v1.1.0</span></h1>
+  <p class="sub">頁面所有 input[type=date] 與 input[type=datetime-local] 載入後自動升級。選完寫回原 input.value 並派發 input/change，算薪邏輯零破壞。</p>
+
+  <div class="toolbar">
+    <button id="btn-dark">切換暗色模式</button>
+    <button id="btn-add">動態新增 datetime 欄位</button>
+    <button id="btn-set">外部設值 (補打卡=現在)</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">純日期 (input[type=date])</div>
+    <div class="fld">
+      <label for="d1">到職日 (預設空白)</label>
+      <input type="date" id="d1" data-placeholder="選擇到職日">
+    </div>
+    <div class="fld">
+      <label for="d2">離職日 (預設 2026-06-30)</label>
+      <input type="date" id="d2" value="2026-06-30">
+    </div>
+    <div class="fld">
+      <label for="d3">合約起始 (預設 2025-01-15)</label>
+      <input type="date" id="d3" value="2025-01-15">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">日期 + 時間 (input[type=datetime-local])</div>
+    <div class="fld">
+      <label for="t1">補打卡時間 (max=現在，擋未來)</label>
+      <input type="datetime-local" id="t1" data-placeholder="選擇補打卡的日期與時間">
+    </div>
+    <div class="fld">
+      <label for="t2">會議起始 (預設 2026-06-15 14:30)</label>
+      <input type="datetime-local" id="t2" value="2026-06-15T14:30">
+    </div>
+    <div class="fld">
+      <label for="t3">活動時段 (min=2026-06-01 09:00 / max=2026-06-30 18:00)</label>
+      <input type="datetime-local" id="t3" min="2026-06-01T09:00" max="2026-06-30T18:00">
+    </div>
+    <div id="dynamic"></div>
+  </div>
+
+  <div class="card">
+    <label style="margin-bottom:10px;">即時讀回的 input.value（證明算薪邏輯讀得到 + 事件有派發）</label>
+    <div class="log" id="log">尚未變更</div>
+  </div>
+</div>
+<script src="datepicker.js"></script>
+<script>
+  // 補打卡情境：t1 的 max 設為現在(動態)，模擬 app.js render 時的 max="..." 擋未來
+  (function(){
+    var n=new Date(); function p(x){return (x<10?"0":"")+x;}
+    document.getElementById("t1").setAttribute("max",
+      n.getFullYear()+"-"+p(n.getMonth()+1)+"-"+p(n.getDate())+"T"+p(n.getHours())+":"+p(n.getMinutes()));
+  })();
+  BDPicker.init();
+
+  function isDP(el){ return el && (el.type === "date" || el.type === "datetime-local"); }
+
+  function refreshLog(srcId){
+    var ids = ["d1","d2","d3","t1","t2","t3"];
+    var dyn = document.querySelectorAll("#dynamic input");
+    for (var i=0;i<dyn.length;i++){ if (dyn[i].id) { ids.push(dyn[i].id); } }
+    var lines = [];
+    for (var j=0;j<ids.length;j++){
+      var el = document.getElementById(ids[j]);
+      if (!el) { continue; }
+      var mark = (srcId===ids[j]) ? "  <b>&lt;-- 剛變更 + 收到 change</b>" : "";
+      lines.push(ids[j] + ".value = \"" + el.value + "\"" + mark);
+    }
+    document.getElementById("log").innerHTML = lines.join("\n");
+  }
+
+  // 模擬算薪邏輯的監聽器
+  document.addEventListener("change", function(e){
+    if (isDP(e.target)) {
+      refreshLog(e.target.id);
+      console.log("[算薪監聽] change:", e.target.id, "=", e.target.value);
+      // 驗證 datetime 寫回格式可被 new Date() 解析 (對齊 app.js L176)
+      if (e.target.type === "datetime-local" && e.target.value) {
+        var t = new Date(e.target.value).getTime();
+        console.log("[格式驗證] new Date(\"" + e.target.value + "\") = " + (isNaN(t) ? "NaN (壞!)" : "OK ts=" + t));
+      }
+    }
+  });
+  document.addEventListener("input", function(e){
+    if (isDP(e.target)) { console.log("[算薪監聽] input:", e.target.id, "=", e.target.value); }
+  });
+
+  refreshLog();
+
+  var darkOn = false;
+  document.getElementById("btn-dark").addEventListener("click", function(){
+    darkOn = !darkOn;
+    document.documentElement.setAttribute("data-theme", darkOn ? "dark" : "");
+  });
+  var dynCount = 0;
+  document.getElementById("btn-add").addEventListener("click", function(){
+    dynCount++;
+    var wrap = document.createElement("div");
+    wrap.className = "fld";
+    wrap.innerHTML = "<label>動態 datetime 欄位 " + dynCount + " (MutationObserver 自動升級)</label><input type='datetime-local' id='dyn"+dynCount+"'>";
+    document.getElementById("dynamic").appendChild(wrap);
+  });
+  document.getElementById("btn-set").addEventListener("click", function(){
+    var d = new Date();
+    function p(n){ return (n<10?"0":"")+n; }
+    var iso = d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes());
+    var el = document.getElementById("t1");
+    el.value = iso;
+    el.dispatchEvent(new Event("change",{bubbles:true}));
+  });
+</script>
+</body>
+</html>

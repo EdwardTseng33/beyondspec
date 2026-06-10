@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BeyondPath 出勤打卡試用版 MVP-1</title>
+<style>
+:root{
+  --primary:#7C5CFC;--primary-hover:#6A4BE8;--primary-light:rgba(124,92,252,.14);
+  --bg-app:#F5F5F8;--bg-card:#FFF;--bg-input:#FFF;--bg-hover:#E8E8EC;--bg-overlay:rgba(0,0,0,.45);
+  --border:#E2E2EA;--border-hover:#CCCCD6;
+  --ink:#111122;--ink-sec:#44445E;--ink-muted:#66667A;--ink-dim:#9999AA;--ink-placeholder:#9999AA;
+  --gold:#E08A3A;--gold-bg:rgba(224,138,58,.14);
+  --danger:#D94462;--danger-bg:rgba(217,68,98,.12);
+  /* 統一語意正向色＝PATH 封閉五色青 #1BA891；success / info 皆別名指它（全站只有一種「成功/正向」綠） */
+  --ok:#1BA891;--ok-bg:rgba(27,168,145,.12);
+  --success:#1BA891;--success-bg:rgba(27,168,145,.12);
+  --info:#1BA891;--info-bg:rgba(27,168,145,.12);
+  /* 日曆週末色：與 danger 拉開，請假情境不被誤讀成「不可選/錯誤日」 */
+  --rose:#C76B7A;--rose-bg:rgba(199,107,122,.12);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.04);--shadow-card:0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 28px rgba(0,0,0,.08);--shadow-xl:0 12px 40px rgba(0,0,0,.10);
+  --r-sm:10px;--r-md:14px;--r-lg:18px;--r-xl:24px;
+  --text-page-title:22px;--text-card-title:15px;--text-body:14px;--text-caption:13px;--text-label:12px;--text-micro:11px;--text-lg:22px;
+  --fw-body:450;--fw-body-strong:600;--fw-title:700;--fw-label:600;
+  /* 共用 motion / spacing token（供 datepicker 等共用元件吃，不再只靠 fallback） */
+  --motion-instant:80ms;--motion-fast:120ms;--motion-normal:180ms;--motion-smooth:280ms;
+  --ease-out:cubic-bezier(.4,0,.2,1);--ease-smooth:cubic-bezier(.22,1,.36,1);
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:36px;--space-7:48px;
+}
+[data-theme="dark"]{
+  --bg-app:#0D0D14;--bg-card:#1A1A24;--bg-input:#13131C;--bg-hover:#24243A;--bg-overlay:rgba(0,0,0,.65);
+  --border:#2A2A3A;--border-hover:#3A3A4A;
+  --ink:#F0F0F5;--ink-sec:#B8B8CC;--ink-muted:#9A9AB4;--ink-dim:#7C7C95;--ink-placeholder:#7C7C95;
+  --gold-bg:rgba(224,138,58,.2);--danger-bg:rgba(217,68,98,.2);
+  --ok-bg:rgba(27,168,145,.2);--success-bg:rgba(27,168,145,.2);--info-bg:rgba(27,168,145,.2);
+  --rose:#D98A97;--rose-bg:rgba(217,138,151,.18);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.2);--shadow-card:0 2px 8px rgba(0,0,0,.3);
+  --shadow-lg:0 4px 20px rgba(0,0,0,.4);--shadow-xl:0 8px 32px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:100%;min-height:100%;
+  font-family:-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif;
+  background:var(--bg-app);color:var(--ink);
+  transition:background .25s cubic-bezier(.4,0,.2,1),color .25s cubic-bezier(.4,0,.2,1);
+  font-size:16px;line-height:1.6;font-weight:450;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  overscroll-behavior:none;
+}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+.app-shell{width:100%;max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-app);overflow-x:hidden}
+.trial-banner{
+  background:var(--gold-bg);color:var(--gold);
+  font-size:var(--text-label);font-weight:600;text-align:center;
+  padding:7px 14px;line-height:1.4;border-bottom:1px solid var(--border);
+}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px}
+.topbar-left{display:flex;flex-direction:column;gap:2px;min-width:0}
+.brand{font-size:var(--text-caption);font-weight:700;color:var(--primary);letter-spacing:.5px}
+.greeting{font-size:var(--text-page-title);font-weight:800;color:var(--ink);letter-spacing:-.3px}
+.topbar-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.icon-btn{
+  width:38px;height:38px;border-radius:var(--r-md);border:1px solid var(--border);
+  background:var(--bg-card);color:var(--ink-muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
+}
+.icon-btn:hover{background:var(--bg-hover);color:var(--ink);border-color:var(--border-hover)}
+.icon-btn svg{width:18px;height:18px}
+.content{flex:1;min-width:0;padding:4px 20px 32px;overflow-y:auto;overflow-x:hidden}
+.card{
+  background:var(--bg-card);border:none;border-radius:var(--r-xl);
+  padding:24px;margin-bottom:16px;box-shadow:var(--shadow-card);
+  transition:all .25s cubic-bezier(.4,0,.2,1);
+  max-width:100%;
+}
+.clock-card{text-align:center;padding:28px 24px 30px}
+.clock-now{font-size:48px;font-weight:800;color:var(--ink);letter-spacing:-1.5px;line-height:1;font-variant-numeric:tabular-nums}
+.clock-date{font-size:var(--text-caption);color:var(--ink-muted);margin-top:8px;font-weight:500}
+.clock-status-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:18px;flex-wrap:wrap}
+.status-chip{display:inline-flex;align-items:center;gap:6px;font-size:var(--text-caption);font-weight:600;padding:6px 14px;border-radius:100px;max-width:100%}
+.status-chip svg{width:14px;height:14px;flex-shrink:0}
+.status-chip.in{background:var(--success-bg);color:var(--success)}
+.status-chip.out{background:var(--gold-bg);color:var(--gold)}
+.status-chip.none{background:var(--bg-hover);color:var(--ink-muted)}
+.worktime-pill{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-top:14px;font-size:var(--text-caption);font-weight:700;color:var(--primary);background:var(--primary-light);padding:8px 16px;border-radius:100px;max-width:100%}
+.worktime-pill svg{width:15px;height:15px;flex-shrink:0}
+.worktime-pill b{font-weight:800}
+.today-stats{display:flex;gap:10px;margin-top:18px}
+.today-stat{flex:1 1 0;min-width:0;background:var(--primary-light);border-radius:var(--r-md);padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.today-stat .ts-label{font-size:var(--text-label);font-weight:600;color:var(--ink-muted);display:flex;align-items:center;gap:5px}
+.today-stat .ts-label svg{width:13px;height:13px;flex-shrink:0;color:var(--primary)}
+.today-stat .ts-value{font-size:var(--text-card-title);font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums}
+.today-stat .ts-value.zero{color:var(--ink-dim);font-weight:700}
+.worktime-hint{display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-size:var(--text-caption);color:var(--ink-sec);background:var(--primary-light);border-radius:var(--r-md);padding:11px 14px;line-height:1.5;text-align:left}
+.worktime-hint svg{width:15px;height:15px;flex-shrink:0;color:var(--primary);margin-top:1px}
+.worktime-hint b{color:var(--ink);font-weight:700}
+.punch-actions{display:flex;gap:12px;margin-top:24px}
+.btn-punch{
+  flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  padding:22px 12px;border:none;border-radius:var(--r-lg);cursor:pointer;
+  font-family:inherit;font-weight:700;font-size:17px;
+  transition:all .2s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden;
+}
+.btn-punch svg{width:30px;height:30px}
+.btn-punch:active{transform:scale(.97)}
+.btn-punch:disabled{opacity:.4;cursor:not-allowed}
+/* 視覺主次跟「當前可執行的動作」走，不再綁 in/out：可按的=filled 主鈕、不可按的=灰底 ghost。
+   解 5 位試用者「下班鈕白底看起來像不能點」「本能去點已淡化的上班鈕」痛點。 */
+.btn-punch.is-primary{background:var(--primary);color:#fff;box-shadow:0 6px 20px rgba(124,92,252,.32)}
+.btn-punch.is-primary:hover:not(:disabled){background:var(--primary-hover);transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,92,252,.4)}
+.btn-punch.is-primary .btn-punch-sub{color:rgba(255,255,255,.9)}
+/* muted 鈕對比修正：主標 --ink-muted(#66667A on #E8E8EC ≈4.4:1 過 AA)，子標再降一階 --ink-dim 拉開主次（女巫色彩 high） */
+.btn-punch.is-muted{background:var(--bg-hover);color:var(--ink-muted);border:1px solid var(--border);box-shadow:none}
+.btn-punch.is-muted .btn-punch-label{color:var(--ink-muted)}
+.btn-punch.is-muted .btn-punch-sub{color:var(--ink-dim)}
+.btn-punch.is-muted:disabled{opacity:1}
+.btn-punch-label{font-size:17px;font-weight:700;max-width:100%}
+.btn-punch-sub{font-size:11px;font-weight:600;opacity:1;max-width:100%}
+.toast{
+  position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(120px);
+  background:var(--ink);color:var(--bg-card);
+  padding:14px 22px;border-radius:var(--r-md);box-shadow:var(--shadow-xl);
+  font-size:var(--text-body);font-weight:600;z-index:2000;
+  display:flex;align-items:center;gap:10px;max-width:90vw;
+  transition:transform .35s cubic-bezier(.16,1,.3,1);pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast svg{width:20px;height:20px;flex-shrink:0}
+.toast.ok svg{color:#5BE0A0}
+.toast.warn svg{color:#FFD479}
+.section-title{
+  font-size:var(--text-label);font-weight:700;color:var(--ink-muted);
+  letter-spacing:.5px;text-transform:uppercase;margin:8px 2px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.record-list{display:flex;flex-direction:column;gap:0}
+/* 鎖頭說明：放在紀錄區標題右側，小字非大寫，解釋每列鎖頭含義（小陳 med） */
+.rec-lock-note{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;
+  color:var(--ink-dim);text-transform:none;letter-spacing:0}
+.rec-lock-note svg{width:12px;height:12px;flex-shrink:0}
+.record-day{margin-bottom:6px}
+.record-day-head{font-size:var(--text-caption);font-weight:700;color:var(--ink-sec);padding:6px 2px;display:flex;align-items:center;gap:8px}
+.record-day-head svg{width:14px;height:14px;color:var(--ink-muted)}
+.record-row{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;background:var(--bg-card);border-radius:var(--r-md);
+  margin-bottom:8px;box-shadow:var(--shadow-sm);
+}
+.record-icon{width:40px;height:40px;border-radius:var(--r-sm);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.record-icon svg{width:18px;height:18px}
+.record-icon.in{background:var(--success-bg);color:var(--success)}
+.record-icon.out{background:var(--gold-bg);color:var(--gold)}
+.record-main{flex:1;min-width:0}
+.record-type{font-size:var(--text-body);font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.record-time{font-size:var(--text-card-title);font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.record-meta{font-size:var(--text-label);color:var(--ink-muted);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.record-meta svg{width:12px;height:12px;flex-shrink:0}
+.loc-tag{display:inline-flex;align-items:center;gap:3px;font-weight:600}
+.loc-tag.ok{color:var(--success)}
+.loc-tag.out{color:var(--gold)}
+.backfill-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--gold);background:var(--gold-bg);padding:2px 7px;border-radius:6px;letter-spacing:.3px;white-space:nowrap;flex-shrink:0}
+.record-locked{width:26px;height:26px;flex-shrink:0;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--ink-dim);background:var(--bg-hover)}
+.record-locked svg{width:13px;height:13px}
+.empty-state{text-align:center;padding:36px 20px;color:var(--ink-muted)}
+.empty-state-text{font-size:var(--text-body);font-weight:500}
+/* 空狀態三段式：icon circle 容器 + 標題 + 說明（對齊 leave 頁 + 女巫自家規範 high） */
+.empty-state .empty-ico{width:64px;height:64px;border-radius:50%;background:var(--bg-hover);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.empty-state .empty-ico svg{width:30px;height:30px;color:var(--ink-dim);margin:0}
+.empty-state .empty-title{font-size:var(--text-card-title);font-weight:800;color:var(--ink-sec);margin-bottom:4px}
+.site-info{display:flex;align-items:flex-start;gap:10px;font-size:var(--text-caption);color:var(--ink-sec);padding:12px 16px;background:var(--primary-light);border-radius:var(--r-md);margin-bottom:16px}
+.site-info > span{min-width:0;line-height:1.5}
+.site-info svg{width:16px;height:16px;color:var(--primary);flex-shrink:0}
+.site-info b{color:var(--ink);font-weight:700}
+.bf-collapse{margin-bottom:16px}
+.bf-summary{
+  list-style:none;cursor:pointer;
+  display:flex;align-items:center;gap:12px;
+  padding:16px 18px;background:var(--bg-card);border:none;
+  border-radius:var(--r-xl);box-shadow:var(--shadow-card);
+  transition:box-shadow .15s;user-select:none;
+}
+.bf-summary::-webkit-details-marker{display:none}
+.bf-summary:hover{box-shadow:var(--shadow-lg)}
+.bf-summary-icon{width:38px;height:38px;border-radius:var(--r-md);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--primary-light);color:var(--primary)}
+.bf-summary-icon svg{width:18px;height:18px}
+.bf-summary-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.bf-summary-title{font-size:var(--text-body);font-weight:700;color:var(--ink)}
+.bf-summary-desc{font-size:var(--text-label);color:var(--ink-muted)}
+.bf-summary-chev{flex-shrink:0;color:var(--ink-muted);display:flex;align-items:center;transition:transform .2s}
+.bf-summary-chev svg{width:18px;height:18px}
+.bf-collapse[open] .bf-summary-chev{transform:rotate(180deg)}
+.bf-collapse[open] .bf-summary{border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:var(--shadow-card)}
+.backfill-card{background:var(--bg-card);border:none;border-radius:var(--r-xl);padding:20px;margin-bottom:16px;box-shadow:var(--shadow-card)}
+.bf-collapse[open] .backfill-card{border-radius:0 0 var(--r-xl) var(--r-xl);margin-top:-2px;box-shadow:var(--shadow-card);padding-top:18px}
+.backfill-head{display:flex;align-items:center;gap:8px;font-size:var(--text-card-title);font-weight:800;color:var(--ink);margin-bottom:4px}
+.backfill-head svg{width:18px;height:18px;color:var(--primary);flex-shrink:0}
+.backfill-desc{font-size:var(--text-label);color:var(--ink-muted);line-height:1.5;margin-bottom:16px}
+.field-label{font-size:var(--text-label);font-weight:600;color:var(--ink-sec);margin-bottom:6px;display:block}
+.bf-input{
+  width:100%;font-family:inherit;font-size:var(--text-body);font-weight:600;color:var(--ink);
+  background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:11px 14px;margin-bottom:14px;transition:border-color .15s;
+}
+.bf-input:focus{outline:none;border-color:var(--primary)}
+.bf-input:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+.bf-type-row{display:flex;gap:8px;margin-bottom:16px}
+.bf-type-btn{
+  flex:1 1 0;min-width:0;font-family:inherit;font-size:var(--text-body);font-weight:700;
+  padding:12px 8px;border-radius:var(--r-sm);border:1px solid var(--border);
+  background:var(--bg-card);color:var(--ink-muted);cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.bf-type-btn svg{width:16px;height:16px;flex-shrink:0}
+.bf-type-btn.active.in{background:var(--success-bg);color:var(--success);border-color:var(--success)}
+.bf-type-btn.active.out{background:var(--gold-bg);color:var(--gold);border-color:var(--gold)}
+.bf-type-btn:hover:not(.active){border-color:var(--border-hover);color:var(--ink)}
+.bf-submit{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;font-family:inherit;font-size:var(--text-body);font-weight:700;
+  padding:14px;border:none;border-radius:var(--r-md);cursor:pointer;
+  background:var(--primary);color:#fff;transition:all .2s;box-shadow:0 4px 14px rgba(124,92,252,.28);
+}
+.bf-submit svg{width:16px;height:16px;flex-shrink:0}
+.bf-submit:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.bf-submit:active{transform:scale(.98)}
+.dev-panel{margin-bottom:16px}
+.dev-summary{
+  list-style:none;cursor:pointer;
+  display:flex;align-items:center;gap:7px;
+  font-size:var(--text-label);font-weight:600;color:var(--ink-dim);
+  padding:10px 14px;background:var(--bg-card);border:1px dashed var(--border-hover);
+  border-radius:var(--r-md);transition:all .15s;user-select:none;
+}
+.dev-summary::-webkit-details-marker{display:none}
+.dev-summary:hover{color:var(--ink-muted);border-color:var(--ink-dim)}
+.dev-summary svg{width:14px;height:14px;flex-shrink:0}
+.dev-summary .chev{margin-left:auto;transition:transform .2s}
+.dev-panel[open] .dev-summary .chev{transform:rotate(180deg)}
+.sim-panel{background:var(--bg-card);border:1px dashed var(--border-hover);border-top:none;border-radius:0 0 var(--r-md) var(--r-md);padding:16px 18px;margin-top:-2px}
+.sim-panel-title{font-size:var(--text-label);font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.sim-panel-title svg{width:14px;height:14px}
+.sim-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.sim-label{min-width:0;font-size:var(--text-caption);color:var(--ink-sec);font-weight:500}
+.sim-row:last-child{margin-bottom:0}
+.sim-toggle{display:flex;gap:6px;flex-wrap:wrap}
+.sim-btn{font-size:var(--text-label);font-weight:600;font-family:inherit;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--ink-muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.sim-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.sim-btn:hover:not(.active){border-color:var(--border-hover);color:var(--ink)}
+.sim-hint{font-size:11px;color:var(--ink-muted);line-height:1.5;margin-top:4px}
+/* 工時計時中（已上班、尚未下班）：用「計時中」進行式狀態取代看起來像壞掉的灰 0（美玲/小陳/阿婷痛點） */
+.today-stat .ts-value.counting{color:var(--primary);font-weight:800}
+.today-stat .ts-value.counting .ts-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);margin-right:5px;vertical-align:middle;animation:tsPulse 1.4s ease-in-out infinite}
+@keyframes tsPulse{0%,100%{opacity:.35}50%{opacity:1}}
+@media (max-width:420px){
+  .clock-now{font-size:42px}
+  .btn-punch{padding:18px 8px}
+  .content{padding:4px 14px 28px}
+  .sim-row{flex-direction:column;align-items:stretch;gap:8px}
+  .sim-toggle{width:100%}
+  .sim-btn{flex:1 1 0;min-width:0;text-align:center}
+}
+/* 桌面/大螢幕：手機 app 置中於兩側留白會顯空洞 → 給柔和品牌底 + 卡片化外框，辦公室用電腦看不再像壞掉（美玲/阿志/女巫痛點） */
+@media (min-width:560px){
+  body{background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(124,92,252,.10), transparent 60%),
+    var(--bg-app);}
+  .app-shell{
+    max-width:440px;margin:28px auto;min-height:auto;
+    border-radius:var(--r-xl);overflow:hidden;
+    box-shadow:0 24px 60px rgba(17,17,34,.12),0 4px 16px rgba(17,17,34,.06);
+    border:1px solid var(--border);
+  }
+  .bottom-nav{position:static}
+}
+[data-theme="dark"] body{background:
+  radial-gradient(1200px 600px at 50% -10%, rgba(124,92,252,.16), transparent 60%),
+  var(--bg-app);}
+
+/* === 底部導覽列：打卡 / 請假兩功能互通（解 5 位試用者「兩個網址記不住」痛點） === */
+/* 防穿透鐵閘：日曆等浮層開啟時底部導覽不可點，免誤觸跳頁（阿婷/Peter/小陳痛點多一層保險） */
+body.overlay-open .bottom-nav{pointer-events:none}
+.bottom-nav{position:sticky;bottom:0;z-index:50;display:flex;gap:6px;
+  background:var(--bg-card);border-top:1px solid var(--border);
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));margin-top:auto;
+  box-shadow:0 -4px 16px rgba(0,0,0,.05)}
+.bottom-nav a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  padding:8px 4px;border-radius:var(--r-md);text-decoration:none;cursor:pointer;
+  font-size:var(--text-label);font-weight:700;color:var(--ink-muted);transition:all .15s;background:transparent;border:none}
+.bottom-nav a svg{width:21px;height:21px}
+.bottom-nav a:hover{background:var(--bg-hover);color:var(--ink)}
+.bottom-nav a.active{color:var(--primary)}
+.bottom-nav a.active svg{color:var(--primary)}
+[data-theme="dark"] .bottom-nav{box-shadow:0 -4px 16px rgba(0,0,0,.3)}
+</style>
+</head>
+<body>
+<div class="app-shell" id="appShell">
+  <div class="trial-banner" id="trialBanner">
+    這是試用體驗，示範員工「美玲」。正式上線會換成你的名字，資料只存在這台手機。
+  </div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="brand">BeyondPath 出勤打卡</span>
+      <span class="greeting" id="greeting">早安</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="themeBtn" title="切換深色模式" aria-label="切換深色模式"></button>
+    </div>
+  </div>
+  <div class="content" id="content"></div>
+  <nav class="bottom-nav" aria-label="主功能導覽">
+    <a class="active" href="index.html" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+      打卡
+    </a>
+    <a href="../prototype-leave/index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      請假 / 特休
+    </a>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+<script src="../shared/datepicker.js?v=r3"></script>
+<script>BDPicker.init();</script>
+<script src="app.js?v=r3"></script>
+</body>
+</html>
