@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.10.1</div>
+        <div class="sidebar-version">v1.10.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -40220,6 +40220,47 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
   }
 
   /* ════════════════════════════════════════════════════════════════════
+     出勤公布欄鏡像（v1.10.2）：名冊存檔時同步抄一份「精簡、非敏感」鏡像到員工讀得到的
+     公布欄路徑，供出勤端身分鏈讀取。
+     · 路徑：workspaces/{wsId}/attendance_roster/{emailLower}（wsId = owner uid = _wsId）
+     · 鏡像欄位只有 name / email(小寫) / managerEmail(小寫) / isActive / updatedAt
+     · 身分證/銀行帳號/底薪/投保等敏感欄位「絕對不可」進鏡像（機密邊界）。
+     · 全部包 try/catch + .catch：資料庫規則尚未貼上時寫入可能被拒，
+       被拒只記一行 console，「絕不能」讓存員工主流程壞掉或跳錯誤彈窗。
+     ════════════════════════════════════════════════════════════════════ */
+  function _rosterBase(){ var db=_db(); var wsId=_wsId; if(!db || !wsId) return null; return db.collection('workspaces').doc(wsId).collection('attendance_roster'); }
+  function _emailKey(email){ return String(email||'').trim().toLowerCase(); }
+  /* 寫一筆鏡像（merge）。沒 email → 不寫不報錯。 */
+  function mirrorRosterUpsert(emp){
+    try{
+      var col=_rosterBase(); if(!col) return;
+      var emailLower=_emailKey(emp && emp.email); if(!emailLower) return;
+      col.doc(emailLower).set({
+        name:(emp.name||''), email:emailLower, managerEmail:_emailKey(emp.managerEmail),
+        isActive:true, updatedAt:_ts()
+      },{merge:true}).catch(function(err){ console.warn('[payroll] rosterMirror upsert 被拒（規則未貼？）', err); });
+    }catch(e){ console.warn('[payroll] rosterMirror upsert 例外', e); }
+  }
+  /* email 變更或刪除員工時，把舊 email 的鏡像標記 isActive:false（不真刪，留給出勤端判讀）。 */
+  function mirrorRosterDeactivate(email){
+    try{
+      var col=_rosterBase(); if(!col) return;
+      var emailLower=_emailKey(email); if(!emailLower) return;
+      col.doc(emailLower).set({ isActive:false, updatedAt:_ts() },{merge:true})
+        .catch(function(err){ console.warn('[payroll] rosterMirror deactivate 被拒（規則未貼？）', err); });
+    }catch(e){ console.warn('[payroll] rosterMirror deactivate 例外', e); }
+  }
+  /* 開模組補同步（backfill）：名冊每個有 email 的員工 set(merge) 一次鏡像（把舊員工也補進公布欄）。
+     冪等、輕量、失敗不擋介面。 */
+  function mirrorRosterBackfill(){
+    try{
+      if(!_rosterBase()) return;
+      if(!EMP || !EMP.length) return;
+      EMP.forEach(function(e){ if(e && _emailKey(e.email)){ mirrorRosterUpsert(e); } });
+    }catch(e){ console.warn('[payroll] rosterMirror backfill 例外', e); }
+  }
+
+  /* ════════════════════════════════════════════════════════════════════
      UI 渲染
      ════════════════════════════════════════════════════════════════════ */
   function content(){ return document.getElementById('content'); }
@@ -40690,6 +40731,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     var emp;
     if(editingEmpId!=null){ emp=EMP.filter(function(x){return x.id===editingEmpId;})[0]; }
     else { emp={}; EMP.push(emp); }   // v1.7.0：不用本機 id，saveEmpCloud 會把 Firestore doc id 寫回此物件
+    /* v1.10.2 鏡像：編輯前先記住舊 email，若 email 被改掉 → 存成功後標記舊鏡像 isActive:false。新增則無舊 email。 */
+    var _oldRosterEmail=(editingEmpId!=null && emp)?(emp.email||''):'';
     emp.name=name; emp.email=email; emp.managerEmail=managerEmail; emp.base=base; emp.laborIns=laborIns; emp.healthIns=healthIns; emp.pension=pension; emp.deps=deps; emp.voluntary=voluntary; emp.healthRole=healthRole; emp.hire=hire; emp.leave=leave;
     // 敏感：有填才更新遮罩 + 送後端；留空＝不變更
     var plainSecret=null;
@@ -40706,6 +40749,10 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
       if(natId && emp.natIdMasked){ confirms.push('身分證 '+emp.natIdMasked); }
       if(confirms.length){ msg+='：✓ '+confirms.join('、')+' 已更新'; }
       toast(msg);
+      /* v1.10.2 鏡像：存成功 → 同步公布欄。email 被改掉 → 先停用舊 email 鏡像，再寫新的。 */
+      var _newRosterEmail=(emp.email||'').trim().toLowerCase();
+      if(_oldRosterEmail && _oldRosterEmail.trim().toLowerCase()!==_newRosterEmail){ mirrorRosterDeactivate(_oldRosterEmail); }
+      mirrorRosterUpsert(emp);
       closeEmpModal(); renderEmployees(); renderTable();
     });
   }
@@ -40714,6 +40761,8 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
     if(!confirm('確定刪除「'+e.name+'」？此操作無法復原。')) return;
     deleteEmpCloud(id, function(ok){
       if(!ok){ toast('刪除失敗（請檢查權限）'); return; }
+      /* v1.10.2 鏡像：員工被刪 → 公布欄鏡像標記 isActive:false（不真刪、留給出勤端判讀）。 */
+      if(e && e.email){ mirrorRosterDeactivate(e.email); }
       EMP=EMP.filter(function(x){return x.id!==id;}); renderEmployees(); renderTable(); toast('已刪除「'+e.name+'」');
     });
   }
@@ -41184,6 +41233,8 @@ function openPayslipPicker(){
         bindShell();
         renderTable();
         _loaded=true;
+        /* v1.10.2 鏡像：介面就緒後跑一次冪等 backfill，把舊員工補進出勤公布欄。輕量、失敗不擋介面。 */
+        mirrorRosterBackfill();
       };
       loadFromCloud(afterLoad);
     });
