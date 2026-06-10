@@ -8062,7 +8062,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.10.2</div>
+        <div class="sidebar-version">v1.11.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -42309,10 +42309,119 @@ function openPayslipPicker(){
   .attend-scope .at-card{padding:18px}
   .attend-scope .at-soon{padding:18px;gap:13px}
 }
+/* ─── v1.11.0 HR 全公司出勤總表（PATH 紫工具風 · tabular-nums · 暗色自動跟） ─── */
+.attend-scope .hv-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:16px;margin-bottom:24px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.attend-scope .hv-title h1{display:flex;align-items:center;gap:10px;font-size:var(--text-page-title,22px);font-weight:700;color:var(--ink);line-height:1.2}
+.attend-scope .hv-title h1 svg{width:22px;height:22px;color:var(--primary);stroke:var(--primary);fill:none;stroke-width:1.8;flex:0 0 auto}
+.attend-scope .hv-title .hv-pill{font-size:var(--text-micro,11px);font-weight:600;color:var(--gold);background:var(--gold-bg);padding:2px 9px;border-radius:99px;letter-spacing:.3px;vertical-align:middle;white-space:nowrap;margin-left:2px}
+.attend-scope .hv-title .subtitle{font-size:var(--text-caption,13px);color:var(--ink-muted);margin-top:5px}
+.attend-scope .hv-month{display:inline-flex;align-items:center;gap:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md,14px);padding:4px;box-shadow:var(--shadow-sm)}
+.attend-scope .hv-month button{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;background:transparent;color:var(--ink-sec);border-radius:var(--r-sm,10px);cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out),color var(--motion-fast,120ms) var(--ease-out)}
+.attend-scope .hv-month button:hover{background:var(--bg-hover);color:var(--ink)}
+.attend-scope .hv-month button:active{transform:scale(.94)}
+.attend-scope .hv-month button svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.attend-scope .hv-month .hv-mlabel{min-width:120px;text-align:center;font-size:var(--text-body,14px);font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.attend-scope .hv-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.attend-scope .hv-stat{display:flex;flex-direction:column;gap:8px;padding:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl,24px);box-shadow:var(--shadow-card)}
+.attend-scope .hv-stat .hv-stat-top{display:flex;align-items:center;gap:8px}
+.attend-scope .hv-stat .hv-stat-ic{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:var(--r-sm,10px);flex:0 0 auto}
+.attend-scope .hv-stat .hv-stat-ic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;display:block}
+.attend-scope .hv-stat .hv-stat-lab{font-size:var(--text-label,12px);font-weight:600;color:var(--ink-muted);letter-spacing:.2px}
+.attend-scope .hv-stat .hv-stat-num{font-size:38px;font-weight:800;color:var(--ink);line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.attend-scope .hv-stat .hv-stat-num.is-dim{color:var(--ink-dim);font-size:30px}
+.attend-scope .hv-stat .hv-stat-sub{font-size:var(--text-caption,13px);color:var(--ink-muted);line-height:1.45}
+.attend-scope .hv-stat.t-primary .hv-stat-ic{background:var(--primary-light);color:var(--primary)}
+.attend-scope .hv-stat.t-teal .hv-stat-ic{background:var(--teal-bg);color:var(--teal)}
+.attend-scope .hv-stat.t-rose .hv-stat-ic{background:var(--rose-bg);color:var(--rose)}
+.attend-scope .hv-stat.t-gold .hv-stat-ic{background:var(--gold-bg);color:var(--gold)}
+.attend-scope .hv-tablewrap{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl,24px);box-shadow:var(--shadow-card);overflow:hidden;margin-bottom:28px}
+.attend-scope .hv-tbl-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 24px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.attend-scope .hv-tbl-head .hv-tbl-title{font-size:var(--text-card-title,15px);font-weight:700;color:var(--ink)}
+.attend-scope .hv-tbl-head .hv-tbl-meta{font-size:var(--text-caption,13px);color:var(--ink-muted)}
+.attend-scope table.hv-table{width:100%;border-collapse:collapse}
+.attend-scope table.hv-table th{font-size:var(--text-label,12px);font-weight:600;color:var(--ink-muted);text-align:left;padding:12px 14px;border-bottom:1px solid var(--border);white-space:nowrap;letter-spacing:.2px}
+.attend-scope table.hv-table th.num,.attend-scope table.hv-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+.attend-scope table.hv-table th.ctr,.attend-scope table.hv-table td.ctr{text-align:center}
+.attend-scope table.hv-table td{font-size:var(--text-body,14px);color:var(--ink);padding:13px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.attend-scope table.hv-table tbody tr.hv-row:last-child td{border-bottom:none}
+.attend-scope table.hv-table tr.hv-row{cursor:pointer;transition:background var(--motion-fast,120ms) var(--ease-out)}
+.attend-scope table.hv-table tr.hv-row:hover{background:var(--bg-hover)}
+.attend-scope .hv-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.attend-scope .hv-dot.g{background:var(--teal)}
+.attend-scope .hv-dot.a{background:var(--gold)}
+.attend-scope .hv-dot.r{background:var(--rose)}
+.attend-scope .hv-name{display:flex;align-items:center;gap:7px;font-weight:600;color:var(--ink)}
+.attend-scope .hv-name .hv-noemail{font-size:var(--text-micro,11px);font-weight:600;color:var(--gold);background:var(--gold-bg);padding:1px 7px;border-radius:99px;white-space:nowrap}
+.attend-scope .hv-time{font-variant-numeric:tabular-nums;color:var(--ink-sec)}
+.attend-scope .hv-time.miss{color:var(--ink-dim)}
+.attend-scope .hv-cnt{font-variant-numeric:tabular-nums;color:var(--ink-sec)}
+.attend-scope .hv-chev{display:inline-block;width:16px;height:16px;color:var(--ink-dim);transition:transform var(--motion-normal,180ms) var(--ease-out)}
+.attend-scope .hv-chev svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;display:block}
+.attend-scope tr.hv-row.open .hv-chev{transform:rotate(90deg);color:var(--primary)}
+.attend-scope tr.hv-detail-row td{padding:0;border-bottom:1px solid var(--border);background:var(--bg-hover)}
+.attend-scope .hv-detail{padding:18px 24px 18px 46px}
+.attend-scope .hv-detail .hv-detail-lab{font-size:var(--text-label,12px);font-weight:600;color:var(--ink-muted);margin-bottom:12px;letter-spacing:.2px}
+.attend-scope .hv-tl{display:flex;flex-direction:column;gap:2px}
+.attend-scope .hv-tl-item{display:grid;grid-template-columns:88px 1fr;gap:14px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--border)}
+.attend-scope .hv-tl-item:last-child{border-bottom:none}
+.attend-scope .hv-tl-date{font-size:var(--text-caption,13px);font-weight:600;color:var(--ink-sec);font-variant-numeric:tabular-nums}
+.attend-scope .hv-tl-date .hv-wd{color:var(--ink-dim);font-weight:450;margin-left:4px}
+.attend-scope .hv-tl-body{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:var(--text-caption,13px)}
+.attend-scope .hv-tl-seg{display:inline-flex;align-items:center;gap:5px;color:var(--ink-sec);font-variant-numeric:tabular-nums}
+.attend-scope .hv-tl-seg b{font-weight:700;color:var(--ink)}
+.attend-scope .hv-tag{font-size:var(--text-micro,11px);font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.attend-scope .hv-tag.ok{color:var(--teal);background:var(--teal-bg)}
+.attend-scope .hv-tag.warn{color:var(--gold);background:var(--gold-bg)}
+.attend-scope .hv-tag.bad{color:var(--rose);background:var(--rose-bg)}
+.attend-scope .hv-tag.lv{color:var(--primary);background:var(--primary-light)}
+.attend-scope .hv-detail-empty{font-size:var(--text-caption,13px);color:var(--ink-muted);padding:4px 0}
+.attend-scope .hv-empty{text-align:center;padding:36px 20px}
+.attend-scope .hv-empty .hv-empty-ic{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:50%;background:var(--bg-hover);margin-bottom:16px}
+.attend-scope .hv-empty .hv-empty-ic svg{width:30px;height:30px;stroke:var(--ink-dim);fill:none;stroke-width:1.5;display:block}
+.attend-scope .hv-empty.is-locked .hv-empty-ic{background:var(--gold-bg)}
+.attend-scope .hv-empty.is-locked .hv-empty-ic svg{stroke:var(--gold)}
+.attend-scope .hv-empty h3{font-size:var(--text-card-title,15px);font-weight:800;color:var(--ink-sec);margin-bottom:6px}
+.attend-scope .hv-empty p{font-size:var(--text-body,14px);color:var(--ink-muted);line-height:1.55;max-width:420px;margin:0 auto}
+.attend-scope .hv-empty .hv-empty-act{margin-top:18px}
+.attend-scope .hv-empty .hv-empty-act .hv-btn{display:inline-flex;align-items:center;gap:7px;padding:11px 20px;border-radius:var(--r-md,14px);background:var(--primary);color:#fff;font-size:var(--text-body,14px);font-weight:700;text-decoration:none;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(124,92,252,.28);transition:background var(--motion-fast,120ms) var(--ease-out),transform var(--motion-instant,80ms) var(--ease-out)}
+.attend-scope .hv-empty .hv-empty-act .hv-btn:hover{background:var(--primary-hover)}
+.attend-scope .hv-empty .hv-empty-act .hv-btn:active{transform:scale(.97)}
+.attend-scope .hv-empty .hv-empty-act .hv-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.attend-scope .hv-skel{height:14px;border-radius:6px;background:var(--bg-hover);position:relative;overflow:hidden}
+.attend-scope .hv-skel::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);animation:hvShimmer 1.2s infinite}
+@keyframes hvShimmer{100%{transform:translateX(100%)}}
+.attend-scope .hv-entries{margin-top:4px}
+.attend-scope .hv-entries .at-section-label{margin-bottom:12px}
+.attend-scope .hv-entries .at-cards{margin-bottom:8px}
+.attend-scope .hv-entries .at-card{padding:18px}
+.attend-scope .hv-entries .at-card .at-ic{width:40px;height:40px}
+.attend-scope .hv-entries .at-card .at-ic svg{width:21px;height:21px}
+@media(max-width:880px){
+  .attend-scope .hv-stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:640px){
+  .attend-scope .at-cards{grid-template-columns:1fr}
+  .attend-scope .at-card{padding:18px}
+  .attend-scope .at-soon{padding:18px;gap:13px}
+  .attend-scope .hv-stats{grid-template-columns:1fr}
+  .attend-scope .hv-stat{padding:20px}
+  .attend-scope .hv-stat .hv-stat-num{font-size:32px}
+  .attend-scope table.hv-table .hv-hide-sm{display:none}
+  .attend-scope .hv-detail{padding:16px 16px 16px 20px}
+  .attend-scope .hv-tl-item{grid-template-columns:1fr;gap:4px}
+}
 </style>
 <script>
 /* ════════════════════════════════════════════════════════════════════
    出缺勤模組 · IIFE · 對外只暴露 window.renderAttendance
+   v1.11.0：HR 全公司出勤總表（紅綠燈月視圖 + 四關鍵數字 + 點列展開明細）
+            + 保留員工兩張入口卡於次要位置。
+   資料：全吃 app.html 既有 CSS 變數（紫五色工具風、tabular-nums、暗色自動跟）。
+         打卡/請假資料讀自 Firestore（與薪資同一帳號雲端、global firebase）：
+           名冊  users/{uid}/payroll_employees（owner 讀自己）
+           打卡  workspaces/{uid}/attendance_punches（B 路寫入端）
+           請假  workspaces/{uid}/leave_requests
+         讀不到/被拒/未登入 → honest 降級（卡顯示「—」、人話空狀態），不報錯紅字。
    ════════════════════════════════════════════════════════════════════ */
 (function(){
   'use strict';
@@ -42322,51 +42431,424 @@ function openPayslipPicker(){
 
   function content(){ return document.getElementById('content'); }
 
-  /* 入口大卡用 SVG（line-style stroke 1.8、皆鎖 width/height） */
+  /* ─── Firestore 薄存取（global firebase；與薪資模組同帳號雲端） ─── */
+  function _db(){ try{ if(typeof firebase!=='undefined' && firebase.firestore) return firebase.firestore(); }catch(e){} return null; }
+  function _uid(){ try{ return (firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) || (window.state && window.state.user && window.state.user.uid) || null; }catch(e){ return null; } }
+  function _userBase(){ var db=_db(), uid=_uid(); if(!db||!uid) return null; return db.collection('users').doc(uid); }
+  function _wsBase(){ var db=_db(), uid=_uid(); if(!db||!uid) return null; return db.collection('workspaces').doc(uid); }
+
+  /* ─── 月份 state（預設本月） ─── */
+  var _now = new Date();
+  var hvY = _now.getFullYear();
+  var hvM = _now.getMonth()+1;
+  var hv = { state:'idle', roster:[], punches:[], leaves:[] };
+  var hvOpen = {};
+
+  /* ─── SVG（line-style stroke、皆鎖 width/height） ─── */
   var IC_CLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 1.8"/></svg>';
   var IC_LEAVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 14.5l2 2 4-4"/></svg>';
   var IC_ARROW = '<svg class="at-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
   var IC_TITLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v3M16 2v3"/><circle cx="12" cy="15" r="3.2"/><path d="M12 13.4V15l1.2.8"/></svg>';
-  var IC_DASH  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>';
+  var IC_PREV  = '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>';
+  var IC_NEXT  = '<svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>';
+  var IC_CHEV  = '<svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>';
+  var IC_USERS = '<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+  var IC_CHECK = '<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+  var IC_ALERT = '<svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  var IC_PALM  = '<svg viewBox="0 0 24 24"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88z"/></svg>';
+  var IC_LOCK  = '<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+  var IC_LOGIN = '<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>';
+  var IC_FOLDER= '<svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
 
-  function shellHtml(){
+  /* ─── 小工具 ─── */
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function emailKey(e){ return String(e||'').trim().toLowerCase(); }
+  function ym2(){ return hvY + '-' + String(hvM).padStart(2,'0'); }
+  function monthLabel(){ return hvY + '年' + hvM + '月'; }
+  function daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
+  var WD = ['日','一','二','三','四','五','六'];
+
+  function toDate(v){
+    if(!v) return null;
+    try{
+      if(typeof v.toDate==='function') return v.toDate();
+      if(v.seconds!=null) return new Date(v.seconds*1000);
+      if(v instanceof Date) return v;
+      if(typeof v==='number') return new Date(v);
+      if(typeof v==='string'){ var d=new Date(v); if(!isNaN(d.getTime())) return d; }
+    }catch(e){}
+    return null;
+  }
+  function hhmm(d){ if(!(d instanceof Date)||isNaN(d.getTime())) return null; return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+  function readPunch(d){
+    d = d || {};
+    var email = emailKey(d.email || d.applicantEmail || d.userEmail || d.empEmail);
+    var inD  = toDate(d.clockIn  || d.checkIn  || d.inAt  || d.startAt || d.in);
+    var outD = toDate(d.clockOut || d.checkOut || d.outAt || d.endAt   || d.out);
+    var single = toDate(d.ts || d.time || d.at || d.punchAt);
+    var kind = String(d.kind||d.type||d.direction||'').toLowerCase();
+    if(!inD && !outD && single){
+      if(kind.indexOf('out')>=0 || kind.indexOf('下')>=0) outD = single;
+      else inD = single;
+    }
+    var when = inD || outD || single || toDate(d.date) || toDate(d.createdAt);
+    var manual = !!(d.isManual || d.manual || d.makeup || d.isMakeup);
+    var hasLoc = !!(d.lat || d.lng || d.location || d.geo || d.inRange || d.coords);
+    var dateKey = null;
+    if(when instanceof Date && !isNaN(when.getTime())){ dateKey = when.getFullYear()+'-'+String(when.getMonth()+1).padStart(2,'0')+'-'+String(when.getDate()).padStart(2,'0'); }
+    else if(typeof d.date==='string'){ dateKey = d.date.slice(0,10); }
+    return { email:email, inD:inD, outD:outD, manual:manual, hasLoc:hasLoc, dateKey:dateKey, raw:d };
+  }
+  function readLeave(d){
+    d = d || {};
+    return {
+      email: emailKey(d.applicantEmail || d.email || d.userEmail),
+      mgr:   emailKey(d.managerEmail || d.manager),
+      type:  String(d.type||d.leaveType||d.kind||'請假'),
+      start: toDate(d.start || d.startDate || d.from),
+      end:   toDate(d.end   || d.endDate   || d.to),
+      startStr: (typeof d.start==='string'?d.start.slice(0,10):null) || (typeof d.startDate==='string'?d.startDate.slice(0,10):null),
+      endStr:   (typeof d.end==='string'?d.end.slice(0,10):null)     || (typeof d.endDate==='string'?d.endDate.slice(0,10):null),
+      days:  (+d.days||+d.dayCount||0),
+      status:String(d.status||'pending').toLowerCase(),
+      raw:d
+    };
+  }
+
+  /* ─── 載入：名冊 + 打卡 + 請假（每集合各自 catch，honest 降級） ─── */
+  function loadHv(cb){
+    var uid=_uid(), db=_db();
+    if(!db || !uid){ hv={state:'noauth',roster:[],punches:[],leaves:[]}; cb&&cb(); return; }
+    var ub=_userBase(), wb=_wsBase();
+    var rosterErr=false, anyErr=false;
+    Promise.all([
+      ub ? ub.collection('payroll_employees').get().catch(function(){ rosterErr=true; return null; }) : Promise.resolve(null),
+      wb ? wb.collection('attendance_punches').get().catch(function(){ anyErr=true; return null; }) : Promise.resolve(null),
+      wb ? wb.collection('leave_requests').get().catch(function(){ anyErr=true; return null; }) : Promise.resolve(null),
+      wb ? wb.collection('attendance_roster').get().catch(function(){ return null; }) : Promise.resolve(null)
+    ]).then(function(r){
+      var empSnap=r[0], punchSnap=r[1], leaveSnap=r[2], mirrorSnap=r[3];
+      var roster=[];
+      if(empSnap && !empSnap.empty){
+        empSnap.forEach(function(doc){ var d=doc.data()||{}; if(d.leave) return; roster.push({ id:doc.id, name:d.name||'', email:emailKey(d.email), mgr:emailKey(d.managerEmail) }); });
+      } else if(mirrorSnap && !mirrorSnap.empty){
+        mirrorSnap.forEach(function(doc){ var d=doc.data()||{}; if(d.isActive===false) return; roster.push({ id:doc.id, name:d.name||'', email:emailKey(d.email||doc.id), mgr:emailKey(d.managerEmail) }); });
+      }
+      var punches=[]; if(punchSnap && punchSnap.forEach){ punchSnap.forEach(function(doc){ punches.push(readPunch(doc.data())); }); }
+      var leaves=[];  if(leaveSnap && leaveSnap.forEach){ leaveSnap.forEach(function(doc){ leaves.push(readLeave(doc.data())); }); }
+      var state;
+      if(rosterErr) state='locked';
+      else if(!roster.length) state='empty';
+      else state='ok';
+      hv={ state:state, roster:roster, punches:punches, leaves:leaves, partialErr:anyErr };
+      cb&&cb();
+    }).catch(function(){ hv={state:'locked',roster:[],punches:[],leaves:[]}; cb&&cb(); });
+  }
+
+  /* ─── 彙整 ─── */
+  function aggregate(){
+    var ymk = ym2();
+    var inMonth = function(dateKey){ return dateKey && dateKey.slice(0,7)===ymk; };
+    var pByEmail = {};
+    hv.punches.forEach(function(p){
+      if(!p.email) return;
+      if(!p.dateKey || !inMonth(p.dateKey)) return;
+      (pByEmail[p.email] = pByEmail[p.email] || {});
+      var slot = pByEmail[p.email][p.dateKey] = pByEmail[p.email][p.dateKey] || { inD:null, outD:null, manual:false, hasLoc:false };
+      if(p.inD && (!slot.inD || p.inD<slot.inD)) slot.inD = p.inD;
+      if(p.outD && (!slot.outD || p.outD>slot.outD)) slot.outD = p.outD;
+      if(p.manual) slot.manual = true;
+      if(p.hasLoc) slot.hasLoc = true;
+    });
+    var lvByEmail = {};
+    var lvDaysByEmail = {};
+    hv.leaves.forEach(function(l){
+      if(l.status!=='approved' && l.status!=='核准' && l.status!=='approve') return;
+      if(!l.email) return;
+      var s = l.start || (l.startStr?new Date(l.startStr):null);
+      var e = l.end   || (l.endStr?new Date(l.endStr):null) || s;
+      if(!s) return;
+      var cur = new Date(s.getFullYear(), s.getMonth(), s.getDate());
+      var last = e? new Date(e.getFullYear(), e.getMonth(), e.getDate()) : cur;
+      var guard=0;
+      while(cur<=last && guard<400){
+        var dk = cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');
+        if(inMonth(dk)){
+          lvByEmail[l.email] = (lvByEmail[l.email]||0)+1;
+          (lvDaysByEmail[l.email] = lvDaysByEmail[l.email]||{})[dk] = l.type;
+        }
+        cur.setDate(cur.getDate()+1); guard++;
+      }
+    });
+    var td = new Date();
+    var todayKey = td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0')+'-'+String(td.getDate()).padStart(2,'0');
+    var isCurMonth = (td.getFullYear()===hvY && (td.getMonth()+1)===hvM);
+
+    var rows = hv.roster.map(function(emp){
+      var days = (emp.email && pByEmail[emp.email]) ? pByEmail[emp.email] : {};
+      var attendDays = Object.keys(days).length;
+      var leaveDays = (emp.email && lvByEmail[emp.email]) || 0;
+      var todaySlot = (isCurMonth && emp.email && days[todayKey]) ? days[todayKey] : null;
+      var todayOnLeave = !!(isCurMonth && emp.email && lvDaysByEmail[emp.email] && lvDaysByEmail[emp.email][todayKey]);
+      var hasManualThisMonth = false; Object.keys(days).forEach(function(k){ if(days[k].manual) hasManualThisMonth=true; });
+      var light='g';
+      if(todaySlot && todaySlot.inD && !todaySlot.outD) light='r';
+      else if(todaySlot && todaySlot.inD && !todaySlot.hasLoc) light='r';
+      else if(todayOnLeave) light='a';
+      else if(hasManualThisMonth) light='a';
+      return {
+        emp:emp, days:days, attendDays:attendDays, leaveDays:leaveDays,
+        todayIn: todaySlot && hhmm(todaySlot.inD), todayOut: todaySlot && hhmm(todaySlot.outD),
+        todayOnLeave: todayOnLeave, light:light,
+        noEmail: !emp.email,
+        lvDays: (emp.email && lvDaysByEmail[emp.email]) || {}
+      };
+    });
+
+    var rosterWithEmail = hv.roster.filter(function(e){ return !!e.email; }).length;
+    var todayPunched = 0, todayAbnormal = 0;
+    if(isCurMonth){
+      rows.forEach(function(r){ if(r.todayIn) todayPunched++; if(r.light==='r') todayAbnormal++; });
+    }
+    var monthLeaveTotal = 0; Object.keys(lvByEmail).forEach(function(k){ monthLeaveTotal += lvByEmail[k]; });
+
+    return {
+      rows:rows, isCurMonth:isCurMonth,
+      stat:{ should:rosterWithEmail, punched:todayPunched, abnormal:todayAbnormal, leave:monthLeaveTotal }
+    };
+  }
+
+  /* ─── 渲染：頂列 ─── */
+  function headHtml(showPill){
     return ''
-      + '<div class="at-head">'
-      +   '<div class="at-title">'
-      +     '<h1>' + IC_TITLE + '出缺勤<span class="at-preview-pill">預覽</span></h1>'
-      +     '<div class="subtitle">打卡 · 請假 · 批假 · 特休</div>'
+      + '<div class="hv-head">'
+      +   '<div class="hv-title">'
+      +     '<h1>' + IC_TITLE + '出缺勤' + (showPill ? '<span class="hv-pill">預覽</span>' : '') + '</h1>'
+      +     '<div class="subtitle">全公司出勤總表 · 紅綠燈月視圖</div>'
       +   '</div>'
-      + '</div>'
-      + '<div class="at-cards">'
-      +   '<a class="at-card" href="' + ATTEND_URL + '" target="_blank" rel="noopener">'
-      +     '<span class="at-ic">' + IC_CLOCK + '</span>'
-      +     '<span class="at-ct">'
-      +       '<h3>員工打卡' + IC_ARROW + '</h3>'
-      +       '<p>手機打卡 · 補打卡 · 看自己特休<br><span style="color:var(--ink-dim)">預覽版 · 員工資料與身分系統建置中</span></p>'
-      +     '</span>'
-      +   '</a>'
-      +   '<a class="at-card" href="' + LEAVE_URL + '" target="_blank" rel="noopener">'
-      +     '<span class="at-ic">' + IC_LEAVE + '</span>'
-      +     '<span class="at-ct">'
-      +       '<h3>請假 / 批假' + IC_ARROW + '</h3>'
-      +       '<p>請假申請 · 主管批核 · 特休餘額<br><span style="color:var(--ink-dim)">預覽版 · 員工資料與身分系統建置中</span></p>'
-      +     '</span>'
-      +   '</a>'
-      + '</div>'
-      + '<div class="at-section-label">出勤總覽（HR）</div>'
-      + '<div class="at-soon">'
-      +   '<span class="at-soon-ic">' + IC_DASH + '</span>'
-      +   '<span class="at-soon-tx">'
-      +     '<h3>全公司出勤總覽<span class="at-badge">建置中</span></h3>'
-      +     '<p>員工出勤資料接上公司雲端後，這裡會顯示全公司出勤總覽、異常，以及月底一鍵匯入算薪水。</p>'
-      +   '</span>'
+      +   '<div class="hv-month">'
+      +     '<button type="button" data-hv-mo="-1" aria-label="上一月">' + IC_PREV + '</button>'
+      +     '<span class="hv-mlabel">' + monthLabel() + '</span>'
+      +     '<button type="button" data-hv-mo="1" aria-label="下一月">' + IC_NEXT + '</button>'
+      +   '</div>'
       + '</div>';
   }
 
+  /* ─── 渲染：四關鍵數字卡 ─── */
+  function statHtml(cls, ic, lab, val, sub, dim){
+    return ''
+      + '<div class="hv-stat ' + cls + '">'
+      +   '<div class="hv-stat-top"><span class="hv-stat-ic">' + ic + '</span><span class="hv-stat-lab">' + lab + '</span></div>'
+      +   '<div class="hv-stat-num' + (dim?' is-dim':'') + '">' + val + '</div>'
+      +   '<div class="hv-stat-sub">' + sub + '</div>'
+      + '</div>';
+  }
+  function statsHtml(agg){
+    var dim = '<span style="color:var(--ink-dim)">資料庫鎖開通後啟用</span>';
+    if(!agg){
+      return '<div class="hv-stats">'
+        + statHtml('t-primary', IC_USERS, '應出勤人數', '—', dim, true)
+        + statHtml('t-teal',    IC_CHECK, '今日已打卡', '—', dim, true)
+        + statHtml('t-rose',    IC_ALERT, '今日異常',   '—', dim, true)
+        + statHtml('t-gold',    IC_PALM,  '本月請假',   '—', dim, true)
+        + '</div>';
+    }
+    var s = agg.stat;
+    var dashIfPast = function(v){ return agg.isCurMonth ? String(v) : '—'; };
+    return '<div class="hv-stats">'
+      + statHtml('t-primary', IC_USERS, '應出勤人數', String(s.should), '名冊在職、已設信箱', false)
+      + statHtml('t-teal',    IC_CHECK, '今日已打卡', dashIfPast(s.punched), agg.isCurMonth?'今天有上班紀錄的人':'切到本月看今日', !agg.isCurMonth)
+      + statHtml('t-rose',    IC_ALERT, '今日異常',   dashIfPast(s.abnormal), agg.isCurMonth?'只進未出 / 無定位':'切到本月看今日', !agg.isCurMonth)
+      + statHtml('t-gold',    IC_PALM,  '本月請假',   String(s.leave), '已核准 · 落在本月的天數', false)
+      + '</div>';
+  }
+
+  /* ─── 渲染：展開明細 ─── */
+  function detailHtml(row){
+    var dim = daysInMonth(hvY, hvM);
+    var items = [];
+    for(var d=1; d<=dim; d++){
+      var dk = hvY + '-' + String(hvM).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      var slot = row.days[dk];
+      var lvType = row.lvDays && row.lvDays[dk];
+      if(!slot && !lvType) continue;
+      var wd = WD[ new Date(hvY, hvM-1, d).getDay() ];
+      var body = '';
+      if(slot){
+        var inS = hhmm(slot.inD), outS = hhmm(slot.outD);
+        body += '<span class="hv-tl-seg">上班 <b>' + (inS||'—') + '</b></span>';
+        body += '<span class="hv-tl-seg">下班 <b>' + (outS||'—') + '</b></span>';
+        if(slot.inD && !slot.outD) body += '<span class="hv-tag bad">只進未出</span>';
+        if(slot.inD && !slot.hasLoc) body += '<span class="hv-tag warn">無定位</span>';
+        if(slot.manual) body += '<span class="hv-tag warn">補登</span>';
+        if(slot.inD && slot.outD && slot.hasLoc && !slot.manual) body += '<span class="hv-tag ok">正常</span>';
+      }
+      if(lvType){ body += '<span class="hv-tag lv">' + esc(lvType) + '</span>'; }
+      items.push(''
+        + '<div class="hv-tl-item">'
+        +   '<div class="hv-tl-date">' + hvM + '/' + d + '<span class="hv-wd">週' + wd + '</span></div>'
+        +   '<div class="hv-tl-body">' + body + '</div>'
+        + '</div>');
+    }
+    var inner = items.length ? ('<div class="hv-tl">' + items.join('') + '</div>')
+                            : ('<div class="hv-detail-empty">' + monthLabel() + '沒有打卡或請假紀錄。</div>');
+    return '<div class="hv-detail"><div class="hv-detail-lab">' + esc(row.emp.name||'（未命名）') + ' · ' + monthLabel() + '每日明細</div>' + inner + '</div>';
+  }
+
+  /* ─── 渲染：全公司表 ─── */
+  function tableHtml(agg){
+    var head = ''
+      + '<div class="hv-tbl-head">'
+      +   '<div class="hv-tbl-title">全公司出勤總表</div>'
+      +   '<div class="hv-tbl-meta">' + monthLabel() + ' · ' + agg.rows.length + ' 人</div>'
+      + '</div>';
+    var thead = ''
+      + '<thead><tr>'
+      +   '<th class="ctr" style="width:44px"></th>'
+      +   '<th>姓名</th>'
+      +   '<th class="num hv-hide-sm">今日上班</th>'
+      +   '<th class="num hv-hide-sm">今日下班</th>'
+      +   '<th class="num">本月出勤</th>'
+      +   '<th class="num">請假</th>'
+      +   '<th class="ctr" style="width:36px"></th>'
+      + '</tr></thead>';
+    var rowsHtml = agg.rows.map(function(r){
+      var ek = r.emp.email || ('noemail:' + (r.emp.id||r.emp.name));
+      var opened = !!hvOpen[ek];
+      var nameCell = '<div class="hv-name">' + esc(r.emp.name||'（未命名）')
+                   + (r.noEmail ? '<span class="hv-noemail">未設定登入信箱</span>' : '') + '</div>';
+      var inCell  = r.todayOnLeave ? '<span class="hv-tag lv">請假</span>'
+                                   : ('<span class="hv-time' + (r.todayIn?'':' miss') + '">' + (r.todayIn||'—') + '</span>');
+      var outCell = r.todayOnLeave ? '<span class="hv-time miss">—</span>'
+                                   : ('<span class="hv-time' + (r.todayOut?'':' miss') + '">' + (r.todayOut||'—') + '</span>');
+      if(!agg.isCurMonth){ inCell='<span class="hv-time miss">—</span>'; outCell='<span class="hv-time miss">—</span>'; }
+      var main = ''
+        + '<tr class="hv-row' + (opened?' open':'') + '" data-hv-row="' + esc(ek) + '">'
+        +   '<td class="ctr"><span class="hv-dot ' + r.light + '"></span></td>'
+        +   '<td>' + nameCell + '</td>'
+        +   '<td class="num hv-hide-sm">' + inCell + '</td>'
+        +   '<td class="num hv-hide-sm">' + outCell + '</td>'
+        +   '<td class="num"><span class="hv-cnt">' + r.attendDays + ' 天</span></td>'
+        +   '<td class="num"><span class="hv-cnt">' + (r.leaveDays?(r.leaveDays+' 天'):'—') + '</span></td>'
+        +   '<td class="ctr"><span class="hv-chev">' + IC_CHEV + '</span></td>'
+        + '</tr>';
+      var det = opened ? ('<tr class="hv-detail-row" data-hv-detail="' + esc(ek) + '"><td colspan="7">' + detailHtml(r) + '</td></tr>') : '';
+      return main + det;
+    }).join('');
+    return '<div class="hv-tablewrap">' + head + '<table class="hv-table">' + thead + '<tbody>' + rowsHtml + '</tbody></table></div>';
+  }
+
+  /* ─── 渲染：空 / 錯 狀態 ─── */
+  function emptyHtml(kind){
+    if(kind==='noauth'){
+      return '<div class="hv-tablewrap"><div class="hv-empty">'
+        + '<div class="hv-empty-ic">' + IC_LOGIN + '</div>'
+        + '<h3>請先登入</h3>'
+        + '<p>登入後，這裡會顯示全公司的出勤總表。</p>'
+        + '</div></div>';
+    }
+    if(kind==='locked'){
+      return '<div class="hv-tablewrap"><div class="hv-empty is-locked">'
+        + '<div class="hv-empty-ic">' + IC_LOCK + '</div>'
+        + '<h3>資料庫鎖還沒開通</h3>'
+        + '<p>開通後，這裡會即時顯示全公司出勤——誰到了、誰異常、誰請假，一頁看完。</p>'
+        + '</div></div>';
+    }
+    return '<div class="hv-tablewrap"><div class="hv-empty">'
+      + '<div class="hv-empty-ic">' + IC_FOLDER + '</div>'
+      + '<h3>還沒有員工名冊</h3>'
+      + '<p>出勤總表的每一列來自員工名冊。先到「算薪水 → 員工檔案」建立名冊（記得填登入信箱），這裡就會長出全公司出勤。</p>'
+      + '<div class="hv-empty-act"><button type="button" class="hv-btn" data-hv-goemp="1">' + IC_USERS + '前往建立名冊</button></div>'
+      + '</div></div>';
+  }
+
+  /* ─── 員工入口兩張卡（次要位置） ─── */
+  function entriesHtml(){
+    return ''
+      + '<div class="hv-entries">'
+      +   '<div class="at-section-label">員工自助入口</div>'
+      +   '<div class="at-cards">'
+      +     '<a class="at-card" href="' + ATTEND_URL + '" target="_blank" rel="noopener">'
+      +       '<span class="at-ic">' + IC_CLOCK + '</span>'
+      +       '<span class="at-ct"><h3>員工打卡' + IC_ARROW + '</h3><p>手機打卡 · 補打卡 · 看自己特休</p></span>'
+      +     '</a>'
+      +     '<a class="at-card" href="' + LEAVE_URL + '" target="_blank" rel="noopener">'
+      +       '<span class="at-ic">' + IC_LEAVE + '</span>'
+      +       '<span class="at-ct"><h3>請假 / 批假' + IC_ARROW + '</h3><p>請假申請 · 主管批核 · 特休餘額</p></span>'
+      +     '</a>'
+      +   '</div>'
+      + '</div>';
+  }
+
+  /* ─── 骨架 ─── */
+  function skeletonHtml(){
+    var cells='';
+    for(var i=0;i<4;i++){ cells += '<div class="hv-stat t-primary"><div class="hv-stat-top"><span class="hv-stat-ic">'+IC_USERS+'</span><span class="hv-stat-lab">載入中</span></div><div class="hv-skel" style="height:30px;width:60%;margin:6px 0"></div><div class="hv-skel" style="width:80%"></div></div>'; }
+    var rows=''; for(var r=0;r<4;r++){ rows += '<div style="display:flex;gap:14px;align-items:center;padding:14px 24px;border-bottom:1px solid var(--border)"><span class="hv-dot" style="background:var(--bg-hover)"></span><div class="hv-skel" style="width:120px"></div><div class="hv-skel" style="width:60px;margin-left:auto"></div></div>'; }
+    return headHtml(false)
+      + '<div class="hv-stats">' + cells + '</div>'
+      + '<div class="hv-tablewrap"><div class="hv-tbl-head"><div class="hv-tbl-title">全公司出勤總表</div></div>' + rows + '</div>'
+      + entriesHtml();
+  }
+
+  /* ─── 全頁組裝 ─── */
+  function paint(){
+    var c=content(); if(!c) return;
+    var html;
+    if(hv.state==='noauth'){
+      html = headHtml(true) + statsHtml(null) + emptyHtml('noauth') + entriesHtml();
+    } else if(hv.state==='locked'){
+      html = headHtml(true) + statsHtml(null) + emptyHtml('locked') + entriesHtml();
+    } else if(hv.state==='empty'){
+      html = headHtml(false) + statsHtml(null) + emptyHtml('empty') + entriesHtml();
+    } else {
+      var agg = aggregate();
+      html = headHtml(false) + statsHtml(agg) + tableHtml(agg) + entriesHtml();
+    }
+    c.innerHTML = html;
+  }
+
+  /* ─── 事件委派 ─── */
+  var _wired=false;
+  function wire(){
+    if(_wired) return; _wired=true;
+    var c=content(); if(!c) return;
+    c.addEventListener('click', function(ev){
+      var t=ev.target;
+      var moBtn = t.closest && t.closest('[data-hv-mo]');
+      if(moBtn){
+        var delta = parseInt(moBtn.getAttribute('data-hv-mo'),10)||0;
+        hvM += delta;
+        if(hvM<1){ hvM=12; hvY--; } else if(hvM>12){ hvM=1; hvY++; }
+        hvOpen={};
+        paint();
+        return;
+      }
+      var goEmp = t.closest && t.closest('[data-hv-goemp]');
+      if(goEmp){
+        try{ if(window.app && window.app.navigate) window.app.navigate('biz-payroll'); else if(window.renderPayroll) window.renderPayroll(); }catch(e){}
+        return;
+      }
+      var row = t.closest && t.closest('[data-hv-row]');
+      if(row){
+        var k = row.getAttribute('data-hv-row');
+        hvOpen[k] = !hvOpen[k];
+        paint();
+        return;
+      }
+    });
+  }
+
+  /* ─── 入口 ─── */
   window.renderAttendance = function(){
     var c = content(); if(!c) return;
     c.classList.add('attend-scope');
-    c.innerHTML = shellHtml();
+    wire();
+    hvOpen={};
+    hv = { state:'loading', roster:[], punches:[], leaves:[] };
+    c.innerHTML = skeletonHtml();
+    loadHv(function(){ paint(); });
   };
 
 })();
