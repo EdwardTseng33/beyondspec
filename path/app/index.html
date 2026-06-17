@@ -9887,8 +9887,22 @@ body.hd-locked { overflow: hidden; }
   }
 
   function _pullFromFirestore(callback) {
+    // v1.5.x whitescreen-fix: callback must be guaranteed to fire exactly once.
+    // Root bug: Firestore .get() can hang on first-visit/slow-net/half-dead-auth/IDB-lock,
+    // where neither .then nor .catch fire -> callback never runs -> showDashboard never called -> white screen.
+    // Fix: 5s timeout guard + _settled de-dup; whichever of timeout/then/catch arrives first wins.
     var fs = _getFirestore();
-    if (!fs) { if (callback) callback(); return; }
+    var _settled = false;
+    function _done() {
+      if (_settled) return;
+      _settled = true;
+      if (callback) callback();
+    }
+    if (!fs) { _done(); return; }
+    var _timer = setTimeout(function() {
+      console.warn('[Firestore] pull timeout (5s) - proceeding without remote data');
+      _done();
+    }, 5000);
     var uid = state.user.uid;
     fs.collection('users').doc(uid).collection('data').get().then(function(snapshot) {
       snapshot.forEach(function(doc) {
@@ -9899,10 +9913,12 @@ body.hd-locked { overflow: hidden; }
           localStorage.setItem(key, val);
         }
       });
-      if (callback) callback();
+      clearTimeout(_timer);
+      _done();
     }).catch(function(e) {
       console.warn('[Firestore] pull error:', e);
-      if (callback) callback();
+      clearTimeout(_timer);
+      _done();
     });
   }
 
@@ -38038,7 +38054,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
       _authHandled = true;
       if (user) {
         _restoreSessionFromFirebase(user);
-        _pullFromFirestore(function() { showDashboard(); });
+        showDashboard(); _pullFromFirestore(function() {}); // v1.5.x render-first: paint UI immediately, pull cloud data in background (was: pull-then-show, hung on slow Firestore -> white screen)
       } else if (state.isLoggedIn) {
         showDashboard();
       } else {
@@ -38061,7 +38077,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
         _authHandled = true;
         clearInterval(_pollInterval);
         _restoreSessionFromFirebase(firebase.auth().currentUser);
-        _pullFromFirestore(function() { showDashboard(); });
+        showDashboard(); _pullFromFirestore(function() {}); // v1.5.x render-first: paint UI immediately, pull cloud data in background (was: pull-then-show, hung on slow Firestore -> white screen)
       } else if (_pollCount >= 10) {
         // 20 秒都沒 user —— 很可能真的沒登入（Firebase 已 fire onAuthStateChanged with null 但 listener 失效？）
         clearInterval(_pollInterval);
@@ -38094,10 +38110,11 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           window._authBoot.userResolved = true;
           window._authTrace.push({ at: Date.now(), stage: 'immediate-user-found', email: immediateUser.email });
           _restoreSessionFromFirebase(immediateUser);
+          // v1.5.x render-first: paint UI immediately, pull cloud data in background.
+          try { showDashboard(); window._authTrace.push({ at: Date.now(), stage: 'showDashboard-returned' }); }
+          catch(e) { window._authTrace.push({ at: Date.now(), stage: 'showDashboard-THREW', err: e.message }); throw e; }
           _pullFromFirestore(function() {
             window._authTrace.push({ at: Date.now(), stage: 'pullFromFirestore-cb-fired' });
-            try { showDashboard(); window._authTrace.push({ at: Date.now(), stage: 'showDashboard-returned' }); }
-            catch(e) { window._authTrace.push({ at: Date.now(), stage: 'showDashboard-THREW', err: e.message }); throw e; }
           });
           return;
         }
@@ -38108,7 +38125,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           window._authBoot.userResolved = true;
           if (user) {
             _restoreSessionFromFirebase(user);
-            _pullFromFirestore(function() { showDashboard(); });
+            showDashboard(); _pullFromFirestore(function() {}); // v1.5.x render-first: paint UI immediately, pull cloud data in background (was: pull-then-show, hung on slow Firestore -> white screen)
           } else if (state.isLoggedIn) {
             showDashboard();
           } else {
@@ -38126,7 +38143,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
             window._authBoot.userResolved = true;
             clearInterval(_int2);
             _restoreSessionFromFirebase(u);
-            _pullFromFirestore(function() { showDashboard(); });
+            showDashboard(); _pullFromFirestore(function() {}); // v1.5.x render-first: paint UI immediately, pull cloud data in background (was: pull-then-show, hung on slow Firestore -> white screen)
           } else if (_poll2 >= 20) {
             clearInterval(_int2);
             if (!window._authBoot.userResolved) {
