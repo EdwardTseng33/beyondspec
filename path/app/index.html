@@ -8046,6 +8046,75 @@ body.hd-locked { overflow: hidden; }
 </script>
 <!-- End PostHog Analytics -->
 
+<!-- 0a Sentry error monitoring + global onerror/unhandledrejection reporting (v1.11.1 Calcifer 2026-06-18)
+     DSN-ready skeleton. Edward fills window.__BP_SENTRY_DSN from Sentry dashboard to activate.
+     If DSN empty: Sentry not init (no error), reporting degrades to PostHog captureException + console.
+     All try/catch wrapped, ES5 only (Safari 13). Does not touch existing empty catch blocks. -->
+<script>
+  window.__BP_SENTRY_DSN = window.__BP_SENTRY_DSN || '';
+  window.__BP_RELEASE = 'payroll@v1.11.1';
+</script>
+<script src="https://browser.sentry-cdn.com/7.120.3/bundle.min.js" crossorigin="anonymous" onerror="window.__BP_SENTRY_LOADFAIL=1;console.warn('[Sentry] CDN failed - degrade to PostHog/console');"></script>
+<script>
+  (function(){
+    'use strict';
+    try {
+      if (window.Sentry && window.__BP_SENTRY_DSN && !window.__BP_SENTRY_LOADFAIL) {
+        window.Sentry.init({
+          dsn: window.__BP_SENTRY_DSN,
+          release: window.__BP_RELEASE,
+          environment: (location.hostname === 'beyondspec.tw') ? 'production' : 'staging',
+          sampleRate: 1.0,
+          sendDefaultPii: false,
+          beforeSend: function(ev){
+            try {
+              if (ev.request) { delete ev.request.cookies; delete ev.request.data; }
+              if (ev.user) { ev.user = { id: ev.user.id || undefined }; }
+            } catch(_e) {}
+            return ev;
+          }
+        });
+        window.__BP_SENTRY_READY = true;
+      }
+    } catch(_initErr) {
+      try { console.warn('[Sentry] init failed:', _initErr && _initErr.message); } catch(_e2){}
+    }
+    function _bpReportError(err, ctx){
+      var e = err || (ctx && ctx.error) || null;
+      try {
+        if (window.__BP_SENTRY_READY && window.Sentry && window.Sentry.captureException && e) {
+          window.Sentry.captureException(e, { extra: ctx || {} });
+        }
+      } catch(_a){}
+      try {
+        if (window.posthog && window.posthog.captureException && e) {
+          window.posthog.captureException(e, ctx || {});
+        }
+      } catch(_b){}
+      try { console.error('[BP error]', e || (ctx && ctx.message) || 'unknown', ctx || ''); } catch(_c){}
+    }
+    window._bpReportError = _bpReportError;
+    window.addEventListener('error', function(event){
+      try {
+        if (!event.error) return;
+        var msg = (event.error && event.error.message) || '';
+        if (event.filename && event.filename.indexOf('BizModule') !== -1) return;
+        if (msg.indexOf('[BizModule]') !== -1 || msg.indexOf('firebase') !== -1 || msg.indexOf('Firebase') !== -1) return;
+        _bpReportError(event.error, { type: 'onerror', filename: event.filename, lineno: event.lineno, colno: event.colno });
+      } catch(_e){}
+    });
+    window.addEventListener('unhandledrejection', function(event){
+      try {
+        var reason = event && event.reason;
+        var rmsg = (reason && reason.message) || String(reason || '');
+        if (rmsg.indexOf('firebase') !== -1 || rmsg.indexOf('Firebase') !== -1 || rmsg.indexOf('[BizModule]') !== -1) return;
+        _bpReportError(reason instanceof Error ? reason : new Error(rmsg), { type: 'unhandledrejection' });
+      } catch(_e){}
+    });
+  })();
+</script>
+<!-- End 0a Sentry / global error reporting -->
+
 </head>
 <body>
   <div id="landingPage"></div>
@@ -8062,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.11.0</div>
+        <div class="sidebar-version">v1.11.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -10020,7 +10089,7 @@ body.hd-locked { overflow: hidden; }
     'mod-diagnose': true,
     'mod-lab': false, 'mod-survey': false, 'mod-market': false, 'mod-report': false,
     'mod-tasks': true, 'mod-contacts': true,
-    'mod-quotes': false, 'mod-billing': false, 'mod-payroll': false, 'mod-meetings': false,
+    'mod-quotes': false, 'mod-billing': false, 'mod-payroll': false, 'mod-attendance': false, 'mod-meetings': false,
     'mod-insights': false, 'mod-docs': false
   };
 
@@ -10029,7 +10098,7 @@ body.hd-locked { overflow: hidden; }
     'mod-diagnose': 'free',
     'mod-lab': 'starter', 'mod-survey': 'starter', 'mod-market': 'starter', 'mod-report': 'starter',
     'mod-tasks': 'free', 'mod-contacts': 'free',
-    'mod-quotes': 'starter', 'mod-billing': 'pro', 'mod-payroll': 'pro', 'mod-meetings': 'starter',
+    'mod-quotes': 'starter', 'mod-billing': 'pro', 'mod-payroll': 'pro', 'mod-attendance': 'pro', 'mod-meetings': 'starter',
     'mod-insights': 'pro', 'mod-docs': 'pro'
   };
   const PLAN_RANK = { free: 0, starter: 1, pro: 2, enterprise: 3 };
@@ -10068,7 +10137,7 @@ body.hd-locked { overflow: hidden; }
       defaultModel: 'claude-opus-4-7',
       allowedModels: ['claude-opus-4-7', 'claude-sonnet-4-6'],
       highlights: ['每月 3,000 AI Credits', 'Claude Opus 4.8 預設（可切 Sonnet）', '收款管理 · 營運戰情室 · 文件庫', '團隊最多 5 人 + Claude MCP'],
-      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-meetings','mod-insights','mod-docs'],
+      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-attendance','mod-meetings','mod-insights','mod-docs'],
       featured: true
     },
     enterprise: {
@@ -10078,7 +10147,7 @@ body.hd-locked { overflow: hidden; }
       defaultModel: 'claude-opus-4-7',
       allowedModels: ['claude-opus-4-7', 'claude-sonnet-4-6'],
       highlights: ['無限 AI Credits', 'Claude Opus 4.8 預設', 'Pro 全部功能', '團隊最多 20 人 · 管理員角色', 'API 整合 · 專屬客戶經理'],
-      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-meetings','mod-insights','mod-docs']
+      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-attendance','mod-meetings','mod-insights','mod-docs']
     }
   };
 
@@ -40127,10 +40196,40 @@ console.log('[BizModule] Business Dashboard loaded OK, CastleDashboardEmbedded r
 
   /* 帳號閘：登入（有 uid）→ 直接用帳號雲端，所有資料綁 users/{uid}、規則只放行本人。
      無工作區概念、無角色清單、無本機預覽。真取不到 uid（理論上 app 已導去登入）→ 請重新登入，不存本機。 */
+  /* 1a · 建 workspaces/{uid} 父文件（v1.11.1 · 卡西法 2026-06-18）
+     背景：owner 登入後 _wsId=uid，出勤端面捷 _rosterBase() 寫 workspaces/{uid}/attendance_roster/{email}，
+     但父文件 workspaces/{uid} 從未被建立。Firestore 的 collectionGroup query 配 rules 需讀父文件
+     attendanceAccessEmails 判權，父不存在 → owner 進不去。這裡進場時 idempotent 補上父文件。
+     設計：fire-and-forget（不阻塞 cb）。薪資讀的是 users/{uid}，不依賴 workspaces/{uid} 父文件，
+     所以建失敗（例：rules 未貼）不該卡薪資介面載入。全程 try/catch + .catch，被拒只記一行 console。 */
+  function resolveWorkspace(uid){
+    try {
+      var db=_db(); if(!db || !uid) return;
+      var emailLower=String(_me()||'').trim().toLowerCase();
+      var ref=db.collection('workspaces').doc(uid);
+      // 先讀：父文件已存在就不動（避免每次登入都寫、避免覆蓋 owner/memberEmails 的後續變更）。
+      ref.get().then(function(snap){
+        if(snap && snap.exists) return;   // 已有父文件，不覆蓋
+        var payload={ owner: emailLower, updatedAt:_ts() };
+        if(emailLower){ payload.memberEmails=[emailLower]; payload.attendanceAccessEmails=[emailLower]; }
+        else { payload.memberEmails=[]; payload.attendanceAccessEmails=[]; }
+        ref.set(payload,{merge:true}).catch(function(err){ try{console.warn('[payroll] resolveWorkspace 建父文件被拒（規則未貼？）', err);}catch(_e){} });
+      }).catch(function(err){
+        // get 被拒（規則未開 read）：退而直接 set merge（不覆蓋、只補欄），一樣被拒只記 console。
+        try {
+          var p={ owner: emailLower, updatedAt:_ts() };
+          if(emailLower){ p.memberEmails=[emailLower]; p.attendanceAccessEmails=[emailLower]; }
+          ref.set(p,{merge:true}).catch(function(e2){ try{console.warn('[payroll] resolveWorkspace set 被拒（規則未貼？）', e2);}catch(_e){} });
+        } catch(_e3){}
+      });
+    } catch(e){ try{console.warn('[payroll] resolveWorkspace 例外', e);}catch(_e){} }
+  }
+
   function resolveAccess(cb){
     var uid=_uid(), db=_db();
     if(!db || !uid){ _canSeePayroll=false; _wsId=null; cb(false,'noauth'); return; }  // 無登入身分：請重新登入，不走本機
     _wsId=uid;            // 此版 _wsId 即登入者 uid
+    resolveWorkspace(uid);  // 1a：idempotent 補上 workspaces/{uid} 父文件（fire-and-forget，不阻塞下方 cb）
     _canSeePayroll=true;  // 帳號隔離：能讀到的就是本人，規則層由 Firestore 把關
     cb(true,'cloud');
   }
@@ -42873,6 +42972,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.11.1 (payroll) Calcifer 2026-06-18 - 0a Sentry DSN-ready 骨架 + 全域 onerror/unhandledrejection 統一上報通道(Sentry->PostHog->console 逐層降級); 1a resolveWorkspace() idempotent 建 workspaces/{uid} 父文件(owner/memberEmails/attendanceAccessEmails 三欄·fire-and-forget·不阻塞薪資載入)解 owner 出缺勤進不去; 0b deploy-prod.py 五層 guard. sidebar v1.11.0->v1.11.1 -->
 <!-- v1.5.0 · 報告系統旗艦升級（α drawer 90.9 + β.1 PATH 診斷 v2 真 AI + γ.1 Lab 95 + γ.2 市場報告旗艦 13 章敘事鏈 + Opportunity Map 二維 + 4 情境 Roadmap + Data Flywheel money slide + Signal badge 三色可點 + §12a/§13 揭露段 + 拍板 3-B 跨境分享免責 + cost cap 13 規則 + 24h cache + multi-call retry partial refund 40/33/27 + moatScore AI 編造偵測 + 12 keyword grep + 4 sprint 雙 Gate 全簽 · sidebar v1.4.9→v1.5.0 -->
 <!-- v1.4.9 · 架構根治：Headless mount BizModule React component 讓 Edward 停留首頁也觸發 activateWorkspace · 修 v1.4.7/8 的核心缺陷 —— migration 依賴 _currentWorkspaceId 但該值只在點商業 tab 時才 set，首頁用戶永遠沒 wsId。方案：建 1×1px off-screen div (#bpHeadlessBizRoot) mount CastleDashboardEmbedded，React useEffect 鏈自動跑 onAuthStateChanged → activateWorkspace → window._currentWorkspaceId expose → v1.4.8 migration setInterval 偵測到後寫 Firestore set value:[] 清 researches + diagnoses。嘗試 30 次每 1s 等 React/BizModule/Firebase auth 全就緒；副作用：headless mount BizModule 會跑 usePersisted hooks 建 Firestore onSnapshot listeners，CPU/記憶體輕微增加（~50-100ms 首次 mount），但不 overwrite 資料（只 sync down） · 版號 v1.4.8→v1.4.9 -->
 <!-- v1.4.8 · 延長 migration setInterval 到 2 分鐘（60 × 2s）等 BizModule mount · 版號 v1.4.7→v1.4.8 -->
