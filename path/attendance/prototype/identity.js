@@ -137,10 +137,38 @@
         })
         .then(function () { _identity.resolving = false; _notify(); })
         ['catch'](function (err) {
-          _identity.resolving = false;
-          _classifyError(err);
-          if (!_identity.errorKind) { _identity.friendly = true; }
-          _notify();
+          // CG query failed. owner case: the attendance_roster read rule's first OR is
+          // isAttendanceAdmin(wsId), which calls get() -- Firestore cannot statically
+          // evaluate get()/exists() inside a read rule for a collectionGroup query, so the
+          // whole rule rejects the CG query (permission-denied) even though our pure
+          // resource.data.email==myEmail() OR exists. a permission-denied (or missing index)
+          // here therefore does NOT prove 'not a member'. the owner is still reachable via
+          // workspaces/{uid}, which _resolveOwnerFallback reads directly (no CG, no get()).
+          // so try the owner fallback FIRST; only fall to the friendly page if that also
+          // fails to recognise the account. errorKind stays classified for debug.
+          // NOTE: employees who rely on the CG query to find their own wsId are still blocked
+          // by this same rule limitation -- that needs a rules redesign (split the get() out
+          // of the roster read rule) and is deferred to the second-wave architecture fix.
+          var cgErr = err;
+          _resolveOwnerFallback(db, myEmail)
+            .then(function () {
+              if (_identity.isHR || _identity.wsId) {
+                // fallback recognised the account (owner/HR) -> clear any stale flags.
+                _identity.friendly = false; _identity.errorKind = null;
+              } else {
+                // not an owner either -> keep the original CG error for debug context.
+                _classifyError(cgErr);
+              }
+              _identity.resolving = false;
+              _notify();
+            })
+            ['catch'](function () {
+              // fallback itself threw (e.g. network) -> classify original CG error, friendly.
+              _classifyError(cgErr);
+              if (!_identity.errorKind) { _identity.friendly = true; }
+              _identity.resolving = false;
+              _notify();
+            });
         });
     } catch (e) {
       // synchronous failure anywhere above (query construction, SDK state, etc.)
