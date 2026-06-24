@@ -1,475 +1,379 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BeyondSpec — 新創與中小企業的發展引擎</title>
-<meta name="description" content="BeyondSpec 是新創與中小企業的 AI 商業引擎——從驗證方向到收款，一個平台、一套 AI，把整間公司跑起來。人做決策，AI 做苦工。">
-<link rel="canonical" href="https://beyondspec.tw/">
-<link rel="icon" href="/favicon.ico">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://beyondspec.tw/">
-<meta property="og:title" content="BeyondSpec — 新創與中小企業的發展引擎">
-<meta property="og:description" content="從驗證方向到收款，一個平台、一套 AI，把整間公司跑起來。人做決策，AI 做苦工。">
-<meta property="og:site_name" content="BeyondSpec">
-<meta name="twitter:card" content="summary_large_image">
+<title>BeyondSpec — 把整間公司，跑在同一個平台</title>
+<meta name="description" content="在變化比以往更快的世界，BeyondSpec 讓你的團隊用證據做決定。從驗證到營運，一個平台、一套 AI，把整間公司跑起來。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-:root{
-  --paper:#F6F4F1; --paper-2:#EFEbE5; --card:#FFFFFF;
-  --ink:#1A1A1A; --ink-2:#55514C; --muted:#8A857E; --line:#E7E2DB; --line-2:#D8D2C9;
-  --primary:#7C5CFC; --primary-deep:#5438C5; --primary-soft:rgba(124,92,252,.10); --primary-ring:rgba(124,92,252,.22);
-  --teal:#1BA891; --gold:#E08A3A; --rose:#D94462;
-  --sans:'Noto Sans TC','Inter',-apple-system,system-ui,sans-serif;
-  --disp:'Space Grotesk','Noto Sans TC',sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,monospace;
-  --r:14px; --r-lg:22px; --r-xl:30px;
-  --shadow:0 1px 3px rgba(26,22,18,.04),0 10px 30px rgba(26,22,18,.06);
-  --shadow-pop:0 8px 20px rgba(26,22,18,.07),0 30px 60px rgba(124,92,252,.13);
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-a{color:inherit;text-decoration:none}
-button{font:inherit;cursor:pointer;border:none;background:none}
-img{display:block;max-width:100%}
-::selection{background:var(--primary);color:#fff}
-
-/* dotted paper texture */
-body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(rgba(26,22,18,.05) 1px,transparent 1px);background-size:24px 24px;pointer-events:none;z-index:0;opacity:.5}
-
-/* aurora */
-.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.aurora i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.5}
-.aurora i:nth-child(1){width:46vw;height:46vw;left:-8vw;top:-6vw;background:radial-gradient(circle,rgba(124,92,252,.30),transparent 70%);animation:drift1 22s ease-in-out infinite}
-.aurora i:nth-child(2){width:38vw;height:38vw;right:-6vw;top:18vh;background:radial-gradient(circle,rgba(27,168,145,.16),transparent 70%);animation:drift2 26s ease-in-out infinite}
-.aurora i:nth-child(3){width:34vw;height:34vw;left:30vw;top:60vh;background:radial-gradient(circle,rgba(224,138,58,.12),transparent 70%);animation:drift1 30s ease-in-out infinite reverse}
-@keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(6vw,5vh)}}
-@keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-5vw,4vh)}}
-
-.wrap{max-width:1200px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
-
-/* nav */
-.nav{position:sticky;top:0;z-index:50;backdrop-filter:saturate(1.4) blur(16px);background:rgba(246,244,241,.72);border-bottom:1px solid var(--line)}
-.nav-in{max-width:1200px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:30px}
-.logo{font-family:var(--disp);font-weight:700;font-size:21px;letter-spacing:-.02em}
-.logo b{color:var(--primary)}
-.nav-links{display:flex;gap:26px;margin-left:14px}
-.nav-links a{font-size:14px;color:var(--ink-2);font-weight:500;transition:color .2s}
-.nav-links a:hover{color:var(--ink)}
-.nav-sp{flex:1}
-.btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;font-weight:700;transition:all .22s;white-space:nowrap}
-.btn-dark{background:var(--ink);color:#fff;padding:11px 22px;font-size:14px}
-.btn-dark:hover{background:var(--primary);transform:translateY(-1px);box-shadow:0 8px 22px var(--primary-ring)}
-.btn-lg{padding:16px 30px;font-size:16px}
-.btn-purple{background:var(--primary);color:#fff}
-.btn-purple:hover{background:var(--primary-deep);transform:translateY(-1px);box-shadow:0 10px 26px var(--primary-ring)}
-.btn-ghost{color:var(--ink);padding:16px 24px;font-size:16px;font-weight:600;border:1px solid var(--line-2);background:var(--card)}
-.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
-
-/* hero */
-.hero{padding:84px 0 70px;text-align:center}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line-2);padding:7px 15px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:30px;box-shadow:var(--shadow)}
-.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px var(--primary-soft);animation:pulse 2.4s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 4px var(--primary-soft)}50%{box-shadow:0 0 0 8px transparent}}
-.h1{font-family:var(--sans);font-weight:900;font-size:clamp(42px,7vw,90px);line-height:1.04;letter-spacing:-.035em;margin-bottom:26px}
-.h1 .p{color:var(--primary)}
-.lead{max-width:640px;margin:0 auto 38px;font-size:clamp(16px,2vw,20px);line-height:1.65;color:var(--ink-2)}
-.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
-.hero-note{font-size:13px;color:var(--muted)}
-
-/* hero bento */
-.bento{position:relative;max-width:1060px;margin:64px auto 0;height:430px}
-.bcard{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-pop);padding:18px 20px;opacity:0;transform:translateY(26px) scale(.96)}
-.bcard.show{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
-.bcard .ctag{font-family:var(--mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:7px}
-.bcard .ctag .ic{width:15px;height:15px;color:var(--primary)}
-.b-main{left:50%;top:24px;transform:translateX(-50%) translateY(26px) scale(.96);width:min(560px,90%);z-index:2}
-.b-main.show{transform:translateX(-50%)}
-.dash-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.dash-head h4{font-size:16px;font-weight:700}
-.dash-head .sub{font-size:12px;color:var(--muted)}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.kpi{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
-.kpi .k{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:5px}
-.kpi .v{font-family:var(--mono);font-weight:700;font-size:19px;letter-spacing:-.02em}
-.kpi .d{font-size:10.5px;color:var(--teal);font-weight:600;margin-top:2px}
-.b-1{left:-2%;top:8px;width:215px;z-index:3}
-.b-2{right:-2%;top:128px;width:225px;z-index:3}
-.b-3{left:6%;bottom:6px;width:235px;z-index:3}
-.b-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2)}
-.b-av{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0}
-.b-bar{height:6px;border-radius:4px;background:var(--paper-2);overflow:hidden;margin-top:9px}
-.b-bar i{display:block;height:100%;background:var(--primary);border-radius:4px}
-.pill-st{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--primary-soft);color:var(--primary-deep)}
-
-/* sections */
-.sec{padding:96px 0;position:relative}
-.sec.alt{background:var(--paper-2)}
-.shead{max-width:680px;margin:0 auto 56px;text-align:center}
-.kicker{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--primary);margin-bottom:16px}
-.h2{font-weight:900;font-size:clamp(28px,4vw,46px);line-height:1.12;letter-spacing:-.03em;margin-bottom:14px}
-.h2 .p{color:var(--primary)}
-.sub2{font-size:17px;color:var(--ink-2);line-height:1.65}
-
-/* reveal */
-.rv{opacity:0;transform:translateY(30px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
-.rv.in{opacity:1;transform:none}
-.rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}.rv.d4{transition-delay:.32s}.rv.d5{transition-delay:.4s}
-
-/* personas */
-.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.pcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;transition:transform .3s,box-shadow .3s,border-color .3s}
-.pcard:hover{transform:translateY(-6px);box-shadow:var(--shadow-pop);border-color:var(--primary-ring)}
-.pcard .top{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-.pcard .ph{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--card);box-shadow:0 0 0 1.5px var(--line-2);transition:transform .3s,box-shadow .3s}
-.pcard:hover .ph{transform:scale(1.06);box-shadow:0 0 0 2px var(--primary)}
-.pcard .role{font-weight:700;font-size:16px}
-.pcard .role span{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
-.pcard .pain{font-size:15px;color:var(--ink);line-height:1.6;margin-bottom:18px;font-weight:500}
-.pcard .pain::before{content:'\201C';color:var(--primary);font-weight:900;margin-right:1px}
-.pcard .pain::after{content:'\201D';color:var(--primary);font-weight:900}
-.pcard .mod{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--primary-deep);background:var(--primary-soft);padding:8px 14px;border-radius:999px}
-.pcard .mod .ic{width:15px;height:15px}
-
-/* closed loop */
-.loop{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;justify-content:center}
-.node{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px 16px;text-align:center;position:relative}
-.node .ic{width:30px;height:30px;color:var(--primary);margin:0 auto 12px}
-.node h5{font-size:15px;font-weight:700;margin-bottom:5px}
-.node p{font-size:12.5px;color:var(--muted);line-height:1.5}
-.node .num{position:absolute;top:10px;left:13px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--line-2)}
-.arrow{display:flex;align-items:center;color:var(--primary);font-size:20px;padding:0 6px;flex-shrink:0}
-@media(max-width:860px){.arrow{transform:rotate(90deg);padding:6px 0;width:100%;justify-content:center}}
-
-/* marquee */
-.marq{overflow:hidden;margin-top:44px;-webkit-mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
-.marq-t{display:flex;gap:14px;width:max-content;animation:scroll 34s linear infinite}
-.marq:nth-of-type(2) .marq-t{animation-direction:reverse}
-.chip{font-size:13.5px;font-weight:600;color:var(--ink-2);background:var(--card);border:1px solid var(--line);padding:10px 20px;border-radius:999px;white-space:nowrap}
-.chip b{color:var(--primary)}
-@keyframes scroll{to{transform:translateX(-50%)}}
-
-/* how */
-.how{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-.step{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:30px 26px}
-.step .n{font-family:var(--disp);font-weight:700;font-size:15px;color:#fff;background:var(--primary);width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
-.step h4{font-size:18px;font-weight:700;margin-bottom:8px}
-.step p{font-size:14.5px;color:var(--ink-2);line-height:1.6}
-
-/* why */
-.why{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-.wc{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:32px 28px;position:relative;overflow:hidden}
-.wc .ic{width:42px;height:42px;border-radius:12px;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
-.wc .ic svg{width:22px;height:22px}
-.wc h4{font-size:18px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em}
-.wc p{font-size:14.5px;color:var(--ink-2);line-height:1.65}
-
-/* pricing */
-.price{max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r-xl);padding:42px 38px;text-align:center;box-shadow:var(--shadow)}
-.price .free{font-family:var(--disp);font-weight:700;font-size:40px;letter-spacing:-.02em;margin-bottom:6px}
-.price .free .p{color:var(--primary)}
-.price ul{list-style:none;text-align:left;max-width:360px;margin:24px auto;display:grid;gap:12px}
-.price li{display:flex;gap:10px;font-size:15px;color:var(--ink-2)}
-.price li .ck{color:var(--primary);font-weight:800;flex-shrink:0}
-.price .eb{margin-top:18px;font-size:13px;color:var(--muted)}
-.ptiers{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:8px}
-.ptier{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:26px 22px;display:flex;flex-direction:column}
-.ptier.hot{border:1.5px solid var(--primary);box-shadow:var(--shadow-pop);position:relative}
-.ptier .pb{position:absolute;top:-11px;left:22px;background:var(--primary);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px}
-.ptier h4{font-size:15px;font-weight:700;color:var(--ink-2);margin-bottom:8px}
-.ptier .amt{font-family:var(--disp);font-weight:700;font-size:28px;letter-spacing:-.02em;margin-bottom:2px}
-.ptier .amt .u{font-size:13px;color:var(--muted);font-weight:500}
-.ptier .desc{font-size:13px;color:var(--muted);margin-bottom:16px;min-height:34px}
-.ptier ul{list-style:none;display:grid;gap:9px;margin-bottom:20px;flex:1}
-.ptier li{font-size:12.5px;color:var(--ink-2);display:flex;gap:8px;line-height:1.5}
-.ptier li .ck{color:var(--primary);font-weight:800;flex-shrink:0}
-.ptier .pc{padding:11px;border-radius:999px;font-size:13.5px;font-weight:700;text-align:center;border:1px solid var(--line-2);background:var(--card)}
-.ptier.hot .pc{background:var(--primary);color:#fff;border-color:var(--primary)}
-@media(max-width:860px){.ptiers{grid-template-columns:1fr}}
-
-/* final cta */
-.fcta{background:linear-gradient(150deg,#241c3d,#15111f 70%);border-radius:var(--r-xl);padding:80px 32px;text-align:center;position:relative;overflow:hidden;color:#fff}
-.fcta::before{content:'';position:absolute;width:60%;height:160%;right:-10%;top:-30%;background:radial-gradient(circle,rgba(124,92,252,.4),transparent 60%);pointer-events:none}
-.fcta::after{content:'';position:absolute;width:50%;height:120%;left:-10%;bottom:-30%;background:radial-gradient(circle,rgba(27,168,145,.22),transparent 60%);pointer-events:none}
-.fcta>*{position:relative;z-index:1}
-.fcta h2{font-weight:900;font-size:clamp(26px,3.6vw,44px);letter-spacing:-.03em;line-height:1.12;margin-bottom:16px}
-.fcta p{color:rgba(255,255,255,.72);font-size:17px;max-width:480px;margin:0 auto 30px}
-.fcta .btn-purple{background:#fff;color:var(--ink)}
-.fcta .btn-purple:hover{background:var(--primary);color:#fff}
-
-/* giant wordmark */
-.giant{text-align:center;padding:50px 0 10px;overflow:hidden}
-.giant span{font-family:var(--disp);font-weight:700;font-size:clamp(60px,18vw,240px);letter-spacing:-.04em;line-height:1;background:linear-gradient(180deg,var(--line-2),transparent);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;opacity:.85}
-
-/* footer */
-.foot{border-top:1px solid var(--line);padding:40px 0 30px}
-.foot-in{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-.foot .logo{font-size:18px}
-.foot p{font-size:13px;color:var(--muted)}
-
-@media(max-width:860px){
-  .nav-links{display:none}
-  .pgrid,.how,.why{grid-template-columns:1fr}
-  .bento{height:auto;display:flex;flex-direction:column;gap:14px;margin-top:44px}
-  .bcard{position:static!important;width:100%!important;transform:translateY(26px) scale(.98)}
-  .b-main.show{transform:none}
-  .kpis{grid-template-columns:repeat(3,1fr)}
-}
-@media(prefers-reduced-motion:reduce){
-  *{animation:none!important}
-  .rv,.bcard{opacity:1!important;transform:none!important}
-}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Plus Jakarta Sans','Noto Sans TC',sans-serif;background:#f4f2ee;color:#0b0b0f;overflow-x:clip;word-break:keep-all;-webkit-font-smoothing:antialiased;}
+  a{text-decoration:none;color:inherit;}
+  @keyframes bsm-rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+  @keyframes bsm-pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @keyframes bsm-c1{0%,100%{transform:rotate(-1.8deg) translateY(0)}50%{transform:rotate(-1.8deg) translateY(-9px)}}
+  @keyframes bsm-hero{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  @keyframes bsm-c2{0%,100%{transform:rotate(1.1deg) translateY(0)}50%{transform:rotate(1.1deg) translateY(8px)}}
+  @keyframes bsm-c3{0%,100%{transform:rotate(2deg) translateY(0)}50%{transform:rotate(2deg) translateY(-7px)}}
+  @keyframes bsm-c5{0%,100%{transform:rotate(1.6deg) translateY(0)}50%{transform:rotate(1.6deg) translateY(-10px)}}
+  /* reveal via IntersectionObserver fallback */
+  .rv{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.16,.84,.44,1),transform .8s cubic-bezier(.16,.84,.44,1);}
+  .rv.in{opacity:1;transform:none;}
+  /* marquee */
+  .marq{position:relative;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);}
+  .track{display:flex;gap:16px;width:max-content;padding:10px 0;}
+  .track.a{animation:bmm-l 42s linear infinite;}
+  .track.b{animation:bmm-r 46s linear infinite;}
+  .marq:hover .track{animation-play-state:paused;}
+  @keyframes bmm-l{from{transform:translateX(0)}to{transform:translateX(calc(-50% - 8px))}}
+  @keyframes bmm-r{from{transform:translateX(calc(-50% - 8px))}to{transform:translateX(0)}}
+  .mcard{flex:none;width:288px;display:flex;align-items:center;gap:14px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:18px;padding:15px 18px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease;}
+  .mcard:hover{transform:translateY(-5px);box-shadow:0 26px 46px -28px rgba(11,11,15,.35);border-color:var(--accent);}
+  .mchip{flex:none;width:44px;height:44px;border-radius:14px;background:var(--tint);color:var(--accent);display:flex;align-items:center;justify-content:center;transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
+  .mcard:hover .mchip{transform:rotate(-6deg) scale(1.07);}
+  .mname{display:flex;align-items:center;gap:6px;font-size:16px;font-weight:800;letter-spacing:-.01em;color:#15140e;white-space:nowrap;}
+  .msub{font-size:12.5px;color:#8a8f9c;margin-top:2px;white-space:nowrap;}
+  .mcat{flex:none;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--accent);background:var(--tint);padding:4px 9px;border-radius:999px;white-space:nowrap;}
+  /* role accordion */
+  .rc-track{display:flex;gap:10px;height:clamp(420px,50vw,560px);max-width:1080px;margin:0 auto;}
+  .rc-panel{position:relative;flex-grow:1;flex-basis:0;min-width:62px;border-radius:24px;overflow:hidden;cursor:pointer;transition:flex-grow .65s cubic-bezier(.16,.84,.44,1);}
+  .rc-panel.on{flex-grow:5;}
+  .rc-panel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%;}
+  .rc-fill{position:absolute;inset:0;opacity:1;transition:opacity .6s ease;}
+  .rc-panel.on .rc-fill{opacity:0;}
+  .rc-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(16,15,10,.9) 6%,rgba(16,15,10,.34) 46%,transparent 78%);opacity:0;transition:opacity .6s ease;}
+  .rc-panel.on .rc-grad{opacity:1;}
+  .rc-coll{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:16px 0;opacity:1;transition:opacity .4s ease;pointer-events:none;}
+  .rc-panel.on .rc-coll{opacity:0;}
+  .rc-exp{position:absolute;inset:0;opacity:0;transition:opacity .55s ease;pointer-events:none;}
+  .rc-panel.on .rc-exp{opacity:1;transition-delay:.12s;}
+  @media(max-width:780px){
+    .rc-track{flex-direction:column;height:auto;}
+    .rc-panel{height:120px;}.rc-panel.on{height:380px;}
+  }
+  @media(max-width:860px){.nav-links{display:none!important}}
+  html{scroll-behavior:smooth;}
+  [id]{scroll-margin-top:86px;}
+  .nav-links{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;}
+  .nav-links a{font-size:15px;font-weight:600;color:#3c4150;padding:8px 15px;border-radius:999px;transition:color .2s ease,background .2s ease;}
+  .nav-links a:hover{color:#0b0b0f;background:rgba(11,11,15,.055);}
+  .nav-login{font-weight:600;color:#0b0b0f;padding:9px 15px;border-radius:999px;transition:background .2s ease;}
+  .nav-login:hover{background:rgba(11,11,15,.06);}
+  .nav-try{font-weight:700;background:#199a55;color:#fff;padding:10px 20px;border-radius:999px;box-shadow:0 12px 24px -14px rgba(25,154,85,.6);transition:transform .2s ease,box-shadow .2s ease;white-space:nowrap;}
+  .nav-try:hover{transform:translateY(-1px);box-shadow:0 16px 28px -14px rgba(25,154,85,.75);}
 </style>
 </head>
 <body>
-<div class="aurora"><i></i><i></i><i></i></div>
+<div id="top" style="min-height:100vh;">
 
-<!-- NAV -->
-<nav class="nav"><div class="nav-in">
-  <div class="logo">Beyond<b>Spec</b></div>
-  <div class="nav-links">
-    <a href="#roles">誰適合</a>
-    <a href="#platform">平台</a>
-    <a href="#why">為什麼選我們</a>
-    <a href="#pricing">定價</a>
-  </div>
-  <div class="nav-sp"></div>
-  <a class="btn btn-dark" href="/path/app/">登入</a>
-</div></nav>
+  <!-- NAV -->
+  <nav style="position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:14px clamp(20px,5vw,56px);background:rgba(244,242,238,.82);backdrop-filter:blur(16px);border-bottom:1px solid rgba(11,11,15,.06);">
+    <a href="#top" style="display:flex;align-items:center;font-size:20px;font-weight:800;letter-spacing:-.025em;color:#15140e;">Beyond<span style="color:#199a55;">Spec</span><span style="color:#d4ec5b;">.</span></a>
+    <div class="nav-links">
+      <a href="#modules">模組</a>
+      <a href="#features">功能</a>
+      <a href="#roles">角色</a>
+      <a href="#outcomes">成果</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:14px;">
+      <a href="/path/app/" class="nav-login">登入</a>
+      <a href="/path/app/" class="nav-try">免費試用</a>
+    </div>
+  </nav>
 
-<!-- HERO -->
-<header class="hero"><div class="wrap">
-  <div class="eyebrow"><span class="dot"></span>AI 商業引擎 · Made in Taiwan</div>
-  <h1 class="h1">新創與中小企業的<br><span class="p">發展引擎</span>。</h1>
-  <p class="lead">從驗證方向到收到錢，一個平台、一套 AI，把整間公司跑起來。<br>大公司軟體的戰力，小團隊付得起的價格——人做決策，AI 做苦工。</p>
-  <div class="hero-cta">
-    <a class="btn btn-purple btn-lg" href="/path/app/">免費開始使用 <span>→</span></a>
-    <a class="btn btn-ghost" href="#platform">看看怎麼運作</a>
-  </div>
-  <p class="hero-note">免費試用 7 天 · 不用信用卡 · 3 分鐘上手</p>
-
-  <!-- bento dashboard mock -->
-  <div class="bento">
-    <div class="bcard b-main">
-      <div class="dash-head"><div><h4>早安，Edward</h4><div class="sub">2026.06.19 · 你有 3 筆待處理商機</div></div><span class="pill-st">● 全公司同步中</span></div>
-      <div class="kpis">
-        <div class="kpi"><div class="k">本月營收</div><div class="v">NT$486K</div><div class="d">▲ 32%</div></div>
-        <div class="kpi"><div class="k">進行中商機</div><div class="v">12</div><div class="d">▲ 3 new</div></div>
-        <div class="kpi"><div class="k">產品力分數</div><div class="v">78<span style="color:var(--muted);font-size:13px">/100</span></div><div class="d">▲ 6</div></div>
+  <!-- HERO -->
+  <section style="max-width:1360px;margin:0 auto;padding:clamp(34px,4vw,64px) clamp(20px,5vw,56px) clamp(28px,4vw,60px);">
+    <div style="display:flex;flex-wrap:wrap;gap:clamp(30px,4vw,60px);align-items:center;">
+      <div style="flex:1.05 1 480px;min-width:300px;">
+        <h1 style="font-size:clamp(40px,5.6vw,88px);line-height:1.04;letter-spacing:-.035em;font-weight:700;margin:0 0 clamp(22px,3vw,34px);text-wrap:balance;padding-top:.06em;">把整間公司，<br><span style="white-space:nowrap;">跑在<span style="position:relative;white-space:nowrap;z-index:0;">同一個平台<span style="position:absolute;left:-2%;right:-2%;bottom:6%;height:34%;background:#d4ec5b;border-radius:6px;z-index:-1;transform:rotate(-1deg);"></span></span></span></h1>
+        <p style="font-size:clamp(18px,1.9vw,25px);line-height:1.55;color:#56564c;max-width:500px;margin:0 0 clamp(28px,3vw,36px);text-wrap:pretty;line-break:strict;">你的生意，不該只靠你一個人撐。<br>從驗證方向到收到錢，AI 幫你跑完每一步，你只管做決定。</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+          <a href="/path/app/" style="font-size:16px;font-weight:700;background:#199a55;color:#fff;padding:16px 32px;border-radius:999px;white-space:nowrap;box-shadow:0 16px 30px -14px rgba(25,154,85,.5);">免費開始使用 →</a>
+          <a href="#features" style="font-size:16px;font-weight:600;color:#16160f;padding:15px 26px;border-radius:999px;border:1.5px solid rgba(22,22,15,.22);white-space:nowrap;">看實際運作 ↓</a>
+        </div>
+      </div>
+      <div style="flex:1.05 1 500px;min-width:300px;position:relative;">
+        <div style="position:absolute;right:3%;top:0;width:52%;aspect-ratio:1;border-radius:50%;background:#d4ec5b;z-index:0;"></div>
+        <div style="position:absolute;left:-1%;bottom:13%;width:27%;aspect-ratio:1;border-radius:50%;background:#e6f7f0;z-index:0;"></div>
+        <img src="assets/people/beyondspec-hero-founder-cutout-final.png" alt="台灣創業者，手持平板" style="position:relative;z-index:1;display:block;width:100%;height:clamp(400px,48vw,580px);object-fit:contain;object-position:center bottom;filter:drop-shadow(0 28px 38px rgba(22,22,15,.18));animation:bsm-hero 8s ease-in-out infinite;">
+        <!-- 浮動卡 ×5：每張一種格式（進度條/圖環/長條圖/狀態/表格）、每色對應一個領域 -->
+        <div style="position:absolute;z-index:2;left:-3%;top:12%;background:#fff;border-radius:16px;box-shadow:0 26px 50px -30px rgba(22,22,15,.4);padding:11px 14px;display:flex;align-items:center;gap:10px;animation:bsm-c3 7s ease-in-out infinite;">
+          <span style="width:34px;height:34px;border-radius:10px;background:#0f9d8e;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l2 2 3-3"/><path d="M4 16l2 2 3-3"/><path d="M13 7h7M13 17h7"/></svg></span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#16160f;white-space:nowrap;">任務中心 · 今天 6 件</div>
+            <div style="height:4px;width:96px;border-radius:99px;background:#eceadf;margin-top:5px;"><div style="width:66%;height:100%;background:#0f9d8e;border-radius:99px;"></div></div>
+          </div>
+        </div>
+        <div style="position:absolute;z-index:2;right:-1%;top:3%;background:#16160f;color:#fff;border-radius:14px;box-shadow:0 26px 50px -30px rgba(22,22,15,.5);padding:12px 14px;display:flex;align-items:center;gap:11px;animation:bsm-c2 9s ease-in-out infinite;">
+          <div style="position:relative;width:44px;height:44px;flex:none;">
+            <svg width="44" height="44" viewBox="0 0 44 44" style="transform:rotate(-90deg);"><circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="#d4ec5b" stroke-width="5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="14.7"/></svg>
+            <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;">87</span>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#9b9b8f;white-space:nowrap;">產品力診斷</div>
+            <div style="font-size:12px;font-weight:700;color:#d4ec5b;white-space:nowrap;margin-top:3px;">值得做 · 趨穩</div>
+          </div>
+        </div>
+        <div style="position:absolute;z-index:2;right:-3%;top:40%;background:#fff;border-radius:16px;box-shadow:0 26px 50px -30px rgba(22,22,15,.4);padding:13px 15px;width:148px;animation:bsm-c2 7.5s ease-in-out infinite;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;"><span style="width:7px;height:7px;border-radius:50%;background:#d99500;flex:none;"></span><span style="font-size:11px;font-weight:800;color:#d99500;letter-spacing:.03em;">本月收款</span></div>
+          <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:9px;"><span style="font-size:20px;font-weight:800;color:#15140e;line-height:1;">NT$128K</span><span style="font-size:10.5px;font-weight:700;color:#199a55;">+18%</span></div>
+          <div style="display:flex;align-items:flex-end;gap:4px;height:28px;"><span style="flex:1;height:42%;background:#f0e2bf;border-radius:3px;"></span><span style="flex:1;height:60%;background:#f0e2bf;border-radius:3px;"></span><span style="flex:1;height:50%;background:#f0e2bf;border-radius:3px;"></span><span style="flex:1;height:78%;background:#e8c878;border-radius:3px;"></span><span style="flex:1;height:100%;background:#d99500;border-radius:3px;"></span></div>
+        </div>
+        <div style="position:absolute;z-index:2;left:-2%;bottom:21%;background:#fff;border-radius:16px;box-shadow:0 26px 50px -30px rgba(22,22,15,.4);padding:11px 14px;display:flex;align-items:center;gap:10px;animation:bsm-c3 8s ease-in-out infinite;">
+          <span style="width:34px;height:34px;border-radius:10px;background:#7a5bff;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#16160f;white-space:nowrap;">出缺勤 · 5 人到齊</div>
+            <div style="font-size:11px;color:#8a8f9c;margin-top:3px;white-space:nowrap;">1 人請假 · 已記錄</div>
+          </div>
+        </div>
+        <div style="position:absolute;z-index:2;right:-4%;bottom:7%;width:min(60%,224px);background:#fff;border-radius:16px;box-shadow:0 30px 56px -32px rgba(22,22,15,.4);padding:13px 15px;animation:bsm-c5 8.5s ease-in-out infinite;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;"><span style="width:7px;height:7px;border-radius:50%;background:#ff6b57;flex:none;"></span><span style="font-size:11px;font-weight:800;color:#ff6b57;letter-spacing:.03em;">報價提案</span></div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="color:#15140e;font-weight:600;white-space:nowrap;">晴海設計</span><span style="font-size:10px;font-weight:700;color:#199a55;background:#e7f3dd;padding:2px 7px;border-radius:6px;white-space:nowrap;">已成交</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="color:#15140e;font-weight:600;white-space:nowrap;">大樹工作室</span><span style="font-size:10px;font-weight:700;color:#8a8f9c;background:#eef0f3;padding:2px 7px;border-radius:6px;white-space:nowrap;">待回覆</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="color:#15140e;font-weight:600;white-space:nowrap;">森森選物</span><span style="font-size:10px;font-weight:700;color:#ff6b57;background:#ffeae5;padding:2px 7px;border-radius:6px;white-space:nowrap;">報價中</span></div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="bcard b-1">
-      <div class="ctag"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>產品力診斷</div>
-      <div style="font-size:13.5px;font-weight:600">這個方向值得做嗎？</div>
-      <div class="b-bar"><i style="width:78%"></i></div>
-      <div style="font-size:11.5px;color:var(--muted);margin-top:7px">AI 判定：<b style="color:var(--teal)">值得做 · 繼續</b></div>
+  </section>
+
+  <!-- MODULE MARQUEE -->
+  <section id="modules" style="max-width:1180px;margin:clamp(56px,9vw,120px) auto 0;padding:0 clamp(20px,5vw,40px);">
+    <div style="text-align:center;max-width:680px;margin:0 auto clamp(26px,3.4vw,40px);">
+      <div style="font-size:13px;font-weight:800;letter-spacing:.14em;color:#137a42;margin-bottom:13px;">ALL-IN-ONE · 5 大領域 · 14 模組</div>
+      <h2 style="font-size:clamp(28px,4.4vw,52px);line-height:1.05;letter-spacing:-.035em;font-weight:800;margin:0 0 14px;text-wrap:balance;">一個平台，<span style="position:relative;white-space:nowrap;z-index:0;">轉個不停<span style="position:absolute;left:-2%;right:-2%;bottom:4%;height:30%;background:#d4ec5b;border-radius:6px;z-index:-1;transform:rotate(-1deg);"></span></span>。</h2>
+      <p style="font-size:clamp(15px,1.6vw,18px);line-height:1.65;color:#5b6170;margin:0;text-wrap:pretty;">小團隊最大的內耗，是工具開五個、資料散五處、每件事都要重接一次。BeyondSpec 把驗證方向、跑日常、追業務、收錢算薪、管出勤——全接成一條線，一個人也能像一支團隊在跑。</p>
     </div>
-    <div class="bcard b-2">
-      <div class="ctag"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>客戶 · 報價</div>
-      <div class="b-row"><img class="b-av" src="https://randomuser.me/api/portraits/women/68.jpg" alt=""><div>林總監<div style="font-size:11.5px;color:var(--muted)">報價已讀 · 待回覆</div></div></div>
-      <div class="b-row" style="margin-top:10px"><img class="b-av" src="https://randomuser.me/api/portraits/men/52.jpg" alt=""><div>陳經理<div style="font-size:11.5px;color:var(--teal)">已簽約 NT$120K</div></div></div>
+    <!-- 5 大領域：14 模組各自解決的公司核心問題 -->
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:1040px;margin:0 auto clamp(30px,4vw,46px);">
+      <div style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#199a55;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#199a55;letter-spacing:.03em;">驗證</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">這個方向值得做嗎？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">別埋頭半年才發現做錯</div></div>
+      <div style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#0f9d8e;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#0f9d8e;letter-spacing:.03em;">營運</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">公司現在狀況怎樣？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">進度不再散在 LINE 和腦袋裡</div></div>
+      <div style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#ff6b57;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#ff6b57;letter-spacing:.03em;">業務</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">客戶、報價追到哪？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">不靠記性，不漏單</div></div>
+      <div style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#d99500;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#d99500;letter-spacing:.03em;">財務</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">錢收到了沒？薪水算了沒？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">月底不再對帳到半夜</div></div>
+      <div style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#7a5bff;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#7a5bff;letter-spacing:.03em;">出勤</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">今天誰到了？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">排班、算薪一個地方搞定</div></div>
     </div>
-    <div class="bcard b-3">
-      <div class="ctag"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>今天該做什麼</div>
-      <div style="font-size:13px;color:var(--ink-2);display:grid;gap:8px">
-        <div>✓ <span style="color:var(--muted);text-decoration:line-through">寄出 A 客戶報價</span></div>
-        <div>○ 跟進 B 客戶收款</div>
-        <div>○ 確認本月薪資</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="marq"><div class="track a" id="trackA"></div></div>
+      <div class="marq"><div class="track b" id="trackB"></div></div>
+    </div>
+  </section>
+
+  <!-- SECTION INTRO -->
+  <section style="max-width:880px;margin:0 auto;text-align:center;padding:clamp(72px,11vw,150px) clamp(20px,5vw,40px) clamp(24px,4vw,48px);">
+    <div class="rv" style="font-size:13px;font-weight:700;letter-spacing:.1em;color:#137a42;margin-bottom:18px;">一個平台，跑完全程</div>
+    <h2 class="rv" style="font-size:clamp(30px,5.2vw,62px);line-height:1.04;letter-spacing:-.035em;font-weight:800;margin:0 0 20px;text-wrap:balance;">從驗證，到營運，到看懂全局。</h2>
+    <p class="rv" style="font-size:clamp(16px,1.7vw,20px);line-height:1.6;color:#5b6170;max-width:560px;margin:0 auto;">別的工具都從「你已決定要做」之後才開始。BeyondSpec 把生意的每一段接在同一條線上。</p>
+  </section>
+
+  <!-- FEATURES -->
+  <div id="features"></div>
+  <!-- FEATURE 01 -->
+  <section style="max-width:1180px;margin:0 auto;padding:clamp(16px,2vw,28px) clamp(20px,5vw,40px);">
+    <div class="rv" style="background:#e7f3dd;border-radius:28px;padding:clamp(28px,4vw,56px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(28px,4vw,56px);align-items:center;">
+      <div>
+        <div style="font-size:13px;font-weight:700;letter-spacing:.06em;color:#137a42;margin-bottom:14px;">01 · 產品力診斷</div>
+        <h3 style="font-size:clamp(26px,3.4vw,42px);line-height:1.08;letter-spacing:-.03em;font-weight:800;margin:0 0 16px;text-wrap:balance;"><span style="white-space:nowrap;">在你埋頭做半年前，</span><br><span style="white-space:nowrap;">先知道值不值得做。</span></h3>
+        <p style="font-size:clamp(15px,1.6vw,18px);line-height:1.6;color:#46506a;margin:0 0 22px;text-wrap:pretty;">合成用戶訪談、市場調研、競品分析，一輪幫你跑完，給出一個能拿來做決定的分數。</p>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;">
+          <span style="font-size:13px;font-weight:600;color:#16160f;background:#fff;padding:9px 15px;border-radius:999px;">合成用戶訪談</span>
+          <span style="font-size:13px;font-weight:600;color:#16160f;background:#fff;padding:9px 15px;border-radius:999px;">市場調研</span>
+          <span style="font-size:13px;font-weight:600;color:#16160f;background:#fff;padding:9px 15px;border-radius:999px;">競品分析</span>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:20px;box-shadow:0 36px 70px -42px rgba(11,11,15,.3);padding:28px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center;">
+        <svg width="140" height="140" viewBox="0 0 118 118" style="flex:none;"><circle cx="59" cy="59" r="50" fill="none" stroke="#e3e8f2" stroke-width="13"/><circle id="ring78" cx="59" cy="59" r="50" fill="none" stroke="#16160f" stroke-width="13" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 59 59)"/><text x="59" y="56" text-anchor="middle" font-size="30" font-weight="800" fill="#0b0b0f" font-family="Plus Jakarta Sans">78</text><text x="59" y="74" text-anchor="middle" font-size="12" fill="#9499a6">/100</text></svg>
+        <div>
+          <div style="font-size:18px;font-weight:800;line-height:1.2;margin-bottom:12px;">這個方向<br>值得做嗎？</div>
+          <div style="display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:#fff;background:#199a55;padding:9px 16px;border-radius:999px;">✓ 值得做 · 繼續</div>
+        </div>
       </div>
     </div>
-  </div>
-</div></header>
+  </section>
+  <!-- FEATURE 02 -->
+  <section style="max-width:1180px;margin:clamp(16px,2vw,24px) auto 0;padding:clamp(16px,2vw,28px) clamp(20px,5vw,40px);">
+    <div class="rv" style="background:#f9fafc;border:1px solid rgba(11,11,15,.06);border-radius:28px;padding:clamp(28px,4vw,56px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(28px,4vw,56px);align-items:center;">
+      <div style="order:2;">
+        <div style="font-size:13px;font-weight:700;letter-spacing:.06em;color:#137a42;margin-bottom:14px;">02 · 日常營運</div>
+        <h3 style="font-size:clamp(26px,3.4vw,42px);line-height:1.08;letter-spacing:-.03em;font-weight:800;margin:0 0 16px;text-wrap:balance;"><span style="white-space:nowrap;">任務、客戶、報價、</span><br><span style="white-space:nowrap;">收款、算薪，一個地方。</span></h3>
+        <p style="font-size:clamp(15px,1.6vw,18px);line-height:1.6;color:#46506a;margin:0;text-wrap:pretty;">進度不再散在 LINE、Excel 和你的腦袋裡。薪資與報價自動草擬好，你只要點頭。</p>
+      </div>
+      <div style="order:1;display:flex;flex-direction:column;gap:14px;">
+        <div style="background:#fff;border:1px solid rgba(11,11,15,.06);border-radius:18px;box-shadow:0 30px 60px -44px rgba(11,11,15,.3);padding:20px;">
+          <div style="font-size:12.5px;color:#9499a6;margin-bottom:13px;">收款進度</div>
+          <div style="font-size:28px;font-weight:800;letter-spacing:-.02em;margin-bottom:13px;">NT$120K</div>
+          <div style="height:10px;border-radius:99px;background:#e3e8f2;overflow:hidden;"><div style="width:72%;height:100%;background:#16160f;border-radius:99px;"></div></div>
+          <div style="font-size:12.5px;color:#9499a6;margin-top:9px;">已簽約 · 待入帳</div>
+        </div>
+        <div style="background:#0b0b0f;color:#fff;border-radius:18px;padding:17px 19px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span style="font-size:13.5px;">本月薪資與勞健保已草擬完成</span>
+          <span style="font-size:12.5px;font-weight:700;color:#d4ec5b;white-space:nowrap;">待你點頭 →</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- FEATURE 03 -->
+  <section style="max-width:1180px;margin:clamp(16px,2vw,24px) auto 0;padding:clamp(16px,2vw,28px) clamp(20px,5vw,40px);">
+    <div class="rv" style="background:#0b0b0f;color:#fff;border-radius:28px;padding:clamp(28px,4vw,56px);display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(28px,4vw,56px);align-items:center;">
+      <div>
+        <div style="font-size:13px;font-weight:700;letter-spacing:.06em;color:#d4ec5b;margin-bottom:14px;">03 · 營運戰情室</div>
+        <h3 style="font-size:clamp(26px,3.4vw,42px);line-height:1.08;letter-spacing:-.03em;font-weight:800;margin:0 0 16px;text-wrap:balance;"><span style="white-space:nowrap;">第一次真的「看見」</span><br><span style="white-space:nowrap;">你的公司。</span></h3>
+        <p style="font-size:clamp(15px,1.6vw,18px);line-height:1.6;color:#a9adba;margin:0;text-wrap:pretty;">營收、商機、健康度即時更新。不再用感覺經營，而是用一個畫面做決定。</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:13px;">
+          <div style="background:#17171d;border-radius:16px;padding:16px;"><div style="font-size:11.5px;color:#8b8f9c;margin-bottom:7px;">營收</div><div style="font-size:23px;font-weight:800;">486K</div><div style="font-size:11.5px;color:#199a55;font-weight:700;margin-top:4px;">▲32%</div></div>
+          <div style="background:#17171d;border-radius:16px;padding:16px;"><div style="font-size:11.5px;color:#8b8f9c;margin-bottom:7px;">商機</div><div style="font-size:23px;font-weight:800;">12</div><div style="font-size:11.5px;color:#199a55;font-weight:700;margin-top:4px;">▲3</div></div>
+          <div style="background:#199a55;border-radius:16px;padding:16px;color:#fff;"><div style="font-size:11.5px;color:rgba(255,255,255,.78);margin-bottom:7px;">健康度</div><div style="font-size:23px;font-weight:800;">A</div><div style="font-size:11.5px;color:rgba(255,255,255,.78);font-weight:700;margin-top:4px;">穩健</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:9px;height:92px;background:#17171d;border-radius:16px;padding:18px;">
+          <div style="flex:1;background:#33333d;border-radius:4px;height:38%;"></div>
+          <div style="flex:1;background:#33333d;border-radius:4px;height:55%;"></div>
+          <div style="flex:1;background:#33333d;border-radius:4px;height:48%;"></div>
+          <div style="flex:1;background:#33333d;border-radius:4px;height:70%;"></div>
+          <div style="flex:1;background:#d4ec5b;border-radius:4px;height:100%;"></div>
+          <div style="flex:1;background:#33333d;border-radius:4px;height:82%;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- ROLES / PERSONAS -->
-<section class="sec alt" id="roles"><div class="wrap">
-  <div class="shead rv">
-    <h2 class="h2">每個角色，都有一塊<span class="p">替你扛</span>。</h2>
-    <p class="sub2">小團隊裡，一個人常常要當好幾種人。BeyondSpec 對應你身上的每一頂帽子。</p>
-  </div>
-  <div class="pgrid">
-    <div class="pcard rv">
-      <div class="top"><img class="ph" src="https://randomuser.me/api/portraits/men/32.jpg" alt="創辦人"><div class="role">創辦人 / 產品經理<span>Founder / PM</span></div></div>
-      <p class="pain">我不知道這方向值不值得做，就埋頭做了半年。</p>
-      <span class="mod"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>產品力診斷</span>
+  <!-- ROLES -->
+  <section id="roles" style="max-width:1180px;margin:0 auto;padding:clamp(64px,10vw,140px) clamp(20px,5vw,40px) clamp(20px,4vw,48px);">
+    <div style="text-align:center;max-width:680px;margin:0 auto 50px;">
+      <h2 class="rv" style="font-size:clamp(28px,4.6vw,54px);line-height:1.06;letter-spacing:-.035em;font-weight:800;margin:0 0 16px;text-wrap:balance;">每個角色，都有一塊替你扛。</h2>
+      <p class="rv" style="font-size:clamp(15px,1.6vw,18px);line-height:1.6;color:#5b6170;margin:0;">小團隊裡，一個人常常要當好幾種人。BeyondSpec 對應你身上的每一頂帽子。</p>
     </div>
-    <div class="pcard rv d1">
-      <div class="top"><img class="ph" src="https://randomuser.me/api/portraits/women/44.jpg" alt="專案經理"><div class="role">專案經理<span>Project Manager</span></div></div>
-      <p class="pain">進度散在 LINE、Excel、我腦袋裡，每天追到心累。</p>
-      <span class="mod"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>任務看板 + 專案</span>
-    </div>
-    <div class="pcard rv d2">
-      <div class="top"><img class="ph" src="https://randomuser.me/api/portraits/men/75.jpg" alt="業務"><div class="role">業務<span>Sales</span></div></div>
-      <p class="pain">客戶聊到哪、報價追到哪，全靠記性，漏掉就丟單。</p>
-      <span class="mod"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>客戶 CRM + 報價</span>
-    </div>
-    <div class="pcard rv">
-      <div class="top"><img class="ph" src="https://randomuser.me/api/portraits/women/26.jpg" alt="HR"><div class="role">HR / 行政<span>People Ops</span></div></div>
-      <p class="pain">每月算薪、勞健保、排班，手動算到半夜。</p>
-      <span class="mod"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>算薪 + 出缺勤</span>
-    </div>
-    <div class="pcard rv d1">
-      <div class="top"><img class="ph" src="https://randomuser.me/api/portraits/men/61.jpg" alt="會計"><div class="role">財務 / 會計<span>Finance</span></div></div>
-      <p class="pain">錢到底收到了沒？月底對帳對到眼花。</p>
-      <span class="mod"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>收款管理</span>
-    </div>
-    <div class="pcard rv d2">
-      <div class="top"><img class="ph" src="https://randomuser.me/api/portraits/men/45.jpg" alt="老闆"><div class="role">老闆<span>Owner</span></div></div>
-      <p class="pain">公司現在到底好不好，沒人能給我一個畫面。</p>
-      <span class="mod"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 4-6"/></svg>營運戰情室</span>
-    </div>
-  </div>
-</div></section>
+    <div class="rc-track" id="rcTrack"></div>
+  </section>
 
-<!-- PLATFORM / CLOSED LOOP -->
-<section class="sec" id="platform"><div class="wrap">
-  <div class="shead rv">
-    <h2 class="h2">從「<span class="p">值不值得做</span>」到「<span class="p">錢進來</span>」。</h2>
-    <p class="sub2">市面上的工具，都從「你已經決定要做」之後才開始。我們從更前面一步接住你——然後一路陪你跑到收款。</p>
-  </div>
-  <div class="loop">
-    <div class="node rv"><span class="num">01</span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg><h5>產品力診斷</h5><p>這方向值得做嗎？</p></div>
-    <div class="arrow rv">→</div>
-    <div class="node rv d1"><span class="num">02</span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg><h5>專案 / 任務</h5><p>今天該做什麼？</p></div>
-    <div class="arrow rv d1">→</div>
-    <div class="node rv d2"><span class="num">03</span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><h5>客戶 / 報價</h5><p>這人跟我什麼關係？</p></div>
-    <div class="arrow rv d2">→</div>
-    <div class="node rv d3"><span class="num">04</span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><h5>收款 / 算薪</h5><p>錢收到了嗎？</p></div>
-    <div class="arrow rv d3">→</div>
-    <div class="node rv d4"><span class="num">05</span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 4-6"/></svg><h5>營運戰情室</h5><p>公司現在好不好？</p></div>
-  </div>
+  <!-- STATS -->
+  <section style="max-width:1180px;margin:0 auto;padding:clamp(20px,4vw,48px) clamp(20px,5vw,40px);">
+    <div style="background:#199a55;border-radius:28px;padding:clamp(36px,5vw,64px) clamp(24px,4vw,56px);display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:clamp(24px,4vw,48px);text-align:center;color:#fff;">
+      <div><div style="font-size:clamp(36px,5vw,60px);font-weight:800;letter-spacing:-.03em;"><span data-count="1200" data-suffix="+">1200+</span></div><div style="font-size:14.5px;color:rgba(255,255,255,.85);margin-top:6px;">台灣團隊使用中</div></div>
+      <div><div style="font-size:clamp(36px,5vw,60px);font-weight:800;letter-spacing:-.03em;"><span data-count="3" data-suffix=" 個月">3 個月</span></div><div style="font-size:14.5px;color:rgba(255,255,255,.85);margin-top:6px;">驗證縮短到一週</div></div>
+      <div><div style="font-size:clamp(36px,5vw,60px);font-weight:800;letter-spacing:-.03em;"><span data-count="14" data-suffix=" 個">14 個</span></div><div style="font-size:14.5px;color:rgba(255,255,255,.85);margin-top:6px;">模組，一個平台全包</div></div>
+      <div><div style="font-size:clamp(36px,5vw,60px);font-weight:800;letter-spacing:-.03em;"><span data-count="32" data-suffix="%">32%</span></div><div style="font-size:14.5px;color:rgba(255,255,255,.85);margin-top:6px;">平均營收成長</div></div>
+    </div>
+  </section>
 
-  <div class="marq"><div class="marq-t">
-    <span class="chip"><b>產品力診斷</b></span><span class="chip">合成用戶訪談</span><span class="chip">市場調研報告</span><span class="chip"><b>任務看板</b></span><span class="chip">會議記錄</span><span class="chip">文件庫</span><span class="chip"><b>客戶 CRM</b></span><span class="chip">報價提案</span>
-    <span class="chip"><b>產品力診斷</b></span><span class="chip">合成用戶訪談</span><span class="chip">市場調研報告</span><span class="chip"><b>任務看板</b></span><span class="chip">會議記錄</span><span class="chip">文件庫</span><span class="chip"><b>客戶 CRM</b></span><span class="chip">報價提案</span>
-  </div></div>
-  <div class="marq"><div class="marq-t">
-    <span class="chip">算薪資</span><span class="chip">出缺勤</span><span class="chip"><b>收款管理</b></span><span class="chip">營運戰情室</span><span class="chip">AI 行銷工具</span><span class="chip">AI 招募</span><span class="chip">員工評估</span>
-    <span class="chip">算薪資</span><span class="chip">出缺勤</span><span class="chip"><b>收款管理</b></span><span class="chip">營運戰情室</span><span class="chip">AI 行銷工具</span><span class="chip">AI 招募</span><span class="chip">員工評估</span>
-  </div></div>
-</div></section>
+  <!-- TESTIMONIALS -->
+  <section id="outcomes" style="max-width:1180px;margin:0 auto;padding:clamp(64px,10vw,130px) clamp(20px,5vw,40px) clamp(20px,4vw,48px);">
+    <div style="display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.02em;color:#137a42;background:#e7f3dd;padding:7px 15px;border-radius:999px;margin-bottom:22px;">用 BeyondSpec 之後</div>
+    <h2 class="rv" style="font-size:clamp(26px,4vw,48px);line-height:1.08;letter-spacing:-.03em;font-weight:800;margin:0 0 46px;max-width:680px;text-wrap:balance;">把瞎忙換成<span style="color:#199a55;">看得見的進展</span>。</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;">
+      <div class="rv tcard" style="position:relative;overflow:hidden;background:#15140e;color:#fff;border-radius:24px;padding:30px 28px 28px;transition:transform .35s ease;">
+        <div style="font-size:clamp(46px,5.5vw,64px);line-height:.9;font-weight:800;letter-spacing:-.03em;margin-bottom:14px;">1 週</div>
+        <div style="font-size:clamp(17px,1.7vw,20px);font-weight:800;line-height:1.35;margin-bottom:8px;">從三個月到一週</div>
+        <p style="font-size:14.5px;line-height:1.55;opacity:.82;margin:0;">驗證一個方向不再靠猜，證據幫你快速說「做」或「不做」。</p>
+        <span style="position:absolute;right:-14px;bottom:-14px;font-size:120px;line-height:1;font-weight:800;opacity:.08;pointer-events:none;">✓</span>
+      </div>
+      <div class="rv tcard" style="position:relative;overflow:hidden;background:#d4ec5b;color:#15140e;border-radius:24px;padding:30px 28px 28px;transition:transform .35s ease;">
+        <div style="font-size:clamp(46px,5.5vw,64px);line-height:.9;font-weight:800;letter-spacing:-.03em;margin-bottom:14px;">1 處</div>
+        <div style="font-size:clamp(17px,1.7vw,20px);font-weight:800;line-height:1.35;margin-bottom:8px;">全公司一個地方</div>
+        <p style="font-size:14.5px;line-height:1.55;opacity:.82;margin:0;">報價、收款、算薪、排班集中管理，月底不再翻三個系統對帳。</p>
+        <span style="position:absolute;right:-14px;bottom:-14px;font-size:120px;line-height:1;font-weight:800;opacity:.08;pointer-events:none;">◎</span>
+      </div>
+      <div class="rv tcard" style="position:relative;overflow:hidden;background:#199a55;color:#fff;border-radius:24px;padding:30px 28px 28px;transition:transform .35s ease;">
+        <div style="font-size:clamp(46px,5.5vw,64px);line-height:.9;font-weight:800;letter-spacing:-.03em;margin-bottom:14px;">即時</div>
+        <div style="font-size:clamp(17px,1.7vw,20px);font-weight:800;line-height:1.35;margin-bottom:8px;">第一次看見全局</div>
+        <p style="font-size:14.5px;line-height:1.55;opacity:.82;margin:0;">戰情室把營運變成一張即時畫面，用數據經營而不是用感覺。</p>
+        <span style="position:absolute;right:-14px;bottom:-14px;font-size:120px;line-height:1;font-weight:800;opacity:.08;pointer-events:none;">◷</span>
+      </div>
+    </div>
+  </section>
 
-<!-- HOW -->
-<section class="sec alt"><div class="wrap">
-  <div class="shead rv">
-    <h2 class="h2">你做決策，<span class="p">AI 做苦工</span>。</h2>
-  </div>
-  <div class="how">
-    <div class="step rv"><div class="n">1</div><h4>你開口</h4><p>用一句話告訴它你要什麼——「幫我擬這份報價」「整理這週進度」「算這個月薪水」。</p></div>
-    <div class="step rv d1"><div class="n">2</div><h4>AI 動手</h4><p>它跨模組把苦工做完：草擬、彙整、計算、追蹤，資料在同一個平台流動，不用你複製貼上。</p></div>
-    <div class="step rv d2"><div class="n">3</div><h4>你點頭</h4><p>你只負責看一眼、做決定。對的就送出，要改的講一句——重要的事還是你說了算。</p></div>
-  </div>
-</div></section>
+  <!-- CTA -->
+  <section id="cta" style="max-width:1180px;margin:0 auto;padding:clamp(20px,4vw,48px) clamp(20px,5vw,40px) clamp(64px,9vw,110px);">
+    <div style="position:relative;background:#199a55;border-radius:32px;padding:clamp(48px,8vw,110px) clamp(24px,5vw,48px);text-align:center;overflow:hidden;color:#fff;">
+      <div style="position:absolute;left:-6%;bottom:-30%;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(212,236,91,.4),transparent 70%);"></div>
+      <div style="position:absolute;right:-4%;top:-32%;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%);"></div>
+      <div style="position:relative;z-index:2;">
+        <h2 style="font-size:clamp(32px,6vw,72px);line-height:1.02;letter-spacing:-.04em;font-weight:800;margin:0 0 22px;color:#fff;"><span style="white-space:nowrap;">準備好把整間公司，</span><br><span style="white-space:nowrap;">跑在同一個平台？</span></h2>
+        <p style="font-size:clamp(16px,1.7vw,20px);line-height:1.6;color:rgba(255,255,255,.85);max-width:520px;margin:0 auto 34px;">免費試用 7 天、全功能試玩、不用信用卡。隨時升級。</p>
+        <div style="display:flex;gap:13px;justify-content:center;flex-wrap:wrap;">
+          <a href="/path/app/" style="font-size:17px;font-weight:700;background:#fff;color:#15140e;padding:17px 36px;border-radius:999px;box-shadow:0 16px 34px -14px rgba(0,0,0,.3);">免費開始使用 →</a>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- WHY -->
-<section class="sec" id="why"><div class="wrap">
-  <div class="shead rv">
-    <h2 class="h2">三件事，<span class="p">別人沒同時做到</span>。</h2>
-  </div>
-  <div class="why">
-    <div class="wc rv">
-      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12h4l3 8 4-16 3 8h4"/></svg></div>
-      <h4>從驗證到營運，一條線</h4>
-      <p>別的工具都從「你已決定要做」之後才開始。我們從「這方向對不對」就接住你，一路陪到收款。整段生意在同一個平台。</p>
+  <!-- FOOTER -->
+  <footer style="background:#f4f2ee;border-top:1px solid rgba(11,11,15,.07);">
+    <div style="max-width:1320px;margin:0 auto;padding:clamp(48px,6vw,80px) clamp(20px,5vw,56px) clamp(28px,3vw,40px);">
+      <div style="display:flex;flex-wrap:wrap;gap:clamp(32px,5vw,64px);justify-content:space-between;align-items:flex-start;">
+        <div style="max-width:380px;">
+          <p style="font-size:15px;line-height:1.7;color:#5b6170;margin:0 0 22px;font-weight:500;">小團隊的 AI 商業引擎。<br>從驗證到營收，一個平台幫你跑完每一步。</p>
+          <div style="display:flex;flex-wrap:wrap;gap:16px 22px;font-size:15px;font-weight:600;color:#23231c;"><a href="/path/app/">免費試用</a><a href="/path/app/">登入</a><a href="mailto:hello@beyondspec.tw?subject=BeyondSpec%20諮詢">聯絡我們</a></div>
+        </div>
+        <!-- 平台 / 應用情境 連結欄移除：點了只是滑回頁面已有區塊、無獨立頁面，屬無意義連結 -->
+        <div style="width:min(100%,340px);display:flex;flex-direction:column;gap:14px;">
+          <div style="background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:18px;padding:14px;box-shadow:0 30px 60px -50px rgba(11,11,15,.4);">
+            <div style="border-radius:12px;height:clamp(150px,16vw,190px);background-color:#d4ec5b;background-image:radial-gradient(rgba(40,60,10,.55) 1.4px,transparent 1.6px);background-size:8px 8px;margin-bottom:16px;"></div>
+            <div style="font-size:clamp(20px,1.8vw,26px);font-weight:700;letter-spacing:-.01em;margin-bottom:14px;color:#15140e;">訂閱我們的電子報</div>
+            <div style="display:flex;gap:8px;">
+              <input placeholder="輸入你的 Email" style="flex:1;min-width:0;font-size:14px;font-family:inherit;color:#15140e;background:#f4f2ee;border:1px solid rgba(11,11,15,.12);border-radius:11px;padding:12px 14px;outline:none;">
+              <button style="font-size:14px;font-weight:700;font-family:inherit;color:#fff;background:#15140e;border:none;border-radius:11px;padding:0 18px;white-space:nowrap;cursor:pointer;">訂閱</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin:clamp(40px,6vw,80px) 0 clamp(24px,3vw,36px);">
+        <span style="display:block;font-size:clamp(40px,13vw,180px);line-height:.78;font-weight:800;letter-spacing:-.06em;color:#15140e;white-space:nowrap;">Beyond<span style="color:#199a55;">Spec</span><span style="color:#d4ec5b;">.</span></span>
+      </div>
+      <div style="border-top:1px solid rgba(11,11,15,.1);padding-top:22px;display:flex;flex-wrap:wrap;align-items:center;gap:10px clamp(20px,3vw,34px);font-size:12.5px;font-weight:600;letter-spacing:.04em;color:#8a897e;">
+        <span>© 2026 BeyondSpec · Made in Taiwan</span><!-- 隱私權政策/服務條款/資訊安全/Cookie/系統狀態 暫隱藏：頁面尚未建立 -->
+      </div>
     </div>
-    <div class="wc rv d1">
-      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-      <h4>大廠的包袱，我們沒有</h4>
-      <p>大牌軟體養著大團隊、要交代投資人，所以降不了價。我們團隊精簡、AI 扛重活——省下的成本還給你：一樣的戰力，付得起的價。</p>
-    </div>
-    <div class="wc rv d2">
-      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.4 8 12 8 12s8-6.6 8-12a8 8 0 0 0-8-8z"/></svg></div>
-      <h4>為台灣而做</h4>
-      <p>算薪、勞健保、發票、金流、繁體中文——為台灣中小企業的真實規矩設計，不是把國外軟體硬翻成中文。</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- PRICING -->
-<section class="sec alt" id="pricing"><div class="wrap">
-  <div class="shead rv">
-    <h2 class="h2">先免費用，<span class="p">用得順再說</span>。</h2>
-  </div>
-  <p class="rv" style="text-align:center;color:var(--ink-2);max-width:680px;margin:0 auto 30px">免費試用 7 天、全功能試玩、不用信用卡。日常 AI 苦工吃到飽，貴的「驗證／研究」每月含幾份、用完再加購。</p>
-  <div class="ptiers">
-    <div class="ptier rv">
-      <h4>跑起來 PRO</h4>
-      <div class="amt">NT$599<span class="u"> /月</span></div>
-      <div class="desc">一個人駕馭整套，不限公司人數</div>
-      <ul>
-        <li><span class="ck">✓</span>基礎模組（依你的職業挑要開哪些）</li>
-        <li><span class="ck">✓</span>任務／客戶／報價／收款／會議／文件</li>
-        <li><span class="ck">✓</span>日常 AI 苦工吃到飽</li>
-      </ul>
-      <div class="pc">免費試 7 天 →</div>
-    </div>
-    <div class="ptier hot rv d1">
-      <div class="pb">最受歡迎</div>
-      <h4>長大了 MAX</h4>
-      <div class="amt">NT$1,299<span class="u"> /月</span></div>
-      <div class="desc">所有模組全開，單人自己用</div>
-      <ul>
-        <li><span class="ck">✓</span>PRO 全部 ＋ 全部進階模組</li>
-        <li><span class="ck">✓</span>產品力診斷／合成訪談／市場報告</li>
-        <li><span class="ck">✓</span>進階戰情 BI、算薪 HR</li>
-      </ul>
-      <div class="pc">免費試 7 天 →</div>
-    </div>
-    <div class="ptier rv d2">
-      <h4>Team</h4>
-      <div class="amt">NT$499<span class="u"> /人/月起</span></div>
-      <div class="desc">多人共用一個工作區</div>
-      <ul>
-        <li><span class="ck">✓</span>MAX 全模組 ＋ 多人協作</li>
-        <li><span class="ck">✓</span>老闆開團、邀員工（員工不必各買）</li>
-        <li><span class="ck">✓</span>管理員＋集中帳單＋「只看」免費</li>
-      </ul>
-      <div class="pc">開團隊 →</div>
-    </div>
-    <div class="ptier rv d3">
-      <h4>Enterprise</h4>
-      <div class="amt">洽談</div>
-      <div class="desc">治理、合規、深度在地</div>
-      <ul>
-        <li><span class="ck">✓</span>Team 全部 ＋ 帳號治理／SSO</li>
-        <li><span class="ck">✓</span>審計、資料駐留台灣境內</li>
-        <li><span class="ck">✓</span>專屬客製與導入</li>
-      </ul>
-      <div class="pc">聯繫我們 →</div>
-    </div>
-  </div>
-</div></section>
-
-<!-- FINAL CTA -->
-<section class="sec"><div class="wrap">
-  <div class="fcta rv">
-    <h2>準備好讓 AI，<br>幫你把整間公司跑起來了嗎？</h2>
-    <p>從驗證方向到收到錢，一個平台全包。免費開始，隨時升級。</p>
-    <a class="btn btn-purple btn-lg" href="/path/app/">免費開始使用 →</a>
-  </div>
-  <div class="giant"><span>BeyondSpec</span></div>
-</div></section>
-
-<!-- FOOTER -->
-<footer class="foot"><div class="wrap"><div class="foot-in">
-  <div>
-    <div class="logo">Beyond<b>Spec</b></div>
-    <p style="margin-top:8px">新創與中小企業的發展引擎 · Made in Taiwan</p>
-  </div>
-  <p>© 2026 BeyondSpec · hello@beyondspec.tw</p>
-</div></div></footer>
+  </footer>
+</div>
 
 <script>
-// scroll reveal
-var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.16});
-document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
-// hero bento staggered float-in on load
-window.addEventListener('load',function(){
-  var cs=document.querySelectorAll('.bento .bcard');
-  cs.forEach(function(c,i){setTimeout(function(){c.classList.add('show');},180+i*150);});
-});
+// ===== MODULE MARQUEE =====
+var IC={pulse:'<path d="M3 12h4l2 5 4-10 2 5h6"/>',flask:'<path d="M9 3h6M10 3v6l-5.5 9.5A1.5 1.5 0 0 0 5.8 21h12.4a1.5 1.5 0 0 0 1.3-2.5L14 9V3"/>',clipboard:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9.5 4V3h5v1"/><path d="M8.5 12.5l2 2 4-4.5"/>',trending:'<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>',doc:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',check:'<path d="M4 7l2 2 3-3"/><path d="M4 16l2 2 3-3"/><path d="M13 7h7M13 17h7"/>',people:'<circle cx="9" cy="8" r="3"/><path d="M3.5 20c0-3 2.7-5 5.5-5s5.5 2 5.5 5"/><path d="M16 6.2a3 3 0 0 1 0 5.6"/><path d="M18.5 20c0-2-1-3.6-2.5-4.4"/>',dollar:'<path d="M12 2v20"/><path d="M16.5 6H10a3.5 3.5 0 0 0 0 7h4a3.5 3.5 0 0 1 0 7H7"/>',receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',calendar:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/>',folder:'<path d="M3 7a2 2 0 0 1 2-2h3.5l2 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',chat:'<path d="M4 5h16v11H9l-4 4z"/><path d="M8 10h8M8 13h5"/>'};
+var LOCK='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.8;"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+var CATS={validate:{label:'驗證',color:'#199a55',tint:'#e7f3dd'},operate:{label:'營運',color:'#0f9d8e',tint:'#e2f5f1'},sales:{label:'業務',color:'#ff6b57',tint:'#ffeae5'},finance:{label:'財務',color:'#d99500',tint:'#fcf1d8'},people:{label:'出勤',color:'#7a5bff',tint:'#efeaff'}};
+var MODS=[{cat:'validate',name:'產品力診斷',sub:'這個方向值得做嗎?',icon:'pulse'},{cat:'validate',name:'Lab 研究',sub:'用戶怎麼看我的產品?',icon:'flask'},{cat:'validate',name:'問卷引擎',sub:'怎麼收集真實回饋?',icon:'clipboard'},{cat:'validate',name:'市場探測',sub:'市場有多大?',icon:'trending'},{cat:'validate',name:'市場報告',sub:'完整分析怎麼說?',icon:'doc'},{cat:'operate',name:'任務中心',sub:'今天該做什麼?',icon:'check'},{cat:'operate',name:'營運戰情室',sub:'公司現在狀況怎樣?',icon:'pulse'},{cat:'operate',name:'會議紀錄',sub:'上次講了什麼?',icon:'chat'},{cat:'operate',name:'文件庫',sub:'那份合約在哪裡?',icon:'folder'},{cat:'sales',name:'客戶管理',sub:'這個人跟我們什麼關係?',icon:'people'},{cat:'sales',name:'報價提案',sub:'怎麼快速產一份報價?',icon:'doc'},{cat:'finance',name:'收款管理',sub:'錢收到了嗎?',icon:'dollar',lock:true},{cat:'finance',name:'算薪水',sub:'薪水算好了嗎?',icon:'receipt',lock:true},{cat:'people',name:'出缺勤',sub:'今天誰到了?',icon:'calendar'}];
+function msvg(i){return '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+IC[i]+'</svg>';}
+function mcard(m){var c=CATS[m.cat];return '<div class="mcard" style="--accent:'+c.color+';--tint:'+c.tint+';"><span class="mchip">'+msvg(m.icon)+'</span><span class="body" style="display:flex;flex-direction:column;min-width:0;flex:1;"><span class="mname">'+m.name+(m.lock?LOCK:'')+'</span><span class="msub">'+m.sub+'</span></span><span class="mcat">'+c.label+'</span></div>';}
+(function(){var a=MODS.slice(0,7).map(mcard).join('');var b=MODS.slice(7).map(mcard).join('');document.getElementById('trackA').innerHTML=a+a;document.getElementById('trackB').innerHTML=b+b;})();
+
+// ===== ROLE ACCORDION =====
+var ROLES=[{solid:'#199a55',title:'創辦人 / 產品經理',en:'Founder / PM',quote:'我不知道這方向值不值得做，就埋頭做了半年。',tag:'產品力診斷',img:'assets/people/beyondspec-role-founder-pm.png'},{solid:'#0f9d8e',title:'專案經理',en:'Project Manager',quote:'進度散在 LINE、Excel、我腦袋裡，每天追到心累。',tag:'任務看板 + 專案',img:'assets/people/beyondspec-role-project-manager.png'},{solid:'#ff6b57',title:'業務',en:'Sales',quote:'客戶聊到哪、報價追到哪，全靠記性，漏掉就丟單。',tag:'客戶 CRM + 報價',img:'assets/people/beyondspec-role-sales.png'},{solid:'#7a5bff',title:'HR / 行政',en:'People Ops',quote:'每月算薪、勞健保、排班，手動算到半夜。',tag:'算薪 + 出缺勤',img:'assets/people/beyondspec-role-hr-admin.png'},{solid:'#d99500',title:'財務 / 會計',en:'Finance',quote:'錢到底收到了沒？月底對帳對到眼花。',tag:'收款管理',img:'assets/people/beyondspec-role-finance.png'},{solid:'#137a42',title:'老闆',en:'Owner',quote:'公司現在到底好不好，沒人能給我一個畫面。',tag:'營運戰情室',img:'assets/people/beyondspec-role-owner.png'}];
+function pad(n){return String(n+1).padStart(2,'0');}
+(function(){
+  var html=ROLES.map(function(r,i){
+    return '<div class="rc-panel'+(i===0?' on':'')+'" data-i="'+i+'">'
+      +'<img src="'+r.img+'" alt="'+r.title+'">'
+      +'<div class="rc-fill" style="background:'+r.solid+';"></div>'
+      +'<div class="rc-grad"></div>'
+      +'<div class="rc-coll"><div style="font-size:14px;font-weight:800;letter-spacing:.06em;color:rgba(255,255,255,.95);text-align:center;">'+pad(i)+'</div><div style="display:flex;justify-content:center;"><span style="writing-mode:vertical-rl;text-orientation:mixed;font-size:clamp(15px,1.6vw,18px);font-weight:800;letter-spacing:.08em;color:#fff;white-space:nowrap;">'+r.title+'</span></div><div style="width:18px;height:3px;border-radius:99px;background:rgba(255,255,255,.55);margin:0 auto;"></div></div>'
+      +'<div class="rc-exp"><div style="position:absolute;left:24px;top:22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><span style="font-size:13px;font-weight:800;letter-spacing:.14em;color:rgba(255,255,255,.92);background:rgba(255,255,255,.16);backdrop-filter:blur(6px);padding:6px 12px;border-radius:999px;">'+pad(i)+'</span><span style="display:inline-flex;align-items:center;font-size:13px;font-weight:800;color:#fff;background:'+r.solid+';padding:7px 14px;border-radius:999px;white-space:nowrap;">'+r.title+'</span><span style="font-size:12px;font-weight:700;letter-spacing:.05em;color:rgba(255,255,255,.6);white-space:nowrap;">'+r.en+'</span></div><div style="position:absolute;left:24px;right:24px;bottom:26px;color:#fff;"><span style="display:block;width:32px;height:3px;border-radius:99px;background:#d4ec5b;margin-bottom:16px;"></span><p style="font-size:clamp(19px,2.1vw,27px);line-height:1.4;font-weight:800;letter-spacing:-.01em;margin:0 0 18px;max-width:30ch;text-wrap:pretty;">「'+r.quote+'」</p><span style="display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;color:#15140e;background:#d4ec5b;padding:9px 16px;border-radius:999px;white-space:nowrap;"><span style="width:6px;height:6px;border-radius:50%;background:#15140e;"></span>'+r.tag+'</span></div></div>'
+      +'</div>';
+  }).join('');
+  var track=document.getElementById('rcTrack');track.innerHTML=html;
+  var panels=[].slice.call(track.querySelectorAll('.rc-panel'));var active=0,paused=false,timer;
+  function setActive(n){active=n;panels.forEach(function(p,i){p.classList.toggle('on',i===n);});}
+  panels.forEach(function(p,i){p.addEventListener('mouseenter',function(){paused=true;setActive(i);});p.addEventListener('click',function(){paused=true;setActive(i);});});
+  track.addEventListener('mouseleave',function(){paused=false;});
+  timer=setInterval(function(){if(paused)return;setActive((active+1)%ROLES.length);},4200);
+})();
+
+// ===== count-up + ring + reveal =====
+(function(){
+  var counters=[].slice.call(document.querySelectorAll('[data-count]'));
+  counters.forEach(function(el){var suf=el.getAttribute('data-suffix')||'';el.textContent='0'+suf;el._done=false;});
+  var ring=document.getElementById('ring78');var ringDone=false;
+  function runCount(el){if(el._done)return;el._done=true;var fin=parseFloat(el.getAttribute('data-count'));var suf=el.getAttribute('data-suffix')||'';var t0=performance.now();function tick(now){var p=Math.min(1,(now-t0)/1200);var e=1-Math.pow(1-p,3);el.textContent=Math.round(fin*e)+suf;if(p<1)requestAnimationFrame(tick);}requestAnimationFrame(tick);}
+  function onScroll(){var H=window.innerHeight||800;counters.forEach(function(el){var r=el.getBoundingClientRect();if(r.top<H*0.9&&r.bottom>0)runCount(el);});if(ring&&!ringDone){var r=ring.getBoundingClientRect();if(r.top<H*0.9&&r.bottom>0){ringDone=true;ring.style.transition='stroke-dashoffset 1.3s cubic-bezier(.16,.84,.44,1)';ring.style.strokeDashoffset='69';}}}
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();setTimeout(onScroll,400);
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.16});
+  document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
+  document.querySelectorAll('.tcard').forEach(function(c){c.addEventListener('mouseenter',function(){c.style.transform='translateY(-6px)';});c.addEventListener('mouseleave',function(){c.style.transform='';});});
+})();
 </script>
 </body>
 </html>
