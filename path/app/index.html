@@ -8845,7 +8845,8 @@ body.hd-locked { overflow: hidden; }
       savedSurveys:  { shape: "array",  syncFirestore: true,  localKey: "bp_savedSurveys" },
       settings:      { shape: "object", syncFirestore: true,  localKey: "bp_settings" },
       feedbackLog:   { shape: "array",  syncFirestore: false, localKey: "bp_feedback" },
-      billing:       { shape: "object", syncFirestore: true,  localKey: "bp_subscription" }
+      billing:       { shape: "object", syncFirestore: true,  localKey: "bp_subscription" },
+      healthChecks:  { shape: "array",  syncFirestore: false, localKey: "bp_healthChecks" }
     });
 
     var _subscribers = {};
@@ -10768,7 +10769,8 @@ body.hd-locked { overflow: hidden; }
       { id: 'lab', label: 'Lab 研究', icon: 'flask' },
       { id: 'survey', label: '問卷引擎', icon: 'clipboard' },
       { id: 'market', label: '市場探測', icon: 'trendUp' },
-      { id: 'report', label: '市場報告', icon: 'fileText' }
+      { id: 'report', label: '市場報告', icon: 'fileText' },
+      { id: 'health', label: 'AI Native 體質檢測', icon: 'pulse' }
     ];
 
     // 商業模組 — Pipeline: 定義→蒐集→排程→執行
@@ -11394,11 +11396,753 @@ body.hd-locked { overflow: hidden; }
       case 'survey': renderSurveyEngine(); break;
       case 'market': renderMarketSignal(); break;
       case 'report': renderMarketReport(); break;
+      case 'health': renderHealthCheck(); break;
       case 'admin-applications': renderAdminApplications(); break;
       case 'report-diagnostic': renderReportDiagnostic(); break;  // S1-D3
       case 'settings': renderSettings(); break;
     }
   }
+
+  // ==================== MODULE: AI NATIVE 體質檢測 (健檢) · 個人/團隊 雙入口 ====================
+  function renderHealthCheck(view){
+    var content = document.getElementById('content');
+    if (!content) return;
+    if (!document.getElementById('hc-inline-style')) {
+      var st = document.createElement('style');
+      st.id = 'hc-inline-style';
+      st.textContent = [
+        '.hc-wrap{max-width:880px}',
+        '.hc-entry{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}',
+        '@media(max-width:680px){.hc-entry{grid-template-columns:1fr}}',
+        '.hc-card{position:relative;border-radius:18px;padding:24px;cursor:pointer;color:#fff;transition:transform .16s ease,box-shadow .16s ease}',
+        '.hc-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(20,20,40,.18)}',
+        '.hc-card.personal{background:#7C5CFC}',
+        '.hc-card.team{background:#1BA891}',
+        '.hc-card .hc-ic{width:34px;height:34px;margin-bottom:14px;opacity:.95}',
+        '.hc-card h3{font-size:18px;font-weight:700;margin:0 0 6px}',
+        '.hc-card p{font-size:13px;line-height:1.55;opacity:.92;margin:0 0 16px}',
+        '.hc-card .hc-go{font-size:13px;font-weight:600}',
+        '.hc-card .hc-soon{position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;background:rgba(255,255,255,.22);padding:3px 9px;border-radius:99px}',
+        '.hc-intro{max-width:680px;margin:0 auto;text-align:center;padding:24px 0}',
+        '.hc-intro .hc-ey{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#D4712A;font-weight:700;margin-bottom:18px}',
+        '.hc-intro h2{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:26px;font-weight:700;color:#3D2E1A;margin:0 0 12px;line-height:1.3}',
+        '.hc-intro .hc-sub{font-size:14px;color:var(--ink-muted);line-height:1.6;margin:0 auto 24px;max-width:520px}',
+        '.hc-points{text-align:left;max-width:460px;margin:0 auto 26px;display:flex;flex-direction:column;gap:14px}',
+        '.hc-pt{display:flex;gap:12px;align-items:flex-start}',
+        '.hc-pt .d{width:7px;height:7px;border-radius:99px;background:#7C5CFC;margin-top:7px;flex:0 0 auto}',
+        '.hc-pt b{font-size:13px;font-weight:600;color:var(--ink)}',
+        '.hc-pt span{font-size:12px;color:var(--ink-muted)}',
+        '.hc-back{font-size:12px;color:var(--ink-muted);cursor:pointer;margin-bottom:8px;display:inline-block}'
+      ].join('');
+      document.head.appendChild(st);
+    }
+    view = view || 'select';
+    if (view === 'personal') { _hcPersonalIntro(content); return; }
+
+    content.innerHTML = ''
+      + '<div class="page-title-area hc-wrap">'
+      +   '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg><span>AI Native 體質檢測</span></h1>'
+      +   '<p class="subtitle">你和你的團隊，到底多會用 AI？</p>'
+      + '</div>'
+      + '<div class="hc-wrap"><div class="hc-entry">'
+      +   '<div class="hc-card personal" id="hc-go-personal">'
+      +     '<svg class="hc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>'
+      +     '<h3>個人體質檢測</h3>'
+      +     '<p>你一個人 + AI，用到多深？10 分鐘照出你跟 AI 一起工作的真實樣子。</p>'
+      +     '<div class="hc-go">先照照自己 →</div>'
+      +   '</div>'
+      +   '<div class="hc-card team" id="hc-go-team">'
+      +     '<span class="hc-soon">即將推出</span>'
+      +     '<svg class="hc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.6"/><circle cx="16.5" cy="9" r="2.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M14.5 19a5 5 0 0 1 6-4.7"/></svg>'
+      +     '<h3>團隊體質檢測</h3>'
+      +     '<p>工作室、企業都適用。看整隊的 AI 體質落在哪、誰能帶誰。</p>'
+      +     '<div class="hc-go">照照整支團隊 →</div>'
+      +   '</div>'
+      + '</div></div>';
+    var p = document.getElementById('hc-go-personal');
+    if (p) p.onclick = function(){ renderHealthCheck('personal'); };
+    var t = document.getElementById('hc-go-team');
+    if (t) t.onclick = function(){ alert('團隊體質檢測即將推出（個人版先上）'); };
+  }
+
+  function _hcPersonalIntro(content){
+    content.innerHTML = ''
+      + '<div class="hc-wrap"><span class="hc-back" id="hc-back">← 返回</span>'
+      + '<div class="hc-intro">'
+      +   '<div class="hc-ey">個人體質檢測</div>'
+      +   '<h2>看清楚你跟 AI 一起工作的真實樣子</h2>'
+      +   '<p class="hc-sub">這不是考試，是一面鏡子。沒有及格不及格，只有「你現在在哪、下一步往哪走」。誠實回答，鏡子才照得準。</p>'
+      +   '<div class="hc-points">'
+      +     '<div class="hc-pt"><span class="d"></span><div><b>誠實，比答得漂亮更重要</b><br><span>我們會追問真實案例。講不出細節的「很會用 AI」不算數。</span></div></div>'
+      +     '<div class="hc-pt"><span class="d"></span><div><b>大約 15 分鐘</b><br><span>一場對話式訪談，5 到 6 段。像跟一個懂行的朋友聊你怎麼工作。</span></div></div>'
+      +     '<div class="hc-pt"><span class="d"></span><div><b>你會拿到一份完整健檢報告</b><br><span>六個面向的能力雷達、跟同行的對照、你的強項與下一步。</span></div></div>'
+      +   '</div>'
+      +   '<button class="btn-accent" id="hc-start">開始檢測 →</button>'
+      + '</div></div>';
+    var b = document.getElementById('hc-back');
+    if (b) b.onclick = function(){ renderHealthCheck('select'); };
+    var s = document.getElementById('hc-start');
+    if (s) s.onclick = function(){ if (window._HC && window._HC.start) { window._HC.start(content); } else { alert('體質檢測模組載入中，請稍候'); } };
+  }
+
+  // ==================== 體質檢測核心 · 個人版 (健檢 _HC) · ES5 vanilla ====================
+  // 訪談狀態機 + 考官 AI(callV2) + 6 維評分 + 防灌水紅旗 + 報告 + bpStorage 存檔
+  (function(){
+    "use strict";
+
+    var SEG = [
+      { key:"intro", dim:null,
+        q:"先讓我認識你。你主要做哪一行、做多久了？簡單講講你平常的工作內容就好。",
+        hints:["我做數位行銷，5 年，主要操盤 DTC 品牌的廣告投放","我是接案的平面／視覺設計師，做 3 年","我在新創做產品經理，2 年多"] },
+      { key:"tools", dim:"tools",
+        q:"聊聊你跟 AI 工具的關係。你現在工作上會用到哪些 AI？大概怎麼用？",
+        hints:["ChatGPT 寫文案、Midjourney 出圖、再用 Claude 整理客戶訪談","主要是 ChatGPT 加一些自動化工具串起來","我會用 ChatGPT"] },
+      { key:"cases", dim:"domain",
+        q:"近一年裡，你用 AI 真正參與、而且做出成果的案子大概幾個？挑一個你印象最深的，說說你怎麼把 AI 用進去的。",
+        hints:["大概 6、7 個。最深的是把整條內容產線從發想到出圖串成一套 AI 流程","3 個左右，最有感的是用 AI 把報價到結案的流程自動化","蠻多的，但多半是零散幫忙"] },
+      { key:"proud", dim:"workflow",
+        q:"那，你最自豪的一套 AI 工作流是什麼？我想聽你怎麼設計 prompt、怎麼把幾個工具串起來，讓它變成可以重複用的東西。",
+        hints:["我做了一組分層 prompt：先讓 AI 出策略框架，再餵品牌資料生成文案，最後人工潤","把 Notion 加 Claude 加自動化工具串成一條，客戶資料進來自動生提案草稿","老實說還沒到可重複，多半每次重新想"] },
+      { key:"judge", dim:"judgment",
+        q:"AI 給你的東西，你怎麼判斷能不能用？有沒有遇過它一本正經講錯、被你抓到的時候？那次你怎麼發現、怎麼處理的？",
+        hints:["我一定查證關鍵數據和引用，曾抓到它編了不存在的論文","靠經驗判斷語氣和邏輯破綻，再交叉問一次","老實說大部分直接用，比較少回頭檢查"] },
+      { key:"self", dim:"handoff",
+        q:"最後想請你替自己打個分。如果用 0 到 10 形容你用 AI 放大專業的程度，你會給幾分、為什麼？這六個面向（工作流設計／工具串接／判斷把關／領域深度／協作交棒／交付可靠）你覺得自己哪邊最強、哪邊最虛？",
+        hints:["大概 7 分。工作流設計跟工具串接是強項，協作交棒最虛","我給 6 分，領域深度夠，但判斷把關還在學","給 8 分，但我知道方法很難交給別人"] }
+    ];
+
+    var DIMS = [
+      { id:"workflow", n:"AI 工作流設計" },
+      { id:"tools",    n:"工具串接力" },
+      { id:"judgment", n:"判斷與把關" },
+      { id:"domain",   n:"領域 × AI 深度" },
+      { id:"handoff",  n:"協作與交棒" },
+      { id:"delivery", n:"交付可靠度" }
+    ];
+    var MED = { workflow:6.5, tools:6.0, judgment:6.8, domain:6.2, handoff:6.5, delivery:6.6 };
+
+    var TIERS = [
+      { sc:"B",  sn:"起步者", col:"#94A3B8", ic:'<path d="M12 19V5M5 12l7-7 7 7"/>',
+        already:"會問 AI、開始把它放進工作", next:"把零星問答串成一條可重複的流程" },
+      { sc:"B+", sn:"實踐者", col:"#1BA891", ic:'<path d="M20 6L9 17l-5-5"/>',
+        already:"AI 進了日常，會用在真實工作上", next:"讓它成系統、不是每次靠臨場" },
+      { sc:"A",  sn:"整合者", col:"#7C5CFC", ic:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+        already:"能設計可重複的人機協作流程", next:"把你的本事變成團隊接得住的方法" },
+      { sc:"A+", sn:"槓桿者", col:"#E08A3A", ic:'<path d="M13 2L3 14h9l-1 8 10-12h-9z"/>',
+        already:"用 AI 顯著放大專業、能複製給團隊", next:"重新定義這個職能的工作方式" },
+      { sc:"S",  sn:"領航者", col:"#5B3FC9", ic:'<path d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/>',
+        already:"重新定義了職能的 AI 工作方式", next:"持續開疆——你已是別人對標的對象" }
+    ];
+
+    function scanRedFlags(transcript){
+      var flags = [];
+      var userTexts = [];
+      var i, t, total = 0, withNum = 0, totalLen = 0;
+      for (i = 0; i < transcript.length; i++) {
+        if (transcript[i].role === "user") {
+          t = transcript[i].text || "";
+          userTexts.push(t);
+          total++;
+          totalLen += t.length;
+          if (/[0-9０-９]|百分|倍|%|％/.test(t)) withNum++;
+        }
+      }
+      var avgLen = total ? totalLen / total : 0;
+      if (total >= 3 && avgLen < 20) flags.push({ id:"too_short", label:"回答偏短", desc:"多數回答缺乏細節，難以佐證真實深度" });
+      if (total >= 3 && withNum === 0) flags.push({ id:"no_metrics", label:"沒有量化成果", desc:"通篇沒有任何數字或成果指標" });
+      var vagueHits = 0, toolHits = 0;
+      var vagueRe = /(會用|幫忙|之類|那些|還好|普通|大概就|差不多|有時候)/g;
+      var toolRe = /(ChatGPT|GPT|Claude|Gemini|Midjourney|Stable\s*Diffusion|Notion|Zapier|Make|n8n|Copilot|Perplexity|Cursor|API)/gi;
+      for (i = 0; i < userTexts.length; i++) {
+        var vm = userTexts[i].match(vagueRe); if (vm) vagueHits += vm.length;
+        var tm = userTexts[i].match(toolRe); if (tm) toolHits += tm.length;
+      }
+      if (vagueHits >= 3 && toolHits === 0) flags.push({ id:"vague_lang", label:"用詞空泛", desc:"多處模糊描述、缺少具體工具或做法" });
+      var selfText = "";
+      for (i = 0; i < transcript.length; i++) { if (transcript[i].role === "user" && transcript[i].seg === "self") selfText = transcript[i].text || ""; }
+      var selfScore = null;
+      var nm = selfText.match(/(10|[0-9])\s*分|給\s*(10|[0-9])|(10|[0-9])\s*\/\s*10/);
+      if (nm) { var n2 = selfText.match(/(10|[0-9])/); if (n2) selfScore = parseInt(n2[1], 10); }
+      if (selfScore !== null && selfScore >= 8 && avgLen < 30) flags.push({ id:"self_inflate", label:"自評偏高", desc:"自評 " + selfScore + " 分，但回答細節不足以支撐" });
+      var dup = false;
+      for (i = 0; i < userTexts.length && !dup; i++) {
+        for (var j = i + 1; j < userTexts.length; j++) {
+          var a = userTexts[i].replace(/\s/g, ""), b = userTexts[j].replace(/\s/g, "");
+          if (a.length > 12 && a === b) { dup = true; break; }
+        }
+      }
+      if (dup) flags.push({ id:"duplicate", label:"重複作答", desc:"偵測到雷同的重複回答" });
+      var evaded = 0;
+      for (i = 0; i < transcript.length; i++) {
+        if (transcript[i].role === "user" && transcript[i].afterProbe) {
+          var pt = (transcript[i].text || "").replace(/\s/g, "");
+          if (pt.length < 14) evaded++;
+        }
+      }
+      if (evaded >= 1) flags.push({ id:"evade_probe", label:"追問仍迴避", desc:"被追問具體案例時仍無法給出細節" });
+      return flags;
+    }
+
+    function fallbackScore(transcript, flags){
+      var userTexts = [], i, totalLen = 0, numHits = 0, toolHits = 0, flowHits = 0, judgeHits = 0, handoffHits = 0;
+      var toolRe = /(ChatGPT|GPT|Claude|Gemini|Midjourney|Notion|Zapier|Make|n8n|Copilot|Perplexity|Cursor|API)/gi;
+      var flowRe = /(流程|串|自動化|prompt|工作流|SOP|可重複|pipeline|框架)/g;
+      var judgeRe = /(查證|驗證|幻覺|抓錯|交叉|核對|把關|檢查)/g;
+      var handoffRe = /(交給|交棒|團隊|SOP|教|複製|文件|說明)/g;
+      for (i = 0; i < transcript.length; i++) {
+        if (transcript[i].role === "user") {
+          var t = transcript[i].text || "";
+          userTexts.push(t); totalLen += t.length;
+          if (/[0-9０-９]|%|％|倍/.test(t)) numHits++;
+          var tm = t.match(toolRe); if (tm) toolHits += tm.length;
+          var fm = t.match(flowRe); if (fm) flowHits += fm.length;
+          var jm = t.match(judgeRe); if (jm) judgeHits += jm.length;
+          var hm = t.match(handoffRe); if (hm) handoffHits += hm.length;
+        }
+      }
+      var depth = Math.min(1, totalLen / 600);
+      function clamp(v){ return Math.max(2, Math.min(9.5, v)); }
+      var base = 4.5 + depth * 2.5;
+      var sc = {
+        workflow: clamp(base + flowHits * 0.5 + numHits * 0.2),
+        tools:    clamp(base + toolHits * 0.6),
+        judgment: clamp(base + judgeHits * 0.8),
+        domain:   clamp(base + numHits * 0.4 + depth * 1.5),
+        handoff:  clamp(base + handoffHits * 0.8 - 0.5),
+        delivery: clamp(base + flowHits * 0.3 + numHits * 0.3)
+      };
+      var penalty = Math.min(2.5, flags.length * 0.5);
+      for (var k in sc) { if (sc.hasOwnProperty(k)) sc[k] = clamp(sc[k] - penalty); }
+      return roundDims(sc);
+    }
+    function roundDims(sc){ var out = {}; for (var k in sc) { if (sc.hasOwnProperty(k)) out[k] = Math.round(sc[k] * 10) / 10; } return out; }
+
+    function calcLScore(sc){
+      var w = { workflow:1.2, tools:1.0, judgment:1.0, domain:1.1, handoff:0.9, delivery:0.9 };
+      var sum = 0, wt = 0, k;
+      for (k in sc) { if (sc.hasOwnProperty(k) && w[k]) { sum += sc[k] * w[k]; wt += w[k]; } }
+      return Math.round((sum / wt) * 10) / 10;
+    }
+    function calcTier(lscore, flagCount){
+      var idx;
+      if (lscore >= 8.6) idx = 4;
+      else if (lscore >= 7.4) idx = 3;
+      else if (lscore >= 6.2) idx = 2;
+      else if (lscore >= 4.8) idx = 1;
+      else idx = 0;
+      if (flagCount >= 3 && idx > 0) idx -= 1;
+      return idx;
+    }
+    function confidenceLabel(flagCount, userTurns){
+      if (flagCount === 0 && userTurns >= 6) return { t:"高", sub:"證據充分、無灌水紅旗" };
+      if (flagCount <= 1) return { t:"中", sub:"證據大致足夠，留意 1 處待補" };
+      return { t:"偏低", sub:flagCount + " 項紅旗，結果僅供參考" };
+    }
+
+    function probeSystemPrompt(){
+      return [
+        "你是 BeyondSpec「AI Native 體質檢測」的資深訪談官。你的任務是逼出受訪者跟 AI 一起工作的【真實案例與證據】，不接受空泛的『我很會用 AI』。",
+        "你會收到：當前訪談段落的主題、原始問題、以及受訪者的回答。",
+        "判斷這個回答是否【足夠具體】——具體 = 有真實案例、有做法細節、有可驗證的成果（最好有數字）。",
+        "若【不夠具體】（例如只說『我會用 ChatGPT』『就幫忙一下』『大概那些』、或明顯迴避），請產生一句溫和但直指核心的追問，引導對方講出一個真實案例與成果。語氣像懂行的朋友、不質問、不羞辱。",
+        "若【已經夠具體】，不要追問。",
+        "嚴格只回 JSON，不要任何多餘文字：",
+        '{ "specific": true, "probe": "", "tag": "" }'
+      ].join("\n");
+    }
+    function probeUserPrompt(seg, answer){ return "【段落主題】" + seg.key + "\n【原始問題】" + seg.q + "\n【受訪者回答】" + answer; }
+    function probeSchema(o){ if (typeof o.specific !== "boolean") return { valid:false, errors:["specific 必須是布林"] }; return { valid:true }; }
+
+    function scoreSystemPrompt(){
+      return [
+        "你是 BeyondSpec「AI Native 體質檢測」的評分官。根據整份訪談逐字稿，為受訪者在 6 個維度上各打一個 0-10 分（一位小數），並判斷整體等級。",
+        "6 個維度定義：",
+        "1 workflow（AI 工作流設計）：能不能把事拆成『AI 做哪段、人做哪段』並串成可重複流程。",
+        "2 tools（工具串接力）：會用、會組合多個 AI/自動化工具。",
+        "3 judgment（判斷與把關）：評估 AI 產出、抓幻覺、知道何時人接手。",
+        "4 domain（領域 x AI 深度）：把 AI 用在自己專業的深度與真實成果。",
+        "5 handoff（協作與交棒）：把 AI 成果/方法說清楚、能交棒給別人。",
+        "6 delivery（交付可靠度）：用 AI 後產出穩不穩、別人敢不敢直接用。",
+        "評分原則：以【具體證據】為準。空泛、無案例、無成果的描述給低分；有真實案例+做法+成果（尤其有數字）給高分。寧可保守，不要灌水。",
+        "verdict 是一句『鏡子式』總評（不羞辱、成長敘事，繁體中文，約 20 字內），tldr 是 2-3 句說明強在哪、下一步往哪（繁體中文）。",
+        "strengths 最多 3 條（受訪者最強的地方），improvements 最多 2 條（下一步最值得補的，要溫和具建設性）。每條繁體中文、一句話。",
+        "advice 是一個物件：why 對應的弱項維度名稱、title 一個可立刻做的具體行動標題、body 2-3 句怎麼做。",
+        "嚴格只回 JSON，不要任何多餘文字：",
+        '{ "scores": { "workflow":7, "tools":7, "judgment":7, "domain":7, "handoff":7, "delivery":7 }, "verdict":"", "tldr":"", "strengths":[], "improvements":[], "advice":{ "why":"", "title":"", "body":"" } }'
+      ].join("\n");
+    }
+    function scoreUserPrompt(transcript){
+      var lines = [], i;
+      for (i = 0; i < transcript.length; i++) {
+        var r = transcript[i];
+        if (r.role === "ai") lines.push("訪談官：" + r.text);
+        else if (r.role === "user") lines.push("受訪者：" + r.text);
+      }
+      return "以下是完整訪談逐字稿：\n\n" + lines.join("\n");
+    }
+    function scoreSchema(o){
+      if (!o.scores || typeof o.scores !== "object") return { valid:false, errors:["缺 scores"] };
+      var need = ["workflow","tools","judgment","domain","handoff","delivery"], i;
+      for (i = 0; i < need.length; i++) { if (typeof o.scores[need[i]] !== "number") return { valid:false, errors:["scores." + need[i] + " 缺或非數字"] }; }
+      if (typeof o.verdict !== "string" || !o.verdict) return { valid:false, errors:["缺 verdict"] };
+      return { valid:true };
+    }
+
+    var elRoot = null;
+    var feed, stepsBox, hintsBox, txt, sendBtn;
+    var segIdx = 0, inProbe = false, probeDone = false, locked = false;
+    var transcript = [];
+    var aiAvailable = false;
+
+    function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+    function injectStyle(){ if (document.getElementById("hc-core-style")) return; var st = document.createElement("style"); st.id = "hc-core-style"; st.textContent = HC_CSS; document.head.appendChild(st); }
+
+    function start(content){
+      elRoot = content || document.getElementById("content");
+      if (!elRoot) return;
+      aiAvailable = !!(window.PATH_AI && typeof window.PATH_AI.callV2 === "function" && window.PATH_AI.isAvailable && window.PATH_AI.isAvailable());
+      injectStyle();
+      transcript = []; segIdx = 0; inProbe = false; probeDone = false; locked = false;
+      renderInterviewShell();
+      buildSteps();
+      addTyping();
+      setTimeout(function(){
+        rmTyping();
+        addAI("嗨，我是這次替你做體質檢測的訪談官。我會問你幾段問題，你照實講就好，講不清楚我會追問——這樣照出來的鏡子才準。我們開始吧。", false);
+        setTimeout(askSegment, 700);
+      }, 600);
+    }
+
+    function renderInterviewShell(){
+      elRoot.innerHTML =
+        '<div class="hcv-wrap">' +
+          '<div class="hcv-top"><div class="hcv-bar">' +
+            '<div class="hcv-who"><span class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg></span>體質檢測訪談</div>' +
+            '<div class="hcv-steps" id="hcvSteps"></div>' +
+          '</div></div>' +
+          '<div class="hcv-feed" id="hcvFeed"></div>' +
+          '<div class="hcv-input" id="hcvInputBar">' +
+            '<div class="hcv-hints" id="hcvHints"></div>' +
+            '<div class="hcv-iwrap">' +
+              '<textarea id="hcvText" rows="1" placeholder="輸入你的回答…"></textarea>' +
+              '<button class="hcv-send" id="hcvSend" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      feed = document.getElementById("hcvFeed");
+      stepsBox = document.getElementById("hcvSteps");
+      hintsBox = document.getElementById("hcvHints");
+      txt = document.getElementById("hcvText");
+      sendBtn = document.getElementById("hcvSend");
+      txt.addEventListener("input", autoGrow);
+      txt.addEventListener("keydown", function(e){ if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } });
+      sendBtn.addEventListener("click", handleSend);
+    }
+
+    function buildSteps(){ var h = "", i; for (i = 0; i < SEG.length; i++) h += '<div class="hcv-st" id="hcvst-' + i + '"><i></i></div>'; stepsBox.innerHTML = h; }
+    function paintSteps(){ var i; for (i = 0; i < SEG.length; i++) { var el = document.getElementById("hcvst-" + i); if (!el) continue; el.className = "hcv-st" + (i < segIdx ? " done" : (i === segIdx ? " cur" : "")); } }
+    function scrollFeed(){ try { window.scrollTo({ top: document.body.scrollHeight, behavior:"smooth" }); } catch(e){ window.scrollTo(0, document.body.scrollHeight); } }
+    function autoGrow(){ if(!txt) return; txt.style.height = "auto"; txt.style.height = Math.min(txt.scrollHeight, 120) + "px"; }
+
+    function addMe(text){ var d = document.createElement("div"); d.className = "hcv-msg me"; d.innerHTML = '<div class="hcv-bubble"></div>'; d.querySelector(".hcv-bubble").textContent = text; feed.appendChild(d); scrollFeed(); }
+    function addAI(text, isProbe, probeTag){
+      var d = document.createElement("div");
+      d.className = "hcv-msg ai" + (isProbe ? " probe" : "");
+      var inner = '<div class="hcv-meta">';
+      if (isProbe) inner += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>追問';
+      else inner += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg>訪談官';
+      inner += '</div>';
+      if (isProbe && probeTag) inner += '<div class="hcv-probe-tag">' + esc(probeTag) + '</div>';
+      inner += '<div class="hcv-bubble"></div>';
+      d.innerHTML = inner;
+      d.querySelector(".hcv-bubble").textContent = text;
+      feed.appendChild(d); scrollFeed();
+    }
+    function addTyping(){ var d = document.createElement("div"); d.className = "hcv-msg ai"; d.id = "hcvTyping"; d.innerHTML = '<div class="hcv-typing"><i></i><i></i><i></i></div>'; feed.appendChild(d); scrollFeed(); }
+    function rmTyping(){ var t = document.getElementById("hcvTyping"); if (t && t.parentNode) t.parentNode.removeChild(t); }
+
+    function setHints(arr){
+      var h = "", i, k;
+      if (arr) for (i = 0; i < arr.length; i++) h += '<button class="hcv-hint" type="button">' + esc(arr[i]) + '</button>';
+      hintsBox.innerHTML = h;
+      var hs = hintsBox.querySelectorAll(".hcv-hint");
+      for (k = 0; k < hs.length; k++) (function(btn){ btn.addEventListener("click", function(){ txt.value = btn.textContent; autoGrow(); txt.focus(); }); })(hs[k]);
+    }
+    function lockInput(on){ locked = on; if(sendBtn) sendBtn.disabled = on; if(txt) txt.disabled = on; }
+
+    function askSegment(){
+      var seg = SEG[segIdx];
+      inProbe = false; probeDone = false;
+      paintSteps(); lockInput(true); setHints(null); addTyping();
+      setTimeout(function(){
+        rmTyping();
+        addAI(seg.q, false);
+        transcript.push({ role:"ai", text:seg.q, seg:seg.key });
+        setHints(seg.hints);
+        lockInput(false); if(txt) txt.focus();
+      }, 700);
+    }
+
+    function handleSend(){
+      if (locked) return;
+      var val = (txt.value || "").replace(/^\s+|\s+$/g, "");
+      if (!val) return;
+      addMe(val);
+      transcript.push({ role:"user", text:val, seg:SEG[segIdx].key, afterProbe: inProbe });
+      txt.value = ""; autoGrow(); setHints(null);
+      var seg = SEG[segIdx];
+      if (inProbe) { nextSegment(); return; }
+      if (seg.key === "intro" || probeDone) { nextSegment(); return; }
+      decideProbe(seg, val);
+    }
+
+    function decideProbe(seg, answer){
+      lockInput(true); setHints(null); addTyping();
+      if (!aiAvailable) { rmTyping(); if (frontVague(answer)) askProbeFallback(seg); else nextSegment(); return; }
+      window.PATH_AI.callV2(probeSystemPrompt(), probeUserPrompt(seg, answer), { reportType:"health_probe", timeout:20000, retries:2, schema:probeSchema })
+        .then(function(res){
+          rmTyping();
+          if (res && res.ok && res.data && res.data.specific === false && res.data.probe) {
+            inProbe = true; probeDone = true;
+            addAI(res.data.probe, true, res.data.tag || "想聽得更具體一點");
+            transcript.push({ role:"ai", text:res.data.probe, seg:seg.key, isProbe:true });
+            setHints(null); lockInput(false); if(txt) txt.focus();
+          } else { nextSegment(); }
+        })["catch"](function(){ rmTyping(); if (frontVague(answer)) askProbeFallback(seg); else nextSegment(); });
+    }
+    function frontVague(answer){
+      var a = (answer || "").replace(/\s/g, "");
+      if (a.length < 14 && !/[0-9０-９%％倍]/.test(a)) return true;
+      if (/^(我會用|就|會用|大概那些|那些|還好)/.test(a) && a.length < 22) return true;
+      return false;
+    }
+    function askProbeFallback(seg){
+      inProbe = true; probeDone = true;
+      var q = "這句每個人講起來都一樣，但做出來差很多。能不能挑一個真實案子告訴我：那次你具體做了什麼、最後做出什麼成果？有數字更好。";
+      addAI(q, true, "想聽得更具體一點");
+      transcript.push({ role:"ai", text:q, seg:seg.key, isProbe:true });
+      lockInput(false); if(txt) txt.focus();
+    }
+
+    function nextSegment(){ segIdx++; if (segIdx >= SEG.length) { finishInterview(); return; } askSegment(); }
+
+    function finishInterview(){
+      paintSteps(); lockInput(true); setHints(null); addTyping();
+      setTimeout(function(){
+        rmTyping();
+        addAI("謝謝你這麼具體。我已經聽夠了——讓我把這些整理成一份只屬於你的報告。", false);
+        setTimeout(runCalc, 1300);
+      }, 700);
+    }
+
+    var CALC_MSGS = [
+      "正在讀你講的每一個案例…",
+      "對照同職能工作者的中位水準…",
+      "檢查有沒有把自己估得太樂觀…",
+      "看看你的方法能不能交給別人…",
+      "整理你最值得走的下一步…"
+    ];
+    function runCalc(){
+      elRoot.innerHTML =
+        '<div class="hc-calc">' +
+          '<div class="hc-calc-ring run" id="hcCalcRing">' +
+            '<svg viewBox="0 0 140 140"><circle class="track" cx="70" cy="70" r="66"/><circle class="prog" cx="70" cy="70" r="66"/></svg>' +
+            '<div class="core"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/><path d="M16 3h5v5"/></svg></div>' +
+          '</div>' +
+          '<div class="hc-calc-title">正在為你照這面鏡子</div>' +
+          '<div class="hc-calc-lines" id="hcCalcLines"></div>' +
+        '</div>';
+      var box = document.getElementById("hcCalcLines"), i;
+      for (i = 0; i < CALC_MSGS.length; i++) { var d = document.createElement("div"); d.className = "hc-cl"; d.textContent = CALC_MSGS[i]; box.appendChild(d); }
+      var lines = box.querySelectorAll(".hc-cl"), idx = 0;
+      function showLine(){ var k; for (k = 0; k < lines.length; k++) lines[k].classList.remove("show"); if (idx < lines.length) { lines[idx].classList.add("show"); idx++; setTimeout(showLine, 1450); } }
+      showLine();
+
+      var flags = scanRedFlags(transcript);
+      var calcStart = Date.now();
+      function done(result){ var wait = Math.max(0, 5200 - (Date.now() - calcStart)); setTimeout(function(){ renderReport(result); }, wait); }
+      if (!aiAvailable) { done(buildResult(fallbackScore(transcript, flags), flags, null)); return; }
+      window.PATH_AI.callV2(scoreSystemPrompt(), scoreUserPrompt(transcript), { reportType:"health_score", timeout:40000, retries:3, schema:scoreSchema })
+        .then(function(res){
+          if (res && res.ok && res.data) { done(buildResult(roundDims(clampScores(res.data.scores)), flags, res.data)); }
+          else { done(buildResult(fallbackScore(transcript, flags), flags, null)); }
+        })["catch"](function(){ done(buildResult(fallbackScore(transcript, flags), flags, null)); });
+    }
+    function clampScores(sc){ var out = {}, k; for (k in sc) { if (sc.hasOwnProperty(k)) { var v = Number(sc[k]); if (isNaN(v)) v = 5; out[k] = Math.max(0, Math.min(10, v)); } } return out; }
+
+    function buildResult(scores, flags, ai){
+      var lscore = calcLScore(scores);
+      var tierIdx = calcTier(lscore, flags.length);
+      var userTurns = 0, i;
+      for (i = 0; i < transcript.length; i++) { if (transcript[i].role === "user") userTurns++; }
+      var conf = confidenceLabel(flags.length, userTurns);
+      var leadCount = 0, k;
+      for (k = 0; k < DIMS.length; k++) { if (scores[DIMS[k].id] >= MED[DIMS[k].id]) leadCount++; }
+      return {
+        id: "hc_" + Date.now(), kind: "personal", date: new Date().toISOString(),
+        scores: scores, lscore: lscore, tierIdx: tierIdx, tier: TIERS[tierIdx].sc,
+        confidence: conf, leadCount: leadCount, flags: flags, ai: ai || null, transcriptLen: transcript.length
+      };
+    }
+
+    function hexa(c, a){ var n = parseInt(c.slice(1), 16); return "rgba(" + ((n>>16)&255) + "," + ((n>>8)&255) + "," + (n&255) + "," + a + ")"; }
+    function renderReport(R){
+      try {
+        if (window.bpStorage) {
+          var arr = window.bpStorage.get("healthChecks") || [];
+          if (!Array.isArray(arr)) arr = [];
+          var rec = {}; for (var kk in R) { if (R.hasOwnProperty(kk)) rec[kk] = R[kk]; }
+          rec.transcript = transcript.slice();
+          arr.push(rec);
+          window.bpStorage.set("healthChecks", arr);
+        }
+      } catch(e){ try { console.warn("[HC] save failed", e); } catch(_){} }
+
+      var tier = TIERS[R.tierIdx];
+      var ai = R.ai || {};
+      var verdict = ai.verdict || (tier.sn + "——" + tier.already + "。");
+      var tldr = ai.tldr || ("六個面向裡 " + R.leadCount + " 項領先同行。下一步：" + tier.next + "。");
+      var strengths = (ai.strengths && ai.strengths.length) ? ai.strengths : defaultStrengths(R);
+      var improvements = (ai.improvements && ai.improvements.length) ? ai.improvements : defaultImprovements(R);
+      var advice = ai.advice || defaultAdvice(R);
+
+      var html = '<div class="hc-report">';
+      html += '<div class="hc-hero">';
+      html += '<div class="hc-hero-ey">AI Native 體質檢測 · 個人報告</div>';
+      html += '<div class="hc-badge" style="background:' + hexa(tier.col, .10) + ';box-shadow:0 6px 22px ' + hexa(tier.col, .16) + '">';
+      html += '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="' + tier.col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + tier.ic + '</svg>';
+      html += '<div class="name">' + esc(tier.sn) + '</div>';
+      html += '<div class="code">LEVEL ' + tier.sc + '</div>';
+      html += '</div>';
+      html += '<div class="hc-verdict">' + esc(verdict) + '</div>';
+      html += '<div class="hc-tldr">' + esc(tldr) + '</div>';
+      html += '</div>';
+      html += '<div class="hc-ritual-break"></div>';
+      html += '<div class="hc-sec"><div class="hc-kpi-row">';
+      html += '<div class="hc-kpi"><div class="val">' + R.lscore.toFixed(1) + '<small> / 10</small></div><div class="lab">AI 槓桿總分</div><div class="sub">同職能中位 ' + medAvg() + '</div></div>';
+      html += '<div class="hc-kpi"><div class="val" style="color:' + confColor(R.confidence.t) + '">' + R.confidence.t + '</div><div class="lab">結果信心度</div><div class="sub">' + esc(R.confidence.sub) + '</div></div>';
+      html += '<div class="hc-kpi"><div class="val">' + R.leadCount + '<small> / 6</small></div><div class="lab">領先維度</div><div class="sub">' + (6 - R.leadCount) + ' 項待補</div></div>';
+      html += '</div></div>';
+      if (R.flags.length) html += redFlagBlock(R.flags);
+      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">01</span> 六維能力 · 你 vs 同職能中位</div>';
+      html += '<div class="hc-panel hc-radar-wrap"><svg id="hcRadar" viewBox="0 0 320 300" width="300"></svg><div class="hc-dimlist" id="hcDimlist"></div></div>';
+      html += '<div class="hc-legend"><span><i style="background:var(--primary)"></i>你的能力</span><span><i style="background:var(--slate)"></i>同職能中位數</span></div></div>';
+      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">02</span> 你的底子</div><div class="hc-two">';
+      html += '<div class="hc-panel"><div class="hc-blk-title"><span class="dot" style="background:var(--teal)"></span>你最強的地方</div>';
+      var si; for (si = 0; si < strengths.length; si++) html += '<div class="hc-li up">' + esc(strengths[si]) + '</div>';
+      html += '</div>';
+      html += '<div class="hc-panel"><div class="hc-blk-title"><span class="dot" style="background:var(--gold)"></span>下一步最值得補的</div>';
+      var ii; for (ii = 0; ii < improvements.length; ii++) html += '<div class="hc-li dn">' + esc(improvements[ii]) + '</div>';
+      html += '</div></div></div>';
+      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">03</span> 你在哪、往哪走</div><div class="hc-ladder" id="hcLadder"></div></div>';
+      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">04</span> 你的下一步</div>';
+      html += '<div class="hc-advice"><div class="why">對應你的弱項 · ' + esc(advice.why || "") + '</div><h4>' + esc(advice.title || "") + '</h4><p>' + esc(advice.body || "") + '</p></div></div>';
+      html += '<div class="hc-report-foot">';
+      html += '<button class="btn btn-outline" id="hcRestart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/></svg>重新檢測</button>';
+      html += '<button class="btn btn-accent" id="hcToTasks">把這份報告變成行動<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
+      html += '</div></div>';
+      elRoot.innerHTML = html;
+      try { window.scrollTo(0, 0); } catch(e){}
+      drawRadar(R.scores);
+      drawDimList(R.scores);
+      drawLadder(R.tierIdx);
+      var rb = document.getElementById("hcRestart");
+      if (rb) rb.onclick = function(){ if (typeof renderHealthCheck === "function") renderHealthCheck("personal"); };
+      var tb = document.getElementById("hcToTasks");
+      if (tb) tb.onclick = function(){ pushToTasks(R, advice); };
+    }
+
+    function medAvg(){ var s = 0, k; for (k in MED) { if (MED.hasOwnProperty(k)) s += MED[k]; } return (s / 6).toFixed(1); }
+    function confColor(t){ return t === "高" ? "var(--teal)" : (t === "中" ? "var(--gold)" : "var(--rose)"); }
+
+    function redFlagBlock(flags){
+      var items = "", i;
+      for (i = 0; i < flags.length; i++) {
+        var f = flags[i];
+        items += '<div class="hc-flag"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div><b>' + esc(f.label) + '</b><span>' + esc(f.desc) + '</span></div></div>';
+      }
+      return '<div class="hc-sec"><div class="hc-flagbox"><div class="hc-flagbox-h">為什麼這份報告的信心度沒到「高」</div><div class="hc-flagbox-sub">下面這些是讓鏡子有點模糊的地方。它們不扣你的等級分數，只提醒：補上更具體的例子，下次照得更準。</div>' + items + '</div></div>';
+    }
+
+    function drawRadar(scores){
+      var svg = document.getElementById("hcRadar"); if (!svg) return;
+      var cx = 160, cy = 150, Rr = 108, N = DIMS.length;
+      function pt(i, r){ var a = (-90 + i * 360 / N) * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
+      var gridCol = (getComputedStyle(document.documentElement).getPropertyValue("--grid") || "var(--border)").trim() || "var(--border)";
+      var gridSoft = (getComputedStyle(document.documentElement).getPropertyValue("--grid-soft") || "var(--border)").trim() || "var(--border)";
+      var h = "", g, i, p, pts;
+      for (g = 1; g <= 4; g++) { pts = ""; for (i = 0; i < N; i++) { p = pt(i, Rr * g / 4); pts += p[0] + "," + p[1] + " "; } h += '<polygon points="' + pts + '" fill="none" stroke="' + gridCol + '" stroke-width="1"/>'; }
+      for (i = 0; i < N; i++) { p = pt(i, Rr); h += '<line x1="' + cx + '" y1="' + cy + '" x2="' + p[0] + '" y2="' + p[1] + '" stroke="' + gridSoft + '" stroke-width="1"/>'; }
+      function poly(getv, fill, stroke, sw){ var s = "", i, p; for (i = 0; i < N; i++) { p = pt(i, Rr * getv(i) / 10); s += p[0] + "," + p[1] + " "; } return '<polygon points="' + s + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '"/>'; }
+      h += '<g stroke-dasharray="3 3">' + poly(function(i){ return MED[DIMS[i].id]; }, "none", "#94A3B8", "1.5") + '</g>';
+      h += poly(function(i){ return scores[DIMS[i].id]; }, "rgba(124,92,252,.18)", "#7C5CFC", "2");
+      for (i = 0; i < N; i++) { p = pt(i, Rr * scores[DIMS[i].id] / 10); var lead = scores[DIMS[i].id] >= MED[DIMS[i].id]; h += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3.5" fill="' + (lead ? "#1BA891" : "#E08A3A") + '"/>'; }
+      svg.innerHTML = h;
+    }
+    function drawDimList(scores){
+      var dl = document.getElementById("hcDimlist"); if (!dl) return;
+      var s = "", i;
+      for (i = 0; i < DIMS.length; i++) {
+        var d = DIMS[i], v = scores[d.id], med = MED[d.id], lead = v >= med;
+        s += '<div class="hc-dim"><div class="dn">' + esc(d.n) + '</div>';
+        s += '<div class="bar"><div class="fill" style="width:' + (v * 10) + '%;background:' + (lead ? "var(--primary)" : "var(--gold)") + '"></div><div class="med" style="left:' + (med * 10) + '%"></div></div>';
+        s += '<div class="tag ' + (lead ? "tag-up" : "tag-dn") + '">' + v.toFixed(1) + (lead ? " 領先" : " 待補") + '</div></div>';
+      }
+      dl.innerHTML = s;
+    }
+    function drawLadder(curIdx){
+      var lad = document.getElementById("hcLadder"); if (!lad) return;
+      var t = "", i;
+      for (i = 0; i < TIERS.length; i++) {
+        var x = TIERS[i], cur = (i === curIdx);
+        t += '<div class="hc-step' + (cur ? " cur" : "") + '" style="' + (cur ? "background:" + hexa(x.col, .10) + ";box-shadow:0 4px 16px " + hexa(x.col, .18) : "") + '">';
+        if (cur) t += '<div class="here">你在這裡</div>';
+        t += '<svg class="si" viewBox="0 0 24 24" fill="none" stroke="' + x.col + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + x.ic + '</svg>';
+        t += '<div class="sn" style="color:' + (cur ? x.col : "var(--ink)") + '">' + esc(x.sn) + '</div><div class="sc">LV ' + x.sc + '</div></div>';
+      }
+      lad.innerHTML = t;
+    }
+
+    function weakestDim(scores){ var worst = null, wv = 99, i; for (i = 0; i < DIMS.length; i++) { var diff = scores[DIMS[i].id] - MED[DIMS[i].id]; if (diff < wv) { wv = diff; worst = DIMS[i]; } } return worst; }
+    function defaultStrengths(R){ var arr = DIMS.slice().sort(function(a,b){ return R.scores[b.id] - R.scores[a.id]; }); return [arr[0].n + " 是你最強的地方", arr[1].n + " 也明顯在水準之上", "你已經把 AI 用進真實工作、不只是試玩"].slice(0, 3); }
+    function defaultImprovements(R){ var arr = DIMS.slice().sort(function(a,b){ return (R.scores[a.id]-MED[a.id]) - (R.scores[b.id]-MED[b.id]); }); return [arr[0].n + " " + R.scores[arr[0].id].toFixed(1) + " — 這一塊最值得先補", arr[1].n + " " + R.scores[arr[1].id].toFixed(1) + " — 再往上一點會更穩"].slice(0, 2); }
+    function defaultAdvice(R){ var w = weakestDim(R.scores); return { why: w.n, title: "挑一個你最熟的 AI 流程，寫成別人照著做就會的步驟", body: "把你跑得最順的一條 AI 工作流，拆成『換個同事來、照著也能做出 8 成』的說明。下次團隊有人要做類似的事直接給他——這一步會同時把你的『" + w.n + "』往上帶。" }; }
+
+    function pushToTasks(R, advice){
+      try {
+        var KEY = "bp_kanban_cards";
+        var raw = localStorage.getItem(KEY);
+        var cards = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(cards)) cards = [];
+        cards.push({ id: "hc_task_" + Date.now(), title: "AI 體質補強：" + (advice.title || "提升弱項維度"), desc: (advice.body || "") + "\n\n（來自 AI Native 體質檢測 · " + new Date().toLocaleDateString("zh-TW") + " · 等級 " + R.tier + "）", columnId: "todo", source: "health", createdAt: new Date().toISOString() });
+        localStorage.setItem(KEY, JSON.stringify(cards));
+        if (typeof showToast === "function") showToast("已把補強建議加進任務看板"); else alert("已把補強建議加進任務看板");
+      } catch(e){ try { console.warn("[HC] pushToTasks failed", e); } catch(_){} alert("加入任務看板時發生問題，請稍後再試"); }
+    }
+
+    var HC_CSS = "";
+    HC_CSS += '.hcv-wrap{max-width:680px;margin:0 auto}';
+    HC_CSS += '.hcv-top{position:sticky;top:0;z-index:20;background:var(--bg);padding:14px 0 12px;border-bottom:1px solid var(--border,var(--border));margin-bottom:8px}';
+    HC_CSS += '.hcv-bar{display:flex;align-items:center;gap:12px}';
+    HC_CSS += '.hcv-who{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--ink)}';
+    HC_CSS += '.hcv-who .av{width:28px;height:28px;border-radius:9px;background:rgba(124,92,252,.14);display:flex;align-items:center;justify-content:center}';
+    HC_CSS += '.hcv-who .av svg{width:16px;height:16px;color:#D4712A}';
+    HC_CSS += '.hcv-steps{flex:1;display:flex;gap:5px;margin-left:6px}';
+    HC_CSS += '.hcv-st{flex:1;height:3px;border-radius:99px;background:var(--line,var(--border));overflow:hidden}';
+    HC_CSS += '.hcv-st i{display:block;height:100%;width:0;background:var(--primary);border-radius:99px;transition:width .5s ease}';
+    HC_CSS += '.hcv-st.done i{width:100%}.hcv-st.cur i{width:55%}';
+    HC_CSS += '.hcv-feed{padding:18px 0 150px}';
+    HC_CSS += '.hcv-msg{margin-bottom:22px;animation:hcFade .4s ease both}';
+    HC_CSS += '@keyframes hcFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}';
+    HC_CSS += '.hcv-msg.ai .hcv-bubble{font-family:Georgia,"Times New Roman",serif;font-size:16.5px;line-height:1.7;color:var(--ink);max-width:560px}';
+    HC_CSS += '.hcv-msg.ai .hcv-meta{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#D4712A;font-weight:600;margin-bottom:9px;display:flex;align-items:center;gap:6px}';
+    HC_CSS += '.hcv-msg.ai .hcv-meta svg{width:13px;height:13px}';
+    HC_CSS += '.hcv-msg.ai.probe .hcv-meta{color:var(--gold)}';
+    HC_CSS += '.hcv-msg.ai.probe .hcv-meta::before{content:"";display:inline-block;width:7px;height:7px;border-radius:99px;background:var(--gold);flex:none}';
+    HC_CSS += '.hcv-probe-tag{display:inline-block;font-size:10.5px;font-weight:600;color:#a85f1a;background:rgba(224,138,58,.16);padding:2px 9px;border-radius:99px;margin-bottom:10px}';
+    HC_CSS += 'html[data-theme="dark"] .hcv-probe-tag{color:#E89A4E}';
+    HC_CSS += '.hcv-msg.me{display:flex;justify-content:flex-end}';
+    HC_CSS += '.hcv-msg.me .hcv-bubble{font-size:14.5px;line-height:1.6;color:#fff;background:var(--primary);padding:12px 16px;border-radius:16px 16px 4px 16px;max-width:74%;box-shadow:0 2px 10px rgba(124,92,252,.22);white-space:pre-wrap;word-break:break-word}';
+    HC_CSS += '.hcv-typing{display:inline-flex;gap:4px;padding:4px 0}';
+    HC_CSS += '.hcv-typing i{width:7px;height:7px;border-radius:99px;background:var(--slate);opacity:.5;animation:hcBlink 1.2s infinite}';
+    HC_CSS += '.hcv-typing i:nth-child(2){animation-delay:.2s}.hcv-typing i:nth-child(3){animation-delay:.4s}';
+    HC_CSS += '@keyframes hcBlink{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:.9;transform:translateY(-3px)}}';
+    HC_CSS += '.hcv-input{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--bg);border-top:1px solid var(--line,var(--border));padding:14px 0 calc(14px + env(safe-area-inset-bottom))}';
+    HC_CSS += '.hcv-iwrap{max-width:680px;margin:0 auto;padding:0 24px;display:flex;gap:10px;align-items:flex-end}';
+    HC_CSS += '.hcv-input textarea{flex:1;font-family:inherit;font-size:14.5px;color:var(--ink);background:var(--field,var(--card));border:1px solid var(--field-line,var(--border));border-radius:14px;padding:12px 14px;resize:none;line-height:1.5;max-height:120px}';
+    HC_CSS += '.hcv-input textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.12)}';
+    HC_CSS += '.hcv-send{flex:none;width:44px;height:44px;border-radius:13px;border:none;background:var(--primary);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(124,92,252,.26)}';
+    HC_CSS += '.hcv-send:hover{transform:translateY(-1px)}.hcv-send:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}';
+    HC_CSS += '.hcv-send svg{width:19px;height:19px}';
+    HC_CSS += '.hcv-hints{max-width:680px;margin:0 auto 10px;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap}';
+    HC_CSS += '.hcv-hint{font-family:inherit;font-size:12.5px;color:var(--ink-muted);background:var(--card);border:1px solid var(--line,var(--border));border-radius:99px;padding:7px 14px;cursor:pointer;line-height:1.3;text-align:left}';
+    HC_CSS += '.hcv-hint:hover{border-color:var(--primary);color:var(--primary)}';
+    HC_CSS += '.hc-calc{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center;padding:40px 24px;background:radial-gradient(120% 80% at 50% 30%,rgba(212,113,42,.10),rgba(212,113,42,.02) 55%,transparent)}';
+    HC_CSS += '.hc-calc-ring{position:relative;width:140px;height:140px;margin-bottom:42px}';
+    HC_CSS += '.hc-calc-ring svg{width:140px;height:140px;transform:rotate(-90deg)}';
+    HC_CSS += '.hc-calc-ring .track{fill:none;stroke:var(--line,var(--border));stroke-width:3}';
+    HC_CSS += '.hc-calc-ring .prog{fill:none;stroke:#D4712A;stroke-width:3;stroke-linecap:round;stroke-dasharray:415;stroke-dashoffset:415}';
+    HC_CSS += '.hc-calc-ring.run .prog{animation:hcRing 5s ease-in-out forwards}';
+    HC_CSS += '@keyframes hcRing{to{stroke-dashoffset:60}}';
+    HC_CSS += '.hc-calc-ring .core{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}';
+    HC_CSS += '.hc-calc-ring .core svg{width:34px;height:34px;transform:none;color:#D4712A;animation:hcPulse 2.4s ease-in-out infinite}';
+    HC_CSS += '@keyframes hcPulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}';
+    HC_CSS += '.hc-calc-title{font-family:Georgia,serif;font-style:italic;font-size:26px;font-weight:700;color:#3D2E1A;margin-bottom:30px}';
+    HC_CSS += 'html[data-theme="dark"] .hc-calc-title{color:#f0d9b8}';
+    HC_CSS += '.hc-calc-lines{height:30px;position:relative;width:100%;max-width:440px}';
+    HC_CSS += '.hc-cl{position:absolute;left:0;right:0;top:0;font-family:Georgia,serif;font-style:italic;font-size:15.5px;color:#7a6650;opacity:0;transition:opacity .6s}';
+    HC_CSS += 'html[data-theme="dark"] .hc-cl{color:#c4ad8c}';
+    HC_CSS += '.hc-cl.show{opacity:1}';
+
+    HC_CSS += '.hc-report{max-width:880px;margin:0 auto;padding:0 0 60px}';
+    HC_CSS += '.hc-hero{background:var(--bg-warm);padding:48px 32px 40px;text-align:center;border-radius:0 0 28px 28px}';
+    HC_CSS += '.hc-hero-ey{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#D4712A;font-weight:600;margin-bottom:22px}';
+    HC_CSS += '.hc-badge{display:inline-flex;flex-direction:column;align-items:center;gap:6px;padding:20px 30px;border-radius:20px;margin-bottom:22px}';
+    HC_CSS += '.hc-badge .ico{width:34px;height:34px}';
+    HC_CSS += '.hc-badge .name{font-family:Georgia,serif;font-style:italic;font-size:23px;font-weight:700;color:#3D2E1A}';
+    HC_CSS += 'html[data-theme="dark"] .hc-badge .name{color:#f0d9b8}';
+    HC_CSS += '.hc-badge .code{font-size:11px;letter-spacing:.14em;color:var(--ink-muted);font-weight:600}';
+    HC_CSS += '.hc-verdict{font-family:Georgia,serif;font-style:italic;font-size:30px;line-height:1.25;font-weight:700;color:#3D2E1A;max-width:560px;margin:0 auto 14px}';
+    HC_CSS += 'html[data-theme="dark"] .hc-verdict{color:#f0d9b8}';
+    HC_CSS += '.hc-tldr{font-family:Georgia,serif;font-style:italic;font-size:15px;color:#7a6650;max-width:520px;margin:0 auto;line-height:1.6}';
+    HC_CSS += 'html[data-theme="dark"] .hc-tldr{color:#c4ad8c}';
+    HC_CSS += '.hc-ritual-break{height:1px;background:var(--line,var(--border));max-width:120px;margin:36px auto 0}';
+    HC_CSS += '.hc-sec{padding:32px 32px 0}';
+    HC_CSS += '.hc-sec-meta{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}';
+    HC_CSS += '.hc-sec-meta .num{color:var(--primary)}';
+    HC_CSS += '.hc-kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}';
+    HC_CSS += '.hc-kpi{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(20,20,40,.06)}';
+    HC_CSS += '.hc-kpi .val{font-size:32px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink)}';
+    HC_CSS += '.hc-kpi .val small{font-size:16px;color:var(--ink-muted);font-weight:600}';
+    HC_CSS += '.hc-kpi .lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);font-weight:600;margin-top:4px}';
+    HC_CSS += '.hc-kpi .sub{font-size:12px;color:var(--ink-muted);margin-top:6px}';
+    HC_CSS += '.hc-panel{background:var(--card);border-radius:18px;padding:24px;box-shadow:0 1px 3px rgba(20,20,40,.06)}';
+    HC_CSS += '.hc-radar-wrap{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:center}';
+    HC_CSS += '.hc-dimlist{display:flex;flex-direction:column;gap:14px}';
+    HC_CSS += '.hc-dim{display:grid;grid-template-columns:108px 1fr auto;gap:12px;align-items:center}';
+    HC_CSS += '.hc-dim .dn{font-size:13px;font-weight:600;color:var(--ink)}';
+    HC_CSS += '.hc-dim .bar{position:relative;height:8px;background:var(--line-soft,var(--bg-hover));border-radius:99px}';
+    HC_CSS += '.hc-dim .fill{position:absolute;left:0;top:0;height:100%;border-radius:99px}';
+    HC_CSS += '.hc-dim .med{position:absolute;top:-3px;width:2px;height:14px;background:var(--slate);border-radius:2px;opacity:.7}';
+    HC_CSS += '.hc-dim .tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;letter-spacing:.04em;white-space:nowrap}';
+    HC_CSS += '.tag-up{background:rgba(27,168,145,.16);color:#0f7a68}';
+    HC_CSS += '.tag-dn{background:rgba(224,138,58,.18);color:#a85f1a}';
+    HC_CSS += 'html[data-theme="dark"] .tag-up{color:#3fd6bd}html[data-theme="dark"] .tag-dn{color:#E89A4E}';
+    HC_CSS += '.hc-legend{display:flex;gap:18px;font-size:11px;color:var(--ink-muted);margin-top:16px}';
+    HC_CSS += '.hc-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}';
+    HC_CSS += '.hc-two{display:grid;grid-template-columns:1fr 1fr;gap:16px}';
+    HC_CSS += '.hc-blk-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px;color:var(--ink)}';
+    HC_CSS += '.hc-blk-title .dot{width:8px;height:8px;border-radius:99px;display:inline-block}';
+    HC_CSS += '.hc-li{font-size:13px;color:var(--ink-sec);padding:7px 0 7px 16px;position:relative;line-height:1.5}';
+    HC_CSS += 'html[data-theme="dark"] .hc-li{color:var(--ink-dim)}';
+    HC_CSS += '.hc-li::before{content:"";position:absolute;left:0;top:13px;width:5px;height:5px;border-radius:99px}';
+    HC_CSS += '.hc-li.up::before{background:var(--teal)}.hc-li.dn::before{background:var(--gold)}';
+    HC_CSS += '.hc-ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}';
+    HC_CSS += '.hc-step{border-radius:14px;padding:16px 12px;text-align:center;background:var(--card);box-shadow:0 1px 3px rgba(20,20,40,.06);position:relative}';
+    HC_CSS += '.hc-step .si{width:22px;height:22px;margin:0 auto 8px}';
+    HC_CSS += '.hc-step .sn{font-size:13px;font-weight:700}';
+    HC_CSS += '.hc-step .sc{font-size:10px;letter-spacing:.12em;color:var(--ink-muted);font-weight:600;margin-top:2px}';
+    HC_CSS += '.hc-step.cur{transform:scale(1.05)}';
+    HC_CSS += '.hc-step.cur .here{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#fff;background:var(--primary);padding:2px 9px;border-radius:99px;white-space:nowrap}';
+    HC_CSS += '.hc-advice{background:var(--card);border-radius:16px;padding:20px 22px;box-shadow:0 1px 3px rgba(20,20,40,.06)}';
+    HC_CSS += '.hc-advice .why{font-size:11px;color:var(--gold);font-weight:600;letter-spacing:.04em;margin-bottom:8px;text-transform:uppercase}';
+    HC_CSS += '.hc-advice h4{font-size:14px;font-weight:700;margin-bottom:6px;color:var(--ink)}';
+    HC_CSS += '.hc-advice p{font-size:13px;color:var(--ink-muted);line-height:1.6}';
+    HC_CSS += '.hc-flagbox{background:rgba(224,138,58,.07);border-radius:16px;padding:20px 22px}';
+    HC_CSS += '.hc-flagbox-h{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px}';
+    HC_CSS += '.hc-flagbox-sub{font-size:12px;color:var(--ink-muted);line-height:1.55;margin-bottom:14px}';
+    HC_CSS += '.hc-flag{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line-soft,var(--bg-hover))}';
+    HC_CSS += '.hc-flag .ic{flex:none;width:24px;height:24px;color:var(--gold)}';
+    HC_CSS += '.hc-flag .ic svg{width:20px;height:20px}';
+    HC_CSS += '.hc-flag b{display:block;font-size:13px;font-weight:600;color:var(--ink)}';
+    HC_CSS += '.hc-flag span{font-size:12px;color:var(--ink-muted)}';
+    HC_CSS += '.hc-report-foot{text-align:center;padding:40px 32px 0}';
+    HC_CSS += '.hc-report-foot .btn{margin:0 6px}';
+    HC_CSS += '@media(max-width:720px){.hc-radar-wrap{grid-template-columns:1fr}.hc-kpi-row{grid-template-columns:1fr}.hc-two{grid-template-columns:1fr}.hc-ladder{grid-template-columns:1fr}}';
+    HC_CSS += '@media(max-width:560px){.hc-hero{padding:40px 22px 32px}.hc-verdict{font-size:25px}.hc-sec{padding:28px 20px 0}.hc-panel{padding:18px}.hc-report-foot{padding:32px 20px 0}.hc-report-foot .btn{margin:6px 4px;width:calc(50% - 8px)}}';
+
+    window._HC = { start: start };
+  })();
 
   // ==================== MODULE 1: HOME ====================
   function renderHome(activeTab) {
@@ -43262,7 +44006,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
-<!-- v1.12.0 · 設定頁功能對照表重寫（舊 Free/Starter NT$290/Pro NT$990/Enterprise → 新 免費試用/PRO NT$499/MAX NT$999/Team）· credits 欄對齊拍板（50/50/1,000/依方案）· 模組欄依 PLAN_CATALOG（免費試用=全模組、PRO=核心6、MAX=全、Team=全+多人）· 殘留舊價 NT$290/NT$990/credits 30/500/3,000 清除 · sidebar v1.11.2→v1.12.0 -->
+<!-- v1.12.0 · 設定頁功能對照表重寫（舊 Free/Starter NT$290/Pro NT$990/Enterprise → 新 免費試用/PRO NT$499/MAX NT$999/Team）· credits 欄對齊拍板（50/50/1,000/依方案）· 模組欄依 PLAN_CATALOG（免費試用=全模組、PRO=核心6、MAX=全、Team=全+多人）· 殘留舊價 NT$290/NT$990/credits 30/500/3,000 清除 · sidebar v1.11.2→v1.12.0 ＋ 新增 AI Native 體質檢測模組(個人版)：側邊欄入口+個人/團隊雙入口+7段AI訪談(真AI追問逼證據)+6維評分+B~S不羞辱等級+防灌水紅旗+暗色適配+飽和純色 -->
 <!-- v1.11.2 · 品牌改名 BeyondPath→BeyondSpec(69 處顯示文字) + 模組名 PATH 診斷→產品力診斷(56) + PATH 四維模型→產品力四維模型(4) + navigate() 加 PostHog $pageview/module_view 逐模組數據追蹤(try/catch 降級安全·不弄壞導航) · 程式骨架 PATH_AI/pathType//path/ 全未動 · 基準=線上 v1.11.1 抓回(本地 v1.5.1 已 stale 改備份) · sidebar v1.11.1→v1.11.2 -->
 <!-- v1.11.1 (payroll) Calcifer 2026-06-18 - 0a Sentry DSN-ready 骨架 + 全域 onerror/unhandledrejection 統一上報通道(Sentry->PostHog->console 逐層降級); 1a resolveWorkspace() idempotent 建 workspaces/{uid} 父文件(owner/memberEmails/attendanceAccessEmails 三欄·fire-and-forget·不阻塞薪資載入)解 owner 出缺勤進不去; 0b deploy-prod.py 五層 guard. sidebar v1.11.0->v1.11.1 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
