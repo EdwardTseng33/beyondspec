@@ -64,6 +64,19 @@
   .nav-login:hover{background:rgba(11,11,15,.06);}
   .nav-try{font-weight:700;background:#199a55;color:#fff;padding:10px 20px;border-radius:999px;box-shadow:0 12px 24px -14px rgba(25,154,85,.6);transition:transform .2s ease,box-shadow .2s ease;white-space:nowrap;}
   .nav-try:hover{transform:translateY(-1px);box-shadow:0 16px 28px -14px rgba(25,154,85,.75);}
+  /* ===== 手機版 hero 重排：縮小人物+卡片、簡化內容、四角不重疊（2026-06-25）===== */
+  @media(max-width:640px){
+    .hero-portrait{height:528px!important;width:100%!important;margin:0 auto!important;}
+    .hcard{padding:9px 11px!important;border-radius:13px!important;box-shadow:0 12px 26px -20px rgba(22,22,15,.42)!important;}
+    .hc-task{display:none!important;}
+    .hero-cta2{display:none!important;}
+    .hc-ar{right:0!important;left:auto!important;top:2%!important;padding:9px 11px!important;}
+    .hc-ar .ar-amt{font-size:18px!important;}
+    .hc-tail{left:0!important;right:auto!important;top:auto!important;bottom:7%!important;width:146px!important;}
+    .hc-quote{right:0!important;left:auto!important;top:auto!important;bottom:0!important;width:150px!important;padding:10px 12px!important;}
+    .hc-quote .q-r3{display:none!important;}
+    .domain-card{flex:1 1 calc(50% - 6px)!important;min-width:0!important;max-width:none!important;padding:13px 14px!important;}
+  }
 </style>
 </head>
 <body>
@@ -88,40 +101,40 @@
   <section style="max-width:1360px;margin:0 auto;padding:clamp(34px,4vw,64px) clamp(20px,5vw,56px) clamp(28px,4vw,60px);">
     <div style="display:flex;flex-wrap:wrap;gap:clamp(30px,4vw,60px);align-items:center;">
       <div style="flex:1.05 1 480px;min-width:300px;">
-        <h1 style="font-size:clamp(40px,5.6vw,86px);line-height:1.04;letter-spacing:-.035em;font-weight:700;margin:0 0 clamp(22px,3vw,34px);text-wrap:balance;padding-top:.06em;">別讓一筆<span style="position:relative;white-space:nowrap;z-index:0;">尾款<span style="position:absolute;left:-4%;right:-4%;bottom:6%;height:34%;background:#d4ec5b;border-radius:6px;z-index:-1;transform:rotate(-1deg);"></span></span>，<br>悄悄漏掉。</h1>
+        <h1 style="font-size:clamp(40px,5.6vw,86px);line-height:1.04;letter-spacing:-.035em;font-weight:700;margin:0 0 clamp(22px,3vw,34px);text-wrap:balance;padding-top:.06em;">新創與中小企業的<br><span style="position:relative;white-space:nowrap;z-index:0;">發展引擎<span style="position:absolute;left:-4%;right:-4%;bottom:6%;height:34%;background:#d4ec5b;border-radius:6px;z-index:-1;transform:rotate(-1deg);"></span></span>。</h1>
         <p style="font-size:clamp(18px,1.9vw,25px);line-height:1.55;color:#56564c;max-width:520px;margin:0 0 clamp(28px,3vw,36px);text-wrap:pretty;line-break:strict;">報價、收款、客戶、營運，一個地方管清楚。<br>台灣小型服務團隊的 AI 營運工作台。</p>
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
           <a href="/path/app/" style="font-size:16px;font-weight:700;background:#199a55;color:#fff;padding:16px 32px;border-radius:999px;white-space:nowrap;box-shadow:0 16px 30px -14px rgba(25,154,85,.5);">免費開始使用 →</a>
-          <a href="#features" style="font-size:16px;font-weight:600;color:#16160f;padding:15px 26px;border-radius:999px;border:1.5px solid rgba(22,22,15,.22);white-space:nowrap;">看實際運作 ↓</a>
+          <a href="#features" class="hero-cta2" style="font-size:16px;font-weight:600;color:#16160f;padding:15px 26px;border-radius:999px;border:1.5px solid rgba(22,22,15,.22);white-space:nowrap;">看實際運作 ↓</a>
         </div>
       </div>
       <div style="flex:1.05 1 500px;min-width:300px;position:relative;">
         <div style="position:absolute;right:3%;top:0;width:52%;aspect-ratio:1;border-radius:50%;background:#d4ec5b;z-index:0;"></div>
         <div style="position:absolute;left:-1%;bottom:13%;width:27%;aspect-ratio:1;border-radius:50%;background:#e6f7f0;z-index:0;"></div>
-        <img src="assets/people/beyondspec-hero-founder-cutout-final.png" alt="台灣創業者，手持平板" style="position:relative;z-index:1;display:block;width:100%;height:clamp(400px,48vw,580px);object-fit:contain;object-position:center bottom;filter:drop-shadow(0 28px 38px rgba(22,22,15,.18));animation:bsm-hero 8s ease-in-out infinite;">
+        <img class="hero-portrait" src="assets/people/beyondspec-hero-founder-cutout-final.png" alt="台灣創業者，手持平板" style="position:relative;z-index:1;display:block;width:100%;height:clamp(400px,48vw,580px);object-fit:contain;object-position:center bottom;filter:drop-shadow(0 28px 38px rgba(22,22,15,.18));animation:bsm-hero 8s ease-in-out infinite;">
         <!-- 浮動卡：聚焦報價收款客戶營運（策略 v2 wedge）· 誠實呈現「應收/待收/逾期」非「已收」 -->
-        <div style="position:absolute;z-index:2;left:-3%;top:12%;background:#fff;border-radius:16px;box-shadow:0 26px 50px -30px rgba(22,22,15,.4);padding:11px 14px;display:flex;align-items:center;gap:10px;animation:bsm-c3 7s ease-in-out infinite;">
+        <div class="hcard hc-task" style="position:absolute;z-index:2;left:-3%;top:12%;background:#fff;border-radius:16px;box-shadow:0 26px 50px -30px rgba(22,22,15,.4);padding:11px 14px;display:flex;align-items:center;gap:10px;animation:bsm-c3 7s ease-in-out infinite;">
           <span style="width:34px;height:34px;border-radius:10px;background:#0f9d8e;display:flex;align-items:center;justify-content:center;flex:none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l2 2 3-3"/><path d="M4 16l2 2 3-3"/><path d="M13 7h7M13 17h7"/></svg></span>
           <div>
-            <div style="font-size:13px;font-weight:700;color:#16160f;white-space:nowrap;">任務中心 · 今天 6 件</div>
-            <div style="height:4px;width:96px;border-radius:99px;background:#eceadf;margin-top:5px;"><div style="width:66%;height:100%;background:#0f9d8e;border-radius:99px;"></div></div>
+            <div class="lbl" style="font-size:13px;font-weight:700;color:#16160f;white-space:nowrap;">任務中心 · 今天 6 件</div>
+            <div class="bar" style="height:4px;width:96px;border-radius:99px;background:#eceadf;margin-top:5px;"><div style="width:66%;height:100%;background:#0f9d8e;border-radius:99px;"></div></div>
           </div>
         </div>
-        <div style="position:absolute;z-index:2;right:-1%;top:4%;background:#16160f;color:#fff;border-radius:14px;box-shadow:0 26px 50px -30px rgba(22,22,15,.5);padding:13px 16px;animation:bsm-c2 9s ease-in-out infinite;">
+        <div class="hcard hc-ar" style="position:absolute;z-index:2;right:-1%;top:4%;background:#16160f;color:#fff;border-radius:14px;box-shadow:0 26px 50px -30px rgba(22,22,15,.5);padding:13px 16px;animation:bsm-c2 9s ease-in-out infinite;">
           <div style="font-size:11px;color:#9b9b8f;margin-bottom:7px;white-space:nowrap;">應收帳款 · 待收</div>
-          <div style="font-size:26px;font-weight:800;color:#d4ec5b;line-height:1;">NT$214K</div>
+          <div class="ar-amt" style="font-size:26px;font-weight:800;color:#d4ec5b;line-height:1;">NT$214K</div>
           <div style="font-size:11px;font-weight:700;color:#ffc24d;margin-top:7px;white-space:nowrap;">3 筆逾期 · 該追了</div>
         </div>
-        <div style="position:absolute;z-index:2;left:-2%;bottom:21%;background:#fff;border-radius:16px;box-shadow:0 26px 50px -30px rgba(22,22,15,.4);padding:12px 15px;width:184px;animation:bsm-c3 8s ease-in-out infinite;">
+        <div class="hcard hc-tail" style="position:absolute;z-index:2;left:-2%;bottom:21%;background:#fff;border-radius:16px;box-shadow:0 26px 50px -30px rgba(22,22,15,.4);padding:12px 15px;width:184px;animation:bsm-c3 8s ease-in-out infinite;">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;"><span style="width:7px;height:7px;border-radius:50%;background:#d99500;flex:none;animation:bsm-pulse 1.6s ease-in-out infinite;"></span><span style="font-size:11px;font-weight:800;color:#d99500;letter-spacing:.03em;">尾款待收</span></div>
           <div style="font-size:13px;font-weight:700;color:#15140e;line-height:1.45;">晴海設計尾款 NT$48K，<br><span style="color:#d99500;">已逾期 9 天</span></div>
         </div>
-        <div style="position:absolute;z-index:2;right:-4%;bottom:7%;width:min(60%,224px);background:#fff;border-radius:16px;box-shadow:0 30px 56px -32px rgba(22,22,15,.4);padding:13px 15px;animation:bsm-c5 8.5s ease-in-out infinite;">
+        <div class="hcard hc-quote" style="position:absolute;z-index:2;right:-4%;bottom:7%;width:min(60%,224px);background:#fff;border-radius:16px;box-shadow:0 30px 56px -32px rgba(22,22,15,.4);padding:13px 15px;animation:bsm-c5 8.5s ease-in-out infinite;">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;"><span style="width:7px;height:7px;border-radius:50%;background:#ff6b57;flex:none;"></span><span style="font-size:11px;font-weight:800;color:#ff6b57;letter-spacing:.03em;">報價提案</span></div>
           <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="color:#15140e;font-weight:600;white-space:nowrap;">晴海設計</span><span style="font-size:10px;font-weight:700;color:#199a55;background:#e7f3dd;padding:2px 7px;border-radius:6px;white-space:nowrap;">已成交</span></div>
             <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="color:#15140e;font-weight:600;white-space:nowrap;">大樹工作室</span><span style="font-size:10px;font-weight:700;color:#8a8f9c;background:#eef0f3;padding:2px 7px;border-radius:6px;white-space:nowrap;">待回覆</span></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="color:#15140e;font-weight:600;white-space:nowrap;">森森選物</span><span style="font-size:10px;font-weight:700;color:#ff6b57;background:#ffeae5;padding:2px 7px;border-radius:6px;white-space:nowrap;">報價中</span></div>
+            <div class="q-r3" style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><span style="color:#15140e;font-weight:600;white-space:nowrap;">森森選物</span><span style="font-size:10px;font-weight:700;color:#ff6b57;background:#ffeae5;padding:2px 7px;border-radius:6px;white-space:nowrap;">報價中</span></div>
           </div>
         </div>
       </div>
@@ -136,12 +149,12 @@
       <p style="font-size:clamp(15px,1.6vw,18px);line-height:1.65;color:#5b6170;margin:0;text-wrap:pretty;">小團隊最大的內耗，是工具開五個、資料散五處、每件事都要重接一次。BeyondSpec 把驗證方向、跑日常、追業務、收錢算薪、管出勤——全接成一條線，一個人也能像一支團隊在跑。</p>
     </div>
     <!-- 5 大領域：14 模組各自解決的公司核心問題 -->
-    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:1040px;margin:0 auto clamp(30px,4vw,46px);">
-      <div style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#199a55;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#199a55;letter-spacing:.03em;">驗證</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">這個方向值得做嗎？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">別埋頭半年才發現做錯</div></div>
-      <div style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#0f9d8e;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#0f9d8e;letter-spacing:.03em;">營運</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">公司現在狀況怎樣？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">進度不再散在 LINE 和腦袋裡</div></div>
-      <div style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#ff6b57;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#ff6b57;letter-spacing:.03em;">業務</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">客戶、報價追到哪？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">不靠記性，不漏單</div></div>
-      <div style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#d99500;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#d99500;letter-spacing:.03em;">財務</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">錢收到了沒？薪水算了沒？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">月底不再對帳到半夜</div></div>
-      <div style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#7a5bff;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#7a5bff;letter-spacing:.03em;">出勤</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">今天誰到了？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">排班、算薪一個地方搞定</div></div>
+    <div class="domain-grid" style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:1040px;margin:0 auto clamp(30px,4vw,46px);">
+      <div class="domain-card" style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#199a55;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#199a55;letter-spacing:.03em;">驗證</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">這個方向值得做嗎？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">別埋頭半年才發現做錯</div></div>
+      <div class="domain-card" style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#0f9d8e;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#0f9d8e;letter-spacing:.03em;">營運</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">公司現在狀況怎樣？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">進度不再散在 LINE 和腦袋裡</div></div>
+      <div class="domain-card" style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#ff6b57;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#ff6b57;letter-spacing:.03em;">業務</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">客戶、報價追到哪？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">不靠記性，不漏單</div></div>
+      <div class="domain-card" style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#d99500;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#d99500;letter-spacing:.03em;">財務</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">錢收到了沒？薪水算了沒？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">月底不再對帳到半夜</div></div>
+      <div class="domain-card" style="flex:1 1 178px;min-width:158px;max-width:212px;background:#fff;border:1px solid rgba(11,11,15,.07);border-radius:16px;padding:15px 16px;box-shadow:0 14px 34px -30px rgba(11,11,15,.5);"><div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;"><span style="width:9px;height:9px;border-radius:50%;background:#7a5bff;flex:none;"></span><span style="font-size:13px;font-weight:800;color:#7a5bff;letter-spacing:.03em;">出勤</span></div><div style="font-size:14px;font-weight:700;color:#15140e;line-height:1.4;margin-bottom:5px;">今天誰到了？</div><div style="font-size:12px;color:#8a8f9c;line-height:1.45;">排班、算薪一個地方搞定</div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:16px;">
       <div class="marq"><div class="track a" id="trackA"></div></div>
