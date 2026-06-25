@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.11.2</div>
+        <div class="sidebar-version">v1.12.0</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -8845,7 +8845,7 @@ body.hd-locked { overflow: hidden; }
       savedSurveys:  { shape: "array",  syncFirestore: true,  localKey: "bp_savedSurveys" },
       settings:      { shape: "object", syncFirestore: true,  localKey: "bp_settings" },
       feedbackLog:   { shape: "array",  syncFirestore: false, localKey: "bp_feedback" },
-      billing:       { shape: "array",  syncFirestore: true,  localKey: "bp_billing" }
+      billing:       { shape: "object", syncFirestore: true,  localKey: "bp_subscription" }
     });
 
     var _subscribers = {};
@@ -9310,7 +9310,7 @@ body.hd-locked { overflow: hidden; }
             if (window.bpStorage) {
               window.bpStorage.set("billing", billing);
             } else {
-              try { localStorage.setItem("bp_billing", JSON.stringify(billing)); } catch (e) {}
+              try { localStorage.setItem("bp_subscription", JSON.stringify(billing)); } catch (e) {}
             }
             try { console.log("[bpMigration 4->5] billing composed · plan=" + plan + " creditUsed=" + creditUsed); } catch (_) {}
           } catch (err) {
@@ -9430,6 +9430,20 @@ body.hd-locked { overflow: hidden; }
       savedReports: JSON.parse(localStorage.getItem('bp_savedReports') || '[]')
     };
     Object.assign(state, saved);
+    // v1.12.0 SaaS: 從 bpStorage.billing 回填 trial / 訂閱狀態（雲端權威 mirror；local fallback）
+    try {
+      var _billing = (window.bpStorage && window.bpStorage.get("billing")) || null;
+      if (_billing && typeof _billing === "object") {
+        if (_billing.trialStartedAt) state.trialStartedAt = _billing.trialStartedAt;
+        if (_billing.subscriptionId) state.subscriptionId = _billing.subscriptionId;
+        if (_billing.billingStatus) state.billingStatus = _billing.billingStatus;
+        if (_billing.paidAt) state.paidAt = _billing.paidAt;
+        if (_billing.lockReason) state.lockReason = _billing.lockReason; // ② BUG#1: 還原鎖記號（漏還原會讓已鎖帳號 reload 後裸奔）
+        if (typeof _billing.trialExpired !== 'undefined') state.trialExpired = !!_billing.trialExpired; // ② v1.12.0 軟鎖：還原唯讀旗標（跟 lockReason 同處理；漏還原會讓已到期帳號 reload 後恢復可寫）
+        // plan 以 billing 為準（雲端權威優先於舊 bp_plan local key）
+        if (_billing.plan) state.plan = _billing.plan;
+      }
+    } catch (_) {}
     // Phase 0 (v1.0.7): BP namespace lifecycle bootstrap
     if (window.BP && BP.store && BP.store.backupOnce) BP.store.backupOnce();
     if (window.BP && BP.lifecycle && BP.lifecycle.bumpLoginStamp) BP.lifecycle.bumpLoginStamp();
@@ -9513,7 +9527,18 @@ body.hd-locked { overflow: hidden; }
           creditUsed: state.creditUsed || 0,
           creditResetDate: state.creditResetDate || null,
           diagCount: state.diagCount || 0,
-          labCount: state.labCount || 0
+          labCount: state.labCount || 0,
+          // v1.12.0 SaaS: Starter 試用追蹤（trialStartedAt = ISO 字串；建立日見 _restoreSessionFromFirebase）
+          trialStartedAt: state.trialStartedAt || null,
+          // v1.12.0 金流 scaffold（webhook 解鎖時由 server 權威寫入；前端只讀顯示，見 billing-scaffold/）
+          subscriptionId: state.subscriptionId || null,
+          billingStatus: state.billingStatus || null,
+          paidAt: state.paidAt || null,
+          // ② v1.12.0 軟鎖：lockReason / trialExpired 也由 canonical saveState 持久化。
+          //   （此前 saveState 漏寫這兩欄，僅 _persistBilling 寫 → 任何後續 saveState 會把它們清掉 → reload 後唯讀態流失。
+          //    loadState 已會還原這兩欄；補上寫端後 round-trip 才完整。trialExpired 同時也能由 trialStartedAt 重算兜底。）
+          lockReason: state.lockReason || null,
+          trialExpired: !!state.trialExpired
         });
       } catch (_) {}
     } else {
@@ -9808,8 +9833,8 @@ body.hd-locked { overflow: hidden; }
           升級方案解鎖更多 AI Credits、Lab 研究、問卷引擎、市場報告等進階功能。
         </div>
         <div class="modal-actions" style="display:flex;flex-direction:column;gap:8px">
-          <button style="flex:1;background-color:var(--primary);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade('starter')">升級到 Starter · NT$290/月（600 Credits）</button>
-          <button style="flex:1;background-color:var(--gold);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade('pro')">升級到 Pro · NT$990/月（3,000 Credits）</button>
+          <button style="flex:1;background-color:var(--primary);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade('pro')">升級到 PRO · NT$499/月（50 Credits）</button>
+          <button style="flex:1;background-color:var(--teal);color:white;border:none;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;" onclick="app.handleUpgrade('enterprise')">升級到 MAX · NT$999/月（1,000 Credits）</button>
         </div>
         <div style="text-align: center; margin-top: 12px;">
           <span style="color: var(--ink-muted); font-size: var(--text-sm); cursor: pointer;" onclick="app.closePaywallModal()">稍後再說</span>
@@ -9965,6 +9990,13 @@ body.hd-locked { overflow: hidden; }
     function _done() {
       if (_settled) return;
       _settled = true;
+      // ② v1.12.0: 雲端資料載入後做權威的試用到期 / 鎖判斷（涵蓋全部登入路徑；同裝置 state 已從 localStorage 載入）
+      try {
+        if (typeof _enforceBilling === 'function') {
+          if (_enforceBilling()) showTrialLockWall();
+          else if (typeof hideTrialLockWall === 'function') hideTrialLockWall();
+        }
+      } catch (e) {}
       if (callback) callback();
     }
     if (!fs) { _done(); return; }
@@ -10003,12 +10035,22 @@ body.hd-locked { overflow: hidden; }
   // We'll hook into this after defining it — see below
 
   // ── Credit System: deduction + monthly reset ──
-  // v1.0.9: 同步新定價模型（FREE 30→50, STARTER 500→600），與 landing 定價敘事對齊
+  // v1.12.0: 改讀 PLAN_CATALOG.credits 為單一 source（消除 hardcode 與 catalog 散兩處不同步）
+  //   對齊拍板：Starter 50 · PRO 50 · MAX(enterprise) 1000 · free(鎖定殼) 0
+  //   'unlimited' → Infinity；PLAN_CATALOG 在同 IIFE 內，runtime 呼叫時已初始化
   function getCreditLimit(plan) {
-    if (plan === 'enterprise') return 99999;
-    if (plan === 'pro') return 3000;
-    if (plan === 'starter') return 600;
-    return 50; // free
+    // ② v1.12.0 軟鎖：唯讀態（試用到期未付費）→ AI credits 一律 0，即使 plan 仍 starter。
+    //   _isReadOnly 定義在後（hoisting 只 hoist function 宣告、runtime 呼叫時已就緒），故 typeof guard 防極早期呼叫。
+    if (typeof _isReadOnly === 'function' && _isReadOnly()) return 0;
+    var cfg = (typeof PLAN_CATALOG !== 'undefined') ? PLAN_CATALOG[plan] : null;
+    if (cfg && typeof cfg.credits !== 'undefined') {
+      return cfg.credits === 'unlimited' ? Infinity : cfg.credits;
+    }
+    // Fallback（PLAN_CATALOG 尚未定義的極早期呼叫）— 與 catalog 數字對齊
+    if (plan === 'enterprise') return 1000;
+    if (plan === 'pro') return 50;
+    if (plan === 'starter') return 50;
+    return 0; // free = 鎖定殼
   }
 
   function _checkCreditReset() {
@@ -10105,51 +10147,185 @@ body.hd-locked { overflow: hidden; }
 
   function isModuleAvailable(modKey, plan) {
     var p = plan || (state && state.plan) || 'free';
+    // ② v1.12.0: Starter = 7 天試用方案 → 試用期全模組 Max 級體驗（含收款）。城堡 council 拍板、對齊決策文件「全模組 Max 級」。
+    //   到期「軟鎖」另由 read-only 旗標控管（資料仍可見、不靠隱藏模組）；故 starter 一律放行全模組。
+    if (p === 'starter') return true;
     var min = MODULE_MIN_PLAN[modKey] || 'free';
     return (PLAN_RANK[p] || 0) >= (PLAN_RANK[min] || 0);
   }
 
   // ── Subscription Catalog（v0.32.0：訂閱系統 single source of truth）──
+  // v1.12.0 改版（2026-06-24 Edward 拍板 SaaS 收費）：
+  //   Starter 免費（7 天試用 → 硬鎖）/ PRO 499（依職務選模組）/ MAX 999（全模組 + AI 1000）/ Team（多人合併計費）
+  //   AI 額度：Starter 50 · PRO 50 · MAX 1000
+  //   key 對應（保留既有 key 名避免全站 ref 斷裂，只改顯示語義）：
+  //     free = 鎖定後的最小殼（試用到期未付 / 系統 fallback 底，0 credits、唯讀）
+  //     starter = 拍板「Starter 免費」入口（全模組 Max 級體驗 + trialDays 7 試用倒數）
+  //     pro = 拍板「PRO 499」（依職務選模組，MVP 先固定核心組，職務選擇器延 v1）
+  //     enterprise = 拍板「MAX 999」（對外顯示 MAX，全模組 + 1000 credits）
+  //   Team 不進 catalog（多人 seat / 合併計費 = scaffold，見 billing-scaffold/team-seat.TODO.md）
   // 月價 → 年價：折 17%（送 2 個月）
   const PLAN_CATALOG = {
     free: {
-      id: 'free', name: 'Free', tagline: '永久免費 · 任務/客戶/報價完整可用',
+      id: 'free', name: '已鎖定', tagline: '試用結束 · 付費解鎖你的帳號',
       monthly: 0, annual: 0, color: 'var(--ink-muted)',
-      credits: 50,
+      credits: 0,
       defaultModel: 'claude-sonnet-4-6',
       allowedModels: ['claude-sonnet-4-6'],
-      highlights: ['每月 50 AI Credits', '首次 產品力診斷不計費', 'Claude Sonnet 4.6', '任務中心 · 客戶管理', '客戶上限 50 筆'],
-      modules: ['mod-diagnose','mod-tasks','mod-contacts']
+      highlights: ['帳號已鎖定', '資料安全保留', '升級任一付費方案即恢復'],
+      modules: ['mod-diagnose','mod-tasks','mod-contacts'],
+      locked: true // v1.12.0: free 已非「永久免費」層，而是試用到期/降級底的鎖定殼
     },
     starter: {
-      id: 'starter', name: 'Starter', tagline: '個人接案者',
-      monthly: 290, annual: 2900, color: 'var(--gold)',
-      credits: 600,
+      id: 'starter', name: 'Starter', tagline: '一人試水溫 · 免費 7 天',
+      monthly: 0, annual: 0, color: 'var(--gold)',
+      credits: 50,
+      trialDays: 7, // v1.12.0: 7 天試用門檻，做成可調參數（未來 A/B 不必改架構）
+      isTrial: true,
       defaultModel: 'claude-sonnet-4-6',
       allowedModels: ['claude-sonnet-4-6', 'claude-opus-4-7'],
-      highlights: ['每月 600 AI Credits', 'Claude Sonnet 4.6 / Opus 4.8 切換', 'Lab 研究 · 問卷引擎 · 市場探測', '報價提案 · 會議紀錄', '客戶無上限'],
-      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-meetings']
+      highlights: ['免費試用 7 天', '每月 50 AI Credits', '全模組完整體驗（Max 級）', 'Claude Sonnet 4.6 / Opus 4.8 切換', '試用結束前可隨時升級'],
+      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-attendance','mod-meetings','mod-insights','mod-docs']
     },
     pro: {
-      id: 'pro', name: 'Pro', tagline: '小團隊全功能旗艦',
-      monthly: 990, annual: 9900, color: 'var(--primary)',
-      credits: 3000,
-      defaultModel: 'claude-opus-4-7',
-      allowedModels: ['claude-opus-4-7', 'claude-sonnet-4-6'],
-      highlights: ['每月 3,000 AI Credits', 'Claude Opus 4.8 預設（可切 Sonnet）', '收款管理 · 營運戰情室 · 文件庫', '團隊最多 5 人 + Claude MCP'],
-      modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-attendance','mod-meetings','mod-insights','mod-docs'],
+      id: 'pro', name: 'PRO', tagline: '生意跑起來 · 依職務選模組',
+      monthly: 499, annual: 4990, color: 'var(--primary)',
+      credits: 50,
+      defaultModel: 'claude-sonnet-4-6',
+      allowedModels: ['claude-sonnet-4-6', 'claude-opus-4-7'],
+      highlights: ['每月 50 AI Credits', '依職務選擇所需模組', '專案與應用基礎模組', 'Claude Sonnet 4.6 / Opus 4.8 切換', '永久訂閱'],
+      // MVP：PRO 先固定核心模組組（報價/收款/客戶/任務 + 診斷 + 會議）；職務制選擇器延 v1
+      modules: ['mod-diagnose','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-meetings'],
       featured: true
     },
     enterprise: {
-      id: 'enterprise', name: 'Enterprise', tagline: '20 人以上組織',
-      monthly: null, annual: null, color: 'var(--teal)',
-      credits: 'unlimited',
+      id: 'enterprise', name: 'MAX', tagline: '長大了 · 全模組火力全開',
+      monthly: 999, annual: 9990, color: 'var(--teal)',
+      credits: 1000,
       defaultModel: 'claude-opus-4-7',
       allowedModels: ['claude-opus-4-7', 'claude-sonnet-4-6'],
-      highlights: ['無限 AI Credits', 'Claude Opus 4.8 預設', 'Pro 全部功能', '團隊最多 20 人 · 管理員角色', 'API 整合 · 專屬客戶經理'],
+      highlights: ['每月 1,000 AI Credits', '全部模組無限制', 'Claude Opus 4.8 預設（可切 Sonnet）', '收款管理 · 營運戰情室 · 文件庫', '永久訂閱'],
       modules: ['mod-diagnose','mod-lab','mod-survey','mod-market','mod-report','mod-tasks','mod-contacts','mod-quotes','mod-billing','mod-payroll','mod-attendance','mod-meetings','mod-insights','mod-docs']
     }
   };
+
+  // ── v1.12.0 SaaS · Starter 試用到期 → 硬鎖 enforcement（block ②）──
+  //   設計：登入/載入後跑 _enforceBilling()。試用未啟動→啟動 7 天 starter；已到期且未付費→降為 free 鎖定殼 + 顯示付費牆。
+  //   安全鐵則：付費(pro/enterprise/billingStatus active/paidAt/subscriptionId) 與 dev-unlock(enterprise) 永不鎖；
+  //            首次一律先給滿 7 天試用（不會有人被「即時」鎖）；7 天門檻讀 PLAN_CATALOG.starter.trialDays（可調）。
+  function _trialDaysLimit() {
+    try { return (PLAN_CATALOG.starter && PLAN_CATALOG.starter.trialDays) || 7; } catch (e) { return 7; }
+  }
+  function _isPaidAccount() {
+    return !!(state.billingStatus === 'active' || state.paidAt || state.subscriptionId
+              || state.plan === 'pro' || state.plan === 'enterprise');
+  }
+  function _trialInfo() {
+    var startMs = state.trialStartedAt ? new Date(state.trialStartedAt).getTime() : 0;
+    if (!startMs || isNaN(startMs)) return { started: false, daysLeft: _trialDaysLimit(), expired: false };
+    var lim = _trialDaysLimit();
+    var elapsed = (Date.now() - startMs) / 86400000;
+    return { started: true, daysLeft: Math.max(0, Math.ceil(lim - elapsed)), expired: elapsed >= lim };
+  }
+  function _persistBilling() {
+    try { if (typeof saveState === 'function') saveState(); } catch (e) {}
+    try {
+      if (window.bpStorage && typeof window.bpStorage.set === 'function') {
+        window.bpStorage.set('billing', {
+          plan: state.plan || null,
+          trialStartedAt: state.trialStartedAt || null,
+          billingStatus: state.billingStatus || null,
+          paidAt: state.paidAt || null,
+          subscriptionId: state.subscriptionId || null,
+          lockReason: state.lockReason || null,
+          trialExpired: !!state.trialExpired // ② v1.12.0 軟鎖：唯讀旗標一併持久化（跟 lockReason 同處理）
+        });
+      }
+    } catch (e) {}
+  }
+  // 回傳 true = 帳號被鎖（試用到期未付費）。在登入/載入完資料後呼叫。
+  function _enforceBilling() {
+    // 付費 / dev-unlock(enterprise) → 永不鎖（並清掉殘留鎖記號 + 唯讀旗標）
+    if (_isPaidAccount()) {
+      if (state.lockReason || state.trialExpired) { state.lockReason = null; state.trialExpired = false; _persistBilling(); }
+      return false;
+    }
+    // 試用未啟動（新帳號或舊 free 用戶）→ 啟動滿 7 天 starter 試用，不鎖
+    if (!state.trialStartedAt) {
+      state.plan = 'starter';
+      state.trialStartedAt = new Date().toISOString();
+      state.lockReason = null;
+      _persistBilling();
+      return false;
+    }
+    // 已啟動試用 → 看是否到期
+    var t = _trialInfo();
+    if (t.expired) {
+      // ② v1.12.0 軟鎖（council 拍板 → Edward 拍板「7 天試用 → 軟鎖」）：
+      //   到期「不」降 plan=free 黑屏，而是設唯讀旗標 trialExpired=true、保留 plan='starter'。
+      //   資料仍可見、模組仍在（isModuleAvailable starter 全放行）；只擋寫入/AI（getCreditLimit→0 + 寫入攔截 + 頂部提示條）。
+      state.trialExpired = true;
+      state.lockReason = 'trial_expired'; // 保留語義記號（升級/付費後清除）
+      _persistBilling();
+      return true;
+    }
+    // 試用中（未到期）：確保 plan 停在 starter、清掉任何殘留唯讀記號
+    if (state.plan !== 'starter') { state.plan = 'starter'; _persistBilling(); }
+    if (state.trialExpired || state.lockReason) { state.trialExpired = false; state.lockReason = null; _persistBilling(); }
+    return false;
+  }
+  // ② v1.12.0 軟鎖：唯讀態 = 試用到期且未付費。付費(pro/enterprise/active/paidAt/subscriptionId)立即解除。
+  function _isReadOnly() {
+    return state.trialExpired === true && !_isPaidAccount();
+  }
+  // 沿用名稱（呼叫端不必改）：軟鎖時 _isAccountLocked 語義 = 唯讀，不再是 plan=free 黑屏。
+  function _isAccountLocked() {
+    return _isReadOnly();
+  }
+  // ② v1.12.0 軟鎖：寫入攔截 helper。唯讀時呼叫端 `if (_blockIfReadOnly()) return;` 即擋下並提示升級。
+  //   回 true = 已攔截（唯讀）；回 false = 放行（非唯讀）。
+  function _blockIfReadOnly(msg) {
+    if (!_isReadOnly()) return false;
+    try { if (typeof showToast === 'function') showToast(msg || '試用結束，資料唯讀中 · 升級即可繼續編輯', 3500); } catch (e) {}
+    try { if (typeof openSubscribeFlow === 'function') openSubscribeFlow('pro'); } catch (e) {}
+    return true;
+  }
+  // ② v1.12.0 軟鎖：持久頂部提示條（取代原全螢幕擋牆）。不擋資料 —— 資料仍可瀏覽，只擋寫入/AI。
+  //   函式名沿用 showTrialLockWall/hideTrialLockWall（4 處 call site 不必改）；唯讀時顯示、解除時移除。
+  //   登出改用 <button>（無障礙，原為 <span>）。不加任何遮罩/blur（背景資料須完整可讀）。
+  function _logoutFromTrialBanner() {
+    try {
+      if (typeof handleLogout === 'function') return handleLogout();
+      if (typeof logout === 'function') return logout();
+      if (typeof firebase !== 'undefined' && firebase.auth) { firebase.auth().signOut(); window.location.replace('/path/'); }
+    } catch (e) {}
+  }
+  function showTrialLockWall() {
+    if (document.getElementById('trialLockBanner')) return;
+    var bar = document.createElement('div');
+    bar.id = 'trialLockBanner';
+    bar.setAttribute('role', 'status');
+    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9000;display:flex;align-items:center;gap:12px;padding:10px 18px;'
+      + 'background:linear-gradient(90deg,rgba(124,92,252,.12),rgba(124,92,252,.06));border-bottom:1px solid rgba(124,92,252,.28);'
+      + 'backdrop-filter:saturate(1.2) blur(2px);-webkit-backdrop-filter:saturate(1.2) blur(2px);'
+      + 'font-size:13px;color:var(--ink,#15140e);box-shadow:0 2px 12px rgba(0,0,0,.06)';
+    bar.innerHTML =
+      '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--primary,#7C5CFC)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><rect x="4" y="9" width="12" height="8" rx="2"></rect><path d="M7 9V6a3 3 0 0 1 6 0v3"></path></svg>' +
+      '<span style="flex:1 1 auto;line-height:1.4"><strong style="font-weight:700">試用結束 · 資料唯讀中</strong><span style="color:var(--ink-muted,#6b7280)"> · 升級解鎖你的帳號，你建的資料都安全保留著。</span></span>' +
+      '<button id="trialBannerCta" type="button" style="flex:0 0 auto;background:var(--primary,#7C5CFC);color:#fff;border:none;border-radius:9px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer">升級</button>' +
+      '<button id="trialBannerLogout" type="button" style="flex:0 0 auto;background:transparent;border:1px solid var(--border,#e5e7eb);color:var(--ink-muted,#6b7280);border-radius:9px;padding:7px 12px;font-size:13px;cursor:pointer">登出</button>';
+    document.body.appendChild(bar);
+    // 把 banner 高度讓給 body，避免蓋住頂部內容（topbar/sidebar header）
+    try { document.body.style.paddingTop = (bar.offsetHeight || 44) + 'px'; } catch (e) {}
+    var cta = document.getElementById('trialBannerCta');
+    if (cta) cta.onclick = function () { try { if (typeof openSubscribeFlow === 'function') openSubscribeFlow('pro'); } catch (e) {} };
+    var lo = document.getElementById('trialBannerLogout');
+    if (lo) lo.onclick = _logoutFromTrialBanner;
+  }
+  function hideTrialLockWall() {
+    var b = document.getElementById('trialLockBanner');
+    if (b) { b.parentNode.removeChild(b); try { document.body.style.paddingTop = ''; } catch (e) {} }
+  }
 
   // v0.33.0: Claude 模型資訊 + credit 換算系統
   const MODEL_CATALOG = {
@@ -10264,10 +10440,12 @@ body.hd-locked { overflow: hidden; }
     var annualBtn = document.getElementById('lpCycleAnnual');
     if (monthBtn) monthBtn.classList.toggle('active', cycle === 'monthly');
     if (annualBtn) annualBtn.classList.toggle('active', cycle === 'annual');
+    // v1.12.0: 對齊拍板四方案（Starter 免費試用 / PRO 499 / MAX 999 / Team 聯絡）
+    //   年繳 = 月費 × 10（省 2 個月）；年繳折扣策略待 Edward 拍板，此為 MVP 占位
     var priceMap = {
-      free: { monthly: '免費', annual: '免費', monthUnit: '永久免費', annualUnit: '永久免費' },
-      starter: { monthly: 'NT$290', annual: 'NT$242', monthUnit: '每月計費', annualUnit: '/月（年繳 NT$2,900 · 省 17%）' },
-      pro: { monthly: 'NT$990', annual: 'NT$822', monthUnit: '每月計費', annualUnit: '/月（年繳 NT$9,900 · 省 17%）' }
+      starter: { monthly: '免費', annual: '免費', monthUnit: '試用 7 天', annualUnit: '試用 7 天' },
+      pro: { monthly: 'NT$499', annual: 'NT$416', monthUnit: '每月計費', annualUnit: '/月（年繳 NT$4,990 · 省 2 個月）' },
+      enterprise: { monthly: 'NT$999', annual: 'NT$833', monthUnit: '每月計費', annualUnit: '/月（年繳 NT$9,990 · 省 2 個月）' }
     };
     Object.keys(priceMap).forEach(function(pid){
       var pEl = document.querySelector('[data-lp-price="' + pid + '"]');
@@ -10666,6 +10844,30 @@ body.hd-locked { overflow: hidden; }
         <span>申請管理</span>
       </div>`;
     }
+
+    // ② v1.12.0 軟鎖：試用倒數常駐小條（只在「試用中」= plan=starter、未到期、未付費 顯示）。
+    //   daysLeft ≤ 2 變琥珀/紅強調。到期後不顯示倒數（改由頂部唯讀提示條接手）。
+    try {
+      if (typeof _trialInfo === 'function' && typeof _isPaidAccount === 'function'
+          && state.plan === 'starter' && !_isPaidAccount()) {
+        var _ti = _trialInfo();
+        if (_ti.started && !_ti.expired) {
+          var _dl = _ti.daysLeft;
+          var _urgent = _dl <= 2;
+          var _accent = _urgent ? 'var(--rose,#D94462)' : 'var(--gold,#E08A3A)';
+          navHtml += '<div class="nav-trial-chip" onclick="app.openSubscribeFlow(\'pro\')" title="升級解鎖" '
+            + 'style="margin:10px 12px 4px;padding:9px 11px;border-radius:10px;cursor:pointer;'
+            + 'background:' + (_urgent ? 'rgba(217,68,98,.10)' : 'rgba(224,138,58,.10)') + ';'
+            + 'border:1px solid ' + (_urgent ? 'rgba(217,68,98,.30)' : 'rgba(224,138,58,.28)') + '">'
+            + '<div style="display:flex;align-items:center;gap:7px">'
+            + '<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="' + _accent + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><circle cx="10" cy="10" r="7"></circle><path d="M10 6v4l2.5 1.5"></path></svg>'
+            + '<span class="nav-label" style="font-size:12px;font-weight:600;color:' + _accent + ';line-height:1.3">試用剩 ' + _dl + ' 天</span>'
+            + '</div>'
+            + '<div class="nav-label" style="font-size:11px;color:var(--ink-muted,#9ca3af);margin-top:2px;padding-left:22px">升級解鎖 →</div>'
+            + '</div>';
+        }
+      }
+    } catch (e) {}
 
     // Settings (always visible)
     navHtml += `<div class="nav-item ${state.currentModule === 'settings' ? 'active' : ''}" onclick="app.navClick(event,'settings')" title="設定">
@@ -13599,6 +13801,7 @@ body.hd-locked { overflow: hidden; }
       renderBacklog();
     };
     window._tpBatchSchedule = function(){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋批次排入本期
       var sel = window._tpBatchSelected || [];
       if(sel.length === 0) return;
       var T = _taskShared;
@@ -13675,6 +13878,8 @@ body.hd-locked { overflow: hidden; }
           zone.addEventListener('drop', function(e){
             e.preventDefault();
             zone.classList.remove('drag-over');
+            // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下時間軸拖拉（需求池/本期/下期搬移）。
+            if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return;
 
             var cardId = e.dataTransfer.getData('text/plain');
             var fromSource = e.dataTransfer.getData('application/x-tp-source');
@@ -13828,6 +14033,7 @@ body.hd-locked { overflow: hidden; }
 
     // ── Batch select: schedule all to current cycle ──
     window._bkBatchSchedule = function(){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋批次排程
       var selectedIds = Object.keys(window._bkBatchSelected || {});
       if(selectedIds.length === 0) return;
       var allCards = T.getCards().map(T.migrateCard);
@@ -13869,6 +14075,7 @@ body.hd-locked { overflow: hidden; }
 
     // ── Schedule card into current cycle (immediate, no dropdown) ──
     window._bkScheduleCard = function(cardId, evt){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋排入週期
       var allCards = T.getCards().map(T.migrateCard);
       var idx = allCards.findIndex(function(c){ return c.id === cardId; });
       if(idx === -1) return;
@@ -13909,6 +14116,7 @@ body.hd-locked { overflow: hidden; }
 
     // ── Archive card with confirmation dialog ──
     window._bkArchiveCard = function(cardId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋需求池封存
       var allCards = T.getCards().map(T.migrateCard);
       var cardToArchive = allCards.find(function(c){ return c.id === cardId; });
       if(!cardToArchive) return;
@@ -13932,6 +14140,7 @@ body.hd-locked { overflow: hidden; }
 
     // ── Confirm archive action ──
     window._bkConfirmArchive = function(cardId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋需求池封存確認
       var allCards = T.getCards().map(T.migrateCard);
       var idx = allCards.findIndex(function(c){ return c.id === cardId; });
       if(idx === -1) return;
@@ -13987,6 +14196,7 @@ body.hd-locked { overflow: hidden; }
 
     // ── v0.30.0: Quick-complete from focus pill ──
     window._tpQuickComplete = function(cardId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋快速完成
       var cards = T.getCards();
       var card = null;
       for(var i = 0; i < cards.length; i++){
@@ -14856,6 +15066,8 @@ body.hd-locked { overflow: hidden; }
     }
 
     function _cpHandleDrop(cardId, srcZone, tgtZone, currentCycle, nextCycle, rerender){
+      // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下週期面板拖拉（需求池/本期/下期搬移）。
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return;
       var T = _taskShared;
       var allCards = T.getCards().map(T.migrateCard);
       var idx = -1;
@@ -14898,6 +15110,7 @@ body.hd-locked { overflow: hidden; }
 
     // ── Schedule card into current cycle with animation ──
     window._cpScheduleCard = function(cardId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋排入本期
       var cardEl = document.getElementById('card-' + cardId);
       if(cardEl){
         cardEl.classList.add('exiting');
@@ -14938,6 +15151,7 @@ body.hd-locked { overflow: hidden; }
 
     // ── Unschedule card back to backlog with animation ──
     window._cpUnscheduleCard = function(cardId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋退回需求池
       var cardEl = document.getElementById('card-' + cardId);
       if(cardEl){
         cardEl.classList.add('exiting');
@@ -15238,6 +15452,7 @@ body.hd-locked { overflow: hidden; }
 
     // Carry-over
     window._cycleCarryOver = function(){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋週期結轉
       var cfg = T.getCycleConfig();
       var duration = cfg.duration || 7;
       var nextStart = new Date(currentCycle.endDate);
@@ -16101,6 +16316,8 @@ body.hd-locked { overflow: hidden; }
       setTimeout(function(){ var n = document.getElementById('rmAddName'); if(n) n.focus(); }, 50);
       // 儲存
       document.getElementById('rmAddSave').addEventListener('click', function(){
+        // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下路線圖新增項目。
+        if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) { closeModalAnimated(ov); return; }
         var name = (document.getElementById('rmAddName').value || '').trim();
         var startDate = document.getElementById('rmAddStart').value;
         var endDate = document.getElementById('rmAddEnd').value;
@@ -16205,6 +16422,7 @@ body.hd-locked { overflow: hidden; }
     };
 
     window._rmSetCycleColor = function(cycleId, color){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋項目變色
       if(!cycleId || !color) return;
       if(cycleId.indexOf('demo-cy-') === 0){
         try{
@@ -16228,6 +16446,7 @@ body.hd-locked { overflow: hidden; }
       setTimeout(function(){ window._rmOpenCycleDrawer(cycleId); }, 0);
     };
     window._rmSetCycleLabel = function(cycleId, label){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋項目改名
       if(!cycleId) return;
       label = (label || '').trim().slice(0,60);
       if(!label) return;
@@ -16513,6 +16732,7 @@ body.hd-locked { overflow: hidden; }
 
     // 新增 card 並綁 cycleId
     window._rmCycleAddCard = function(cycleId, title){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋項目新增需求
       if(!cycleId || !title) return;
       var allCards = T.getCards().map(T.migrateCard);
       var newCard = T.migrateCard({
@@ -16536,6 +16756,7 @@ body.hd-locked { overflow: hidden; }
 
     // 從需求池選 modal
     window._rmCyclePickFromBacklog = function(cycleId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋從需求池加入項目
       var allCards = T.getCards().map(T.migrateCard);
       var backlog = allCards.filter(function(c){ return !c.cycleId && !c.archived && c.columnId !== 'done'; });
       var ov = document.createElement('div');
@@ -16636,6 +16857,7 @@ body.hd-locked { overflow: hidden; }
 
     // 從項目移除需求（cycleId 解綁，卡片回到需求池）
     window._rmCycleRemoveCard = function(cycleId, cardId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋從項目移除需求
       if(!cycleId || !cardId) return;
       var allC = T.getCards();
       for(var i=0;i<allC.length;i++){
@@ -16653,6 +16875,7 @@ body.hd-locked { overflow: hidden; }
 
     // 改項目日期
     window._rmCycleSetDates = function(cycleId, startDate, endDate){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋項目改日期
       if(!cycleId) return;
       if(startDate && endDate && endDate < startDate){
         if(typeof showToast === 'function') showToast('結束日期不能早於開始日期');
@@ -16685,6 +16908,7 @@ body.hd-locked { overflow: hidden; }
 
     // 改項目描述
     window._rmCycleSetDesc = function(cycleId, desc){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋項目改描述
       if(!cycleId) return;
       desc = (desc || '').slice(0, 500);
       if(cycleId.indexOf('demo-cy-') === 0){
@@ -16705,6 +16929,7 @@ body.hd-locked { overflow: hidden; }
 
     // 刪除項目（解綁 cards 回需求池，移除 cycle）
     window._rmCycleDelete = function(cycleId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋刪除項目
       if(!cycleId) return;
       if(!confirm('確定刪除這個項目？\n項目下的需求會回到「需求池」，不會被刪除。')) return;
       // 解綁 cards
@@ -16845,6 +17070,7 @@ body.hd-locked { overflow: hidden; }
     window._rmRowDrop = function(ev, targetCardId){
       ev.preventDefault();
       ev.stopPropagation();
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋路線圖列拖拉排序
       var state = window._rmRowDragState;
       if(!state || state.cardId === targetCardId) return;
       var row = ev.currentTarget;
@@ -16930,6 +17156,8 @@ body.hd-locked { overflow: hidden; }
         // because onclick attribute handler runs regardless of preventDefault here
         window._rmDragJustEnded = true;
         setTimeout(function(){ window._rmDragJustEnded = false; }, 0);
+        // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下時間軸 bar 拖拉改期（還原視覺位置）。
+        if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) { bar.style.left = origLeft + 'px'; return; }
         var dx = mu.clientX - startX;
         var daysShift = Math.round(dx / ppd);
         if(daysShift === 0){
@@ -18629,6 +18857,8 @@ body.hd-locked { overflow: hidden; }
         body.addEventListener('drop',function(e){
           if(content.querySelector('.kanban-col.col-dragging')) return;
           e.preventDefault();body.classList.remove('drag-over');
+          // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下拖拉移欄。
+          if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return;
           var cardId=e.dataTransfer.getData('text/plain'),newCol=body.dataset.col;
           if(!cardId||!newCol) return;
           var card=cards.find(function(c){return c.id===cardId;});
@@ -18725,6 +18955,8 @@ body.hd-locked { overflow: hidden; }
         });
         zone.addEventListener('drop', function(e){
           e.preventDefault(); zone.classList.remove('drag-over');
+          // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下清單檢視拖拉移欄。
+          if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return;
           var cardId = e.dataTransfer.getData('text/plain');
           var newCol = zone.dataset.col;
           if(!cardId || !newCol) return;
@@ -19018,12 +19250,14 @@ body.hd-locked { overflow: hidden; }
     }
     function _kbRenameCol(colId){
       content.querySelectorAll('.kanban-col-menu').forEach(function(m){m.classList.remove('open');});
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋欄位重新命名
       var col=cols.find(function(c){return c.id===colId;});if(!col) return;
       var n=prompt('欄位名稱：',col.label);
       if(n&&n.trim()){col.label=n.trim();saveCols(cols);renderBoard();}
     }
     function _kbColorCol(colId){
       content.querySelectorAll('.kanban-col-menu').forEach(function(m){m.classList.remove('open');});
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋欄位變色
       var col=cols.find(function(c){return c.id===colId;});if(!col) return;
       var ov2=document.createElement('div');ov2.className='kb-modal-overlay';ov2.onclick=function(e){if(e.target===ov2)ov2.remove();};
       ov2.innerHTML='<div class="kb-modal" style="width:360px;padding:24px" onclick="event.stopPropagation()"><h3 style="margin:0 0 16px;font-size:16px;font-weight:700;color:var(--ink)">選擇顏色</h3><div style="display:flex;flex-wrap:wrap;gap:10px">'+PRESET_COLORS.map(function(c){return '<div style="width:36px;height:36px;border-radius:10px;background:'+c+';cursor:pointer;border:3px solid '+(c===col.color?'var(--ink)':'transparent')+';transition:all .15s" data-color="'+c+'"></div>';}).join('')+'</div></div>';
@@ -19032,6 +19266,7 @@ body.hd-locked { overflow: hidden; }
     }
     function _kbDeleteCol(colId){
       content.querySelectorAll('.kanban-col-menu').forEach(function(m){m.classList.remove('open');});
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋欄位刪除
       var col=cols.find(function(c){return c.id===colId;});if(!col||cols.length<=1) return;
       // v0.32.22：核心三欄（待處理/進行中/已完成）禁刪——任務流程的基礎三角，刪掉會破壞 status 語義
       // 其餘欄位（收件匣/驗收中/用戶自訂）仍可刪
@@ -19048,6 +19283,7 @@ body.hd-locked { overflow: hidden; }
       }
     }
     function _kbAddCol(){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋新增欄位
       var name=prompt('新欄位名稱：');if(!name||!name.trim()) return;
       var used=cols.map(function(c){return c.color;});
       var clr=PRESET_COLORS.find(function(c){return used.indexOf(c)===-1;})||PRESET_COLORS[cols.length%PRESET_COLORS.length];
@@ -19056,6 +19292,7 @@ body.hd-locked { overflow: hidden; }
     // v0.32.4: 欄位左右移位（menu 按鈕用）
     function _kbMoveCol(colId, dir){
       content.querySelectorAll('.kanban-col-menu').forEach(function(m){m.classList.remove('open');});
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋欄位移位
       var idx = cols.findIndex(function(c){return c.id===colId;});
       if(idx < 0) return;
       var target = idx + dir;
@@ -19111,6 +19348,8 @@ body.hd-locked { overflow: hidden; }
           if(!srcId) return;
           e.preventDefault();
           e.stopPropagation();
+          // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下欄位重新排序。
+          if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) { c.classList.remove('col-drop-left','col-drop-right'); return; }
           var targetId = c.dataset.col;
           if(!targetId || srcId === targetId) return;
           if(c.classList.contains('inbox-col')) return;
@@ -19735,6 +19974,8 @@ body.hd-locked { overflow: hidden; }
 
       // Save
       ov.querySelector('#kbSaveBtn').addEventListener('click',function(){
+        // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下任務新增/編輯儲存。
+        if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) { ov.remove(); return; }
         var title = ov.querySelector('#kbF_title').value.trim();
         if(!title){ov.querySelector('#kbF_title').style.borderColor='var(--rose)';return;}
 
@@ -19831,6 +20072,7 @@ body.hd-locked { overflow: hidden; }
 
     // ── Priority Cycle (v0.18.1) ──
     window._kbCyclePriority = function(cardId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋優先級變更
       var card = cards.find(function(c){return c.id===cardId;});
       if(!card) return;
       var cycle = ['none','low','medium','high'];
@@ -19861,6 +20103,7 @@ body.hd-locked { overflow: hidden; }
     window._kbEditCard = function(cardId){_kbShowCardView(cardId);};
     window._kbShowCardView = function(cardId){_kbShowCardView(cardId);};
     window._kbToggleCheckItem = function(cardId, idx) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋 checklist 勾選
       var card = cards.find(function(c){return c.id===cardId;});
       if(card && card.checklist && card.checklist[idx] !== undefined) {
         card.checklist[idx].done = !card.checklist[idx].done;
@@ -19869,6 +20112,7 @@ body.hd-locked { overflow: hidden; }
       }
     };
     window._kbToggleSubTask = function(cardId, idx) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋子任務勾選
       var card = cards.find(function(c){return c.id===cardId;});
       if(card && card.subTasks && card.subTasks[idx] !== undefined) {
         card.subTasks[idx].done = !card.subTasks[idx].done;
@@ -19944,6 +20188,7 @@ body.hd-locked { overflow: hidden; }
     // ── v0.32.13 任務封存 ──
     // 單張手動封存：已存在 archived 欄位，此處提供 UI 接口
     window._kbArchiveCard = function(cardId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋封存
       var allCards = T.getCards();
       var idx = -1;
       for(var i=0;i<allCards.length;i++){ if(allCards[i].id === cardId){ idx = i; break; } }
@@ -19955,6 +20200,7 @@ body.hd-locked { overflow: hidden; }
       renderBoard();
     };
     window._kbUnarchiveCard = function(cardId){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋移出封存
       var allCards = T.getCards();
       var idx = -1;
       for(var i=0;i<allCards.length;i++){ if(allCards[i].id === cardId){ idx = i; break; } }
@@ -19967,6 +20213,7 @@ body.hd-locked { overflow: hidden; }
     };
     // 一鍵封存本期 done 卡片
     window._kbArchiveCycleDone = function(){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋一鍵封存本期
       var curCyc = (typeof currentCycle !== 'undefined' && currentCycle) ? currentCycle : null;
       if(!curCyc){ if(window._kbToast) window._kbToast('目前沒有啟用週期', 'warn'); return; }
       var allCards = T.getCards();
@@ -20120,6 +20367,7 @@ body.hd-locked { overflow: hidden; }
     };
 
     window._kbUpdateTitle = function(cardId, newTitle) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋標題即時編輯
       var card = cards.find(function(c){ return c.id === cardId; });
       if(card && newTitle && newTitle.trim()) {
         card.title = newTitle.trim();
@@ -20128,6 +20376,7 @@ body.hd-locked { overflow: hidden; }
     };
 
     window._kbToggleDone = function(cardId) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋完成切換
       var card = cards.find(function(c){ return c.id === cardId; });
       if(!card) return;
       if(card.columnId === 'done') {
@@ -20143,6 +20392,7 @@ body.hd-locked { overflow: hidden; }
 
     // ── Detail Panel: Checklist operations ──
     window._dpToggleChecklist = function(cardId, idx) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋詳情面板 checklist 勾選
       var card = cards.find(function(c){ return c.id === cardId; });
       if(!card || !card.checklist || !card.checklist[idx]) return;
       card.checklist[idx].done = !card.checklist[idx].done;
@@ -20151,6 +20401,7 @@ body.hd-locked { overflow: hidden; }
     };
 
     window._dpAddChecklist = function(cardId, text) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋詳情面板新增 checklist
       if(!text || !text.trim()) return;
       var card = cards.find(function(c){ return c.id === cardId; });
       if(!card) return;
@@ -20161,6 +20412,7 @@ body.hd-locked { overflow: hidden; }
     };
 
     window._dpRemoveChecklist = function(cardId, idx) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋詳情面板移除 checklist
       var card = cards.find(function(c){ return c.id === cardId; });
       if(!card || !card.checklist) return;
       card.checklist.splice(idx, 1);
@@ -20304,6 +20556,7 @@ body.hd-locked { overflow: hidden; }
 
     // ── Cycle Carry-Over (結轉未完成到下一週期) ──
     window._kbCycleCarryOver = function(){
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，任務唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋週期結轉
       var cyc = ensureCurrentCycle();
       var allCards = getCards().map(migrateCard);
       var incomplete = allCards.filter(function(c){
@@ -20982,6 +21235,8 @@ body.hd-locked { overflow: hidden; }
         var archiveBtn = ov.querySelector('#ctArchiveBtn');
         if(archiveBtn){
           archiveBtn.addEventListener('click',function(){
+            // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下客戶封存。
+            if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，客戶資料唯讀中 · 升級即可繼續編輯')) { ov.remove(); return; }
             if(confirm('確定封存「'+ct.name+'」？此客戶及交易紀錄仍會保留。')){
               ct.archived = true;
               ct.updatedAt = new Date().toISOString();
@@ -20995,6 +21250,8 @@ body.hd-locked { overflow: hidden; }
 
       // Save
       ov.querySelector('#ctSaveBtn').addEventListener('click',function(){
+        // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下客戶（含既有客戶編輯）儲存。
+        if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，客戶資料唯讀中 · 升級即可繼續編輯')) { ov.remove(); return; }
         var name = ov.querySelector('#ctF_name').value.trim();
         if(!name){ov.querySelector('#ctF_name').style.borderColor='var(--rose)';return;}
         var data = {
@@ -21047,6 +21304,8 @@ body.hd-locked { overflow: hidden; }
 
       document.body.appendChild(ov);
       ov.querySelector('#txnSaveBtn').addEventListener('click',function(){
+        // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下新增交易紀錄寫入。
+        if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，客戶資料唯讀中 · 升級即可繼續編輯')) { ov.remove(); return; }
         var txn = {
           type: ov.querySelector('#txnF_type').value,
           amount: parseInt(ov.querySelector('#txnF_amount').value)||0,
@@ -21209,11 +21468,11 @@ body.hd-locked { overflow: hidden; }
     }
 
     // ── Expose to window ──
-    window._ctAdd = function(){_ctShowModal(null);};
-    window._ctEdit = function(id){_ctShowModal(id);};
+    window._ctAdd = function(){ if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，客戶資料唯讀中 · 升級即可新增')) return; _ctShowModal(null); };
+    window._ctEdit = function(id){_ctShowModal(id);}; // 唯讀仍可開啟檢視；儲存於 ctSaveBtn 內攔截
     window._ctSetFilter = function(f){activeFilter=f;window._ctFilter=f;renderBoard();};
-    window._ctAddTxn = function(id){_ctAddTxnModal(id);};
-    window._ctRemoveTxn = _ctRemoveTxn;
+    window._ctAddTxn = function(id){ if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，客戶資料唯讀中 · 升級即可繼續編輯')) return; _ctAddTxnModal(id);};
+    window._ctRemoveTxn = function(contactId, idx){ if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，客戶資料唯讀中 · 升級即可繼續編輯')) return; _ctRemoveTxn(contactId, idx); };
     window._ctImport = _ctImport;
 
     renderBoard();
@@ -22062,6 +22321,8 @@ body.hd-locked { overflow: hidden; }
       // ── Save ──
       var saveBtn = document.getElementById('qt-save');
       if (saveBtn) saveBtn.addEventListener('click', function() {
+        // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下報價（含既有報價編輯）儲存。
+        if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，報價唯讀中 · 升級即可繼續編輯')) { modal.remove(); return; }
         if (saveQuote() !== false) { modal.remove(); renderBoard(); }
       });
 
@@ -22519,7 +22780,11 @@ body.hd-locked { overflow: hidden; }
         var svb = document.getElementById('qt-save');
         if (clb) clb.addEventListener('click', function() { modal.remove(); });
         if (cab) cab.addEventListener('click', function() { modal.remove(); });
-        if (svb) svb.addEventListener('click', function() { if (saveQuote() !== false) { modal.remove(); renderBoard(); } });
+        if (svb) svb.addEventListener('click', function() {
+          // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下報價（含既有報價編輯）儲存。
+          if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，報價唯讀中 · 升級即可繼續編輯')) { modal.remove(); return; }
+          if (saveQuote() !== false) { modal.remove(); renderBoard(); }
+        });
         // Template picker
         var tt = document.getElementById('tpl-toggle');
         var tp = document.getElementById('tpl-picker');
@@ -23405,6 +23670,8 @@ body.hd-locked { overflow: hidden; }
 
       // ── Create draft from import ──
       function createFromImport() {
+        // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下匯入建立報價（=新增）。
+        if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，報價唯讀中 · 升級即可新增報價')) return;
         var st = importState;
         if (!st.parsed || !st.parsed.items.length) return;
 
@@ -23461,7 +23728,7 @@ body.hd-locked { overflow: hidden; }
     }
 
     // ── Window API for external calls ──
-    window._qtAdd = function() { showEditModal(null); };
+    window._qtAdd = function() { if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，報價唯讀中 · 升級即可新增報價')) return; showEditModal(null); };
     window._qtEdit = function(id) { showEditModal(id); };
     window._qtPreview = function(id) { showPreviewModal(id); };
     window._qtImport = function() { showImportModal(); };
@@ -23475,10 +23742,12 @@ body.hd-locked { overflow: hidden; }
     };
     window._qtSetFilter = function(f) { activeFilter = f || 'all'; window._qtFilter = activeFilter; renderBoard(); };
     window._qtArchive = function(id) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，報價唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋封存
       var q = quotes.find(function(x) { return x.id === id; });
       if (q) { q.archived = true; saveQuotes(quotes); renderBoard(); }
     };
     window._qtDuplicate = function(id) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，報價唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋複製（=新增）
       var q = quotes.find(function(x) { return x.id === id; });
       if (q) {
         var copy = JSON.parse(JSON.stringify(q));
@@ -23491,11 +23760,13 @@ body.hd-locked { overflow: hidden; }
       }
     };
     window._qtDeleteQuote = function(id) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，報價唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋刪除
       quotes = quotes.filter(function(q) { return q.id !== id; });
       saveQuotes(quotes);
       renderBoard();
     };
     window._qtChangeStatus = function(id, status) {
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，報價唯讀中 · 升級即可繼續編輯')) return; // ② v1.12.0 軟鎖：擋狀態變更
       var q = quotes.find(function(x) { return x.id === id; });
       if (q) {
         var prevStatus = q.status;
@@ -24095,7 +24366,7 @@ body.hd-locked { overflow: hidden; }
     };
 
     function getInvoices() {
-      try { var s = localStorage.getItem(BL_KEY); return s ? JSON.parse(s) : []; } catch(e) { return []; }
+      try { var s = localStorage.getItem(BL_KEY); var v = s ? JSON.parse(s) : []; return Array.isArray(v) ? v : []; } catch(e) { return []; }
     }
     function saveInvoices(inv) { localStorage.setItem(BL_KEY, JSON.stringify(inv)); _scheduleFirestoreSync(); }
     var invoices = getInvoices();
@@ -24479,6 +24750,8 @@ body.hd-locked { overflow: hidden; }
       };
 
       window._blConfirmPayment = function(btn) {
+        // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下新增收款記錄。
+        if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，收款唯讀中 · 升級即可繼續編輯')) return;
         var form = btn.parentElement;
         var amt = parseInt(form.querySelector('.blPay-amount').value) || 0;
         if (amt <= 0) return;
@@ -24504,6 +24777,8 @@ body.hd-locked { overflow: hidden; }
 
       // Save
       ov.querySelector('#blSaveBtn').addEventListener('click', function() {
+        // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下發票/收款狀態（含既有發票編輯、已收/未收）儲存。
+        if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，收款唯讀中 · 升級即可繼續編輯')) { ov.remove(); return; }
         var title = ov.querySelector('#blF_title').value.trim();
         if (!title) { ov.querySelector('#blF_title').style.borderColor = 'var(--rose)'; return; }
         var amount = parseInt(ov.querySelector('#blF_amount').value) || 0;
@@ -24548,6 +24823,8 @@ body.hd-locked { overflow: hidden; }
     }
 
     function _blArchiveInvoice(id) {
+      // ② v1.12.0 軟鎖：試用到期唯讀 → 擋下發票封存。
+      if (typeof _blockIfReadOnly === 'function' && _blockIfReadOnly('試用結束，收款唯讀中 · 升級即可繼續編輯')) return;
       if (!confirm('確定要封存這張發票嗎？')) return;
       invoices = getInvoices();
       var idx = -1;
@@ -29609,7 +29886,7 @@ function loadHistory(){
           ${ICONS.lock}
           <span style="font-size:13px;color:var(--ink-sec)">此功能需要 <strong style="color:var(--primary)">Starter</strong> 以上方案</span>
         </div>
-        <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="app.handleUpgrade()">升級方案 · 從 NT$290/月起</button>
+        <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="app.handleUpgrade()">升級方案 · 從 NT$499/月起</button>
       </div>`;
   }
 
@@ -32395,7 +32672,6 @@ function loadHistory(){
             // 價格（NT$ 拆 currency span，數字當主角）
             var priceMain, priceSub;
             if (pid === 'free') { priceMain = '免費'; priceSub = '永久'; }
-            else if (pid === 'enterprise') { priceMain = '洽談'; priceSub = '依需求報價'; }
             else if (cycle === 'annual') {
               priceMain = '<span class="plan-price-currency">NT$</span>' + Math.round(p.annual / 12).toLocaleString();
               priceSub = '/月 · 年繳 NT$' + p.annual.toLocaleString();
@@ -32407,7 +32683,6 @@ function loadHistory(){
             // CTA 文案 + 行為
             var ctaLabel, ctaClass, ctaAction;
             if (cur) { ctaLabel = '目前方案'; ctaClass = 'plan-cta-current'; ctaAction = ''; }
-            else if (pid === 'enterprise') { ctaLabel = '聯絡業務'; ctaClass = 'plan-cta-outline'; ctaAction = "window.location.href='mailto:hello@beyondspec.tw'"; }
             else if (rank > 0) { ctaLabel = '申請 ' + PLAN_CATALOG[pid].name + ' · 早鳥'; ctaClass = isFeatured ? 'plan-cta-featured' : 'plan-cta-primary'; ctaAction = "app.openSubscribeFlow('" + pid + "')"; }
             else { ctaLabel = '降級為 ' + p.name; ctaClass = 'plan-cta-outline'; ctaAction = "app.openSubscribeFlow('" + pid + "')"; }
 
@@ -32463,35 +32738,35 @@ function loadHistory(){
             <thead>
               <tr style="border-bottom:2px solid var(--border)">
                 <th style="text-align:left;padding:10px 6px;color:var(--ink-muted);font-weight:600">功能</th>
-                <th style="text-align:center;padding:10px 6px;color:var(--ink-muted);font-weight:600">Free</th>
-                <th style="text-align:center;padding:10px 6px;color:var(--gold);font-weight:700">Starter</th>
-                <th style="text-align:center;padding:10px 6px;color:var(--primary);font-weight:700">Pro</th>
-                <th style="text-align:center;padding:10px 6px;color:var(--teal);font-weight:700">Enterprise</th>
+                <th style="text-align:center;padding:10px 6px;color:var(--gold);font-weight:700">免費試用</th>
+                <th style="text-align:center;padding:10px 6px;color:var(--primary);font-weight:700">PRO</th>
+                <th style="text-align:center;padding:10px 6px;color:var(--teal);font-weight:700">MAX</th>
+                <th style="text-align:center;padding:10px 6px;color:var(--ink-muted);font-weight:600">Team</th>
               </tr>
             </thead>
             <tbody>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">基本資訊</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">價格</td><td style="text-align:center;padding:10px 6px">免費</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">NT$290/月</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">NT$990/月</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">洽談</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">每月 AI Credits</td><td style="text-align:center;padding:10px 6px">30</td><td style="text-align:center;padding:10px 6px;color:var(--gold);font-weight:700">500</td><td style="text-align:center;padding:10px 6px;color:var(--primary);font-weight:700">3,000</td><td style="text-align:center;padding:10px 6px;color:var(--teal);font-weight:700">無限</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">AI 模型</td><td style="text-align:center;padding:10px 6px">Sonnet</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">Sonnet</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">Sonnet / Opus</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">全模型</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">價格</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">免費試用 7 天</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">NT$499/月</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">NT$999/月</td><td style="text-align:center;padding:10px 6px">聯絡開通</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">每月 AI Credits</td><td style="text-align:center;padding:10px 6px;color:var(--gold);font-weight:700">50</td><td style="text-align:center;padding:10px 6px;color:var(--primary);font-weight:700">50</td><td style="text-align:center;padding:10px 6px;color:var(--teal);font-weight:700">1,000</td><td style="text-align:center;padding:10px 6px">依方案</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">AI 模型</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">Sonnet / Opus</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">Sonnet / Opus</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">Opus 預設（可切 Sonnet）</td><td style="text-align:center;padding:10px 6px">依 seat 方案</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">團隊營運模組</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">任務中心</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">客戶管理</td><td style="text-align:center;padding:10px 6px">50 筆</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">無限</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">報價提案</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">會議紀錄</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">收款管理（含催收）</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">文件庫（連結制）</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">營運戰情室</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">任務中心</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">客戶管理</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">報價提案</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">收款管理（含催收）</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">會議紀錄</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">文件庫（連結制）</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">營運戰情室</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">個人驗證工具</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">產品力診斷</td><td style="text-align:center;padding:10px 6px">3 次/月</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">無限</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">Lab / 問卷 / 市場探測</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">市場報告</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">產品力診斷</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">Lab / 問卷 / 市場探測</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">市場報告</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
               <tr style="border-bottom:1px solid var(--border);background:var(--bg-hover)"><td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.05em">平台與協作</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">團隊協作</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">最多 5 人</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">最多 20 人</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">管理員角色</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">Claude MCP 連接</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">資料匯出</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">v</td></tr>
-              <tr><td style="padding:10px 6px">歷史紀錄</td><td style="text-align:center;padding:10px 6px">最近 5 筆</td><td style="text-align:center;padding:10px 6px;color:var(--gold)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--primary)">無限</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">無限 + API</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">團隊協作</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓ 多人協作</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">管理員角色</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">Claude MCP 連接</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 6px">資料匯出</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
+              <tr><td style="padding:10px 6px">應收款儀表板</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--ink-muted)">—</td><td style="text-align:center;padding:10px 6px;color:var(--teal)">✓</td></tr>
             </tbody>
           </table>
         </div>
@@ -37560,7 +37835,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
             </div>
             <div class="hero-trust">
               <span><span class="trust-check">✓</span> 免費開始</span>
-              <span><span class="trust-check">✓</span> 不需信用卡</span>
+              <span><span class="trust-check">✓</span> 7 天全功能試用</span>
               <span><span class="trust-check">✓</span> 5 分鐘出結果</span>
             </div>
           </div>
@@ -37674,7 +37949,7 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
                 <tr>
                   <td>成本</td>
                   <td><span class="cross">✗</span> NT$15 萬~NT$90 萬</td>
-                  <td class="highlight"><span class="check">✓</span> 免費 ~ NT$990/月</td>
+                  <td class="highlight"><span class="check">✓</span> 免費試用 ~ NT$999/月</td>
                 </tr>
                 <tr>
                   <td>樣本規模</td>
@@ -37848,71 +38123,70 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           <div class="section-center">
             <div class="section-header">
               <h2>簡單透明的定價</h2>
-              <p class="section-sub">選擇最適合你的方案 · credits 用多少付多少 · 年繳省 17%</p>
+              <p class="section-sub">先免費試 7 天 · 喜歡再升級 · credits 用多少付多少</p>
             </div>
 
-            <!-- 月/年 切換 -->
+            <!-- 月/年 切換（年繳策略待定，MVP 先月付；TODO: Edward 拍年繳折扣） -->
             <div style="display:flex;justify-content:center;margin:24px 0 8px">
               <div class="sub-cycle-toggle" style="background:rgba(124,92,252,.08)">
                 <button class="sub-cycle-btn active" id="lpCycleMonthly" onclick="app.lpSetCycle('monthly')">月付</button>
-                <button class="sub-cycle-btn" id="lpCycleAnnual" onclick="app.lpSetCycle('annual')">年付 <span class="sub-cycle-save">省 17%</span></button>
+                <button class="sub-cycle-btn" id="lpCycleAnnual" onclick="app.lpSetCycle('annual')">年付 <span class="sub-cycle-save">省 2 個月</span></button>
               </div>
             </div>
 
             <div class="pricing-grid" style="grid-template-columns:repeat(4,1fr);gap:16px;margin-top:24px">
               <div class="price-card stagger-child d1">
-                <h3>Free</h3>
-                <div class="price-amount" data-lp-price="free">免費</div>
-                <small data-lp-unit="free">永久可用</small>
+                <h3>Starter</h3>
+                <div class="price-amount" data-lp-price="starter">免費</div>
+                <small data-lp-unit="starter">試用 7 天 · 一人試水溫</small>
                 <ul>
+                  <li>免費試用 7 天</li>
                   <li>每月 50 Credits</li>
-                  <li>✦ 首次 產品力診斷不計費</li>
-                  <li>任務看板 · 客戶管理（50 筆）</li>
-                  <li>報價提案（3 份）</li>
+                  <li>全模組完整體驗（Max 級）</li>
+                  <li>試用結束前可隨時升級</li>
                 </ul>
                 <button class="btn-price" onclick="app.handleGoogleLogin()">免費開始</button>
               </div>
-              <div class="price-card stagger-child d2">
-                <h3>Starter</h3>
-                <div class="price-amount" data-lp-price="starter">NT$290</div>
-                <small data-lp-unit="starter">每月計費 · 個人接案者</small>
+              <div class="price-card featured stagger-child d2">
+                <div class="price-badge">最受歡迎</div>
+                <h3>PRO</h3>
+                <div class="price-amount" data-lp-price="pro">NT$499</div>
+                <small data-lp-unit="pro">每月計費 · 生意跑起來</small>
                 <ul>
-                  <li>每月 600 Credits</li>
-                  <li>Lab 研究 · 問卷引擎</li>
-                  <li>市場探測 · 報價提案</li>
-                  <li>會議紀錄 · 客戶無上限</li>
-                </ul>
-                <button class="btn-price" onclick="app.openSubscribeFlow('starter')">申請 Starter</button>
-              </div>
-              <div class="price-card featured stagger-child d3">
-                <div class="price-badge">2-5 人小團隊</div>
-                <h3>Pro</h3>
-                <div class="price-amount" data-lp-price="pro">NT$990</div>
-                <small data-lp-unit="pro">每月計費</small>
-                <ul>
-                  <li>每月 3,000 Credits</li>
-                  <li>Starter 所有功能</li>
+                  <li>每月 50 Credits</li>
+                  <li>依職務選擇所需模組</li>
+                  <li>專案與應用基礎模組</li>
                   <li>AI 模型切換（Opus/Sonnet）</li>
-                  <li>收款 · 文件庫 · 營運戰情室</li>
-                  <li>團隊最多 5 人 + Claude MCP</li>
                 </ul>
-                <button class="btn-price featured" onclick="app.openSubscribeFlow('pro')">申請 Pro</button>
+                <button class="btn-price featured" onclick="app.openSubscribeFlow('pro')">選 PRO</button>
+              </div>
+              <div class="price-card stagger-child d3">
+                <h3>MAX</h3>
+                <div class="price-amount" data-lp-price="enterprise">NT$999</div>
+                <small data-lp-unit="enterprise">每月計費 · 長大了</small>
+                <ul>
+                  <li>每月 1,000 Credits</li>
+                  <li>全部模組無限制</li>
+                  <li>Claude Opus 4.8 預設</li>
+                  <li>收款 · 文件庫 · 營運戰情室</li>
+                </ul>
+                <button class="btn-price" onclick="app.openSubscribeFlow('enterprise')">選 MAX</button>
               </div>
               <div class="price-card stagger-child d4">
-                <h3>Enterprise</h3>
-                <div class="price-amount contact-text">洽談</div>
-                <small>依需求報價</small>
+                <h3>Team</h3>
+                <div class="price-amount contact-text">聯絡開通</div>
+                <small>工作室 / 中小企業</small>
                 <ul>
-                  <li>無限 Credits</li>
-                  <li>Pro 所有功能</li>
-                  <li>團隊最多 20 人 + 管理員</li>
-                  <li>API 整合 · 專屬客戶經理</li>
+                  <li>多人協作 · 主帳號合併計費</li>
+                  <li>每位成員選 PRO / MAX</li>
+                  <li>匯入 · 應收款儀表板</li>
+                  <li>優先支援</li>
                 </ul>
-                <button class="btn-price" onclick="window.location.href='mailto:hello@beyondspec.tw'">聯繫我們</button>
+                <button class="btn-price" onclick="window.location.href='mailto:hello@beyondspec.tw?subject=BeyondSpec%20Team%20%E9%96%8B%E9%80%9A%E8%A9%A2%E5%95%8F'">聯絡開通</button>
               </div>
             </div>
             <div class="method-note" style="margin-top:2rem;text-align:center">
-              <strong>付款方式：</strong>信用卡 · Apple Pay · Google Pay。<strong>Credits 說明：</strong>每月 1 日自動重置，使用 Opus 模型消耗 3 倍 Credits。
+              <strong>付款方式：</strong>信用卡（綠界 ECPay 安全結帳 · 本服務不儲存您的卡號）。<strong>Credits 說明：</strong>每月 1 日自動重置，使用 Opus 模型消耗較多 Credits。
             </div>
           </div>
         </section>
@@ -38042,6 +38316,9 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     state.currentView = 'dashboard';
     // Dev unlock：每次進入 dashboard 時檢查（涵蓋 reload / offline mode）
     if (typeof applyDevUnlockOnLogin === 'function') applyDevUnlockOnLogin();
+    // ② v1.12.0: 試用到期硬鎖「統一關卡」——所有登入路徑都會經過 showDashboard，故鎖判斷集中在此（calcifer Gate1 verdict）。
+    //   同裝置 state 已從 localStorage 載入故判斷有據；跨裝置權威性留待 block ③ server 端。dev-unlock(上面)先跑→付費者不會被鎖。
+    try { if (typeof _enforceBilling === 'function') { if (_enforceBilling()) showTrialLockWall(); else if (typeof hideTrialLockWall === 'function') hideTrialLockWall(); } } catch (e) {}
     document.getElementById('landingPage').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     document.getElementById('loginModal').className = 'modal-overlay';
@@ -38134,7 +38411,9 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
         _restoreSessionFromFirebase(user);
         showDashboard(); _pullFromFirestore(function() {}); // v1.5.x render-first: paint UI immediately, pull cloud data in background (was: pull-then-show, hung on slow Firestore -> white screen)
       } else if (state.isLoggedIn) {
+        var _staleLock1 = (typeof _enforceBilling === 'function') && _enforceBilling();  // ② GAP#2: stale-session 路徑也要跑鎖判斷
         showDashboard();
+        if (_staleLock1) showTrialLockWall();
       } else {
         _handleUnauthed();
       }
@@ -38205,7 +38484,9 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
             _restoreSessionFromFirebase(user);
             showDashboard(); _pullFromFirestore(function() {}); // v1.5.x render-first: paint UI immediately, pull cloud data in background (was: pull-then-show, hung on slow Firestore -> white screen)
           } else if (state.isLoggedIn) {
+            var _staleLock2 = (typeof _enforceBilling === 'function') && _enforceBilling();  // ② GAP#2: stale-session 路徑也要跑鎖判斷
             showDashboard();
+            if (_staleLock2) showTrialLockWall();
           } else {
             _handleUnauthed();
           }
@@ -42981,9 +43262,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.0 · 設定頁功能對照表重寫（舊 Free/Starter NT$290/Pro NT$990/Enterprise → 新 免費試用/PRO NT$499/MAX NT$999/Team）· credits 欄對齊拍板（50/50/1,000/依方案）· 模組欄依 PLAN_CATALOG（免費試用=全模組、PRO=核心6、MAX=全、Team=全+多人）· 殘留舊價 NT$290/NT$990/credits 30/500/3,000 清除 · sidebar v1.11.2→v1.12.0 -->
 <!-- v1.11.2 · 品牌改名 BeyondPath→BeyondSpec(69 處顯示文字) + 模組名 PATH 診斷→產品力診斷(56) + PATH 四維模型→產品力四維模型(4) + navigate() 加 PostHog $pageview/module_view 逐模組數據追蹤(try/catch 降級安全·不弄壞導航) · 程式骨架 PATH_AI/pathType//path/ 全未動 · 基準=線上 v1.11.1 抓回(本地 v1.5.1 已 stale 改備份) · sidebar v1.11.1→v1.11.2 -->
 <!-- v1.11.1 (payroll) Calcifer 2026-06-18 - 0a Sentry DSN-ready 骨架 + 全域 onerror/unhandledrejection 統一上報通道(Sentry->PostHog->console 逐層降級); 1a resolveWorkspace() idempotent 建 workspaces/{uid} 父文件(owner/memberEmails/attendanceAccessEmails 三欄·fire-and-forget·不阻塞薪資載入)解 owner 出缺勤進不去; 0b deploy-prod.py 五層 guard. sidebar v1.11.0->v1.11.1 -->
-<!-- v1.5.0 · 報告系統旗艦升級（α drawer 90.9 + β.1 產品力診斷 v2 真 AI + γ.1 Lab 95 + γ.2 市場報告旗艦 13 章敘事鏈 + Opportunity Map 二維 + 4 情境 Roadmap + Data Flywheel money slide + Signal badge 三色可點 + §12a/§13 揭露段 + 拍板 3-B 跨境分享免責 + cost cap 13 規則 + 24h cache + multi-call retry partial refund 40/33/27 + moatScore AI 編造偵測 + 12 keyword grep + 4 sprint 雙 Gate 全簽 · sidebar v1.4.9→v1.5.0 -->
-<!-- v1.4.9 · 架構根治：Headless mount BizModule React component 讓 Edward 停留首頁也觸發 activateWorkspace · 修 v1.4.7/8 的核心缺陷 —— migration 依賴 _currentWorkspaceId 但該值只在點商業 tab 時才 set，首頁用戶永遠沒 wsId。方案：建 1×1px off-screen div (#bpHeadlessBizRoot) mount CastleDashboardEmbedded，React useEffect 鏈自動跑 onAuthStateChanged → activateWorkspace → window._currentWorkspaceId expose → v1.4.8 migration setInterval 偵測到後寫 Firestore set value:[] 清 researches + diagnoses。嘗試 30 次每 1s 等 React/BizModule/Firebase auth 全就緒；副作用：headless mount BizModule 會跑 usePersisted hooks 建 Firestore onSnapshot listeners，CPU/記憶體輕微增加（~50-100ms 首次 mount），但不 overwrite 資料（只 sync down） · 版號 v1.4.8→v1.4.9 -->
-<!-- v1.4.8 · 延長 migration setInterval 到 2 分鐘（60 × 2s）等 BizModule mount · 版號 v1.4.7→v1.4.8 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
