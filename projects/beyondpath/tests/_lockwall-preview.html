@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>試用鎖牆預覽</title>
+<style>
+:root{--primary:#7C5CFC;--surface:#fff;--ink:#15140e;--ink-muted:#6b7280}
+body{margin:0;font-family:"Noto Sans TC","PingFang TC",system-ui,sans-serif;background:#f4f2ee}
+.fake-dash{padding:40px}
+.fake-dash h1{font-size:22px;color:#15140e;margin:0 0 20px}
+.fake-dash .row{height:60px;background:#fff;border-radius:12px;margin:12px 0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+</style></head>
+<body>
+<div class="fake-dash">
+  <h1>營運工作台</h1>
+  <div class="row"></div><div class="row"></div><div class="row"></div><div class="row"></div>
+</div>
+<!-- 與 showTrialLockWall() 同款 markup（視覺預覽用） -->
+<div id="trialLockWall" role="dialog" aria-modal="true" style="position:fixed;inset:0;z-index:99999;background:rgba(21,20,14,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px">
+  <div style="max-width:420px;width:100%;background:var(--surface,#fff);border-radius:20px;padding:36px 32px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.28)">
+    <div style="width:56px;height:56px;margin:0 auto 20px;border-radius:14px;background:rgba(124,92,252,.12);display:flex;align-items:center;justify-content:center">
+      <svg width="26" height="26" viewBox="0 0 20 20" fill="none" stroke="var(--primary,#7C5CFC)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="12" height="8" rx="2"></rect><path d="M7 9V6a3 3 0 0 1 6 0v3"></path></svg>
+    </div>
+    <h2 style="font-size:20px;font-weight:700;color:var(--ink,#15140e);margin:0 0 8px">試用結束</h2>
+    <p style="font-size:14px;line-height:1.6;color:var(--ink-muted,#6b7280);margin:0 0 24px">你的 7 天試用已結束。升級任一方案，立即解鎖帳號 —— 你的資料都安全保留著。</p>
+    <button style="width:100%;background:var(--primary,#7C5CFC);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:600;cursor:pointer">升級解鎖 · 看方案</button>
+    <div style="margin-top:16px"><span style="font-size:13px;color:var(--ink-muted,#9ca3af);cursor:pointer">登出</span></div>
+  </div>
+</div>
+</body></html>

@@ -9980,6 +9980,31 @@ body.hd-locked { overflow: hidden; }
     }, { merge: true });
   }
 
+  // v1.13 金流 · 讀伺服器權威帳（worker 寫的 users/{uid}/billing/state）同步進 state。
+  // 後端權威：付款成功/失敗以這份為準；前端 bp_subscription 只是本地快取、不可信為「已付」。
+  // doc 不存在（沒付過）→ 不動 state。Firestore 規則須禁前端寫 billing/**（沙利曼 · Edward 設）。
+  function _syncServerBilling(callback) {
+    var fs = (typeof _getFirestore === 'function') ? _getFirestore() : null;
+    if (!fs || !state.user || !state.user.uid) { if (callback) callback(); return; }
+    var _s2 = false;
+    function fin() { if (_s2) return; _s2 = true; if (callback) callback(); }
+    var _t2 = setTimeout(fin, 4000);
+    try {
+      fs.collection('users').doc(state.user.uid).collection('billing').doc('state').get().then(function (doc) {
+        clearTimeout(_t2);
+        if (doc && doc.exists) {
+          var b = doc.data() || {};
+          if (b.billingStatus) state.billingStatus = b.billingStatus;
+          if (b.plan) state.plan = b.plan;
+          if (b.paidAt) state.paidAt = b.paidAt;
+          if (b.subscriptionId) state.subscriptionId = b.subscriptionId;
+          if (typeof _persistBilling === 'function') _persistBilling();
+        }
+        fin();
+      }).catch(function () { clearTimeout(_t2); fin(); });
+    } catch (e) { clearTimeout(_t2); fin(); }
+  }
+
   function _pullFromFirestore(callback) {
     // v1.5.x whitescreen-fix: callback must be guaranteed to fire exactly once.
     // Root bug: Firestore .get() can hang on first-visit/slow-net/half-dead-auth/IDB-lock,
@@ -9991,13 +10016,16 @@ body.hd-locked { overflow: hidden; }
       if (_settled) return;
       _settled = true;
       // ② v1.12.0: 雲端資料載入後做權威的試用到期 / 鎖判斷（涵蓋全部登入路徑；同裝置 state 已從 localStorage 載入）
-      try {
-        if (typeof _enforceBilling === 'function') {
-          if (_enforceBilling()) showTrialLockWall();
-          else if (typeof hideTrialLockWall === 'function') hideTrialLockWall();
-        }
-      } catch (e) {}
-      if (callback) callback();
+      // v1.13 金流：先讀伺服器權威帳（worker 寫的 billing/state）同步進 state，再做鎖判斷 → 付完自動解鎖、付款失敗自動鎖。
+      _syncServerBilling(function () {
+        try {
+          if (typeof _enforceBilling === 'function') {
+            if (_enforceBilling()) showTrialLockWall();
+            else if (typeof hideTrialLockWall === 'function') hideTrialLockWall();
+          }
+        } catch (e) {}
+        if (callback) callback();
+      });
     }
     if (!fs) { _done(); return; }
     var _timer = setTimeout(function() {
@@ -10217,6 +10245,8 @@ body.hd-locked { overflow: hidden; }
     try { return (PLAN_CATALOG.starter && PLAN_CATALOG.starter.trialDays) || 7; } catch (e) { return 7; }
   }
   function _isPaidAccount() {
+    // v1.13 後端權威：明確 past_due / locked（綠界扣款失敗/退款）→ 一律視為未付，即使本地 plan 還是 pro。
+    if (state.billingStatus === 'past_due' || state.billingStatus === 'locked') return false;
     return !!(state.billingStatus === 'active' || state.paidAt || state.subscriptionId
               || state.plan === 'pro' || state.plan === 'enterprise');
   }
@@ -10458,6 +10488,10 @@ body.hd-locked { overflow: hidden; }
   // ── Subscribe Flow ──
   // v1.3.6: 早鳥期所有付費方案申請改走 /path/?apply=xxx 的 apply modal（愛德華指令：填表 → 寄信給他 → 同步 Sheet → 手動開通）
   // 原付款 flow renderSubscribeModal 先停用，等金流接通後再啟用
+  // v1.13 金流接線：BILLING_LIVE=true 走真綠界定期定額結帳；false 維持手動早鳥申請。
+  //   設真金鑰 + 綠界 sandbox 測過 + Edward 點頭後才改 true（真錢開關）。
+  var BILLING_LIVE = false;
+
   function openSubscribeFlow(planId) {
     if (!PLAN_CATALOG[planId]) return;
     if (planId === 'free') return;
@@ -10471,7 +10505,9 @@ body.hd-locked { overflow: hidden; }
       openDowngradeFlow(planId);
       return;
     }
-    // 升級流程——導向 landing apply modal（含 Enterprise）
+    // 升級流程
+    if (BILLING_LIVE) { renderSubscribeModal(planId); return; }   // 金流上線：真綠界定期定額結帳
+    // 金流未上線：維持手動早鳥申請（填表 → 寄信 → 手動開通）
     window.location.href = '/path/?apply=' + encodeURIComponent(planId);
   }
 
@@ -10552,13 +10588,36 @@ body.hd-locked { overflow: hidden; }
   }
 
   function confirmSubscribe(planId) {
-    var cycle = getBillingCycle();
-    var pay = window._subSelectedPay || 'card';
-    var payName = (PAY_METHODS.find(function(p){ return p.id === pay; }) || {}).name || '信用卡';
-    // 模擬訂閱完成（金流串接 placeholder）
-    changePlan(planId);
-    closeSubscribeModal();
-    showToast('已啟動 ' + PLAN_CATALOG[planId].name + ' 方案訂閱（' + (cycle === 'annual' ? '年付' : '月付') + '·' + payName + '）');
+    // 真金流：呼叫付款伺服器建單 → 導向綠界結帳（不再本地模擬開通）。
+    _startEcpaySubscribe(planId);
+  }
+
+  // 啟動綠界定期定額結帳：付款伺服器建單 → 自動導向綠界結帳頁。
+  // 伺服器未設金鑰時回 {error}，自動回退手動早鳥申請（不留死路、不假開通）。
+  function _startEcpaySubscribe(planId) {
+    var uid = (state && state.user && state.user.uid) || (state && state.uid) || '';
+    if (!uid) { showToast('請先登入再升級'); return; }
+    var base = (typeof localStorage !== 'undefined' && localStorage.getItem('bp_ai_proxy_url')) || 'https://path-ai-proxy.edwardt0303-281.workers.dev';
+    showToast('正在前往安全付款頁…');
+    fetch(base + '/ecpay/create-order', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: planId, uid: uid })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+      if (res && res.action && res.fields) {
+        var form = document.createElement('form');
+        form.method = 'POST'; form.action = res.action; form.style.display = 'none';
+        Object.keys(res.fields).forEach(function (k) {
+          var i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = res.fields[k]; form.appendChild(i);
+        });
+        document.body.appendChild(form); form.submit();   // → 綠界結帳頁
+      } else {
+        closeSubscribeModal();
+        window.location.href = '/path/?apply=' + encodeURIComponent(planId);   // 金流未就緒 → 手動早鳥
+      }
+    }).catch(function () {
+      closeSubscribeModal();
+      window.location.href = '/path/?apply=' + encodeURIComponent(planId);
+    });
   }
 
   // ── Downgrade Flow ──

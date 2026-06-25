@@ -1,5 +1,29 @@
 # PATH App Changelog
 
+## v1.5.0
+
+<!-- 從 app.html tail 搬出 · v1.12.0 cleanup -->
+
+v1.5.0 · 報告系統旗艦升級（α drawer 90.9 + β.1 產品力診斷 v2 真 AI + γ.1 Lab 95 + γ.2 市場報告旗艦 13 章敘事鏈 + Opportunity Map 二維 + 4 情境 Roadmap + Data Flywheel money slide + Signal badge 三色可點 + §12a/§13 揭露段 + 拍板 3-B 跨境分享免責 + cost cap 13 規則 + 24h cache + multi-call retry partial refund 40/33/27 + moatScore AI 編造偵測 + 12 keyword grep + 4 sprint 雙 Gate 全簽 · sidebar v1.4.9→v1.5.0
+
+---
+
+## v1.4.9
+
+<!-- 從 app.html tail 搬出 · v1.12.0 cleanup -->
+
+v1.4.9 · 架構根治：Headless mount BizModule React component 讓 Edward 停留首頁也觸發 activateWorkspace · 修 v1.4.7/8 的核心缺陷 —— migration 依賴 _currentWorkspaceId 但該值只在點商業 tab 時才 set，首頁用戶永遠沒 wsId。方案：建 1×1px off-screen div (#bpHeadlessBizRoot) mount CastleDashboardEmbedded，React useEffect 鏈自動跑 onAuthStateChanged → activateWorkspace → window._currentWorkspaceId expose → v1.4.8 migration setInterval 偵測到後寫 Firestore set value:[] 清 researches + diagnoses。嘗試 30 次每 1s 等 React/BizModule/Firebase auth 全就緒；副作用：headless mount BizModule 會跑 usePersisted hooks 建 Firestore onSnapshot listeners，CPU/記憶體輕微增加（~50-100ms 首次 mount），但不 overwrite 資料（只 sync down） · 版號 v1.4.8→v1.4.9
+
+---
+
+## v1.4.8
+
+<!-- 從 app.html tail 搬出 · v1.12.0 cleanup -->
+
+v1.4.8 · 延長 migration setInterval 到 2 分鐘（60 × 2s）等 BizModule mount · 版號 v1.4.7→v1.4.8
+
+---
+
 ## v1.3.17
 
 <!-- 從 app.html tail 搬出 · v1.4.0 cleanup -->
