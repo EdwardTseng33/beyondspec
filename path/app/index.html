@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.8</div>
+        <div class="sidebar-version">v1.12.9</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11826,7 +11826,7 @@ body.hd-locked { overflow: hidden; }
           '<div class="hcv2">' +
             '<div class="hcv2-chat">' +
               '<div class="hcv2-chat-hd">' +
-                '<span class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg></span>' +
+                '<span class="av"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg></span>' +
                 '<div class="who"><b>AI Native Coach OS</b><span>AI 訪談官</span></div>' +
               '</div>' +
               '<div class="hcv-feed" id="hcvFeed"></div>' +
@@ -11834,7 +11834,7 @@ body.hd-locked { overflow: hidden; }
                 '<div class="hcv-hints" id="hcvHints"></div>' +
                 '<div class="hcv-iwrap">' +
                   '<textarea id="hcvText" rows="1" placeholder="輸入你的回答…"></textarea>' +
-                  '<button class="hcv-send" id="hcvSend" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>' +
+                  '<button class="hcv-send" id="hcvSend" aria-label="送出"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>' +
                 '</div>' +
               '</div>' +
             '</div>' +
@@ -11856,7 +11856,7 @@ body.hd-locked { overflow: hidden; }
       sendBtn.addEventListener("click", handleSend);
     }
 
-    var SEG_LABEL = { intro:"認識你", tools:"工具整合", cases:"倫理邊界", proud:"提問框架", judge:"批判驗證", self:"任務拆解" };
+    var SEG_LABEL = { intro:"認識你", tools:"AI 工具現況", cases:"倫理紅線", proud:"拿手工作流", judge:"判斷與查證", self:"自我評估" };
     function buildSteps(){
       var box = document.getElementById("hcv2Checks"); if (!box) return;
       var h = "", i;
@@ -11867,7 +11867,7 @@ body.hd-locked { overflow: hidden; }
       box.innerHTML = h;
       paintSteps();
     }
-    var CK_DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+    var CK_DONE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
     function paintSteps(){
       var i;
       for (i = 0; i < SEG.length; i++) {
@@ -11890,8 +11890,8 @@ body.hd-locked { overflow: hidden; }
       var d = document.createElement("div");
       d.className = "hcv-msg ai" + (isProbe ? " probe" : "");
       var inner = '<div class="hcv-inner"><div class="hcv-meta">';
-      if (isProbe) inner += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>追問';
-      else inner += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg>訪談官';
+      if (isProbe) inner += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>追問';
+      else inner += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg>訪談官';
       inner += '</div>';
       if (isProbe && probeTag) inner += '<div class="hcv-probe-tag">' + esc(probeTag) + '</div>';
       inner += '<div class="hcv-bubble"></div></div>';
@@ -11928,6 +11928,11 @@ body.hd-locked { overflow: hidden; }
       if (locked) return;
       var val = (txt.value || "").replace(/^\s+|\s+$/g, "");
       if (!val) return;
+      if (val.length < 6) {
+        if (typeof showToast === "function") showToast("再多講一點點，這樣照出來的鏡子才準", 2800);
+        if (txt) { txt.classList.add("hcv-shake"); setTimeout(function(){ txt.classList.remove("hcv-shake"); }, 500); txt.focus(); }
+        return;
+      }
       addMe(val);
       transcript.push({ role:"user", text:val, seg:SEG[segIdx].key, afterProbe: inProbe });
       txt.value = ""; autoGrow(); setHints(null);
@@ -11999,9 +12004,9 @@ body.hd-locked { overflow: hidden; }
               '<textarea id="hcwNote" class="hcw-inp hcw-area" rows="5" placeholder="\u4f60\u505a\u4e86\u4ec0\u9ebc\uff1fAI \u5728\u88e1\u9762\u53c3\u8207\u54ea\u4e9b\uff1f\u4f60\u81ea\u5df1\u7684\u5224\u65b7\u8207\u628a\u95dc\u662f\u4ec0\u9ebc\uff1f\u8b1b\u5177\u9ad4\u4e00\u9ede\uff0cAI \u624d\u770b\u5f97\u51fa\u4f60\u7684\u771f\u529f\u592b\u3002"></textarea>' +
               '<div class="hcw-err" id="hcwNoteErr"></div>' +
             '</div>' +
-            '<div class="hcw-note-honest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg><span>AI 看不到連結裡的實際內容，會<b>依你填寫的作品說明與連結</b>評定。說得越具體、越誠實，認證越準。</span></div>' +
+            '<div class="hcw-note-honest"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg><span>AI 看不到連結裡的實際內容，會<b>依你填寫的作品說明與連結</b>評定。說得越具體、越誠實，認證越準。</span></div>' +
             '<div class="hcw-actions">' +
-              '<button class="btn-accent hcw-submit" id="hcwSubmit">送 AI 審核<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>' +
+              '<button class="btn-accent hcw-submit" id="hcwSubmit">送 AI 審核<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>' +
               '<button class="btn-ghost hcw-skip" id="hcwSkip" type="button">先跳過，直接看報告</button>' +
             '</div>' +
           '</div>' +
@@ -12088,7 +12093,7 @@ body.hd-locked { overflow: hidden; }
         '<div class="hc-calc hcw-calc">' +
           '<div class="hc-calc-ring run" id="hcCertRing">' +
             '<svg viewBox="0 0 140 140"><circle class="track" cx="70" cy="70" r="66"/><circle class="prog" cx="70" cy="70" r="66"/></svg>' +
-            '<div class="core"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></div>' +
+            '<div class="core"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></div>' +
           '</div>' +
           '<div class="hc-calc-title">AI 正在審核你的作品</div>' +
           '<div class="hc-calc-lines" id="hcCertLines"></div>' +
@@ -12122,7 +12127,7 @@ body.hd-locked { overflow: hidden; }
         '<div class="hc-calc">' +
           '<div class="hc-calc-ring run" id="hcCalcRing">' +
             '<svg viewBox="0 0 140 140"><circle class="track" cx="70" cy="70" r="66"/><circle class="prog" cx="70" cy="70" r="66"/></svg>' +
-            '<div class="core"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/><path d="M16 3h5v5"/></svg></div>' +
+            '<div class="core"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/><path d="M16 3h5v5"/></svg></div>' +
           '</div>' +
           '<div class="hc-calc-title">正在為你照這面鏡子</div>' +
           '<div class="hc-calc-lines" id="hcCalcLines"></div>' +
@@ -12185,7 +12190,7 @@ body.hd-locked { overflow: hidden; }
       var html = '<div class="hc-report hc-report2">';
       html += '<div class="hc-rep-bar">';
       html += '<div class="hc-rep-id"><span class="ico"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg></span><b>AI能力檢測</b><span class="sub">個人能力檢測　·　你的報告</span></div>';
-      html += '<div class="hc-rep-acts"><button class="hc-rep-btn" id="hcExportPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M8 11l4 4 4-4"/><path d="M5 19h14"/></svg>匯出 PDF</button><button class="hc-rep-btn ghost" id="hcShare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.4M8.3 13.2l7.4 4.4"/></svg>分享</button></div>';
+      html += '<div class="hc-rep-acts"><button class="hc-rep-btn" id="hcExportPdf"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M8 11l4 4 4-4"/><path d="M5 19h14"/></svg>匯出 PDF</button><button class="hc-rep-btn ghost" id="hcShare"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.4M8.3 13.2l7.4 4.4"/></svg>分享</button></div>';
       html += '</div>';
       html += '<div class="hc-hero" style="background:' + tier.tint + ';border-radius:0 0 28px 28px">';
       html += '<div class="hc-hero-ey">AI能力檢測 · 個人報告</div>';
@@ -12226,8 +12231,8 @@ body.hd-locked { overflow: hidden; }
       html += '</div>';
       html += certSection(R);
       html += '<div class="hc-report-foot">';
-      html += '<button class="btn btn-outline" id="hcRestart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/></svg>重新檢測</button>';
-      html += '<button class="btn btn-accent" id="hcToTasks">把這份報告變成行動<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
+      html += '<button class="btn btn-outline" id="hcRestart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/></svg>重新檢測</button>';
+      html += '<button class="btn btn-accent" id="hcToTasks">把這份報告變成行動<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
       html += '</div></div>';
       elRoot.innerHTML = html;
       try { window.scrollTo(0, 0); } catch(e){}
@@ -12246,9 +12251,9 @@ body.hd-locked { overflow: hidden; }
       var h = '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">\u2605</span> AI Native Coach OS 認證</div>';
       if (!c) {
         h += '<div class="hc-cert hc-cert-empty">' +
-               '<div class="hc-cert-empty-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M8.5 14.5L6 22l6-3 6 3-2.5-7.5"/></svg></div>' +
+               '<div class="hc-cert-empty-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M8.5 14.5L6 22l6-3 6 3-2.5-7.5"/></svg></div>' +
                '<div class="hc-cert-empty-tx"><b>你還沒提交作品，這份認證暫時留白</b><span>完成一次作品審核，就能拿到 AI Native Coach OS 的協作成熟度認證——這是你能對外展示的真功夫。</span></div>' +
-               '<button class="btn btn-outline hc-cert-redo" id="hcCertRedo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>補交作品</button>' +
+               '<button class="btn btn-outline hc-cert-redo" id="hcCertRedo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>補交作品</button>' +
              '</div>';
         h += '</div>';
         return h;
@@ -12265,12 +12270,12 @@ body.hd-locked { overflow: hidden; }
       if (c.evidence && c.evidence.length) {
         h += '<div class="hc-cert-ev">';
         var i; for (i = 0; i < c.evidence.length; i++) {
-          h += '<div class="hc-cert-evi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>' + esc(c.evidence[i]) + '</span></div>';
+          h += '<div class="hc-cert-evi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>' + esc(c.evidence[i]) + '</span></div>';
         }
         h += '</div>';
       }
       if (R.work && R.work.url) {
-        h += '<a class="hc-cert-link" href="' + esc(R.work.url) + '" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>查看提交的作品</a>';
+        h += '<a class="hc-cert-link" href="' + esc(R.work.url) + '" target="_blank" rel="noopener noreferrer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>查看提交的作品</a>';
       }
       h += '<div class="hc-cert-foot">AI 依你提供的作品說明與連結評定，未實際存取連結內容。</div>';
       h += '</div></div>';
@@ -12284,7 +12289,7 @@ body.hd-locked { overflow: hidden; }
       var items = "", i;
       for (i = 0; i < flags.length; i++) {
         var f = flags[i];
-        items += '<div class="hc-flag"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div><b>' + esc(f.label) + '</b><span>' + esc(f.desc) + '</span></div></div>';
+        items += '<div class="hc-flag"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div><b>' + esc(f.label) + '</b><span>' + esc(f.desc) + '</span></div></div>';
       }
       return '<div class="hc-sec"><div class="hc-flagbox"><div class="hc-flagbox-h">為什麼這份報告的信心度沒到「高」</div><div class="hc-flagbox-sub">下面這些是讓鏡子有點模糊的地方。它們不扣你的等級分數，只提醒：補上更具體的例子，下次照得更準。</div>' + items + '</div></div>';
     }
@@ -12354,6 +12359,8 @@ body.hd-locked { overflow: hidden; }
     }
 
     var HC_CSS = "";
+    HC_CSS += '@keyframes hcvShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}';
+    HC_CSS += '.hcv-shake{animation:hcvShake .42s ease}';
     HC_CSS += '.hcv-wrap{max-width:720px;margin:0 auto}';
     HC_CSS += '.hcv-top{position:sticky;top:0;z-index:20;background:var(--bg-app);padding:16px 0 14px;border-bottom:1px solid var(--border);margin-bottom:8px}';
     HC_CSS += '.hcv-bar{display:flex;align-items:center;gap:12px}';
@@ -12369,7 +12376,7 @@ body.hd-locked { overflow: hidden; }
     HC_CSS += '@keyframes hcFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}';
     HC_CSS += '.hcv-msg.ai{display:flex;justify-content:flex-start}';
     HC_CSS += '.hcv-msg.ai .hcv-inner{max-width:82%}';
-    HC_CSS += '.hcv-msg.ai .hcv-bubble{font-family:Georgia,"Times New Roman",serif;font-size:16px;line-height:1.7;color:var(--ink);background:var(--bg-card);border:1px solid var(--border);padding:14px 18px;border-radius:4px 16px 16px 16px;box-shadow:var(--shadow-sm)}';
+    HC_CSS += '.hcv-msg.ai .hcv-bubble{font-family:"Noto Sans TC",system-ui,sans-serif;font-size:14px;line-height:1.7;color:var(--ink);background:var(--bg-card);border:1px solid var(--border);padding:13px 16px;border-radius:4px 14px 14px 14px;box-shadow:var(--shadow-sm)}';
     HC_CSS += '.hcv-msg.ai .hcv-meta{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber-accent);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}';
     HC_CSS += '.hcv-msg.ai .hcv-meta svg{width:13px;height:13px}';
     HC_CSS += '.hcv-msg.ai.probe .hcv-meta{color:var(--gold)}';
@@ -12378,7 +12385,7 @@ body.hd-locked { overflow: hidden; }
     HC_CSS += '.hcv-probe-tag{display:inline-block;font-size:10.5px;font-weight:600;color:#a85f1a;background:rgba(224,138,58,.16);padding:2px 9px;border-radius:99px;margin-bottom:10px}';
     HC_CSS += 'html[data-theme="dark"] .hcv-probe-tag{color:#E89A4E}';
     HC_CSS += '.hcv-msg.me{display:flex;justify-content:flex-end}';
-    HC_CSS += '.hcv-msg.me .hcv-bubble{font-size:14.5px;line-height:1.6;color:#fff;background:var(--primary);padding:12px 16px;border-radius:16px 16px 4px 16px;max-width:74%;box-shadow:0 2px 10px var(--primary-glow);white-space:pre-wrap;word-break:break-word}';
+    HC_CSS += '.hcv-msg.me .hcv-bubble{font-size:14px;line-height:1.6;color:#fff;background:var(--primary);padding:13px 16px;border-radius:14px 14px 4px 14px;max-width:74%;box-shadow:0 2px 10px var(--primary-glow);white-space:pre-wrap;word-break:break-word}';
     HC_CSS += '.hcv-typing{display:inline-flex;gap:4px;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px 16px 16px 16px}';
     HC_CSS += '.hcv-typing i{width:7px;height:7px;border-radius:99px;background:var(--slate);opacity:.5;animation:hcBlink 1.2s infinite}';
     HC_CSS += '.hcv-typing i:nth-child(2){animation-delay:.2s}.hcv-typing i:nth-child(3){animation-delay:.4s}';
@@ -44410,7 +44417,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.9 · AI能力檢測 UIUX 修復（Edward 暴怒「爆按鈕」後·全程真 Chrome 實測每頁）：①所有按鈕箭頭補尺寸——送AI審核/訪談送出/匯出PDF/分享/重新檢測/補交作品/把報告變行動 原 SVG 無 width/height→撐爆成巨大方塊·健檢段 24x24 SVG 統一補 16x16（有 CSS 尺寸者不受影響） ②對話氣泡 Georgia 襯線 16px→Noto Sans 黑體 14px(對齊設計 FRAME3·圓角 4/14/14/14)·用戶氣泡同步 14px ③訪談右欄 checklist 名稱對齊訪談主題(認識你/AI工具現況/倫理紅線/拿手工作流/判斷與查證/自我評估)·原誤套六維名又漏反思迭代→混亂 ④訪談加最低字數 gate(<6字)+shake 動畫+toast——隨便答「好」被擋下、值保留可補(解 Edward「隨便回答就進下一步」)·正常答案不誤擋 · 全程真 Chrome 截圖實測 作品/訪談/報告 三頁(Preview 3.3MB 凍結改用真 browser)·JS 語法已驗(_HC 正常載入)·sidebar v1.12.8→v1.12.9 -->
 <!-- v1.12.8 · AI能力檢測對照 Claude Design handoff 真設計 pixel-perfect 重建（卡西法產 diff·蘇菲審 apply）：①六維對齊真設計→提問框架/批判驗證/任務拆解/工具整合/反思迭代/倫理邊界(domain 槽位改倫理邊界·SEG cases 轉倫理向·評分/fallback 同步) ②等級體系對齊→B穩健起步#94A3B8 / B+扎實成長#1BA891 / A熟練協作#2F80ED(藍) / A+高效協作#7C5CFC / S卓越領航#E08A3A + tint ③開始說明/對話訪談/能力報告 改雙欄對齊設計(訪談右側加 6 維進度 checklist·報告左等級徽章+能力階梯+雷達 / 右六維拆解+暖建議) ④報告 header 加 匯出PDF(window.print)/分享(複製摘要) · 前面看圖估的落差用真設計檔修正 · JS 語法已驗(_HC node --check 過) · ⚠️瀏覽器工具斷線·未做真人點擊實測·已備份可退 · 作品頁雙欄版面待下輪補 · sidebar v1.12.7→v1.12.8 -->
 <!-- v1.12.7 · 點數機制完善（Edward 要求全面確認 扣點/補點/沒點提示/升級）：①接上「沒點數→升級彈窗」(showPaywallModal 原定義但從未被呼叫=死 code、現已接上) ②點數不足一律跳升級彈窗(PRO NT$499/MAX NT$999 一鍵升級)，涵蓋健檢 開始檢測/作品審核 + 全 app useCredits ③showPaywallModal 暴露 window 供各模組呼叫 · 確認既有機制完善：扣點✓(v1.12.6) 每月補點✓(每月自動重置 creditUsed 歸 0) 升級拿更多點✓(各方案 limit 不同) · Gate1 實測升級彈窗彈出 + 一鍵升級鈕 · sidebar v1.12.6→v1.12.7 -->
-<!-- v1.12.6 · AI能力檢測接上點數扣除（Edward 要求：考核用到的 AI 也要消耗點數）：①開始檢測扣 10 點(涵蓋訪談 6 段 AI 追問 + 評分) ②送作品審核扣 5 點(AI 審核作品) ③餘額不足擋下並提示升級 ④useCredits/checkCredits 暴露 window(原 app scope 健檢模組呼叫不到、扣點失效·已修) · Gate1 實測扣點生效(開始檢測餘額 -10 確認·零 error) · 點數值 10/5 可調 · sidebar v1.12.5→v1.12.6 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
