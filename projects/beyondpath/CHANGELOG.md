@@ -586,3 +586,6 @@ P0 結構除錯（任務中心稽核後）
 
 ## v1.12.17
 <!-- v1.12.17 · AI能力檢測 作品佔最終認證 40%（Edward「有沒有作品該佔多少比例·重新思考認證」·拍板訪談 60%+作品 40%）：①根因=訪談 tier 與作品 certLevel 兩套獨立等級脫鉤(之前「認證 A vs 整體 S」對不上的原因) ②作品審核改給「作品品質分」workScore 0-10(非 B/A/S 字母) ③buildResult 綜合：有作品 finalScore = 訪談 lscore×0.6 + 作品×0.4 → 定 tier；沒作品仍封頂 B+ ④認證區改顯示「作品分數圓 X.X/10 + 已佔最終認證 40%」(移除獨立認證等級徽章→一套等級·不再兩套) ⑤certSystemPrompt/certSchema/fallbackCert/done/certColor 全同步改 workScore · 真 Chrome 實測：訪談 A 配好作品8→A+、配爛作品4→B+(被拉低)、沒作品→封頂B+·作品品質實質影響認證 · ⚠️報告版面雙欄對齊設計檔 仍待重排 · sidebar v1.12.16→v1.12.17 -->
+
+## v1.12.18
+<!-- v1.12.18 · AI能力檢測 報告頁版面重排對齊設計檔 FRAME4 雙欄（Edward「整個結果頁沒照設計檔·重新對照」·卡西法產 diff·蘇菲驗收上線）：①移除三數字卡(設計檔無) ②全寬 hero → 左欄「等級卡」(gradeTint header：六邊形 + 整體等級 label + 等級名 + 由 Coach 評定 + verdict + tldr + cap-note + 能力階梯併入卡底) ③雙欄重組 grid 1fr/1.15fr：左=等級卡(含階梯)+雷達卡 / 右=六維拆解卡 + 底子卡 + 也許試試看卡(暖色 #FBF7F0 + Georgia italic serif) ④認證卡(作品分)移雙欄下方全寬 ⑤drawDimList 字母化(分數→S/A+/A/B+/B·色依等級) ⑥drawLadder 橫排小六邊形 + 現在標 · 真 Chrome 實測：雙欄 render 完整、console 無 app error、字母等級正確、暖色建議 serif、認證作品分顯示 · 含暗色相容 + 860px RWD 折單欄 · sidebar v1.12.17→v1.12.18 -->

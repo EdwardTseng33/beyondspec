@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.20</div>
+        <div class="sidebar-version">v1.12.21</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -12291,7 +12291,6 @@ body.hd-locked { overflow: hidden; }
       html += '</div>';
       html += '<div class="hc-gradecard-bd">';
       if (R.capped) html += '<div class="hc-cap-note"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M8.5 14.5L6 22l6-3 6 3-2.5-7.5"/></svg><span>你在訪談中展現了 <b>' + TIERS[R.rawTierIdx].sc + ' 級</b>的實力——但 A 以上的認證需要作品佐證。交一份你用 AI 做出來的成果讓 Coach 看看真本事，就能解鎖。<b>目前認證等級 B+</b>。</span></div>';
-      html += confChip(R);
       html += '<div class="hc-ladder-wrap"><span class="hc-ladder-lab">能力階梯</span><div class="hc-ladder2" id="hcLadder"></div></div>';
       html += '</div></div>';
       html += '<div class="hc-radarcard"><div class="hc-radarcard-hd">六維協作能力雷達<span>你 vs 同職能中位</span></div>';
@@ -12307,7 +12306,6 @@ body.hd-locked { overflow: hidden; }
       html += '</div>';
       html += '</div>';
       html += '</div>';
-      html += certSection(R);
       html += '<div class="hc-report-foot">';
       html += '<button class="btn btn-outline" id="hcRestart"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/></svg>重新檢測</button>';
       html += '<button class="btn btn-accent" id="hcToTasks">把這份報告變成行動<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
@@ -12478,6 +12476,17 @@ body.hd-locked { overflow: hidden; }
     HC_CSS += '.hc-cert-score{display:flex;flex-direction:column;align-items:center;line-height:1}';
     HC_CSS += '.hc-cert-score b{font-size:26px;font-weight:800}';
     HC_CSS += '.hc-cert-score span{font-size:11px;opacity:.7;margin-top:1px}';
+    HC_CSS += '.hc-rep-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;padding-bottom:0}';
+    HC_CSS += '.hc-rep-id{display:flex;align-items:center;gap:11px}';
+    HC_CSS += '.hc-rep-id .ico{display:inline-flex;color:var(--primary)}';
+    HC_CSS += '.hc-rep-id b{font-size:19px;font-weight:700;color:var(--ink)}';
+    HC_CSS += '.hc-rep-id .sub{font-size:13px;color:var(--ink-dim)}';
+    HC_CSS += '.hc-rep-acts{display:flex;gap:8px}';
+    HC_CSS += '.hc-rep-btn{display:inline-flex;align-items:center;gap:7px;background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--primary);cursor:pointer;transition:all .15s}';
+    HC_CSS += '.hc-rep-btn:hover{border-color:var(--primary);background:var(--primary-light)}';
+    HC_CSS += '.hc-rep-btn.ghost{color:var(--ink-muted)}';
+    HC_CSS += '.hc-rep-btn.ghost:hover{color:var(--ink);border-color:var(--ink-muted)}';
+    HC_CSS += '.hc-rep-btn svg{width:15px;height:15px;flex:none}';
     HC_CSS += '.hc-cap-note{display:flex;gap:10px;align-items:flex-start;max-width:680px;margin:14px auto 0;padding:13px 16px;background:rgba(224,138,58,.12);border:1px solid rgba(224,138,58,.28);border-radius:12px;font-size:13px;line-height:1.65;color:var(--ink)}';
     HC_CSS += '.hc-cap-note svg{flex:none;margin-top:2px;color:var(--gold)}';
     HC_CSS += '.hc-cap-note b{color:var(--gold);font-weight:700}';
@@ -44698,7 +44707,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.21 · AI能力檢測 報告頁完全對齊設計稿 FRAME05（Edward 並排比出 3 處差異、蘇菲逐塊比對後修）：①頂部 匯出PDF/分享 從標題下方左側 → 標題右側同一行的有框按鈕(hc-rep-bar flex space-between、照設計稿 line205) ②等級卡拿掉「報告信心度」chip(設計稿六邊形→直接能力階梯、乾淨) ③報告頁拿掉認證卡(設計稿報告無、認證在作品頁;作品佔最終認證 40% 邏輯仍在等級綜合內) · 報告頁 = 設計稿純雙欄(左 等級卡+階梯+雷達 / 右 六維拆解+也許試試看) · 真 Chrome 並排設計稿驗證一致 · 教訓:逐塊比對(含 header)、別只看主體 · sidebar v1.12.20→v1.12.21 -->
 <!-- v1.12.20 · AI能力檢測 作品頁照搬設計檔 FRAME04 多作品 + 報告拿掉置頂紅旗（Edward「作品不該只能傳一個·上傳作品不需打字贅述」+「報告亂·與設計搞一模一樣有多難·檔案都給你了」·根因=我們一直用自創 class 逼近設計檔、非照搬原始 inline-style·卡西法 pixel-perfect 照搬、蘇菲 Chrome 驗收）：①作品頁 renderWorkSubmit 全 rewrite 照搬設計檔 FRAME04 inline-style：多組作品連結(「+再新增一項作品」·work 單個→works 陣列)、拿掉必填說明大框(改一個選填小說明)、右欄驗收清單卡、「為什麼需要這一步?」、雙欄 1.5fr/1fr ②報告頁拿掉置頂 redFlagBlock 突兀大橫條 → 紅旗降級成等級卡內「報告信心度 X · 為什麼不是高?」可展開小字(confChip) ③certReview/certUserPrompt/fallbackCert 改依 多作品數/類型多元 + 選填說明 評定(保留 workScore 0-10 + 佔最終認證 40%) · 真 Chrome 實測：作品「再新增」2→4 欄、送審正常進評分、報告無置頂紅旗大塊、loading 紫系乾淨 · 教訓：照搬設計檔原始 inline-style、不自創 class 逼近 · sidebar v1.12.19→v1.12.20 -->
 <!-- v1.12.19 · AI能力檢測 報告頁簡化對齊設計檔 + loading 重設計（Edward「報告差這麼多·前面 loading 也很醜」·用 support.js 把設計檔 render 出來並排對照後）：①報告頁拿掉設計檔沒有的多餘塊——等級卡的 verdict/tldr 總評、「你的底子」強弱項卡(跟「也許試試看」重疊)→報告變設計檔的簡潔雙欄(左：等級卡+能力階梯+雷達 / 右：六維拆解+也許試試看；作品認證卡功能保留下方) ②loading 畫面去暖琥珀米色→紫系乾淨：背景 amber-bg→bg-app、進度環 橘#D4712A→紫 primary、title Georgia 琥珀斜體→Noto Sans ink(原 loading 暖琥珀跟報告紫系調性衝突·顯醜) · 突破：support.js 是設計檔 render 引擎、把設計檔叫出來並排比(之前只讀 code 對照不夠) · 真 Chrome 實測報告對齊設計檔簡潔雙欄 + loading 紫系乾淨 · sidebar v1.12.18→v1.12.19 -->
-<!-- v1.12.18 · AI能力檢測 報告頁版面重排對齊設計檔 FRAME4 雙欄（Edward「整個結果頁沒照設計檔·重新對照」·卡西法產 diff·蘇菲驗收上線）：①移除三數字卡(設計檔無) ②全寬 hero → 左欄「等級卡」(gradeTint header：六邊形 + 整體等級 label + 等級名 + 由 Coach 評定 + verdict + tldr + cap-note + 能力階梯併入卡底) ③雙欄重組 grid 1fr/1.15fr：左=等級卡(含階梯)+雷達卡 / 右=六維拆解卡 + 底子卡 + 也許試試看卡(暖色 #FBF7F0 + Georgia italic serif) ④認證卡(作品分)移雙欄下方全寬 ⑤drawDimList 字母化(分數→S/A+/A/B+/B·色依等級) ⑥drawLadder 橫排小六邊形 + 現在標 · 真 Chrome 實測：雙欄 render 完整、console 無 app error、字母等級正確、暖色建議 serif、認證作品分顯示 · 含暗色相容 + 860px RWD 折單欄 · sidebar v1.12.17→v1.12.18 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
