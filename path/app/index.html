@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.16</div>
+        <div class="sidebar-version">v1.12.17</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -12041,15 +12041,16 @@ body.hd-locked { overflow: hidden; }
       return [
         "你是 BeyondSpec「AI Native Coach OS」的作品審核官。你只會收到受測者【自己填寫的作品說明與連結文字】——你看不到連結裡的實際內容，請僅依這些文字所展現的 AI 協作成熟度來評定，不要假裝你檢視了作品本身。",
         "評估重點：\u2460 受測者是否清楚說明 AI 在作品中參與了哪些環節 \u2461 是否展現自己的判斷、把關與決策（而非全交給 AI）\u2462 是否有具體做法、流程或可驗證的成果。",
-        "認證等級三級：",
-        "B（AI 協作入門）：能說出 AI 怎麼幫上忙，但人機分工或把關描述較模糊。",
-        "A（AI 協作實踐）：清楚說明 AI 參與環節、有自己的判斷與把關、做法具體。",
-        "S（AI 協作領航）：人機分工成熟、把關嚴謹、有可重複的方法或明確成果，能成為他人對標對象。",
-        "review 是一句審核評語：繁體中文、30 字以內、成長導向、不羞辱、不否定對方努力。",
+        "給 workScore（0-10，一位小數）= 作品文字展現的 AI 協作品質，這個分數會佔最終認證的 40%：",
+        "9-10：人機分工成熟、把關嚴謹、有可重複方法或明確成果，可成他人對標。",
+        "7-8.5：清楚說明 AI 參與環節、有自己的判斷把關、做法具體。",
+        "5-6.5：說得出 AI 怎麼幫忙，但分工或把關描述較模糊。",
+        "3-4.5：描述空泛、看不出實際協作深度。寧可保守、不灌水。",
+        "review 是一句審核評語：繁體中文、30 字以內、成長導向、不羞辱、不否定努力。",
         "evidence 是 1-3 條從說明裡讀到的具體亮點，每條繁體中文一句話。",
-        "pass 一律給 true（這是認證、不是淘汰；等級高低已反映成熟度）。",
+        "pass 一律給 true（這是認證、不是淘汰）。",
         "嚴格只回 JSON，不要任何多餘文字：",
-        '{ "pass": true, "certLevel": "B", "certName": "AI 協作實踐者", "review": "", "evidence": [] }'
+        '{ "pass": true, "workScore": 7.5, "review": "", "evidence": [] }'
       ].join("\n");
     }
     function certUserPrompt(w){
@@ -12061,27 +12062,26 @@ body.hd-locked { overflow: hidden; }
     }
     function certSchema(o){
       if (!o || typeof o !== "object") return { valid:false, errors:["非物件"] };
-      if (typeof o.certLevel !== "string" || !/^(B|A|S)$/.test(o.certLevel)) return { valid:false, errors:["certLevel 必須是 B/A/S"] };
-      if (typeof o.certName !== "string" || !o.certName) return { valid:false, errors:["缺 certName"] };
+      if (typeof o.workScore !== "number" || o.workScore < 0 || o.workScore > 10) return { valid:false, errors:["workScore 必須是 0-10 數字"] };
       if (typeof o.review !== "string" || !o.review) return { valid:false, errors:["缺 review"] };
       return { valid:true };
     }
-    function certColor(level){ return level === "S" ? "#E08A3A" : (level === "A" ? "#7C5CFC" : "#94A3B8"); }
+    function certColor(ws){ return ws >= 8 ? "#E08A3A" : (ws >= 6.5 ? "#7C5CFC" : (ws >= 5 ? "#1BA891" : "#94A3B8")); }
     function fallbackCert(w){
       var note = (w && w.note || "");
       var toolRe = /(ChatGPT|GPT|Claude|Gemini|Midjourney|Notion|Zapier|Make|n8n|Copilot|Perplexity|Cursor|API)/gi;
       var judgeRe = /(判斷|把關|查證|驗證|檢查|決策|取捨|修正)/g;
       var tm = note.match(toolRe), jm = note.match(judgeRe);
       var toolHits = tm ? tm.length : 0, judgeHits = jm ? jm.length : 0;
-      var level = "B", name = "AI 協作入門者";
-      if (note.length >= 120 && toolHits >= 1 && judgeHits >= 1) { level = "A"; name = "AI 協作實踐者"; }
-      if (note.length >= 220 && toolHits >= 2 && judgeHits >= 2) { level = "S"; name = "AI 協作領航者"; }
+      var ws = 4.5;
+      if (note.length >= 120 && toolHits >= 1 && judgeHits >= 1) ws = 6.8;
+      if (note.length >= 220 && toolHits >= 2 && judgeHits >= 2) ws = 8.2;
       var ev = [];
       if (toolHits >= 1) ev.push("作品說明點出了具體的 AI 工具與用法");
       if (judgeHits >= 1) ev.push("能描述自己對 AI 產出的判斷與把關");
       if (note.length >= 120) ev.push("作品脈絡交代得相對完整");
       if (!ev.length) ev.push("已把 AI 實際用進作品、踏出協作的第一步");
-      return { pass:true, certLevel:level, certName:name, review:"依你提供的說明，已展現實際的 AI 協作能力，繼續往更成熟邁進。", evidence:ev.slice(0,3), fallback:true };
+      return { pass:true, workScore:ws, review:"依你提供的說明，已展現實際的 AI 協作能力，繼續往更成熟邁進。", evidence:ev.slice(0,3), fallback:true };
     }
 
     var CERT_MSGS = [
@@ -12113,7 +12113,7 @@ body.hd-locked { overflow: hidden; }
         .then(function(res){
           if (res && res.ok && res.data) {
             var d = res.data;
-            done({ pass: d.pass !== false, certLevel: d.certLevel, certName: d.certName, review: d.review, evidence: (d.evidence && d.evidence.length) ? d.evidence.slice(0,3) : fallbackCert(work).evidence });
+            done({ pass: d.pass !== false, workScore: (typeof d.workScore === "number" ? d.workScore : fallbackCert(work).workScore), review: d.review, evidence: (d.evidence && d.evidence.length) ? d.evidence.slice(0,3) : fallbackCert(work).evidence });
           } else { done(fallbackCert(work)); }
         })["catch"](function(){ done(fallbackCert(work)); });
     }
@@ -12154,8 +12154,10 @@ body.hd-locked { overflow: hidden; }
 
     function buildResult(scores, flags, ai){
       var lscore = calcLScore(scores);
-      var rawTierIdx = calcTier(lscore, flags.length);
-      var capped = (!work) && rawTierIdx > 1;          // 沒作品 → 封頂 B+（idx 1）
+      var hasWork = !!(work && cert && typeof cert.workScore === "number");
+      var finalScore = hasWork ? (lscore * 0.6 + cert.workScore * 0.4) : lscore;  // 訪談60%+作品40%
+      var rawTierIdx = calcTier(finalScore, flags.length);
+      var capped = (!hasWork) && rawTierIdx > 1;        // 沒作品 → 封頂 B+（idx 1）
       var tierIdx = capped ? 1 : rawTierIdx;
       var userTurns = 0, i;
       for (i = 0; i < transcript.length; i++) { if (transcript[i].role === "user") userTurns++; }
@@ -12166,7 +12168,7 @@ body.hd-locked { overflow: hidden; }
         id: "hc_" + Date.now(), kind: "personal", date: new Date().toISOString(),
         scores: scores, lscore: lscore, tierIdx: tierIdx, tier: TIERS[tierIdx].sc,
         confidence: conf, leadCount: leadCount, flags: flags, ai: ai || null, transcriptLen: transcript.length,
-        work: work || null, cert: cert || null, rawTierIdx: rawTierIdx, capped: capped
+        work: work || null, cert: cert || null, rawTierIdx: rawTierIdx, capped: capped, hasWork: hasWork, finalScore: finalScore
       };
     }
 
@@ -12263,13 +12265,14 @@ body.hd-locked { overflow: hidden; }
         h += '</div>';
         return h;
       }
-      var col = certColor(c.certLevel);
+      var ws = (typeof c.workScore === "number") ? c.workScore : 5;
+      var col = certColor(ws);
       h += '<div class="hc-cert" style="background:' + hexa(col, .07) + '">';
       h += '<div class="hc-cert-main">';
-      h += '<div class="hc-cert-badge" style="background:' + hexa(col, .12) + ';box-shadow:0 6px 22px ' + hexa(col, .18) + '">' + hexBadge(col, c.certLevel, 64) + '</div>';
+      h += '<div class="hc-cert-badge" style="background:' + hexa(col, .12) + ';box-shadow:0 6px 22px ' + hexa(col, .18) + ';color:' + col + '"><div class="hc-cert-score"><b>' + ws.toFixed(1) + '</b><span>/10</span></div></div>';
       h += '<div class="hc-cert-body">';
-      h += '<div class="hc-cert-name">' + esc(c.certName || "AI 協作實踐者") + '</div>';
-      h += '<div class="hc-cert-lv">認證等級 ' + esc(c.certLevel) + '</div>';
+      h += '<div class="hc-cert-name">作品已驗收</div>';
+      h += '<div class="hc-cert-lv">作品品質 ' + ws.toFixed(1) + " / 10 \u00b7 已佔最終認證 40%" + '</div>';
       h += '<div class="hc-cert-review">' + esc(c.review || "") + '</div>';
       h += '</div></div>';
       if (c.evidence && c.evidence.length) {
@@ -12364,6 +12367,9 @@ body.hd-locked { overflow: hidden; }
     }
 
     var HC_CSS = "";
+    HC_CSS += '.hc-cert-score{display:flex;flex-direction:column;align-items:center;line-height:1}';
+    HC_CSS += '.hc-cert-score b{font-size:26px;font-weight:800}';
+    HC_CSS += '.hc-cert-score span{font-size:11px;opacity:.7;margin-top:1px}';
     HC_CSS += '.hc-cap-note{display:flex;gap:10px;align-items:flex-start;max-width:680px;margin:14px auto 0;padding:13px 16px;background:rgba(224,138,58,.12);border:1px solid rgba(224,138,58,.28);border-radius:12px;font-size:13px;line-height:1.65;color:var(--ink)}';
     HC_CSS += '.hc-cap-note svg{flex:none;margin-top:2px;color:var(--gold)}';
     HC_CSS += '.hc-cap-note b{color:var(--gold);font-weight:700}';
@@ -44467,7 +44473,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.17 · AI能力檢測 作品佔最終認證 40%（Edward「有沒有作品該佔多少比例·重新思考認證」·拍板訪談 60%+作品 40%）：①根因=訪談 tier 與作品 certLevel 兩套獨立等級脫鉤(之前「認證 A vs 整體 S」對不上的原因) ②作品審核改給「作品品質分」workScore 0-10(非 B/A/S 字母) ③buildResult 綜合：有作品 finalScore = 訪談 lscore×0.6 + 作品×0.4 → 定 tier；沒作品仍封頂 B+ ④認證區改顯示「作品分數圓 X.X/10 + 已佔最終認證 40%」(移除獨立認證等級徽章→一套等級·不再兩套) ⑤certSystemPrompt/certSchema/fallbackCert/done/certColor 全同步改 workScore · 真 Chrome 實測：訪談 A 配好作品8→A+、配爛作品4→B+(被拉低)、沒作品→封頂B+·作品品質實質影響認證 · ⚠️報告版面雙欄對齊設計檔 仍待重排 · sidebar v1.12.16→v1.12.17 -->
 <!-- v1.12.16 · AI能力檢測 雙入口精簡 + 返回移位（Edward 指）：①雙入口頁拿掉「一個人能扛多少…」說明文字(hc-lead)·標題下直接兩張入口卡 ②開始說明頁返回鈕 從 header 上方 → header 下方(page-title-area 之後·解 Edward「返回浮在標題上方突兀」) · 真 Chrome 實測雙入口文字已刪、返回在 header 下方 · ⚠️作品佔評分比例機制(Edward「有沒有作品該佔多少比例·重新思考認證」)：現況=訪談 tier 與作品 certLevel 兩套獨立脫鉤→待拍板權重後改成加權綜合 · sidebar v1.12.15→v1.12.16 -->
 <!-- v1.12.15 · AI能力檢測 沒作品封頂 B+（Edward「我沒提供作品評分也可以 A?? 莫名其妙」）：①根因=等級只看訪談六維分數算(calcLScore+calcTier)、作品(work)只存進結果不算等級→沒交作品光訪談說得好就給 A ②buildResult 加封頂：沒作品(work=null)且訪談 rawTier > B+ → 等級封頂 B+（A/A+/S 必須作品佐證·對齊 BeyondPath 證據導向「沒證據不給高分」）·結果存 rawTierIdx + capped 旗標 ③報告 hero 加封頂提示卡(暖色 gold·非漸層)：「你在訪談中展現了 X 級的實力——但 A 以上認證需作品佐證·交一份作品解鎖·目前認證等級 B+」· 真 Chrome 實測：A+ 實力訪談 沒作品→封頂 B+(capped)、有作品→A+(不封頂)·提示卡視覺確認 · ⚠️報告版面對齊設計檔雙欄(設計檔左等級+階梯/右六維拆解·現為單欄+多三數字卡) 下輪照設計檔重排 · sidebar v1.12.14→v1.12.15 -->
-<!-- v1.12.14 · AI能力檢測 按鈕/返回對齊站內設計規範（Edward 截圖指「返回+開始對話違反規範·參考其他頁面」）：①返回 hc-back（自訂純文字）→ 站內標準 .back-nav 膠囊鈕（1.5px 細邊框 + 站內 arrowLeft icon·跟診斷/報告等頁一致） ②開始對話/送AI審核/先跳過 補 .btn 基類——原本只有 btn-accent/btn-ghost 缺 .btn 基類→沒繼承標準 padding(12/24)/圓角(12)/字級(17)/border:none，正是 Edward 看到「不一致」的根源·現對齊全站 46 個 btn btn-accent ③移除 hc-back 自訂 CSS、hc-i2-start CSS 簡化（讓 .btn 標準接管、保留 hover 箭頭右移動效） · 真 Chrome 量測實測：返回膠囊鈕 邊框1.5px 圓角10 / 開始對話 padding12-24 圓角12 無框 字級17 / 作品頁送審按鈕同標準·全站按鈕一致 · sidebar v1.12.13→v1.12.14 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->

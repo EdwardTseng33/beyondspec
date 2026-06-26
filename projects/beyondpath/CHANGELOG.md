@@ -574,3 +574,6 @@ P0 結構除錯（任務中心稽核後）
 
 ## v1.12.13
 <!-- v1.12.13 · AI能力檢測 評分系統修復（Edward 定「嚴格」後·合成用戶 QA 抓出評分灌水根因）：①根因=評分 AI 輸出被後端 token 上限截斷(advice 寫一半斷掉)→JSON 缺閉合括號→一直 parse fail→退 fallbackScore→關鍵字多的回答各維撞 clamp 上限→六維全同分高分(假象「S 9.5、0 待補」) ②scoreSystemPrompt 精簡輸出(verdict/tldr/strengths/improvements/advice 限字、strengths 3→2 條)避免截斷 + 加分數錨點(9-10=重新定義職能標竿、一個人跑最高 7.x)+ 強制六維分化(自述弱項對應維度給低分) ③calcTier 門檻嚴格化 S≥9.0/A+≥8.0/A≥6.8/B+≥5.5 ④callV2 加 repairTruncatedJSON 容錯(截斷時砍半截 property+補閉合括號搶救·只在 parse fail 時觸發、不影響成功 case) ⑤fallbackScore clamp 上限 9.5→8.5 · 真 AI 實測:中上 persona 小敏→六維 4.5(交棒)~7.2(提問) 分化、L6.2、B+ 扎實成長、verdict「流程順但方法鎖腦袋裡」、待補=查證SOP/流程文件化(不再「9.5 還要補」矛盾)·parse 成功不再 fallback · sidebar v1.12.12→v1.12.13 -->
+
+## v1.12.14
+<!-- v1.12.14 · AI能力檢測 按鈕/返回對齊站內設計規範（Edward 截圖指「返回+開始對話違反規範·參考其他頁面」）：①返回 hc-back（自訂純文字）→ 站內標準 .back-nav 膠囊鈕（1.5px 細邊框 + 站內 arrowLeft icon·跟診斷/報告等頁一致） ②開始對話/送AI審核/先跳過 補 .btn 基類——原本只有 btn-accent/btn-ghost 缺 .btn 基類→沒繼承標準 padding(12/24)/圓角(12)/字級(17)/border:none，正是 Edward 看到「不一致」的根源·現對齊全站 46 個 btn btn-accent ③移除 hc-back 自訂 CSS、hc-i2-start CSS 簡化（讓 .btn 標準接管、保留 hover 箭頭右移動效） · 真 Chrome 量測實測：返回膠囊鈕 邊框1.5px 圓角10 / 開始對話 padding12-24 圓角12 無框 字級17 / 作品頁送審按鈕同標準·全站按鈕一致 · sidebar v1.12.13→v1.12.14 -->
