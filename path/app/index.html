@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.9</div>
+        <div class="sidebar-version">v1.12.10</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11479,8 +11479,8 @@ body.hd-locked { overflow: hidden; }
         '.hc-i2-get span{font-size:13px;color:var(--ink-sec)}',
         'html[data-theme="dark"] .hc-i2-get span{color:var(--ink-muted)}',
         /* ===== 對話訪談 雙欄 (hcv2) ===== */
-        '.hcv2{display:grid;grid-template-columns:1.7fr 1fr;gap:24px;align-items:stretch;max-width:1040px;margin:0 auto;min-height:520px}',
-        '@media(max-width:860px){.hcv2{grid-template-columns:1fr}}',
+        '.hcv2{display:grid;grid-template-columns:1.7fr 1fr;gap:24px;align-items:stretch;max-width:1040px;margin:0 auto;height:calc(100vh - 252px);min-height:540px;max-height:700px}',
+        '@media(max-width:860px){.hcv2{grid-template-columns:1fr;height:auto;min-height:0;max-height:none}}',
         '.hcv2-side{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:20px;box-shadow:var(--shadow-sm);align-self:start;position:sticky;top:80px}',
         '@media(max-width:860px){.hcv2-side{position:static}}',
         '.hcv2-prog .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}',
@@ -11833,7 +11833,7 @@ body.hd-locked { overflow: hidden; }
               '<div class="hcv-input" id="hcvInputBar">' +
                 '<div class="hcv-hints" id="hcvHints"></div>' +
                 '<div class="hcv-iwrap">' +
-                  '<textarea id="hcvText" rows="1" placeholder="輸入你的回答…"></textarea>' +
+                  '<textarea id="hcvText" rows="2" placeholder="輸入你的回答…"></textarea>' +
                   '<button class="hcv-send" id="hcvSend" aria-label="送出"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>' +
                 '</div>' +
               '</div>' +
@@ -11883,7 +11883,7 @@ body.hd-locked { overflow: hidden; }
       if (pg) pg.textContent = Math.min(segIdx + 1, SEG.length) + " / " + SEG.length;
     }
     function scrollFeed(){ try { if (feed && feed.scrollHeight) { feed.scrollTop = feed.scrollHeight; } } catch(e){} }
-    function autoGrow(){ if(!txt) return; txt.style.height = "auto"; txt.style.height = Math.min(txt.scrollHeight, 120) + "px"; }
+    function autoGrow(){ if(!txt) return; txt.style.height = "62px"; }
 
     function addMe(text){ var d = document.createElement("div"); d.className = "hcv-msg me"; d.innerHTML = '<div class="hcv-bubble"></div>'; d.querySelector(".hcv-bubble").textContent = text; feed.appendChild(d); scrollFeed(); }
     function addAI(text, isProbe, probeTag){
@@ -12538,19 +12538,20 @@ body.hd-locked { overflow: hidden; }
     HC_CSS += '.hc-cert-redo{flex:none}';
     HC_CSS += '@media(max-width:560px){.hcw-wrap{padding:40px 20px 60px}.hcw-title{font-size:24px}.hcw-form{padding:22px 18px}.hc-cert{padding:20px}.hc-cert-main{gap:14px}.hc-cert-name{font-size:20px}.hc-cert-empty{flex-direction:column;align-items:flex-start}.hc-cert-redo{width:100%;justify-content:center}}';
     HC_CSS += '.hcv-wrap2{max-width:1040px;margin:0 auto;padding-bottom:40px}';
-    HC_CSS += '.hcv2-chat{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-sm);min-height:520px}';
+    HC_CSS += '.hcv2-chat{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-sm);height:100%;min-height:0}';
     HC_CSS += '.hcv2-chat-hd{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)}';
     HC_CSS += '.hcv2-chat-hd .av{width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;flex:none}';
     HC_CSS += '.hcv2-chat-hd .av svg{width:18px;height:18px;color:#fff}';
     HC_CSS += '.hcv2-chat-hd .who{display:flex;flex-direction:column;gap:2px}';
     HC_CSS += '.hcv2-chat-hd .who b{font-size:14px;font-weight:600;color:var(--ink)}';
     HC_CSS += '.hcv2-chat-hd .who span{font-size:12px;color:var(--ink-dim)}';
-    HC_CSS += '.hcv2 .hcv-feed{flex:1;padding:24px 22px;overflow-y:auto;max-height:60vh}';
+    HC_CSS += '.hcv2 .hcv-feed{flex:1;padding:24px 22px;overflow-y:auto;min-height:0}';
     HC_CSS += '.hcv2 .hcv-msg{margin-bottom:18px}';
     HC_CSS += '.hcv2 .hcv-input{position:static;left:auto;right:auto;bottom:auto;z-index:auto;background:transparent;border-top:1px solid var(--border);padding:14px 18px}';
     HC_CSS += '.hcv2 .hcv-hints{max-width:none;margin:0 0 10px;padding:0;display:flex;gap:8px;flex-wrap:wrap}';
     HC_CSS += '.hcv2 .hcv-iwrap{max-width:none;margin:0;padding:0;display:flex;gap:10px;align-items:flex-end}';
-    HC_CSS += '@media(max-width:860px){.hcv2 .hcv-feed{max-height:none}}';
+    HC_CSS += '.hcv2 .hcv-iwrap textarea{height:62px;min-height:62px;max-height:62px;overflow-y:auto}';
+    HC_CSS += '@media(max-width:860px){.hcv2-chat{height:auto;min-height:440px}.hcv2 .hcv-feed{max-height:52vh}}';
     window._HC = { start: start };
   })();
 
@@ -44417,7 +44418,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.10 · AI能力檢測 對話訪談 UX 對齊 Claude Design 設計檔（Edward「設計檔給了還不照做」後·全程真 Chrome 實測）：①對話卡改固定高度聊天視窗(700px·一開始就撐滿固定)——原 min-height:520 內容撐開→訊息多往下長 ②訊息區 flex:1 吃滿卡片剩餘、可內部捲動(去 max-height:60vh) ③輸入框一開始就 2 行高(62px 固定)、autoGrow 改固定不撐長、打字超過內部捲動——原 autoGrow 會撐長整個對話框(Edward 痛點) ④手機版對話卡有底高(440)+訊息區固定捲動高(52vh) · 實測：打多行字後 對話卡 700px / 輸入框 62px 皆不變 · 真 Chrome 截圖實測訪談頁(非 Preview 3.3MB 凍結) · sidebar v1.12.9→v1.12.10 -->
 <!-- v1.12.9 · AI能力檢測 UIUX 修復（Edward 暴怒「爆按鈕」後·全程真 Chrome 實測每頁）：①所有按鈕箭頭補尺寸——送AI審核/訪談送出/匯出PDF/分享/重新檢測/補交作品/把報告變行動 原 SVG 無 width/height→撐爆成巨大方塊·健檢段 24x24 SVG 統一補 16x16（有 CSS 尺寸者不受影響） ②對話氣泡 Georgia 襯線 16px→Noto Sans 黑體 14px(對齊設計 FRAME3·圓角 4/14/14/14)·用戶氣泡同步 14px ③訪談右欄 checklist 名稱對齊訪談主題(認識你/AI工具現況/倫理紅線/拿手工作流/判斷與查證/自我評估)·原誤套六維名又漏反思迭代→混亂 ④訪談加最低字數 gate(<6字)+shake 動畫+toast——隨便答「好」被擋下、值保留可補(解 Edward「隨便回答就進下一步」)·正常答案不誤擋 · 全程真 Chrome 截圖實測 作品/訪談/報告 三頁(Preview 3.3MB 凍結改用真 browser)·JS 語法已驗(_HC 正常載入)·sidebar v1.12.8→v1.12.9 -->
 <!-- v1.12.8 · AI能力檢測對照 Claude Design handoff 真設計 pixel-perfect 重建（卡西法產 diff·蘇菲審 apply）：①六維對齊真設計→提問框架/批判驗證/任務拆解/工具整合/反思迭代/倫理邊界(domain 槽位改倫理邊界·SEG cases 轉倫理向·評分/fallback 同步) ②等級體系對齊→B穩健起步#94A3B8 / B+扎實成長#1BA891 / A熟練協作#2F80ED(藍) / A+高效協作#7C5CFC / S卓越領航#E08A3A + tint ③開始說明/對話訪談/能力報告 改雙欄對齊設計(訪談右側加 6 維進度 checklist·報告左等級徽章+能力階梯+雷達 / 右六維拆解+暖建議) ④報告 header 加 匯出PDF(window.print)/分享(複製摘要) · 前面看圖估的落差用真設計檔修正 · JS 語法已驗(_HC node --check 過) · ⚠️瀏覽器工具斷線·未做真人點擊實測·已備份可退 · 作品頁雙欄版面待下輪補 · sidebar v1.12.7→v1.12.8 -->
-<!-- v1.12.7 · 點數機制完善（Edward 要求全面確認 扣點/補點/沒點提示/升級）：①接上「沒點數→升級彈窗」(showPaywallModal 原定義但從未被呼叫=死 code、現已接上) ②點數不足一律跳升級彈窗(PRO NT$499/MAX NT$999 一鍵升級)，涵蓋健檢 開始檢測/作品審核 + 全 app useCredits ③showPaywallModal 暴露 window 供各模組呼叫 · 確認既有機制完善：扣點✓(v1.12.6) 每月補點✓(每月自動重置 creditUsed 歸 0) 升級拿更多點✓(各方案 limit 不同) · Gate1 實測升級彈窗彈出 + 一鍵升級鈕 · sidebar v1.12.6→v1.12.7 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
