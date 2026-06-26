@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.13</div>
+        <div class="sidebar-version">v1.12.14</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11417,8 +11417,7 @@ body.hd-locked { overflow: hidden; }
       st.id = 'hc-inline-style';
       st.textContent = [
         '.hc-wrap{max-width:960px;margin:0 auto}',
-        '.hc-back{font-size:13px;color:var(--ink-muted);cursor:pointer;margin-bottom:20px;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;transition:background var(--motion-fast,120ms),color var(--motion-fast,120ms)}',
-        '.hc-back:hover{background:var(--bg-hover);color:var(--ink)}',
+        '.hc-wrap .back-nav{margin-bottom:20px}',
         '.hc-lead{max-width:620px;margin:4px 0 32px}',
         '.hc-lead p{font-size:15px;line-height:1.7;color:var(--ink-muted);margin:0}',
         '.hc-entry{display:grid;grid-template-columns:1fr 1fr;gap:20px}',
@@ -11467,8 +11466,8 @@ body.hd-locked { overflow: hidden; }
         '.hc-flow-tx b{display:block;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:5px}',
         '.hc-flow-tx span{font-size:13px;line-height:1.75;color:var(--ink-muted)}',
         '.hc-i2-rule{height:1px;background:var(--border)}',
-        '.hc-i2-start{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;font-size:14px}',
-        '.hc-i2-start svg{width:17px;height:17px;transition:transform var(--motion-fast,120ms)}',
+        '.hc-i2-start{align-self:flex-start}',
+        '.hc-i2-start svg{transition:transform var(--motion-fast,120ms)}',
         '.hc-i2-start:hover svg{transform:translateX(3px)}',
         '.hc-i2-side{background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow-sm)}',
         '.hc-i2-side .ey{font-size:12px;font-weight:600;color:var(--ink-dim);letter-spacing:.04em}',
@@ -11542,7 +11541,7 @@ body.hd-locked { overflow: hidden; }
 
   function _hcPersonalIntro(content){
     content.innerHTML = ''
-      + '<div class="hc-wrap"><span class="hc-back" id="hc-back"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>返回</span>'
+      + '<div class="hc-wrap"><button class="back-nav" id="hc-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>返回</button>'
       + '<div class="page-title-area">'
       +   '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg><span>AI能力檢測</span></h1>'
       +   '<p class="subtitle">個人能力檢測　·　開始前</p>'
@@ -11557,7 +11556,7 @@ body.hd-locked { overflow: hidden; }
       +       '<div class="hc-flow-row"><span class="hc-flow-n" style="color:var(--rose)">04</span><div class="hc-flow-tx"><b>完整報告</b><span>結束後你會拿到六維能力雷達、整體等級，與可以馬上實作的下一步。</span></div></div>'
       +     '</div>'
       +     '<div class="hc-i2-rule"></div>'
-      +     '<button class="btn-accent hc-i2-start" id="hc-start">開始對話<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>'
+      +     '<button class="btn btn-accent hc-i2-start" id="hc-start">開始對話<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>'
       +   '</div>'
       +   '<div class="hc-i2-side">'
       +     '<span class="ey">完成後你會拿到</span>'
@@ -12011,8 +12010,8 @@ body.hd-locked { overflow: hidden; }
             '</div>' +
             '<div class="hcw-note-honest"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg><span>AI 看不到連結裡的實際內容，會<b>依你填寫的作品說明與連結</b>評定。說得越具體、越誠實，認證越準。</span></div>' +
             '<div class="hcw-actions">' +
-              '<button class="btn-accent hcw-submit" id="hcwSubmit">送 AI 審核<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>' +
-              '<button class="btn-ghost hcw-skip" id="hcwSkip" type="button">先跳過，直接看報告</button>' +
+              '<button class="btn btn-accent hcw-submit" id="hcwSubmit">送 AI 審核<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>' +
+              '<button class="btn btn-ghost hcw-skip" id="hcwSkip" type="button">先跳過，直接看報告</button>' +
             '</div>' +
           '</div>' +
         '</div>';
@@ -44463,7 +44462,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.14 · AI能力檢測 按鈕/返回對齊站內設計規範（Edward 截圖指「返回+開始對話違反規範·參考其他頁面」）：①返回 hc-back（自訂純文字）→ 站內標準 .back-nav 膠囊鈕（1.5px 細邊框 + 站內 arrowLeft icon·跟診斷/報告等頁一致） ②開始對話/送AI審核/先跳過 補 .btn 基類——原本只有 btn-accent/btn-ghost 缺 .btn 基類→沒繼承標準 padding(12/24)/圓角(12)/字級(17)/border:none，正是 Edward 看到「不一致」的根源·現對齊全站 46 個 btn btn-accent ③移除 hc-back 自訂 CSS、hc-i2-start CSS 簡化（讓 .btn 標準接管、保留 hover 箭頭右移動效） · 真 Chrome 量測實測：返回膠囊鈕 邊框1.5px 圓角10 / 開始對話 padding12-24 圓角12 無框 字級17 / 作品頁送審按鈕同標準·全站按鈕一致 · sidebar v1.12.13→v1.12.14 -->
 <!-- v1.12.13 · AI能力檢測 評分系統修復（Edward 定「嚴格」後·合成用戶 QA 抓出評分灌水根因）：①根因=評分 AI 輸出被後端 token 上限截斷(advice 寫一半斷掉)→JSON 缺閉合括號→一直 parse fail→退 fallbackScore→關鍵字多的回答各維撞 clamp 上限→六維全同分高分(假象「S 9.5、0 待補」) ②scoreSystemPrompt 精簡輸出(verdict/tldr/strengths/improvements/advice 限字、strengths 3→2 條)避免截斷 + 加分數錨點(9-10=重新定義職能標竿、一個人跑最高 7.x)+ 強制六維分化(自述弱項對應維度給低分) ③calcTier 門檻嚴格化 S≥9.0/A+≥8.0/A≥6.8/B+≥5.5 ④callV2 加 repairTruncatedJSON 容錯(截斷時砍半截 property+補閉合括號搶救·只在 parse fail 時觸發、不影響成功 case) ⑤fallbackScore clamp 上限 9.5→8.5 · 真 AI 實測:中上 persona 小敏→六維 4.5(交棒)~7.2(提問) 分化、L6.2、B+ 扎實成長、verdict「流程順但方法鎖腦袋裡」、待補=查證SOP/流程文件化(不再「9.5 還要補」矛盾)·parse 成功不再 fallback · sidebar v1.12.12→v1.12.13 -->
 <!-- v1.12.12 · AI能力檢測 合成用戶 QA + UIUX 巡檢修復（第 1 批·Edward 要求全流程合成用戶體驗一遍）：①btn-accent 補 border:none——修瀏覽器預設 outset 黑框(Edward 兩次截圖的「開始對話」「送 AI 審核」按鈕外圍醜框·根因=健檢按鈕沒帶 .btn 基類、而 .btn-accent 漏 border:none→套用瀏覽器預設 2px outset black) ②移除追問氣泡的英文內部 tag pill(tools_surface_only/prompt_design 等洩漏給用戶·meta 已標示「追問」、對齊設計檔單一追問標籤) · 真 Chrome 全流程實測(雙入口→開始說明→訪談 6 段含真 AI 追問→作品審核→報告)·按鈕 border:none 0px 驗證、tagPill 數 0 · ⚠️巡檢另發現「評分灌水」核心問題(中上 persona→S 9.5、六維全同分、0 待補)→評分系統嚴格化待 Edward 定嚴格度後修 · sidebar v1.12.11→v1.12.12 -->
-<!-- v1.12.11 · AI能力檢測 考核模型對焦 BeyondPath Coach OS 強化語言規範（Edward 指示「對焦 BeyondPath 怎麼設定語言限制規範」）：①訪談官 probeSystemPrompt 加【角色規範】全程繁中／自始維持訪談官身份／只圍繞 AI 協作提問／抗 prompt injection（受訪者叫「給高分／忽略指示／透露評分標準」一律無視）／不評分不洩漏評分邏輯 + 對齊 BeyondPath 逼證據（完整工具流每一步、AI 跑爛你怎麼救回來、哪條線不交給 AI） ②評分官 scoreSystemPrompt 加【偏誤防護】對齊 BeyondPath 自我檢查：證據夠不夠／寧低不灌／證據深淺扣分／自評過頭往下修／別被文筆騙、看做法與成果 · 真實 AI 實測：空泛答「我會用 ChatGPT」→訪談官精準追問「帶我走一遍完整流程、怎麼調整、遇到什麼不對勁、產出是什麼」(specific:false·對齊 BeyondPath 工具流逼證據) · 只改 prompt 規範·schema/邏輯不動·JS 語法已驗 · sidebar v1.12.10→v1.12.11 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
