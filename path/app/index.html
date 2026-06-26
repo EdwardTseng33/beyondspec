@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.2</div>
+        <div class="sidebar-version">v1.12.3</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11472,15 +11472,15 @@ body.hd-locked { overflow: hidden; }
       +   '<div class="hc-card personal" id="hc-go-personal" tabindex="0" role="button">'
       +     '<div class="hc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg></div>'
       +     '<h3>個人能力檢測</h3>'
-      +     '<p>你一個人 + AI，到底用到多深？10 分鐘，照出你跟 AI 一起工作的真實樣子。</p>'
-      +     '<div class="hc-go">先照照自己<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>'
+      +     '<p>你和 AI 一起工作時，是什麼樣子？花約 10 分鐘聊聊，照出你們之間真實的默契。</p>'
+      +     '<div class="hc-go">去檢測<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>'
       +   '</div>'
       +   '<div class="hc-card team" id="hc-go-team">'
       +     '<span class="hc-soon">即將推出</span>'
       +     '<div class="hc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.6"/><circle cx="16.5" cy="9" r="2.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M14.5 19a5 5 0 0 1 6-4.7"/></svg></div>'
       +     '<h3>團隊能力檢測</h3>'
       +     '<p>工作室、企業都適用。看整支團隊的 AI 能力落在哪、誰能帶誰一起往上。</p>'
-      +     '<div class="hc-go">照照整支團隊<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>'
+      +     '<div class="hc-go">去檢測<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>'
       +   '</div>'
       + '</div></div>';
     var p = document.getElementById('hc-go-personal');
@@ -11536,17 +11536,17 @@ body.hd-locked { overflow: hidden; }
         q:"AI 給你的東西，你怎麼判斷能不能用？有沒有遇過它一本正經講錯、被你抓到的時候？那次你怎麼發現、怎麼處理的？",
         hints:["我一定查證關鍵數據和引用，曾抓到它編了不存在的論文","靠經驗判斷語氣和邏輯破綻，再交叉問一次","老實說大部分直接用，比較少回頭檢查"] },
       { key:"self", dim:"handoff",
-        q:"最後想請你替自己打個分。如果用 0 到 10 形容你用 AI 放大專業的程度，你會給幾分、為什麼？這六個面向（工作流設計／工具串接／判斷把關／領域深度／協作交棒／交付可靠）你覺得自己哪邊最強、哪邊最虛？",
+        q:"最後想請你替自己打個分。如果用 0 到 10 形容你用 AI 放大專業的程度，你會給幾分、為什麼？這六個面向（提問框架／批判視野／任務拆解／工具整合／反思迭代／領域提案）你覺得自己哪邊最強、哪邊最虛？",
         hints:["大概 7 分。工作流設計跟工具串接是強項，協作交棒最虛","我給 6 分，領域深度夠，但判斷把關還在學","給 8 分，但我知道方法很難交給別人"] }
     ];
 
     var DIMS = [
-      { id:"workflow", n:"AI 工作流設計" },
-      { id:"tools",    n:"工具串接力" },
-      { id:"judgment", n:"判斷與把關" },
-      { id:"domain",   n:"領域 × AI 深度" },
-      { id:"handoff",  n:"協作與交棒" },
-      { id:"delivery", n:"交付可靠度" }
+      { id:"workflow", n:"提問框架" },
+      { id:"judgment", n:"批判視野" },
+      { id:"handoff",  n:"任務拆解" },
+      { id:"tools",    n:"工具整合" },
+      { id:"delivery", n:"反思迭代" },
+      { id:"domain",   n:"領域提案" }
     ];
     var MED = { workflow:6.5, tools:6.0, judgment:6.8, domain:6.2, handoff:6.5, delivery:6.6 };
 
@@ -11557,9 +11557,9 @@ body.hd-locked { overflow: hidden; }
         already:"AI 進了日常，會用在真實工作上", next:"讓它成系統、不是每次靠臨場" },
       { sc:"A",  sn:"整合者", col:"#7C5CFC", ic:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
         already:"能設計可重複的人機協作流程", next:"把你的本事變成團隊接得住的方法" },
-      { sc:"A+", sn:"槓桿者", col:"#E08A3A", ic:'<path d="M13 2L3 14h9l-1 8 10-12h-9z"/>',
+      { sc:"A+", sn:"槓桿者", col:"#5B3FC9", ic:'<path d="M13 2L3 14h9l-1 8 10-12h-9z"/>',
         already:"用 AI 顯著放大專業、能複製給團隊", next:"重新定義這個職能的工作方式" },
-      { sc:"S",  sn:"領航者", col:"#5B3FC9", ic:'<path d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/>',
+      { sc:"S",  sn:"領航者", col:"#E08A3A", ic:'<path d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/>',
         already:"重新定義了職能的 AI 工作方式", next:"持續開疆——你已是別人對標的對象" }
     ];
 
@@ -11686,12 +11686,12 @@ body.hd-locked { overflow: hidden; }
       return [
         "你是 BeyondSpec「AI能力檢測」的評分官。根據整份訪談逐字稿，為受訪者在 6 個維度上各打一個 0-10 分（一位小數），並判斷整體等級。",
         "6 個維度定義：",
-        "1 workflow（AI 工作流設計）：能不能把事拆成『AI 做哪段、人做哪段』並串成可重複流程。",
-        "2 tools（工具串接力）：會用、會組合多個 AI/自動化工具。",
-        "3 judgment（判斷與把關）：評估 AI 產出、抓幻覺、知道何時人接手。",
-        "4 domain（領域 x AI 深度）：把 AI 用在自己專業的深度與真實成果。",
-        "5 handoff（協作與交棒）：把 AI 成果/方法說清楚、能交棒給別人。",
-        "6 delivery（交付可靠度）：用 AI 後產出穩不穩、別人敢不敢直接用。",
+        "1 workflow（提問框架）：怎麼把問題與脈絡框給 AI、設計清楚的提問與工作流起手。",
+        "2 judgment（批判視野）：評估 AI 產出、抓幻覺、判斷何時該由人接手。",
+        "3 handoff（任務拆解）：把大任務拆成『AI 做哪段、人做哪段』並能交棒給別人。",
+        "4 tools（工具整合）：會用、會組合多個 AI/自動化工具串成一條流程。",
+        "5 delivery（反思迭代）：用完 AI 後會反思、迭代，讓產出穩定、別人敢直接用。",
+        "6 domain（領域提案）：把 AI 用在自己專業，提出有深度的方案與真實成果。",
         "評分原則：以【具體證據】為準。空泛、無案例、無成果的描述給低分；有真實案例+做法+成果（尤其有數字）給高分。寧可保守，不要灌水。",
         "verdict 是一句『鏡子式』總評（不羞辱、成長敘事，繁體中文，約 20 字內），tldr 是 2-3 句說明強在哪、下一步往哪（繁體中文）。",
         "strengths 最多 3 條（受訪者最強的地方），improvements 最多 2 條（下一步最值得補的，要溫和具建設性）。每條繁體中文、一句話。",
@@ -11942,6 +11942,7 @@ body.hd-locked { overflow: hidden; }
       html += '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="' + tier.col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + tier.ic + '</svg>';
       html += '<div class="name">' + esc(tier.sn) + '</div>';
       html += '<div class="code">LEVEL ' + tier.sc + '</div>';
+      html += '<div class="hc-coach-by">由 AI Native Coach OS 評定</div>';
       html += '</div>';
       html += '<div class="hc-verdict">' + esc(verdict) + '</div>';
       html += '<div class="hc-tldr">' + esc(tldr) + '</div>';
@@ -11953,7 +11954,7 @@ body.hd-locked { overflow: hidden; }
       html += '<div class="hc-kpi"><div class="val">' + R.leadCount + '<small> / 6</small></div><div class="lab">領先維度</div><div class="sub">' + (6 - R.leadCount) + ' 項待補</div></div>';
       html += '</div></div>';
       if (R.flags.length) html += redFlagBlock(R.flags);
-      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">01</span> 六維能力 · 你 vs 同職能中位</div>';
+      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">01</span> 六維協作能力 · 你 vs 同職能中位<span style="margin-left:auto;font-weight:500;color:var(--ink-dim);letter-spacing:0;text-transform:none">AI Native Coach OS 模型</span></div>';
       html += '<div class="hc-panel hc-radar-wrap"><svg id="hcRadar" viewBox="0 0 320 300" width="300"></svg><div class="hc-dimlist" id="hcDimlist"></div></div>';
       html += '<div class="hc-legend"><span><i style="background:var(--primary)"></i>你的能力</span><span><i style="background:var(--slate)"></i>同職能中位數</span></div></div>';
       html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">02</span> 你的底子</div><div class="hc-two">';
@@ -12115,6 +12116,7 @@ body.hd-locked { overflow: hidden; }
     HC_CSS += '.hc-badge .name{font-family:Georgia,serif;font-style:italic;font-size:23px;font-weight:700;color:var(--amber-ink)}';
     HC_CSS += 'html[data-theme="dark"] .hc-badge .name{color:#f0d9b8}';
     HC_CSS += '.hc-badge .code{font-size:11px;letter-spacing:.14em;color:var(--ink-muted);font-weight:600}';
+    HC_CSS += '.hc-coach-by{font-size:11px;color:var(--amber-accent);font-weight:600;letter-spacing:.02em;margin-top:2px}';
     HC_CSS += '.hc-verdict{font-family:Georgia,serif;font-style:italic;font-size:30px;line-height:1.25;font-weight:700;color:var(--amber-ink);max-width:560px;margin:0 auto 14px}';
     HC_CSS += 'html[data-theme="dark"] .hc-verdict{color:#f0d9b8}';
     HC_CSS += '.hc-tldr{font-family:Georgia,serif;font-style:italic;font-size:15px;color:var(--amber-ink);opacity:.72;max-width:520px;margin:0 auto;line-height:1.6}';
@@ -44041,7 +44043,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.3 · AI能力檢測對照 Claude Design 定稿設計（Edward 親修版）第 1 批視覺對齊：①六維改名全鏈(工作流/工具/判斷/領域/協作/交付 → 提問框架/批判視野/任務拆解/工具整合/反思迭代/領域提案；DIMS + 評分官 prompt + 訪談 self 段同步、id 不動所以評分邏輯安全) ②報告加「由 AI Native Coach OS 評定」+ 雷達標 Coach OS 模型 ③等級色階對齊(A+ 金→紫深 #5B3FC9、S 紫深→金 #E08A3A 對調) ④雙入口文案對齊(個人卡描述 + 按鈕統一「去檢測」) · 六邊形徽章樣式/訪談數據條/作品提交階段列第 2 批 · sidebar v1.12.2→v1.12.3 -->
 <!-- v1.12.2 · AI能力檢測模組整體設計重整（女巫 Gate2 主導·蘇菲審）：①根治版面靠左空蕩(.hc-wrap 補 margin:0 auto 置中) ②入口卡 滿版色磚→白底卡+色票塊(封閉五色語意) ③進入頁 編號說明卡+儀式分隔線+層次 ④訪談頁 修 var(--bg) 落空致捲動穿透(→var(--bg-app)) + AI 訊息加氣泡容器(原裸文字) + 進度條加粗 ⑤報告頁 寫死琥珀→複用 --amber-* token + 暖底修正(原灰底) + KPI hover ⑥全暗色變數化·對比達標·去漸層飽和純色 ⑦鍵盤可達+隱私文案校正 · rubric 86/100 · sidebar v1.12.1→v1.12.2 -->
 <!-- v1.12.1 · AI Native 體質檢測→改名「AI能力檢測」(模組總名+個人/團隊雙入口+訪談官/評分官/報告全改) · 修「側邊欄點不開」bug(Router routes 補登記 health→點擊正確開啟健檢頁) · 設定頁「模組管理·你的工作台」補上 AI能力檢測 開關(MODULE_DEFAULTS/MIN_PLAN 登記 mod-health=free·免費可用) · 歸類=個人驗證工具(與產品力診斷同欄) · sidebar v1.12.0→v1.12.1 -->
-<!-- v1.12.0 · 設定頁功能對照表重寫（舊 Free/Starter NT$290/Pro NT$990/Enterprise → 新 免費試用/PRO NT$499/MAX NT$999/Team）· credits 欄對齊拍板（50/50/1,000/依方案）· 模組欄依 PLAN_CATALOG（免費試用=全模組、PRO=核心6、MAX=全、Team=全+多人）· 殘留舊價 NT$290/NT$990/credits 30/500/3,000 清除 · sidebar v1.11.2→v1.12.0 ＋ 新增 AI Native 體質檢測模組(個人版)：側邊欄入口+個人/團隊雙入口+7段AI訪談(真AI追問逼證據)+6維評分+B~S不羞辱等級+防灌水紅旗+暗色適配+飽和純色 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
