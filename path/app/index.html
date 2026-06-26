@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.15</div>
+        <div class="sidebar-version">v1.12.16</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11512,9 +11512,6 @@ body.hd-locked { overflow: hidden; }
       +   '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg><span>AI能力檢測</span></h1>'
       +   '<p class="subtitle">你和你的團隊，到底多會用 AI？</p>'
       + '</div>'
-      + '<div class="hc-wrap"><div class="hc-lead">'
-      +   '<p>一個人能扛多少，現在很大一部分取決於你多會用 AI。這裡有兩面鏡子——先照你自己，或照整支團隊。</p>'
-      + '</div></div>'
       + '<div class="hc-wrap"><div class="hc-entry">'
       +   '<div class="hc-card personal" id="hc-go-personal" tabindex="0" role="button">'
       +     '<div class="hc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg></div>'
@@ -11541,11 +11538,12 @@ body.hd-locked { overflow: hidden; }
 
   function _hcPersonalIntro(content){
     content.innerHTML = ''
-      + '<div class="hc-wrap"><button class="back-nav" id="hc-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>返回</button>'
+      + '<div class="hc-wrap">'
       + '<div class="page-title-area">'
       +   '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg><span>AI能力檢測</span></h1>'
       +   '<p class="subtitle">個人能力檢測　·　開始前</p>'
       + '</div>'
+      + '<button class="back-nav" id="hc-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>返回</button>'
       + '<div class="hc-intro2">'
       +   '<div class="hc-i2-main">'
       +     '<h3>檢測流程說明</h3>'
@@ -44469,7 +44467,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.16 · AI能力檢測 雙入口精簡 + 返回移位（Edward 指）：①雙入口頁拿掉「一個人能扛多少…」說明文字(hc-lead)·標題下直接兩張入口卡 ②開始說明頁返回鈕 從 header 上方 → header 下方(page-title-area 之後·解 Edward「返回浮在標題上方突兀」) · 真 Chrome 實測雙入口文字已刪、返回在 header 下方 · ⚠️作品佔評分比例機制(Edward「有沒有作品該佔多少比例·重新思考認證」)：現況=訪談 tier 與作品 certLevel 兩套獨立脫鉤→待拍板權重後改成加權綜合 · sidebar v1.12.15→v1.12.16 -->
 <!-- v1.12.15 · AI能力檢測 沒作品封頂 B+（Edward「我沒提供作品評分也可以 A?? 莫名其妙」）：①根因=等級只看訪談六維分數算(calcLScore+calcTier)、作品(work)只存進結果不算等級→沒交作品光訪談說得好就給 A ②buildResult 加封頂：沒作品(work=null)且訪談 rawTier > B+ → 等級封頂 B+（A/A+/S 必須作品佐證·對齊 BeyondPath 證據導向「沒證據不給高分」）·結果存 rawTierIdx + capped 旗標 ③報告 hero 加封頂提示卡(暖色 gold·非漸層)：「你在訪談中展現了 X 級的實力——但 A 以上認證需作品佐證·交一份作品解鎖·目前認證等級 B+」· 真 Chrome 實測：A+ 實力訪談 沒作品→封頂 B+(capped)、有作品→A+(不封頂)·提示卡視覺確認 · ⚠️報告版面對齊設計檔雙欄(設計檔左等級+階梯/右六維拆解·現為單欄+多三數字卡) 下輪照設計檔重排 · sidebar v1.12.14→v1.12.15 -->
 <!-- v1.12.14 · AI能力檢測 按鈕/返回對齊站內設計規範（Edward 截圖指「返回+開始對話違反規範·參考其他頁面」）：①返回 hc-back（自訂純文字）→ 站內標準 .back-nav 膠囊鈕（1.5px 細邊框 + 站內 arrowLeft icon·跟診斷/報告等頁一致） ②開始對話/送AI審核/先跳過 補 .btn 基類——原本只有 btn-accent/btn-ghost 缺 .btn 基類→沒繼承標準 padding(12/24)/圓角(12)/字級(17)/border:none，正是 Edward 看到「不一致」的根源·現對齊全站 46 個 btn btn-accent ③移除 hc-back 自訂 CSS、hc-i2-start CSS 簡化（讓 .btn 標準接管、保留 hover 箭頭右移動效） · 真 Chrome 量測實測：返回膠囊鈕 邊框1.5px 圓角10 / 開始對話 padding12-24 圓角12 無框 字級17 / 作品頁送審按鈕同標準·全站按鈕一致 · sidebar v1.12.13→v1.12.14 -->
-<!-- v1.12.13 · AI能力檢測 評分系統修復（Edward 定「嚴格」後·合成用戶 QA 抓出評分灌水根因）：①根因=評分 AI 輸出被後端 token 上限截斷(advice 寫一半斷掉)→JSON 缺閉合括號→一直 parse fail→退 fallbackScore→關鍵字多的回答各維撞 clamp 上限→六維全同分高分(假象「S 9.5、0 待補」) ②scoreSystemPrompt 精簡輸出(verdict/tldr/strengths/improvements/advice 限字、strengths 3→2 條)避免截斷 + 加分數錨點(9-10=重新定義職能標竿、一個人跑最高 7.x)+ 強制六維分化(自述弱項對應維度給低分) ③calcTier 門檻嚴格化 S≥9.0/A+≥8.0/A≥6.8/B+≥5.5 ④callV2 加 repairTruncatedJSON 容錯(截斷時砍半截 property+補閉合括號搶救·只在 parse fail 時觸發、不影響成功 case) ⑤fallbackScore clamp 上限 9.5→8.5 · 真 AI 實測:中上 persona 小敏→六維 4.5(交棒)~7.2(提問) 分化、L6.2、B+ 扎實成長、verdict「流程順但方法鎖腦袋裡」、待補=查證SOP/流程文件化(不再「9.5 還要補」矛盾)·parse 成功不再 fallback · sidebar v1.12.12→v1.12.13 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->

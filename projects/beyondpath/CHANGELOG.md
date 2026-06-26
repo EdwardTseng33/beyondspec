@@ -571,3 +571,6 @@ P0 結構除錯（任務中心稽核後）
 
 ## v1.12.12
 <!-- v1.12.12 · AI能力檢測 合成用戶 QA + UIUX 巡檢修復（第 1 批·Edward 要求全流程合成用戶體驗一遍）：①btn-accent 補 border:none——修瀏覽器預設 outset 黑框(Edward 兩次截圖的「開始對話」「送 AI 審核」按鈕外圍醜框·根因=健檢按鈕沒帶 .btn 基類、而 .btn-accent 漏 border:none→套用瀏覽器預設 2px outset black) ②移除追問氣泡的英文內部 tag pill(tools_surface_only/prompt_design 等洩漏給用戶·meta 已標示「追問」、對齊設計檔單一追問標籤) · 真 Chrome 全流程實測(雙入口→開始說明→訪談 6 段含真 AI 追問→作品審核→報告)·按鈕 border:none 0px 驗證、tagPill 數 0 · ⚠️巡檢另發現「評分灌水」核心問題(中上 persona→S 9.5、六維全同分、0 待補)→評分系統嚴格化待 Edward 定嚴格度後修 · sidebar v1.12.11→v1.12.12 -->
+
+## v1.12.13
+<!-- v1.12.13 · AI能力檢測 評分系統修復（Edward 定「嚴格」後·合成用戶 QA 抓出評分灌水根因）：①根因=評分 AI 輸出被後端 token 上限截斷(advice 寫一半斷掉)→JSON 缺閉合括號→一直 parse fail→退 fallbackScore→關鍵字多的回答各維撞 clamp 上限→六維全同分高分(假象「S 9.5、0 待補」) ②scoreSystemPrompt 精簡輸出(verdict/tldr/strengths/improvements/advice 限字、strengths 3→2 條)避免截斷 + 加分數錨點(9-10=重新定義職能標竿、一個人跑最高 7.x)+ 強制六維分化(自述弱項對應維度給低分) ③calcTier 門檻嚴格化 S≥9.0/A+≥8.0/A≥6.8/B+≥5.5 ④callV2 加 repairTruncatedJSON 容錯(截斷時砍半截 property+補閉合括號搶救·只在 parse fail 時觸發、不影響成功 case) ⑤fallbackScore clamp 上限 9.5→8.5 · 真 AI 實測:中上 persona 小敏→六維 4.5(交棒)~7.2(提問) 分化、L6.2、B+ 扎實成長、verdict「流程順但方法鎖腦袋裡」、待補=查證SOP/流程文件化(不再「9.5 還要補」矛盾)·parse 成功不再 fallback · sidebar v1.12.12→v1.12.13 -->
