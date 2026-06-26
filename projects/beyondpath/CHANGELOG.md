@@ -589,3 +589,6 @@ P0 結構除錯（任務中心稽核後）
 
 ## v1.12.18
 <!-- v1.12.18 · AI能力檢測 報告頁版面重排對齊設計檔 FRAME4 雙欄（Edward「整個結果頁沒照設計檔·重新對照」·卡西法產 diff·蘇菲驗收上線）：①移除三數字卡(設計檔無) ②全寬 hero → 左欄「等級卡」(gradeTint header：六邊形 + 整體等級 label + 等級名 + 由 Coach 評定 + verdict + tldr + cap-note + 能力階梯併入卡底) ③雙欄重組 grid 1fr/1.15fr：左=等級卡(含階梯)+雷達卡 / 右=六維拆解卡 + 底子卡 + 也許試試看卡(暖色 #FBF7F0 + Georgia italic serif) ④認證卡(作品分)移雙欄下方全寬 ⑤drawDimList 字母化(分數→S/A+/A/B+/B·色依等級) ⑥drawLadder 橫排小六邊形 + 現在標 · 真 Chrome 實測：雙欄 render 完整、console 無 app error、字母等級正確、暖色建議 serif、認證作品分顯示 · 含暗色相容 + 860px RWD 折單欄 · sidebar v1.12.17→v1.12.18 -->
+
+## v1.12.19
+<!-- v1.12.19 · AI能力檢測 報告頁簡化對齊設計檔 + loading 重設計（Edward「報告差這麼多·前面 loading 也很醜」·用 support.js 把設計檔 render 出來並排對照後）：①報告頁拿掉設計檔沒有的多餘塊——等級卡的 verdict/tldr 總評、「你的底子」強弱項卡(跟「也許試試看」重疊)→報告變設計檔的簡潔雙欄(左：等級卡+能力階梯+雷達 / 右：六維拆解+也許試試看；作品認證卡功能保留下方) ②loading 畫面去暖琥珀米色→紫系乾淨：背景 amber-bg→bg-app、進度環 橘#D4712A→紫 primary、title Georgia 琥珀斜體→Noto Sans ink(原 loading 暖琥珀跟報告紫系調性衝突·顯醜) · 突破：support.js 是設計檔 render 引擎、把設計檔叫出來並排比(之前只讀 code 對照不夠) · 真 Chrome 實測報告對齊設計檔簡潔雙欄 + loading 紫系乾淨 · sidebar v1.12.18→v1.12.19 -->
