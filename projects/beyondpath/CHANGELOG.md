@@ -556,3 +556,6 @@ P0 結構除錯（任務中心稽核後）
 
 ## v1.12.7
 <!-- v1.12.7 · 點數機制完善（Edward 要求全面確認 扣點/補點/沒點提示/升級）：①接上「沒點數→升級彈窗」(showPaywallModal 原定義但從未被呼叫=死 code、現已接上) ②點數不足一律跳升級彈窗(PRO NT$499/MAX NT$999 一鍵升級)，涵蓋健檢 開始檢測/作品審核 + 全 app useCredits ③showPaywallModal 暴露 window 供各模組呼叫 · 確認既有機制完善：扣點✓(v1.12.6) 每月補點✓(每月自動重置 creditUsed 歸 0) 升級拿更多點✓(各方案 limit 不同) · Gate1 實測升級彈窗彈出 + 一鍵升級鈕 · sidebar v1.12.6→v1.12.7 -->
+
+## v1.12.8
+<!-- v1.12.8 · AI能力檢測對照 Claude Design handoff 真設計 pixel-perfect 重建（卡西法產 diff·蘇菲審 apply）：①六維對齊真設計→提問框架/批判驗證/任務拆解/工具整合/反思迭代/倫理邊界(domain 槽位改倫理邊界·SEG cases 轉倫理向·評分/fallback 同步) ②等級體系對齊→B穩健起步#94A3B8 / B+扎實成長#1BA891 / A熟練協作#2F80ED(藍) / A+高效協作#7C5CFC / S卓越領航#E08A3A + tint ③開始說明/對話訪談/能力報告 改雙欄對齊設計(訪談右側加 6 維進度 checklist·報告左等級徽章+能力階梯+雷達 / 右六維拆解+暖建議) ④報告 header 加 匯出PDF(window.print)/分享(複製摘要) · 前面看圖估的落差用真設計檔修正 · JS 語法已驗(_HC node --check 過) · ⚠️瀏覽器工具斷線·未做真人點擊實測·已備份可退 · 作品頁雙欄版面待下輪補 · sidebar v1.12.7→v1.12.8 -->
