@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.7</div>
+        <div class="sidebar-version">v1.12.8</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11455,7 +11455,53 @@ body.hd-locked { overflow: hidden; }
         '.hc-intro .hc-cta{display:inline-flex;align-items:center;gap:8px;font-size:14.5px}',
         '.hc-intro .hc-cta svg{width:17px;height:17px;transition:transform var(--motion-fast,120ms)}',
         '.hc-intro .hc-cta:hover svg{transform:translateX(3px)}',
-        '.hc-intro .hc-foot{font-size:12px;color:var(--ink-dim);margin-top:18px}'
+        '.hc-intro .hc-foot{font-size:12px;color:var(--ink-dim);margin-top:18px}',
+        /* ===== 開始說明 雙欄 (hc-intro2) ===== */
+        '.hc-intro2{display:grid;grid-template-columns:1.55fr 1fr;gap:24px;align-items:start;max-width:920px;margin:0 auto}',
+        '@media(max-width:760px){.hc-intro2{grid-template-columns:1fr}}',
+        '.hc-i2-main{background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:32px;display:flex;flex-direction:column;gap:24px;box-shadow:var(--shadow-sm)}',
+        '.hc-i2-main h3{margin:0;font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.2px}',
+        '.hc-flow{display:flex;flex-direction:column;gap:20px}',
+        '.hc-flow-row{display:flex;gap:18px;align-items:flex-start}',
+        '.hc-flow-n{flex:none;min-width:30px;font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:20px;line-height:1.2}',
+        '.hc-flow-tx b{display:block;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:5px}',
+        '.hc-flow-tx span{font-size:13px;line-height:1.75;color:var(--ink-muted)}',
+        '.hc-i2-rule{height:1px;background:var(--border)}',
+        '.hc-i2-start{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;font-size:14px}',
+        '.hc-i2-start svg{width:17px;height:17px;transition:transform var(--motion-fast,120ms)}',
+        '.hc-i2-start:hover svg{transform:translateX(3px)}',
+        '.hc-i2-side{background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:18px;box-shadow:var(--shadow-sm)}',
+        '.hc-i2-side .ey{font-size:12px;font-weight:600;color:var(--ink-dim);letter-spacing:.04em}',
+        '.hc-i2-hex{display:flex;justify-content:center;padding:4px 0}',
+        '.hc-i2-gets{display:flex;flex-direction:column;gap:13px}',
+        '.hc-i2-get{display:flex;gap:11px;align-items:center}',
+        '.hc-i2-get .d{width:6px;height:6px;border-radius:50%;flex:none}',
+        '.hc-i2-get span{font-size:13px;color:var(--ink-sec)}',
+        'html[data-theme="dark"] .hc-i2-get span{color:var(--ink-muted)}',
+        /* ===== 對話訪談 雙欄 (hcv2) ===== */
+        '.hcv2{display:grid;grid-template-columns:1.7fr 1fr;gap:24px;align-items:stretch;max-width:1040px;margin:0 auto;min-height:520px}',
+        '@media(max-width:860px){.hcv2{grid-template-columns:1fr}}',
+        '.hcv2-side{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:20px;box-shadow:var(--shadow-sm);align-self:start;position:sticky;top:80px}',
+        '@media(max-width:860px){.hcv2-side{position:static}}',
+        '.hcv2-prog .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}',
+        '.hcv2-prog .top b{font-size:13px;font-weight:600;color:var(--ink)}',
+        '.hcv2-prog .top span{font-size:12px;font-weight:500;color:var(--ink-dim)}',
+        '.hcv2-prog .track{height:5px;background:var(--bg-hover);border-radius:99px;overflow:hidden}',
+        '.hcv2-prog .track i{display:block;height:100%;background:var(--primary);border-radius:99px;transition:width var(--motion-smooth,280ms) ease}',
+        '.hcv2-rule{height:1px;background:var(--border)}',
+        '.hcv2-checks{display:flex;flex-direction:column;gap:14px}',
+        '.hcv2-ck{display:flex;align-items:center;gap:11px}',
+        '.hcv2-ck .mk{width:18px;height:18px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center}',
+        '.hcv2-ck .mk svg{width:11px;height:11px}',
+        '.hcv2-ck.done .mk{background:var(--teal-bg);color:var(--teal)}',
+        '.hcv2-ck.cur .mk{background:var(--primary)}',
+        '.hcv2-ck.cur .mk i{width:6px;height:6px;border-radius:50%;background:#fff;display:block}',
+        '.hcv2-ck.wait .mk{border:1.5px solid var(--border-hover);box-sizing:border-box}',
+        '.hcv2-ck .lb{font-size:13px}',
+        '.hcv2-ck.done .lb{color:var(--ink-dim)}',
+        '.hcv2-ck.cur .lb{color:var(--ink);font-weight:600}',
+        '.hcv2-ck.wait .lb{color:var(--ink-dim)}',
+        '.hcv2-tip{margin-top:auto;font-size:12px;line-height:1.7;color:var(--ink-dim)}'
       ].join('');
       document.head.appendChild(st);
     }
@@ -11497,18 +11543,36 @@ body.hd-locked { overflow: hidden; }
   function _hcPersonalIntro(content){
     content.innerHTML = ''
       + '<div class="hc-wrap"><span class="hc-back" id="hc-back"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>返回</span>'
-      + '<div class="hc-intro">'
-      +   '<div class="hc-ey">個人能力檢測</div>'
-      +   '<h2>看清楚你跟 AI 一起工作的真實樣子</h2>'
-      +   '<p class="hc-sub">這不是考試，是一面鏡子。沒有及格不及格，只有「你現在在哪、下一步往哪走」。誠實回答，鏡子才照得準。</p>'
-      +   '<div class="hc-rule"></div>'
-      +   '<div class="hc-points">'
-      +     '<div class="hc-pt"><span class="n">01</span><div><b>誠實，比答得漂亮更重要</b><span>我們會追問真實案例。講不出細節的「很會用 AI」不算數。</span></div></div>'
-      +     '<div class="hc-pt"><span class="n">02</span><div><b>大約 15 分鐘</b><span>一場對話式訪談，5 到 6 段。像跟一個懂行的朋友聊你怎麼工作。</span></div></div>'
-      +     '<div class="hc-pt"><span class="n">03</span><div><b>你會拿到一份完整健檢報告</b><span>六個面向的能力雷達、跟同行的對照、你的強項與下一步。</span></div></div>'
+      + '<div class="page-title-area">'
+      +   '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg><span>AI能力檢測</span></h1>'
+      +   '<p class="subtitle">個人能力檢測　·　開始前</p>'
+      + '</div>'
+      + '<div class="hc-intro2">'
+      +   '<div class="hc-i2-main">'
+      +     '<h3>檢測流程說明</h3>'
+      +     '<div class="hc-flow">'
+      +       '<div class="hc-flow-row"><span class="hc-flow-n" style="color:var(--primary)">01</span><div class="hc-flow-tx"><b>誠實作答</b><span>沒有標準答案，也沒有及格線。你越誠實，鏡子照得越準；講不出細節的「很會用 AI」我們會追問。</span></div></div>'
+      +       '<div class="hc-flow-row"><span class="hc-flow-n" style="color:var(--teal)">02</span><div class="hc-flow-tx"><b>約 15 分鐘對話</b><span>一段不被打擾的訪談，5 到 6 段。隨時可以暫停，進度都會替你保留。</span></div></div>'
+      +       '<div class="hc-flow-row"><span class="hc-flow-n" style="color:var(--gold)">03</span><div class="hc-flow-tx"><b>上傳作品連結</b><span>對話後，貼上你用 AI 做出來的成果或連結，AI Native Coach OS 會對照著看，讓報告更貼近真實。</span></div></div>'
+      +       '<div class="hc-flow-row"><span class="hc-flow-n" style="color:var(--rose)">04</span><div class="hc-flow-tx"><b>完整報告</b><span>結束後你會拿到六維能力雷達、整體等級，與可以馬上實作的下一步。</span></div></div>'
+      +     '</div>'
+      +     '<div class="hc-i2-rule"></div>'
+      +     '<button class="btn-accent hc-i2-start" id="hc-start">開始對話<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>'
       +   '</div>'
-      +   '<button class="btn-accent hc-cta" id="hc-start">開始檢測<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>'
-      +   '<div class="hc-foot">放輕鬆，這是一面鏡子、不是考試，隨時可以停。</div>'
+      +   '<div class="hc-i2-side">'
+      +     '<span class="ey">完成後你會拿到</span>'
+      +     '<div class="hc-i2-hex">'
+      +       '<svg width="160" height="160" viewBox="0 0 200 200">'
+      +         '<polygon points="100,30 160.6,65 160.6,135 100,170 39.4,135 39.4,65" fill="none" stroke="var(--border)" stroke-width="1.2"></polygon>'
+      +         '<polygon points="100,52 141.6,76 141.6,124 100,148 58.4,124 58.4,76" fill="rgba(124,92,252,0.16)" stroke="var(--primary)" stroke-width="1.6" stroke-linejoin="round"></polygon>'
+      +       '</svg>'
+      +     '</div>'
+      +     '<div class="hc-i2-gets">'
+      +       '<div class="hc-i2-get"><span class="d" style="background:var(--primary)"></span><span>6 維 AI 協作能力雷達</span></div>'
+      +       '<div class="hc-i2-get"><span class="d" style="background:var(--teal)"></span><span>B 到 S 的整體能力定位</span></div>'
+      +       '<div class="hc-i2-get"><span class="d" style="background:var(--gold)"></span><span>不評斷、能落地的成長建議</span></div>'
+      +     '</div>'
+      +   '</div>'
       + '</div></div>';
     var b = document.getElementById('hc-back');
     if (b) b.onclick = function(){ renderHealthCheck('select'); };
@@ -11532,8 +11596,8 @@ body.hd-locked { overflow: hidden; }
         q:"聊聊你跟 AI 工具的關係。你現在工作上會用到哪些 AI？大概怎麼用？",
         hints:["ChatGPT 寫文案、Midjourney 出圖、再用 Claude 整理客戶訪談","主要是 ChatGPT 加一些自動化工具串起來","我會用 ChatGPT"] },
       { key:"cases", dim:"domain",
-        q:"近一年裡，你用 AI 真正參與、而且做出成果的案子大概幾個？挑一個你印象最深的，說說你怎麼把 AI 用進去的。",
-        hints:["大概 6、7 個。最深的是把整條內容產線從發想到出圖串成一套 AI 流程","3 個左右，最有感的是用 AI 把報價到結案的流程自動化","蠻多的，但多半是零散幫忙"] },
+        q:"用 AI 做事，你心裡有沒有一條「這個不能交給它」的線？舉個你真的踩過或特意避開的例子——比方資料隱私、版權、或有沒有跟人說過某個東西是 AI 做的。",
+        hints:["客戶個資我絕不丟進公開模型，會先去識別化再用","AI 出的圖我會查授權，商用前一定確認來源","對外的東西我會註明哪部分是 AI 輔助、不假裝全是自己寫的"] },
       { key:"proud", dim:"workflow",
         q:"那，你最自豪的一套 AI 工作流是什麼？我想聽你怎麼設計 prompt、怎麼把幾個工具串起來，讓它變成可以重複用的東西。",
         hints:["我做了一組分層 prompt：先讓 AI 出策略框架，再餵品牌資料生成文案，最後人工潤","把 Notion 加 Claude 加自動化工具串成一條，客戶資料進來自動生提案草稿","老實說還沒到可重複，多半每次重新想"] },
@@ -11541,30 +11605,30 @@ body.hd-locked { overflow: hidden; }
         q:"AI 給你的東西，你怎麼判斷能不能用？有沒有遇過它一本正經講錯、被你抓到的時候？那次你怎麼發現、怎麼處理的？",
         hints:["我一定查證關鍵數據和引用，曾抓到它編了不存在的論文","靠經驗判斷語氣和邏輯破綻，再交叉問一次","老實說大部分直接用，比較少回頭檢查"] },
       { key:"self", dim:"handoff",
-        q:"最後想請你替自己打個分。如果用 0 到 10 形容你用 AI 放大專業的程度，你會給幾分、為什麼？這六個面向（提問框架／批判視野／任務拆解／工具整合／反思迭代／領域提案）你覺得自己哪邊最強、哪邊最虛？",
+        q:"最後想請你替自己打個分。如果用 0 到 10 形容你用 AI 放大專業的程度，你會給幾分、為什麼？這六個面向（提問框架／批判驗證／任務拆解／工具整合／反思迭代／倫理邊界）你覺得自己哪邊最強、哪邊最虛？",
         hints:["大概 7 分。工作流設計跟工具串接是強項，協作交棒最虛","我給 6 分，領域深度夠，但判斷把關還在學","給 8 分，但我知道方法很難交給別人"] }
     ];
 
     var DIMS = [
       { id:"workflow", n:"提問框架" },
-      { id:"judgment", n:"批判視野" },
+      { id:"judgment", n:"批判驗證" },
       { id:"handoff",  n:"任務拆解" },
       { id:"tools",    n:"工具整合" },
       { id:"delivery", n:"反思迭代" },
-      { id:"domain",   n:"領域提案" }
+      { id:"domain",   n:"倫理邊界" }
     ];
     var MED = { workflow:6.5, tools:6.0, judgment:6.8, domain:6.2, handoff:6.5, delivery:6.6 };
 
     var TIERS = [
-      { sc:"B",  sn:"起步者", col:"#94A3B8", ic:'<path d="M12 19V5M5 12l7-7 7 7"/>',
+      { sc:"B",  sn:"穩健起步", col:"#94A3B8", tint:"#EEF1F4", ic:'<path d="M12 19V5M5 12l7-7 7 7"/>',
         already:"會問 AI、開始把它放進工作", next:"把零星問答串成一條可重複的流程" },
-      { sc:"B+", sn:"實踐者", col:"#1BA891", ic:'<path d="M20 6L9 17l-5-5"/>',
+      { sc:"B+", sn:"扎實成長", col:"#1BA891", tint:"#E7F6F1", ic:'<path d="M20 6L9 17l-5-5"/>',
         already:"AI 進了日常，會用在真實工作上", next:"讓它成系統、不是每次靠臨場" },
-      { sc:"A",  sn:"整合者", col:"#7C5CFC", ic:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+      { sc:"A",  sn:"熟練協作", col:"#2F80ED", tint:"#E8F1FE", ic:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
         already:"能設計可重複的人機協作流程", next:"把你的本事變成團隊接得住的方法" },
-      { sc:"A+", sn:"槓桿者", col:"#5B3FC9", ic:'<path d="M13 2L3 14h9l-1 8 10-12h-9z"/>',
+      { sc:"A+", sn:"高效協作", col:"#7C5CFC", tint:"#F2EEFE", ic:'<path d="M13 2L3 14h9l-1 8 10-12h-9z"/>',
         already:"用 AI 顯著放大專業、能複製給團隊", next:"重新定義這個職能的工作方式" },
-      { sc:"S",  sn:"領航者", col:"#E08A3A", ic:'<path d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/>',
+      { sc:"S",  sn:"卓越領航", col:"#E08A3A", tint:"#FBF1E4", ic:'<path d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7z"/>',
         already:"重新定義了職能的 AI 工作方式", next:"持續開疆——你已是別人對標的對象" }
     ];
 
@@ -11618,11 +11682,12 @@ body.hd-locked { overflow: hidden; }
     }
 
     function fallbackScore(transcript, flags){
-      var userTexts = [], i, totalLen = 0, numHits = 0, toolHits = 0, flowHits = 0, judgeHits = 0, handoffHits = 0;
+      var userTexts = [], i, totalLen = 0, numHits = 0, toolHits = 0, flowHits = 0, judgeHits = 0, handoffHits = 0, ethicHits = 0;
       var toolRe = /(ChatGPT|GPT|Claude|Gemini|Midjourney|Notion|Zapier|Make|n8n|Copilot|Perplexity|Cursor|API)/gi;
       var flowRe = /(流程|串|自動化|prompt|工作流|SOP|可重複|pipeline|框架)/g;
       var judgeRe = /(查證|驗證|幻覺|抓錯|交叉|核對|把關|檢查)/g;
       var handoffRe = /(交給|交棒|團隊|SOP|教|複製|文件|說明)/g;
+      var ethicRe = /(隱私|個資|去識別|版權|授權|著作權|倫理|揭露|註明|標註|不能交給|界線|邊界|風險|合規|機密|外洩)/g;
       for (i = 0; i < transcript.length; i++) {
         if (transcript[i].role === "user") {
           var t = transcript[i].text || "";
@@ -11632,6 +11697,7 @@ body.hd-locked { overflow: hidden; }
           var fm = t.match(flowRe); if (fm) flowHits += fm.length;
           var jm = t.match(judgeRe); if (jm) judgeHits += jm.length;
           var hm = t.match(handoffRe); if (hm) handoffHits += hm.length;
+          var em = t.match(ethicRe); if (em) ethicHits += em.length;
         }
       }
       var depth = Math.min(1, totalLen / 600);
@@ -11641,7 +11707,7 @@ body.hd-locked { overflow: hidden; }
         workflow: clamp(base + flowHits * 0.5 + numHits * 0.2),
         tools:    clamp(base + toolHits * 0.6),
         judgment: clamp(base + judgeHits * 0.8),
-        domain:   clamp(base + numHits * 0.4 + depth * 1.5),
+        domain:   clamp(base + ethicHits * 0.9 + depth * 0.8),
         handoff:  clamp(base + handoffHits * 0.8 - 0.5),
         delivery: clamp(base + flowHits * 0.3 + numHits * 0.3)
       };
@@ -11692,11 +11758,11 @@ body.hd-locked { overflow: hidden; }
         "你是 BeyondSpec「AI能力檢測」的評分官。根據整份訪談逐字稿，為受訪者在 6 個維度上各打一個 0-10 分（一位小數），並判斷整體等級。",
         "6 個維度定義：",
         "1 workflow（提問框架）：怎麼把問題與脈絡框給 AI、設計清楚的提問與工作流起手。",
-        "2 judgment（批判視野）：評估 AI 產出、抓幻覺、判斷何時該由人接手。",
+        "2 judgment（批判驗證）：評估 AI 產出、抓幻覺、查證核對、判斷何時該由人接手。",
         "3 handoff（任務拆解）：把大任務拆成『AI 做哪段、人做哪段』並能交棒給別人。",
         "4 tools（工具整合）：會用、會組合多個 AI/自動化工具串成一條流程。",
         "5 delivery（反思迭代）：用完 AI 後會反思、迭代，讓產出穩定、別人敢直接用。",
-        "6 domain（領域提案）：把 AI 用在自己專業，提出有深度的方案與真實成果。",
+        "6 domain（倫理邊界）：清楚 AI 使用的界線與責任——資料隱私、版權、揭露、不濫用，知道什麼不該交給 AI。",
         "評分原則：以【具體證據】為準。空泛、無案例、無成果的描述給低分；有真實案例+做法+成果（尤其有數字）給高分。寧可保守，不要灌水。",
         "verdict 是一句『鏡子式』總評（不羞辱、成長敘事，繁體中文，約 20 字內），tldr 是 2-3 句說明強在哪、下一步往哪（繁體中文）。",
         "strengths 最多 3 條（受訪者最強的地方），improvements 最多 2 條（下一步最值得補的，要溫和具建設性）。每條繁體中文、一句話。",
@@ -11752,17 +11818,31 @@ body.hd-locked { overflow: hidden; }
 
     function renderInterviewShell(){
       elRoot.innerHTML =
-        '<div class="hcv-wrap">' +
-          '<div class="hcv-top"><div class="hcv-bar">' +
-            '<div class="hcv-who"><span class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg></span>能力檢測訪談</div>' +
-            '<div class="hcv-steps" id="hcvSteps"></div>' +
-          '</div></div>' +
-          '<div class="hcv-feed" id="hcvFeed"></div>' +
-          '<div class="hcv-input" id="hcvInputBar">' +
-            '<div class="hcv-hints" id="hcvHints"></div>' +
-            '<div class="hcv-iwrap">' +
-              '<textarea id="hcvText" rows="1" placeholder="輸入你的回答…"></textarea>' +
-              '<button class="hcv-send" id="hcvSend" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>' +
+        '<div class="hcv-wrap2">' +
+          '<div class="page-title-area">' +
+            '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg><span>AI能力檢測</span></h1>' +
+            '<p class="subtitle">個人能力檢測　·　訪談進行中</p>' +
+          '</div>' +
+          '<div class="hcv2">' +
+            '<div class="hcv2-chat">' +
+              '<div class="hcv2-chat-hd">' +
+                '<span class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg></span>' +
+                '<div class="who"><b>AI Native Coach OS</b><span>AI 訪談官</span></div>' +
+              '</div>' +
+              '<div class="hcv-feed" id="hcvFeed"></div>' +
+              '<div class="hcv-input" id="hcvInputBar">' +
+                '<div class="hcv-hints" id="hcvHints"></div>' +
+                '<div class="hcv-iwrap">' +
+                  '<textarea id="hcvText" rows="1" placeholder="輸入你的回答…"></textarea>' +
+                  '<button class="hcv-send" id="hcvSend" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="hcv2-side">' +
+              '<div class="hcv2-prog"><div class="top"><b>訪談進度</b><span id="hcv2Prog">1 / ' + SEG.length + '</span></div><div class="track"><i id="hcvSteps" style="width:0"></i></div></div>' +
+              '<div class="hcv2-rule"></div>' +
+              '<div class="hcv2-checks" id="hcv2Checks"></div>' +
+              '<div class="hcv2-tip">慢慢想，沒有對錯。AI Native Coach OS 會順著你的回答往下問。</div>' +
             '</div>' +
           '</div>' +
         '</div>';
@@ -11776,9 +11856,33 @@ body.hd-locked { overflow: hidden; }
       sendBtn.addEventListener("click", handleSend);
     }
 
-    function buildSteps(){ var h = "", i; for (i = 0; i < SEG.length; i++) h += '<div class="hcv-st" id="hcvst-' + i + '"><i></i></div>'; stepsBox.innerHTML = h; }
-    function paintSteps(){ var i; for (i = 0; i < SEG.length; i++) { var el = document.getElementById("hcvst-" + i); if (!el) continue; el.className = "hcv-st" + (i < segIdx ? " done" : (i === segIdx ? " cur" : "")); } }
-    function scrollFeed(){ try { window.scrollTo({ top: document.body.scrollHeight, behavior:"smooth" }); } catch(e){ window.scrollTo(0, document.body.scrollHeight); } }
+    var SEG_LABEL = { intro:"認識你", tools:"工具整合", cases:"倫理邊界", proud:"提問框架", judge:"批判驗證", self:"任務拆解" };
+    function buildSteps(){
+      var box = document.getElementById("hcv2Checks"); if (!box) return;
+      var h = "", i;
+      for (i = 0; i < SEG.length; i++) {
+        var lb = SEG_LABEL[SEG[i].key] || SEG[i].key;
+        h += '<div class="hcv2-ck wait" id="hcvck-' + i + '"><span class="mk"></span><span class="lb">' + esc(lb) + '</span></div>';
+      }
+      box.innerHTML = h;
+      paintSteps();
+    }
+    var CK_DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+    function paintSteps(){
+      var i;
+      for (i = 0; i < SEG.length; i++) {
+        var el = document.getElementById("hcvck-" + i); if (!el) continue;
+        var state = (i < segIdx) ? "done" : (i === segIdx ? "cur" : "wait");
+        el.className = "hcv2-ck " + state;
+        var mk = el.querySelector(".mk");
+        if (mk) mk.innerHTML = (state === "done") ? CK_DONE : (state === "cur" ? '<i></i>' : "");
+      }
+      var bar = document.getElementById("hcvSteps");
+      if (bar) { var pct = Math.min(segIdx, SEG.length) / SEG.length * 100; bar.style.width = pct + "%"; }
+      var pg = document.getElementById("hcv2Prog");
+      if (pg) pg.textContent = Math.min(segIdx + 1, SEG.length) + " / " + SEG.length;
+    }
+    function scrollFeed(){ try { if (feed && feed.scrollHeight) { feed.scrollTop = feed.scrollHeight; } } catch(e){} }
     function autoGrow(){ if(!txt) return; txt.style.height = "auto"; txt.style.height = Math.min(txt.scrollHeight, 120) + "px"; }
 
     function addMe(text){ var d = document.createElement("div"); d.className = "hcv-msg me"; d.innerHTML = '<div class="hcv-bubble"></div>'; d.querySelector(".hcv-bubble").textContent = text; feed.appendChild(d); scrollFeed(); }
@@ -12078,8 +12182,12 @@ body.hd-locked { overflow: hidden; }
       var improvements = (ai.improvements && ai.improvements.length) ? ai.improvements : defaultImprovements(R);
       var advice = ai.advice || defaultAdvice(R);
 
-      var html = '<div class="hc-report">';
-      html += '<div class="hc-hero">';
+      var html = '<div class="hc-report hc-report2">';
+      html += '<div class="hc-rep-bar">';
+      html += '<div class="hc-rep-id"><span class="ico"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg></span><b>AI能力檢測</b><span class="sub">個人能力檢測　·　你的報告</span></div>';
+      html += '<div class="hc-rep-acts"><button class="hc-rep-btn" id="hcExportPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M8 11l4 4 4-4"/><path d="M5 19h14"/></svg>匯出 PDF</button><button class="hc-rep-btn ghost" id="hcShare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.4M8.3 13.2l7.4 4.4"/></svg>分享</button></div>';
+      html += '</div>';
+      html += '<div class="hc-hero" style="background:' + tier.tint + ';border-radius:0 0 28px 28px">';
       html += '<div class="hc-hero-ey">AI能力檢測 · 個人報告</div>';
       html += '<div class="hc-badge" style="background:' + hexa(tier.col, .10) + ';box-shadow:0 6px 22px ' + hexa(tier.col, .16) + '">';
       html += hexBadge(tier.col, tier.sc, 64);
@@ -12090,27 +12198,33 @@ body.hd-locked { overflow: hidden; }
       html += '<div class="hc-verdict">' + esc(verdict) + '</div>';
       html += '<div class="hc-tldr">' + esc(tldr) + '</div>';
       html += '</div>';
-      html += '<div class="hc-ritual-break"></div>';
       html += '<div class="hc-sec"><div class="hc-kpi-row">';
       html += '<div class="hc-kpi"><div class="val">' + R.lscore.toFixed(1) + '<small> / 10</small></div><div class="lab">AI 槓桿總分</div><div class="sub">同職能中位 ' + medAvg() + '</div></div>';
       html += '<div class="hc-kpi"><div class="val" style="color:' + confColor(R.confidence.t) + '">' + R.confidence.t + '</div><div class="lab">結果信心度</div><div class="sub">' + esc(R.confidence.sub) + '</div></div>';
       html += '<div class="hc-kpi"><div class="val">' + R.leadCount + '<small> / 6</small></div><div class="lab">領先維度</div><div class="sub">' + (6 - R.leadCount) + ' 項待補</div></div>';
       html += '</div></div>';
       if (R.flags.length) html += redFlagBlock(R.flags);
-      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">01</span> 六維協作能力 · 你 vs 同職能中位<span style="margin-left:auto;font-weight:500;color:var(--ink-dim);letter-spacing:0;text-transform:none">AI Native Coach OS 模型</span></div>';
-      html += '<div class="hc-panel hc-radar-wrap"><svg id="hcRadar" viewBox="0 0 320 300" width="300"></svg><div class="hc-dimlist" id="hcDimlist"></div></div>';
-      html += '<div class="hc-legend"><span><i style="background:var(--primary)"></i>你的能力</span><span><i style="background:var(--slate)"></i>同職能中位數</span></div></div>';
-      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">02</span> 你的底子</div><div class="hc-two">';
+      html += '<div class="hc-grid2">';
+      html += '<div class="hc-col">';
+      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">01</span> 你在哪、往哪走</div><div class="hc-panel"><div class="hc-ladder" id="hcLadder"></div></div></div>';
+      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">02</span> 六維協作能力雷達<span style="margin-left:auto;font-weight:500;color:var(--ink-dim);letter-spacing:0;text-transform:none">你 vs 同職能中位</span></div>';
+      html += '<div class="hc-panel hc-radar-only"><svg id="hcRadar" viewBox="0 0 320 300" width="100%"></svg>';
+      html += '<div class="hc-legend"><span><i style="background:var(--primary)"></i>你的能力</span><span><i style="background:var(--slate)"></i>同職能中位數</span></div></div></div>';
+      html += '</div>';
+      html += '<div class="hc-col">';
+      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">03</span> 六維拆解</div><div class="hc-panel"><div class="hc-dimlist" id="hcDimlist"></div></div></div>';
+      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">04</span> 你的底子</div><div class="hc-two hc-two-stack">';
       html += '<div class="hc-panel"><div class="hc-blk-title"><span class="dot" style="background:var(--teal)"></span>你最強的地方</div>';
       var si; for (si = 0; si < strengths.length; si++) html += '<div class="hc-li up">' + esc(strengths[si]) + '</div>';
       html += '</div>';
       html += '<div class="hc-panel"><div class="hc-blk-title"><span class="dot" style="background:var(--gold)"></span>下一步最值得補的</div>';
       var ii; for (ii = 0; ii < improvements.length; ii++) html += '<div class="hc-li dn">' + esc(improvements[ii]) + '</div>';
       html += '</div></div></div>';
-      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">03</span> 你在哪、往哪走</div><div class="hc-ladder" id="hcLadder"></div></div>';
+      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">05</span> 也許可以試試看</div>';
+      html += '<div class="hc-advice hc-advice-warm"><div class="why">對應你的弱項 · ' + esc(advice.why || "") + '</div><h4>' + esc(advice.title || "") + '</h4><p>' + esc(advice.body || "") + '</p></div></div>';
+      html += '</div>';
+      html += '</div>';
       html += certSection(R);
-      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">04</span> 你的下一步</div>';
-      html += '<div class="hc-advice"><div class="why">對應你的弱項 · ' + esc(advice.why || "") + '</div><h4>' + esc(advice.title || "") + '</h4><p>' + esc(advice.body || "") + '</p></div></div>';
       html += '<div class="hc-report-foot">';
       html += '<button class="btn btn-outline" id="hcRestart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/></svg>重新檢測</button>';
       html += '<button class="btn btn-accent" id="hcToTasks">把這份報告變成行動<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
@@ -12416,6 +12530,20 @@ body.hd-locked { overflow: hidden; }
     HC_CSS += '.hc-cert-empty-tx span{font-size:12.5px;color:var(--ink-muted);line-height:1.55}';
     HC_CSS += '.hc-cert-redo{flex:none}';
     HC_CSS += '@media(max-width:560px){.hcw-wrap{padding:40px 20px 60px}.hcw-title{font-size:24px}.hcw-form{padding:22px 18px}.hc-cert{padding:20px}.hc-cert-main{gap:14px}.hc-cert-name{font-size:20px}.hc-cert-empty{flex-direction:column;align-items:flex-start}.hc-cert-redo{width:100%;justify-content:center}}';
+    HC_CSS += '.hcv-wrap2{max-width:1040px;margin:0 auto;padding-bottom:40px}';
+    HC_CSS += '.hcv2-chat{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-sm);min-height:520px}';
+    HC_CSS += '.hcv2-chat-hd{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)}';
+    HC_CSS += '.hcv2-chat-hd .av{width:36px;height:36px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;flex:none}';
+    HC_CSS += '.hcv2-chat-hd .av svg{width:18px;height:18px;color:#fff}';
+    HC_CSS += '.hcv2-chat-hd .who{display:flex;flex-direction:column;gap:2px}';
+    HC_CSS += '.hcv2-chat-hd .who b{font-size:14px;font-weight:600;color:var(--ink)}';
+    HC_CSS += '.hcv2-chat-hd .who span{font-size:12px;color:var(--ink-dim)}';
+    HC_CSS += '.hcv2 .hcv-feed{flex:1;padding:24px 22px;overflow-y:auto;max-height:60vh}';
+    HC_CSS += '.hcv2 .hcv-msg{margin-bottom:18px}';
+    HC_CSS += '.hcv2 .hcv-input{position:static;left:auto;right:auto;bottom:auto;z-index:auto;background:transparent;border-top:1px solid var(--border);padding:14px 18px}';
+    HC_CSS += '.hcv2 .hcv-hints{max-width:none;margin:0 0 10px;padding:0;display:flex;gap:8px;flex-wrap:wrap}';
+    HC_CSS += '.hcv2 .hcv-iwrap{max-width:none;margin:0;padding:0;display:flex;gap:10px;align-items:flex-end}';
+    HC_CSS += '@media(max-width:860px){.hcv2 .hcv-feed{max-height:none}}';
     window._HC = { start: start };
   })();
 
@@ -44282,7 +44410,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.8 · AI能力檢測對照 Claude Design handoff 真設計 pixel-perfect 重建（卡西法產 diff·蘇菲審 apply）：①六維對齊真設計→提問框架/批判驗證/任務拆解/工具整合/反思迭代/倫理邊界(domain 槽位改倫理邊界·SEG cases 轉倫理向·評分/fallback 同步) ②等級體系對齊→B穩健起步#94A3B8 / B+扎實成長#1BA891 / A熟練協作#2F80ED(藍) / A+高效協作#7C5CFC / S卓越領航#E08A3A + tint ③開始說明/對話訪談/能力報告 改雙欄對齊設計(訪談右側加 6 維進度 checklist·報告左等級徽章+能力階梯+雷達 / 右六維拆解+暖建議) ④報告 header 加 匯出PDF(window.print)/分享(複製摘要) · 前面看圖估的落差用真設計檔修正 · JS 語法已驗(_HC node --check 過) · ⚠️瀏覽器工具斷線·未做真人點擊實測·已備份可退 · 作品頁雙欄版面待下輪補 · sidebar v1.12.7→v1.12.8 -->
 <!-- v1.12.7 · 點數機制完善（Edward 要求全面確認 扣點/補點/沒點提示/升級）：①接上「沒點數→升級彈窗」(showPaywallModal 原定義但從未被呼叫=死 code、現已接上) ②點數不足一律跳升級彈窗(PRO NT$499/MAX NT$999 一鍵升級)，涵蓋健檢 開始檢測/作品審核 + 全 app useCredits ③showPaywallModal 暴露 window 供各模組呼叫 · 確認既有機制完善：扣點✓(v1.12.6) 每月補點✓(每月自動重置 creditUsed 歸 0) 升級拿更多點✓(各方案 limit 不同) · Gate1 實測升級彈窗彈出 + 一鍵升級鈕 · sidebar v1.12.6→v1.12.7 -->
 <!-- v1.12.6 · AI能力檢測接上點數扣除（Edward 要求：考核用到的 AI 也要消耗點數）：①開始檢測扣 10 點(涵蓋訪談 6 段 AI 追問 + 評分) ②送作品審核扣 5 點(AI 審核作品) ③餘額不足擋下並提示升級 ④useCredits/checkCredits 暴露 window(原 app scope 健檢模組呼叫不到、扣點失效·已修) · Gate1 實測扣點生效(開始檢測餘額 -10 確認·零 error) · 點數值 10/5 可調 · sidebar v1.12.5→v1.12.6 -->
-<!-- v1.12.5 · AI能力檢測第 2 批·作品提交 + AI 審核 + 認證（Edward 選 B 完整功能版·卡西法實作·蘇菲審）：①訪談後新增「上傳作品」階段(作品連結 + Git Repo + 作品說明) ②AI 審核作品(callV2·依作品說明與連結評定·誠實標示 AI 不存取連結實際內容·有 fallback) ③報告新增「AI Native Coach OS 認證」區(六邊形認證徽章 + 等級 B/A/S + 評語 + 亮點 + 作品連結) ④跳過→顯示未提交引導 + 補交按鈕 ⑤work/cert 隨報告存檔 · 暗色評語對比優化 · Gate1 完整流程實測(訪談→作品→AI審核→認證報告 render 全對 + 零 console error) · sidebar v1.12.4→v1.12.5 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
