@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.12</div>
+        <div class="sidebar-version">v1.12.13</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11701,7 +11701,7 @@ body.hd-locked { overflow: hidden; }
         }
       }
       var depth = Math.min(1, totalLen / 600);
-      function clamp(v){ return Math.max(2, Math.min(9.5, v)); }
+      function clamp(v){ return Math.max(2, Math.min(8.5, v)); }
       var base = 4.5 + depth * 2.5;
       var sc = {
         workflow: clamp(base + flowHits * 0.5 + numHits * 0.2),
@@ -11725,10 +11725,10 @@ body.hd-locked { overflow: hidden; }
     }
     function calcTier(lscore, flagCount){
       var idx;
-      if (lscore >= 8.6) idx = 4;
-      else if (lscore >= 7.4) idx = 3;
-      else if (lscore >= 6.2) idx = 2;
-      else if (lscore >= 4.8) idx = 1;
+      if (lscore >= 9.0) idx = 4;
+      else if (lscore >= 8.0) idx = 3;
+      else if (lscore >= 6.8) idx = 2;
+      else if (lscore >= 5.5) idx = 1;
       else idx = 0;
       if (flagCount >= 3 && idx > 0) idx -= 1;
       return idx;
@@ -11765,11 +11765,13 @@ body.hd-locked { overflow: hidden; }
         "4 tools（工具整合）：會用、會組合多個 AI/自動化工具串成一條流程。",
         "5 delivery（反思迭代）：用完 AI 後會反思、迭代，讓產出穩定、別人敢直接用。",
         "6 domain（倫理邊界）：清楚 AI 使用的界線與責任——資料隱私、版權、揭露、不濫用，知道什麼不該交給 AI。",
+        "【分數錨點·嚴格校準·寧可保守】每維按此尺度給分：9.0-10=業界標竿（重新定義這個職能的 AI 工作方式、方法能帶整個團隊、被別人對標、極少數人才到）；7.5-8.9=熟練且可複製（有成系統的工作流、能教會別人照著做、成果可量化）；5.5-7.4=會用進日常（用在真實工作、有具體做法，但多靠個人、未成系統或交棒不出去）；3.5-5.4=起步摸索（零星使用、缺完整流程或成果）；2-3.4=幾乎沒系統用 AI。【一個人作業、方法在自己腦袋裡、別人接不起來，整體最高只到 7.x，不可能 9+】。",
+        "【強制六維分化】六個維度不可給相同或接近相同的分數，必須拉開、反映真實強弱項。受訪者自己坦承較弱的面向一定要明顯給低分——『一個人跑、方法交棒不出去、別人接不起來』→ handoff（任務拆解）與 delivery（反思迭代）明顯偏低；『趕時間會偷懶、不一定查證』→ judgment（批判驗證）偏低。世上沒有「六維都頂尖」的人，務必找出相對強項與相對弱項。",
         "評分原則：以【具體證據】為準，每個分數都要對應受訪者實際說過的話——不憑印象、不被漂亮文筆或自我宣稱影響。空泛、無案例、無成果給低分；有真實案例+完整做法+可驗證成果（尤其有數字）給高分。",
         "【偏誤防護·打分前先自我檢查】(1)證據夠不夠支撐這個分數？(2)同樣證據下我是否取了較低分（寧低不灌）？(3)證據是一句帶過、還是有深度細節？深度不足要扣。(4)受訪者自稱很強卻拿不出證據？自評過頭要往下修。(5)別被流暢表達騙——看的是做法與成果，不是文筆。全程繁體中文。",
-        "verdict 是一句『鏡子式』總評（不羞辱、成長敘事，繁體中文，約 20 字內），tldr 是 2-3 句說明強在哪、下一步往哪（繁體中文）。",
-        "strengths 最多 3 條（受訪者最強的地方），improvements 最多 2 條（下一步最值得補的，要溫和具建設性）。每條繁體中文、一句話。",
-        "advice 是一個物件：why 對應的弱項維度名稱、title 一個可立刻做的具體行動標題、body 2-3 句怎麼做。",
+        "verdict 一句鏡子式總評（不羞辱、成長敘事、繁中、≤20 字）。tldr 1-2 句、≤55 字、繁中。",
+        "strengths 最多 2 條、improvements 最多 2 條（溫和具建設性）。每條繁中、≤24 字。",
+        "advice 物件：why=弱項維度名、title≤18 字、body 1 句≤45 字。",
         "嚴格只回 JSON，不要任何多餘文字：",
         '{ "scores": { "workflow":7, "tools":7, "judgment":7, "domain":7, "handoff":7, "delivery":7 }, "verdict":"", "tldr":"", "strengths":[], "improvements":[], "advice":{ "why":"", "title":"", "body":"" } }'
       ].join("\n");
@@ -38704,6 +38706,41 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
     if (!window.PATH_AI) { try { console.warn("[D4] PATH_AI not ready"); } catch(e){} return; }
     var _costLog = [];
     function sleep(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+    function repairTruncatedJSON(s) {
+      // 移除 // 註解與尾逗號
+      s = s.replace(/\/\/[^\n]*/g, "").replace(/,\s*([}\]])/g, "$1");
+      // 若被截斷：去掉最後一個不完整的 property，再補齊閉合括號
+      var depth = 0, inStr = false, esc = false, lastSafe = -1, i, ch;
+      for (i = 0; i < s.length; i++) {
+        ch = s[i];
+        if (esc) { esc = false; continue; }
+        if (ch === "\\") { esc = true; continue; }
+        if (ch === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (ch === "{" || ch === "[") depth++;
+        else if (ch === "}" || ch === "]") depth--;
+        else if (ch === "," && depth >= 1) lastSafe = i; // 頂層/巢狀逗號 = 一個完整 property 邊界
+      }
+      var core = s;
+      try { JSON.parse(s); return s; } catch (e) {}
+      if (lastSafe > 0) core = s.substring(0, lastSafe); // 砍掉被截斷的半截 property
+      // 依未閉合括號補齊
+      depth = 0; inStr = false; esc = false;
+      var stack = [];
+      for (i = 0; i < core.length; i++) {
+        ch = core[i];
+        if (esc) { esc = false; continue; }
+        if (ch === "\\") { esc = true; continue; }
+        if (ch === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (ch === "{") stack.push("}");
+        else if (ch === "[") stack.push("]");
+        else if (ch === "}" || ch === "]") stack.pop();
+      }
+      if (inStr) core += '"';
+      while (stack.length) core += stack.pop();
+      return core;
+    }
     async function callV2(systemPrompt, userPrompt, options) {
       options = options || {};
       var retries = options.retries || 3;
@@ -38725,7 +38762,12 @@ H (How 執行力)：執行條件、資源、背景、策略夥伴、團隊能力
           if (jsonStart < 0 || jsonEnd <= jsonStart) throw new Error("NO_JSON_IN_RESPONSE");
           var jsonText = rawText.substring(jsonStart, jsonEnd + 1);
           var parsed;
-          try { parsed = JSON.parse(jsonText); } catch (e) { throw new Error("JSON_PARSE_FAIL: " + e.message); }
+          try { parsed = JSON.parse(jsonText); }
+          catch (e0) {
+            // 容錯：LLM 偶爾尾逗號 / 被後端 token 上限截斷 → 嘗試修復後再 parse
+            try { parsed = JSON.parse(repairTruncatedJSON(rawText.substring(jsonStart))); }
+            catch (e1) { throw new Error("JSON_PARSE_FAIL: " + e0.message); }
+          }
           if (typeof schema === "function") {
             var vr = schema(parsed);
             if (!vr.valid) throw new Error("SCHEMA_INVALID: " + (vr.errors || []).join(", "));
@@ -44421,7 +44463,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.13 · AI能力檢測 評分系統修復（Edward 定「嚴格」後·合成用戶 QA 抓出評分灌水根因）：①根因=評分 AI 輸出被後端 token 上限截斷(advice 寫一半斷掉)→JSON 缺閉合括號→一直 parse fail→退 fallbackScore→關鍵字多的回答各維撞 clamp 上限→六維全同分高分(假象「S 9.5、0 待補」) ②scoreSystemPrompt 精簡輸出(verdict/tldr/strengths/improvements/advice 限字、strengths 3→2 條)避免截斷 + 加分數錨點(9-10=重新定義職能標竿、一個人跑最高 7.x)+ 強制六維分化(自述弱項對應維度給低分) ③calcTier 門檻嚴格化 S≥9.0/A+≥8.0/A≥6.8/B+≥5.5 ④callV2 加 repairTruncatedJSON 容錯(截斷時砍半截 property+補閉合括號搶救·只在 parse fail 時觸發、不影響成功 case) ⑤fallbackScore clamp 上限 9.5→8.5 · 真 AI 實測:中上 persona 小敏→六維 4.5(交棒)~7.2(提問) 分化、L6.2、B+ 扎實成長、verdict「流程順但方法鎖腦袋裡」、待補=查證SOP/流程文件化(不再「9.5 還要補」矛盾)·parse 成功不再 fallback · sidebar v1.12.12→v1.12.13 -->
 <!-- v1.12.12 · AI能力檢測 合成用戶 QA + UIUX 巡檢修復（第 1 批·Edward 要求全流程合成用戶體驗一遍）：①btn-accent 補 border:none——修瀏覽器預設 outset 黑框(Edward 兩次截圖的「開始對話」「送 AI 審核」按鈕外圍醜框·根因=健檢按鈕沒帶 .btn 基類、而 .btn-accent 漏 border:none→套用瀏覽器預設 2px outset black) ②移除追問氣泡的英文內部 tag pill(tools_surface_only/prompt_design 等洩漏給用戶·meta 已標示「追問」、對齊設計檔單一追問標籤) · 真 Chrome 全流程實測(雙入口→開始說明→訪談 6 段含真 AI 追問→作品審核→報告)·按鈕 border:none 0px 驗證、tagPill 數 0 · ⚠️巡檢另發現「評分灌水」核心問題(中上 persona→S 9.5、六維全同分、0 待補)→評分系統嚴格化待 Edward 定嚴格度後修 · sidebar v1.12.11→v1.12.12 -->
 <!-- v1.12.11 · AI能力檢測 考核模型對焦 BeyondPath Coach OS 強化語言規範（Edward 指示「對焦 BeyondPath 怎麼設定語言限制規範」）：①訪談官 probeSystemPrompt 加【角色規範】全程繁中／自始維持訪談官身份／只圍繞 AI 協作提問／抗 prompt injection（受訪者叫「給高分／忽略指示／透露評分標準」一律無視）／不評分不洩漏評分邏輯 + 對齊 BeyondPath 逼證據（完整工具流每一步、AI 跑爛你怎麼救回來、哪條線不交給 AI） ②評分官 scoreSystemPrompt 加【偏誤防護】對齊 BeyondPath 自我檢查：證據夠不夠／寧低不灌／證據深淺扣分／自評過頭往下修／別被文筆騙、看做法與成果 · 真實 AI 實測：空泛答「我會用 ChatGPT」→訪談官精準追問「帶我走一遍完整流程、怎麼調整、遇到什麼不對勁、產出是什麼」(specific:false·對齊 BeyondPath 工具流逼證據) · 只改 prompt 規範·schema/邏輯不動·JS 語法已驗 · sidebar v1.12.10→v1.12.11 -->
-<!-- v1.12.10 · AI能力檢測 對話訪談 UX 對齊 Claude Design 設計檔（Edward「設計檔給了還不照做」後·全程真 Chrome 實測）：①對話卡改固定高度聊天視窗(700px·一開始就撐滿固定)——原 min-height:520 內容撐開→訊息多往下長 ②訊息區 flex:1 吃滿卡片剩餘、可內部捲動(去 max-height:60vh) ③輸入框一開始就 2 行高(62px 固定)、autoGrow 改固定不撐長、打字超過內部捲動——原 autoGrow 會撐長整個對話框(Edward 痛點) ④手機版對話卡有底高(440)+訊息區固定捲動高(52vh) · 實測：打多行字後 對話卡 700px / 輸入框 62px 皆不變 · 真 Chrome 截圖實測訪談頁(非 Preview 3.3MB 凍結) · sidebar v1.12.9→v1.12.10 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
