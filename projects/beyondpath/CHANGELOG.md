@@ -535,3 +535,6 @@ P0 結構除錯（任務中心稽核後）
 
 ## v1.12.0
 <!-- v1.12.0 · 設定頁功能對照表重寫（舊 Free/Starter NT$290/Pro NT$990/Enterprise → 新 免費試用/PRO NT$499/MAX NT$999/Team）· credits 欄對齊拍板（50/50/1,000/依方案）· 模組欄依 PLAN_CATALOG（免費試用=全模組、PRO=核心6、MAX=全、Team=全+多人）· 殘留舊價 NT$290/NT$990/credits 30/500/3,000 清除 · sidebar v1.11.2→v1.12.0 ＋ 新增 AI Native 體質檢測模組(個人版)：側邊欄入口+個人/團隊雙入口+7段AI訪談(真AI追問逼證據)+6維評分+B~S不羞辱等級+防灌水紅旗+暗色適配+飽和純色 -->
+
+## v1.12.1
+<!-- v1.12.1 · AI Native 體質檢測→改名「AI能力檢測」(模組總名+個人/團隊雙入口+訪談官/評分官/報告全改) · 修「側邊欄點不開」bug(Router routes 補登記 health→點擊正確開啟健檢頁) · 設定頁「模組管理·你的工作台」補上 AI能力檢測 開關(MODULE_DEFAULTS/MIN_PLAN 登記 mod-health=free·免費可用) · 歸類=個人驗證工具(與產品力診斷同欄) · sidebar v1.12.0→v1.12.1 -->

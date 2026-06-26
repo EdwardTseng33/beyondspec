@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.3</div>
+        <div class="sidebar-version">v1.12.4</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11939,7 +11939,7 @@ body.hd-locked { overflow: hidden; }
       html += '<div class="hc-hero">';
       html += '<div class="hc-hero-ey">AI能力檢測 · 個人報告</div>';
       html += '<div class="hc-badge" style="background:' + hexa(tier.col, .10) + ';box-shadow:0 6px 22px ' + hexa(tier.col, .16) + '">';
-      html += '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="' + tier.col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + tier.ic + '</svg>';
+      html += hexBadge(tier.col, tier.sc, 64);
       html += '<div class="name">' + esc(tier.sn) + '</div>';
       html += '<div class="code">LEVEL ' + tier.sc + '</div>';
       html += '<div class="hc-coach-by">由 AI Native Coach OS 評定</div>';
@@ -12020,6 +12020,14 @@ body.hd-locked { overflow: hidden; }
       }
       dl.innerHTML = s;
     }
+    function hexBadge(col, letter, size){
+      var s = size || 56;
+      var fs = letter.length > 1 ? Math.round(s * 0.40) : Math.round(s * 0.50);
+      return '<svg viewBox="0 0 100 100" width="' + s + '" height="' + s + '" style="display:block;flex:none">'
+        + '<polygon points="50,3 92,26 92,74 50,97 8,74 8,26" fill="' + col + '"/>'
+        + '<text x="50" y="50" dy="0.36em" text-anchor="middle" fill="#fff" font-family="Noto Sans TC,system-ui,sans-serif" font-weight="800" font-size="' + fs + '">' + esc(letter) + '</text>'
+        + '</svg>';
+    }
     function drawLadder(curIdx){
       var lad = document.getElementById("hcLadder"); if (!lad) return;
       var t = "", i;
@@ -12027,7 +12035,7 @@ body.hd-locked { overflow: hidden; }
         var x = TIERS[i], cur = (i === curIdx);
         t += '<div class="hc-step' + (cur ? " cur" : "") + '" style="' + (cur ? "background:" + hexa(x.col, .10) + ";box-shadow:0 4px 16px " + hexa(x.col, .18) : "") + '">';
         if (cur) t += '<div class="here">你在這裡</div>';
-        t += '<svg class="si" viewBox="0 0 24 24" fill="none" stroke="' + x.col + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + x.ic + '</svg>';
+        t += hexBadge(x.col, x.sc, 40);
         t += '<div class="sn" style="color:' + (cur ? x.col : "var(--ink)") + '">' + esc(x.sn) + '</div><div class="sc">LV ' + x.sc + '</div></div>';
       }
       lad.innerHTML = t;
@@ -44043,7 +44051,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.4 · AI能力檢測第 2 批(部分)·六邊形徽章：報告主徽章 + 能力階梯 從線條 icon 改「六邊形 + 等級字母」(對齊 Claude Design 定稿)；新增 hexBadge helper(正六邊形 SVG + 白字垂直置中)；色階 B灰#94A3B8 / B+綠#1BA891 / A紫#7C5CFC / A+紫深#5B3FC9 / S金#E08A3A · 訪談右側數據條 + 作品提交階段續做 · sidebar v1.12.3→v1.12.4 -->
 <!-- v1.12.3 · AI能力檢測對照 Claude Design 定稿設計（Edward 親修版）第 1 批視覺對齊：①六維改名全鏈(工作流/工具/判斷/領域/協作/交付 → 提問框架/批判視野/任務拆解/工具整合/反思迭代/領域提案；DIMS + 評分官 prompt + 訪談 self 段同步、id 不動所以評分邏輯安全) ②報告加「由 AI Native Coach OS 評定」+ 雷達標 Coach OS 模型 ③等級色階對齊(A+ 金→紫深 #5B3FC9、S 紫深→金 #E08A3A 對調) ④雙入口文案對齊(個人卡描述 + 按鈕統一「去檢測」) · 六邊形徽章樣式/訪談數據條/作品提交階段列第 2 批 · sidebar v1.12.2→v1.12.3 -->
 <!-- v1.12.2 · AI能力檢測模組整體設計重整（女巫 Gate2 主導·蘇菲審）：①根治版面靠左空蕩(.hc-wrap 補 margin:0 auto 置中) ②入口卡 滿版色磚→白底卡+色票塊(封閉五色語意) ③進入頁 編號說明卡+儀式分隔線+層次 ④訪談頁 修 var(--bg) 落空致捲動穿透(→var(--bg-app)) + AI 訊息加氣泡容器(原裸文字) + 進度條加粗 ⑤報告頁 寫死琥珀→複用 --amber-* token + 暖底修正(原灰底) + KPI hover ⑥全暗色變數化·對比達標·去漸層飽和純色 ⑦鍵盤可達+隱私文案校正 · rubric 86/100 · sidebar v1.12.1→v1.12.2 -->
-<!-- v1.12.1 · AI Native 體質檢測→改名「AI能力檢測」(模組總名+個人/團隊雙入口+訪談官/評分官/報告全改) · 修「側邊欄點不開」bug(Router routes 補登記 health→點擊正確開啟健檢頁) · 設定頁「模組管理·你的工作台」補上 AI能力檢測 開關(MODULE_DEFAULTS/MIN_PLAN 登記 mod-health=free·免費可用) · 歸類=個人驗證工具(與產品力診斷同欄) · sidebar v1.12.0→v1.12.1 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
