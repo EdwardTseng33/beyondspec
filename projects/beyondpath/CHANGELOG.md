@@ -583,3 +583,6 @@ P0 結構除錯（任務中心稽核後）
 
 ## v1.12.16
 <!-- v1.12.16 · AI能力檢測 雙入口精簡 + 返回移位（Edward 指）：①雙入口頁拿掉「一個人能扛多少…」說明文字(hc-lead)·標題下直接兩張入口卡 ②開始說明頁返回鈕 從 header 上方 → header 下方(page-title-area 之後·解 Edward「返回浮在標題上方突兀」) · 真 Chrome 實測雙入口文字已刪、返回在 header 下方 · ⚠️作品佔評分比例機制(Edward「有沒有作品該佔多少比例·重新思考認證」)：現況=訪談 tier 與作品 certLevel 兩套獨立脫鉤→待拍板權重後改成加權綜合 · sidebar v1.12.15→v1.12.16 -->
+
+## v1.12.17
+<!-- v1.12.17 · AI能力檢測 作品佔最終認證 40%（Edward「有沒有作品該佔多少比例·重新思考認證」·拍板訪談 60%+作品 40%）：①根因=訪談 tier 與作品 certLevel 兩套獨立等級脫鉤(之前「認證 A vs 整體 S」對不上的原因) ②作品審核改給「作品品質分」workScore 0-10(非 B/A/S 字母) ③buildResult 綜合：有作品 finalScore = 訪談 lscore×0.6 + 作品×0.4 → 定 tier；沒作品仍封頂 B+ ④認證區改顯示「作品分數圓 X.X/10 + 已佔最終認證 40%」(移除獨立認證等級徽章→一套等級·不再兩套) ⑤certSystemPrompt/certSchema/fallbackCert/done/certColor 全同步改 workScore · 真 Chrome 實測：訪談 A 配好作品8→A+、配爛作品4→B+(被拉低)、沒作品→封頂B+·作品品質實質影響認證 · ⚠️報告版面雙欄對齊設計檔 仍待重排 · sidebar v1.12.16→v1.12.17 -->
