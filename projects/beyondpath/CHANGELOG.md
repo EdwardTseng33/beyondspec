@@ -526,3 +526,6 @@ P0 結構除錯（任務中心稽核後）
 - **顏色編輯統一收進 drawer 的「外觀色彩」section** — 10 色 swatch grid + active 勾選打勾，不再用 dot popover。
 - **2026 UIUX 趨勢列入後續迭代** — spring 微互動、空間轉場、自適應密度。
 - **drawer 全面改用既有 `.rmdrw-*` 視覺語言** — kb-preview / meta-grid / sec / empty-block，與任務編輯抽屜一致，零學習成本。
+
+## v1.11.1
+<!-- v1.11.1 (payroll) Calcifer 2026-06-18 - 0a Sentry DSN-ready 骨架 + 全域 onerror/unhandledrejection 統一上報通道(Sentry->PostHog->console 逐層降級); 1a resolveWorkspace() idempotent 建 workspaces/{uid} 父文件(owner/memberEmails/attendanceAccessEmails 三欄·fire-and-forget·不阻塞薪資載入)解 owner 出缺勤進不去; 0b deploy-prod.py 五層 guard. sidebar v1.11.0->v1.11.1 -->

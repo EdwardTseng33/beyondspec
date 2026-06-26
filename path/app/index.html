@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.0</div>
+        <div class="sidebar-version">v1.12.1</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -10130,6 +10130,7 @@ body.hd-locked { overflow: hidden; }
   // 預設只開 Free 方案能用的模組，避免 sidebar 出現一堆被鎖的項目（v0.15.3 邏輯修正）
   const MODULE_DEFAULTS = {
     'mod-diagnose': true,
+    'mod-health': true,
     'mod-lab': false, 'mod-survey': false, 'mod-market': false, 'mod-report': false,
     'mod-tasks': true, 'mod-contacts': true,
     'mod-quotes': false, 'mod-billing': false, 'mod-payroll': false, 'mod-attendance': false, 'mod-meetings': false,
@@ -10139,6 +10140,7 @@ body.hd-locked { overflow: hidden; }
   // 模組最低方案需求（sidebar/toggle 雙重 guard 使用）
   const MODULE_MIN_PLAN = {
     'mod-diagnose': 'free',
+    'mod-health': 'free',
     'mod-lab': 'starter', 'mod-survey': 'starter', 'mod-market': 'starter', 'mod-report': 'starter',
     'mod-tasks': 'free', 'mod-contacts': 'free',
     'mod-quotes': 'starter', 'mod-billing': 'pro', 'mod-payroll': 'pro', 'mod-attendance': 'pro', 'mod-meetings': 'starter',
@@ -10770,7 +10772,7 @@ body.hd-locked { overflow: hidden; }
       { id: 'survey', label: '問卷引擎', icon: 'clipboard' },
       { id: 'market', label: '市場探測', icon: 'trendUp' },
       { id: 'report', label: '市場報告', icon: 'fileText' },
-      { id: 'health', label: 'AI Native 體質檢測', icon: 'pulse' }
+      { id: 'health', label: 'AI能力檢測', icon: 'pulse' }
     ];
 
     // 商業模組 — Pipeline: 定義→蒐集→排程→執行
@@ -10892,6 +10894,7 @@ body.hd-locked { overflow: hidden; }
     var routes = {
       home: "home", diagnose: "diagnose", lab: "lab",
       survey: "survey", market: "market", report: "report",
+      health: "health",
       roadmap: "biz-roadmap", planning: "biz-planning",
       mission: "biz-tasks", crm: "biz-contacts",
       quote: "biz-quotes", payment: "biz-billing",
@@ -11403,7 +11406,7 @@ body.hd-locked { overflow: hidden; }
     }
   }
 
-  // ==================== MODULE: AI NATIVE 體質檢測 (健檢) · 個人/團隊 雙入口 ====================
+  // ==================== MODULE: AI NATIVE 能力檢測 (健檢) · 個人/團隊 雙入口 ====================
   function renderHealthCheck(view){
     var content = document.getElementById('content');
     if (!content) return;
@@ -11441,35 +11444,35 @@ body.hd-locked { overflow: hidden; }
 
     content.innerHTML = ''
       + '<div class="page-title-area hc-wrap">'
-      +   '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg><span>AI Native 體質檢測</span></h1>'
+      +   '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg><span>AI能力檢測</span></h1>'
       +   '<p class="subtitle">你和你的團隊，到底多會用 AI？</p>'
       + '</div>'
       + '<div class="hc-wrap"><div class="hc-entry">'
       +   '<div class="hc-card personal" id="hc-go-personal">'
       +     '<svg class="hc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>'
-      +     '<h3>個人體質檢測</h3>'
+      +     '<h3>個人能力檢測</h3>'
       +     '<p>你一個人 + AI，用到多深？10 分鐘照出你跟 AI 一起工作的真實樣子。</p>'
       +     '<div class="hc-go">先照照自己 →</div>'
       +   '</div>'
       +   '<div class="hc-card team" id="hc-go-team">'
       +     '<span class="hc-soon">即將推出</span>'
       +     '<svg class="hc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.6"/><circle cx="16.5" cy="9" r="2.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M14.5 19a5 5 0 0 1 6-4.7"/></svg>'
-      +     '<h3>團隊體質檢測</h3>'
-      +     '<p>工作室、企業都適用。看整隊的 AI 體質落在哪、誰能帶誰。</p>'
+      +     '<h3>團隊能力檢測</h3>'
+      +     '<p>工作室、企業都適用。看整隊的 AI 能力落在哪、誰能帶誰。</p>'
       +     '<div class="hc-go">照照整支團隊 →</div>'
       +   '</div>'
       + '</div></div>';
     var p = document.getElementById('hc-go-personal');
     if (p) p.onclick = function(){ renderHealthCheck('personal'); };
     var t = document.getElementById('hc-go-team');
-    if (t) t.onclick = function(){ alert('團隊體質檢測即將推出（個人版先上）'); };
+    if (t) t.onclick = function(){ alert('團隊能力檢測即將推出（個人版先上）'); };
   }
 
   function _hcPersonalIntro(content){
     content.innerHTML = ''
       + '<div class="hc-wrap"><span class="hc-back" id="hc-back">← 返回</span>'
       + '<div class="hc-intro">'
-      +   '<div class="hc-ey">個人體質檢測</div>'
+      +   '<div class="hc-ey">個人能力檢測</div>'
       +   '<h2>看清楚你跟 AI 一起工作的真實樣子</h2>'
       +   '<p class="hc-sub">這不是考試，是一面鏡子。沒有及格不及格，只有「你現在在哪、下一步往哪走」。誠實回答，鏡子才照得準。</p>'
       +   '<div class="hc-points">'
@@ -11482,10 +11485,10 @@ body.hd-locked { overflow: hidden; }
     var b = document.getElementById('hc-back');
     if (b) b.onclick = function(){ renderHealthCheck('select'); };
     var s = document.getElementById('hc-start');
-    if (s) s.onclick = function(){ if (window._HC && window._HC.start) { window._HC.start(content); } else { alert('體質檢測模組載入中，請稍候'); } };
+    if (s) s.onclick = function(){ if (window._HC && window._HC.start) { window._HC.start(content); } else { alert('能力檢測模組載入中，請稍候'); } };
   }
 
-  // ==================== 體質檢測核心 · 個人版 (健檢 _HC) · ES5 vanilla ====================
+  // ==================== 能力檢測核心 · 個人版 (健檢 _HC) · ES5 vanilla ====================
   // 訪談狀態機 + 考官 AI(callV2) + 6 維評分 + 防灌水紅旗 + 報告 + bpStorage 存檔
   (function(){
     "use strict";
@@ -11641,7 +11644,7 @@ body.hd-locked { overflow: hidden; }
 
     function probeSystemPrompt(){
       return [
-        "你是 BeyondSpec「AI Native 體質檢測」的資深訪談官。你的任務是逼出受訪者跟 AI 一起工作的【真實案例與證據】，不接受空泛的『我很會用 AI』。",
+        "你是 BeyondSpec「AI能力檢測」的資深訪談官。你的任務是逼出受訪者跟 AI 一起工作的【真實案例與證據】，不接受空泛的『我很會用 AI』。",
         "你會收到：當前訪談段落的主題、原始問題、以及受訪者的回答。",
         "判斷這個回答是否【足夠具體】——具體 = 有真實案例、有做法細節、有可驗證的成果（最好有數字）。",
         "若【不夠具體】（例如只說『我會用 ChatGPT』『就幫忙一下』『大概那些』、或明顯迴避），請產生一句溫和但直指核心的追問，引導對方講出一個真實案例與成果。語氣像懂行的朋友、不質問、不羞辱。",
@@ -11655,7 +11658,7 @@ body.hd-locked { overflow: hidden; }
 
     function scoreSystemPrompt(){
       return [
-        "你是 BeyondSpec「AI Native 體質檢測」的評分官。根據整份訪談逐字稿，為受訪者在 6 個維度上各打一個 0-10 分（一位小數），並判斷整體等級。",
+        "你是 BeyondSpec「AI能力檢測」的評分官。根據整份訪談逐字稿，為受訪者在 6 個維度上各打一個 0-10 分（一位小數），並判斷整體等級。",
         "6 個維度定義：",
         "1 workflow（AI 工作流設計）：能不能把事拆成『AI 做哪段、人做哪段』並串成可重複流程。",
         "2 tools（工具串接力）：會用、會組合多個 AI/自動化工具。",
@@ -11708,7 +11711,7 @@ body.hd-locked { overflow: hidden; }
       addTyping();
       setTimeout(function(){
         rmTyping();
-        addAI("嗨，我是這次替你做體質檢測的訪談官。我會問你幾段問題，你照實講就好，講不清楚我會追問——這樣照出來的鏡子才準。我們開始吧。", false);
+        addAI("嗨，我是這次替你做能力檢測的訪談官。我會問你幾段問題，你照實講就好，講不清楚我會追問——這樣照出來的鏡子才準。我們開始吧。", false);
         setTimeout(askSegment, 700);
       }, 600);
     }
@@ -11717,7 +11720,7 @@ body.hd-locked { overflow: hidden; }
       elRoot.innerHTML =
         '<div class="hcv-wrap">' +
           '<div class="hcv-top"><div class="hcv-bar">' +
-            '<div class="hcv-who"><span class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg></span>體質檢測訪談</div>' +
+            '<div class="hcv-who"><span class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg></span>能力檢測訪談</div>' +
             '<div class="hcv-steps" id="hcvSteps"></div>' +
           '</div></div>' +
           '<div class="hcv-feed" id="hcvFeed"></div>' +
@@ -11908,7 +11911,7 @@ body.hd-locked { overflow: hidden; }
 
       var html = '<div class="hc-report">';
       html += '<div class="hc-hero">';
-      html += '<div class="hc-hero-ey">AI Native 體質檢測 · 個人報告</div>';
+      html += '<div class="hc-hero-ey">AI能力檢測 · 個人報告</div>';
       html += '<div class="hc-badge" style="background:' + hexa(tier.col, .10) + ';box-shadow:0 6px 22px ' + hexa(tier.col, .16) + '">';
       html += '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="' + tier.col + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + tier.ic + '</svg>';
       html += '<div class="name">' + esc(tier.sn) + '</div>';
@@ -12014,7 +12017,7 @@ body.hd-locked { overflow: hidden; }
         var raw = localStorage.getItem(KEY);
         var cards = raw ? JSON.parse(raw) : [];
         if (!Array.isArray(cards)) cards = [];
-        cards.push({ id: "hc_task_" + Date.now(), title: "AI 體質補強：" + (advice.title || "提升弱項維度"), desc: (advice.body || "") + "\n\n（來自 AI Native 體質檢測 · " + new Date().toLocaleDateString("zh-TW") + " · 等級 " + R.tier + "）", columnId: "todo", source: "health", createdAt: new Date().toISOString() });
+        cards.push({ id: "hc_task_" + Date.now(), title: "AI 能力補強：" + (advice.title || "提升弱項維度"), desc: (advice.body || "") + "\n\n（來自 AI能力檢測 · " + new Date().toLocaleDateString("zh-TW") + " · 等級 " + R.tier + "）", columnId: "todo", source: "health", createdAt: new Date().toISOString() });
         localStorage.setItem(KEY, JSON.stringify(cards));
         if (typeof showToast === "function") showToast("已把補強建議加進任務看板"); else alert("已把補強建議加進任務看板");
       } catch(e){ try { console.warn("[HC] pushToTasks failed", e); } catch(_){} alert("加入任務看板時發生問題，請稍後再試"); }
@@ -33200,6 +33203,7 @@ function loadHistory(){
           /* ── 模組定義 ── */
           var personalMods = [
             { key:'mod-diagnose', label:'產品力診斷', icon:'pulse', q:'這個方向值得做嗎？', minPlan:'free' },
+            { key:'mod-health', label:'AI能力檢測', icon:'activity', q:'你到底多會用 AI？', minPlan:'free' },
             { key:'mod-lab', label:'Lab 研究', icon:'flask', q:'用戶怎麼看我的產品？', minPlan:'starter' },
             { key:'mod-survey', label:'問卷引擎', icon:'clipboard', q:'怎麼收集真實回饋？', minPlan:'starter' },
             { key:'mod-market', label:'市場探測', icon:'trendUp', q:'市場有多大？', minPlan:'starter' },
@@ -44006,7 +44010,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.1 · AI Native 體質檢測→改名「AI能力檢測」(模組總名+個人/團隊雙入口+訪談官/評分官/報告全改) · 修「側邊欄點不開」bug(Router routes 補登記 health→點擊正確開啟健檢頁) · 設定頁「模組管理·你的工作台」補上 AI能力檢測 開關(MODULE_DEFAULTS/MIN_PLAN 登記 mod-health=free·免費可用) · 歸類=個人驗證工具(與產品力診斷同欄) · sidebar v1.12.0→v1.12.1 -->
 <!-- v1.12.0 · 設定頁功能對照表重寫（舊 Free/Starter NT$290/Pro NT$990/Enterprise → 新 免費試用/PRO NT$499/MAX NT$999/Team）· credits 欄對齊拍板（50/50/1,000/依方案）· 模組欄依 PLAN_CATALOG（免費試用=全模組、PRO=核心6、MAX=全、Team=全+多人）· 殘留舊價 NT$290/NT$990/credits 30/500/3,000 清除 · sidebar v1.11.2→v1.12.0 ＋ 新增 AI Native 體質檢測模組(個人版)：側邊欄入口+個人/團隊雙入口+7段AI訪談(真AI追問逼證據)+6維評分+B~S不羞辱等級+防灌水紅旗+暗色適配+飽和純色 -->
 <!-- v1.11.2 · 品牌改名 BeyondPath→BeyondSpec(69 處顯示文字) + 模組名 PATH 診斷→產品力診斷(56) + PATH 四維模型→產品力四維模型(4) + navigate() 加 PostHog $pageview/module_view 逐模組數據追蹤(try/catch 降級安全·不弄壞導航) · 程式骨架 PATH_AI/pathType//path/ 全未動 · 基準=線上 v1.11.1 抓回(本地 v1.5.1 已 stale 改備份) · sidebar v1.11.1→v1.11.2 -->
-<!-- v1.11.1 (payroll) Calcifer 2026-06-18 - 0a Sentry DSN-ready 骨架 + 全域 onerror/unhandledrejection 統一上報通道(Sentry->PostHog->console 逐層降級); 1a resolveWorkspace() idempotent 建 workspaces/{uid} 父文件(owner/memberEmails/attendanceAccessEmails 三欄·fire-and-forget·不阻塞薪資載入)解 owner 出缺勤進不去; 0b deploy-prod.py 五層 guard. sidebar v1.11.0->v1.11.1 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
