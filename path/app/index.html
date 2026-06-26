@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.5</div>
+        <div class="sidebar-version">v1.12.6</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -10096,6 +10096,7 @@ body.hd-locked { overflow: hidden; }
     }
     return true;
   }
+  try { window.useCredits = useCredits; window.checkCredits = checkCredits; } catch(e){}
 
   function dismissLoginGate() {
     hideLoginModal();
@@ -11511,7 +11512,10 @@ body.hd-locked { overflow: hidden; }
     var b = document.getElementById('hc-back');
     if (b) b.onclick = function(){ renderHealthCheck('select'); };
     var s = document.getElementById('hc-start');
-    if (s) s.onclick = function(){ if (window._HC && window._HC.start) { window._HC.start(content); } else { alert('能力檢測模組載入中，請稍候'); } };
+    if (s) s.onclick = function(){
+      if (typeof window.checkCredits === 'function' && !window.checkCredits(10)) { if (typeof showToast === 'function') showToast('AI 能力檢測需要 10 點 credits，餘額不足，請升級方案', 4200); return; }
+      if (window._HC && window._HC.start) { if (typeof window.useCredits === 'function') window.useCredits(10, 'AI能力檢測'); window._HC.start(content); } else { alert('能力檢測模組載入中，請稍候'); }
+    };
   }
 
   // ==================== 能力檢測核心 · 個人版 (健檢 _HC) · ES5 vanilla ====================
@@ -11914,6 +11918,8 @@ body.hd-locked { overflow: hidden; }
         if (!u || !/^https?:\/\/.{3,}/i.test(u)) { var ue = document.getElementById("hcwUrlErr"); if (ue) ue.textContent = "請填一個有效的作品連結（含 http:// 或 https://）"; ok = false; }
         if (!n || n.length < 10) { var ne = document.getElementById("hcwNoteErr"); if (ne) ne.textContent = "說明太短了——多講一點你做了什麼、AI 參與哪些，AI 才審得準"; ok = false; }
         if (!ok) return;
+        if (typeof window.checkCredits === 'function' && !window.checkCredits(5)) { if (typeof showToast === 'function') showToast('作品審核需要 5 點 credits，餘額不足', 4200); return; }
+        if (typeof window.useCredits === 'function') window.useCredits(5, 'AI能力檢測·作品審核');
         work = { url:u, repo:r, note:n, at:new Date().toISOString() };
         runCertReview();
       };
@@ -44275,7 +44281,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.6 · AI能力檢測接上點數扣除（Edward 要求：考核用到的 AI 也要消耗點數）：①開始檢測扣 10 點(涵蓋訪談 6 段 AI 追問 + 評分) ②送作品審核扣 5 點(AI 審核作品) ③餘額不足擋下並提示升級 ④useCredits/checkCredits 暴露 window(原 app scope 健檢模組呼叫不到、扣點失效·已修) · Gate1 實測扣點生效(開始檢測餘額 -10 確認·零 error) · 點數值 10/5 可調 · sidebar v1.12.5→v1.12.6 -->
 <!-- v1.12.5 · AI能力檢測第 2 批·作品提交 + AI 審核 + 認證（Edward 選 B 完整功能版·卡西法實作·蘇菲審）：①訪談後新增「上傳作品」階段(作品連結 + Git Repo + 作品說明) ②AI 審核作品(callV2·依作品說明與連結評定·誠實標示 AI 不存取連結實際內容·有 fallback) ③報告新增「AI Native Coach OS 認證」區(六邊形認證徽章 + 等級 B/A/S + 評語 + 亮點 + 作品連結) ④跳過→顯示未提交引導 + 補交按鈕 ⑤work/cert 隨報告存檔 · 暗色評語對比優化 · Gate1 完整流程實測(訪談→作品→AI審核→認證報告 render 全對 + 零 console error) · sidebar v1.12.4→v1.12.5 -->
 <!-- v1.12.4 · AI能力檢測第 2 批(部分)·六邊形徽章：報告主徽章 + 能力階梯 從線條 icon 改「六邊形 + 等級字母」(對齊 Claude Design 定稿)；新增 hexBadge helper(正六邊形 SVG + 白字垂直置中)；色階 B灰#94A3B8 / B+綠#1BA891 / A紫#7C5CFC / A+紫深#5B3FC9 / S金#E08A3A · 訪談右側數據條 + 作品提交階段續做 · sidebar v1.12.3→v1.12.4 -->
-<!-- v1.12.3 · AI能力檢測對照 Claude Design 定稿設計（Edward 親修版）第 1 批視覺對齊：①六維改名全鏈(工作流/工具/判斷/領域/協作/交付 → 提問框架/批判視野/任務拆解/工具整合/反思迭代/領域提案；DIMS + 評分官 prompt + 訪談 self 段同步、id 不動所以評分邏輯安全) ②報告加「由 AI Native Coach OS 評定」+ 雷達標 Coach OS 模型 ③等級色階對齊(A+ 金→紫深 #5B3FC9、S 紫深→金 #E08A3A 對調) ④雙入口文案對齊(個人卡描述 + 按鈕統一「去檢測」) · 六邊形徽章樣式/訪談數據條/作品提交階段列第 2 批 · sidebar v1.12.2→v1.12.3 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
