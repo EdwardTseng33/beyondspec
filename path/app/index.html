@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.17</div>
+        <div class="sidebar-version">v1.12.18</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -12198,42 +12198,39 @@ body.hd-locked { overflow: hidden; }
       html += '<div class="hc-rep-id"><span class="ico"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg></span><b>AI能力檢測</b><span class="sub">個人能力檢測　·　你的報告</span></div>';
       html += '<div class="hc-rep-acts"><button class="hc-rep-btn" id="hcExportPdf"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11M8 11l4 4 4-4"/><path d="M5 19h14"/></svg>匯出 PDF</button><button class="hc-rep-btn ghost" id="hcShare"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8 15.7 6.4M8.3 13.2l7.4 4.4"/></svg>分享</button></div>';
       html += '</div>';
-      html += '<div class="hc-hero" style="background:' + tier.tint + ';border-radius:0 0 28px 28px">';
-      html += '<div class="hc-hero-ey">AI能力檢測 · 個人報告</div>';
-      html += '<div class="hc-badge" style="background:' + hexa(tier.col, .10) + ';box-shadow:0 6px 22px ' + hexa(tier.col, .16) + '">';
-      html += hexBadge(tier.col, tier.sc, 64);
-      html += '<div class="name">' + esc(tier.sn) + '</div>';
-      html += '<div class="code">LEVEL ' + tier.sc + '</div>';
-      html += '<div class="hc-coach-by">由 AI Native Coach OS 評定</div>';
-      html += '</div>';
-      html += '<div class="hc-verdict">' + esc(verdict) + '</div>';
-      html += '<div class="hc-tldr">' + esc(tldr) + '</div>';
-      if (R.capped) html += '<div class="hc-cap-note"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M8.5 14.5L6 22l6-3 6 3-2.5-7.5"/></svg><span>你在訪談中展現了 <b>' + TIERS[R.rawTierIdx].sc + ' 級</b>的實力——但 A 以上的認證需要作品佐證。交一份你用 AI 做出來的成果讓 Coach 看看真本事，就能解鎖。<b>目前認證等級 B+</b>。</span></div>';
-      html += '</div>';
-      html += '<div class="hc-sec"><div class="hc-kpi-row">';
-      html += '<div class="hc-kpi"><div class="val">' + R.lscore.toFixed(1) + '<small> / 10</small></div><div class="lab">AI 槓桿總分</div><div class="sub">同職能中位 ' + medAvg() + '</div></div>';
-      html += '<div class="hc-kpi"><div class="val" style="color:' + confColor(R.confidence.t) + '">' + R.confidence.t + '</div><div class="lab">結果信心度</div><div class="sub">' + esc(R.confidence.sub) + '</div></div>';
-      html += '<div class="hc-kpi"><div class="val">' + R.leadCount + '<small> / 6</small></div><div class="lab">領先維度</div><div class="sub">' + (6 - R.leadCount) + ' 項待補</div></div>';
-      html += '</div></div>';
+      html += '<div class="hc-rep2-body">';
       if (R.flags.length) html += redFlagBlock(R.flags);
-      html += '<div class="hc-grid2">';
-      html += '<div class="hc-col">';
-      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">01</span> 你在哪、往哪走</div><div class="hc-panel"><div class="hc-ladder" id="hcLadder"></div></div></div>';
-      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">02</span> 六維協作能力雷達<span style="margin-left:auto;font-weight:500;color:var(--ink-dim);letter-spacing:0;text-transform:none">你 vs 同職能中位</span></div>';
-      html += '<div class="hc-panel hc-radar-only"><svg id="hcRadar" viewBox="0 0 320 300" width="100%"></svg>';
-      html += '<div class="hc-legend"><span><i style="background:var(--primary)"></i>你的能力</span><span><i style="background:var(--slate)"></i>同職能中位數</span></div></div></div>';
+      html += '<div class="hc-rep2-grid">';
+      html += '<div class="hc-rep2-col">';
+      html += '<div class="hc-gradecard">';
+      html += '<div class="hc-gradecard-hd" style="background:' + tier.tint + '">';
+      html += '<div class="hc-gradecard-badge">' + hexBadge(tier.col, tier.sc, 96) + '</div>';
+      html += '<div class="hc-gradecard-meta"><span class="ovl" style="color:' + tier.col + '">整體等級</span><span class="snm">' + esc(tier.sn) + '</span><span class="by"><svg width="12" height="12" viewBox="0 0 22 22"><circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 11 a8 8 0 0 0 16 0" fill="currentColor" fill-opacity="0.18"/><line x1="3" y1="11" x2="19" y2="11" stroke="currentColor" stroke-width="1.7"/></svg>由 AI Native Coach OS 評定</span></div>';
       html += '</div>';
-      html += '<div class="hc-col">';
-      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">03</span> 六維拆解</div><div class="hc-panel"><div class="hc-dimlist" id="hcDimlist"></div></div></div>';
-      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">04</span> 你的底子</div><div class="hc-two hc-two-stack">';
-      html += '<div class="hc-panel"><div class="hc-blk-title"><span class="dot" style="background:var(--teal)"></span>你最強的地方</div>';
+      html += '<div class="hc-gradecard-bd">';
+      html += '<div class="hc-gradecard-verdict">' + esc(verdict) + '</div>';
+      html += '<div class="hc-gradecard-tldr">' + esc(tldr) + '</div>';
+      if (R.capped) html += '<div class="hc-cap-note"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M8.5 14.5L6 22l6-3 6 3-2.5-7.5"/></svg><span>你在訪談中展現了 <b>' + TIERS[R.rawTierIdx].sc + ' 級</b>的實力——但 A 以上的認證需要作品佐證。交一份你用 AI 做出來的成果讓 Coach 看看真本事，就能解鎖。<b>目前認證等級 B+</b>。</span></div>';
+      html += '<div class="hc-ladder-wrap"><span class="hc-ladder-lab">能力階梯</span><div class="hc-ladder2" id="hcLadder"></div></div>';
+      html += '</div></div>';
+      html += '<div class="hc-radarcard"><div class="hc-radarcard-hd">六維協作能力雷達<span>你 vs 同職能中位</span></div>';
+      html += '<svg id="hcRadar" viewBox="0 0 320 300" width="100%"></svg>';
+      html += '<div class="hc-legend"><span><i style="background:var(--primary)"></i>你的能力</span><span><i style="background:var(--slate)"></i>同職能中位數</span></div></div>';
+      html += '</div>';
+      html += '<div class="hc-rep2-col">';
+      html += '<div class="hc-dimcard"><h3>六維拆解</h3><div class="hc-dimlist" id="hcDimlist"></div></div>';
+      html += '<div class="hc-bottomcard"><h3>你的底子</h3><div class="hc-two hc-two-stack">';
+      html += '<div class="hc-bottomblk"><div class="hc-blk-title"><span class="dot" style="background:var(--teal)"></span>你最強的地方</div>';
       var si; for (si = 0; si < strengths.length; si++) html += '<div class="hc-li up">' + esc(strengths[si]) + '</div>';
       html += '</div>';
-      html += '<div class="hc-panel"><div class="hc-blk-title"><span class="dot" style="background:var(--gold)"></span>下一步最值得補的</div>';
+      html += '<div class="hc-bottomblk"><div class="hc-blk-title"><span class="dot" style="background:var(--gold)"></span>下一步最值得補的</div>';
       var ii; for (ii = 0; ii < improvements.length; ii++) html += '<div class="hc-li dn">' + esc(improvements[ii]) + '</div>';
       html += '</div></div></div>';
-      html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">05</span> 也許可以試試看</div>';
-      html += '<div class="hc-advice hc-advice-warm"><div class="why">對應你的弱項 · ' + esc(advice.why || "") + '</div><h4>' + esc(advice.title || "") + '</h4><p>' + esc(advice.body || "") + '</p></div></div>';
+      html += '<div class="hc-warmcard"><h3>也許可以試試看</h3>';
+      html += '<div class="hc-warmcard-why">對應你的弱項 · ' + esc(advice.why || "") + '</div>';
+      html += '<div class="hc-warmcard-tt">' + esc(advice.title || "") + '</div>';
+      html += '<p class="hc-warmcard-bd">' + esc(advice.body || "") + '</p></div>';
+      html += '</div>';
       html += '</div>';
       html += '</div>';
       html += certSection(R);
@@ -12317,14 +12314,21 @@ body.hd-locked { overflow: hidden; }
       for (i = 0; i < N; i++) { p = pt(i, Rr * scores[DIMS[i].id] / 10); var lead = scores[DIMS[i].id] >= MED[DIMS[i].id]; h += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3.5" fill="' + (lead ? "#1BA891" : "#E08A3A") + '"/>'; }
       svg.innerHTML = h;
     }
+    function dimGrade(v){
+      if (v >= 9) return { g:"S", c:"#E08A3A" };
+      if (v >= 8) return { g:"A+", c:"#7C5CFC" };
+      if (v >= 6.8) return { g:"A", c:"#7C5CFC" };
+      if (v >= 5.5) return { g:"B+", c:"#1BA891" };
+      return { g:"B", c:"#94A3B8" };
+    }
     function drawDimList(scores){
       var dl = document.getElementById("hcDimlist"); if (!dl) return;
       var s = "", i;
       for (i = 0; i < DIMS.length; i++) {
-        var d = DIMS[i], v = scores[d.id], med = MED[d.id], lead = v >= med;
-        s += '<div class="hc-dim"><div class="dn">' + esc(d.n) + '</div>';
-        s += '<div class="bar"><div class="fill" style="width:' + (v * 10) + '%;background:' + (lead ? "var(--primary)" : "var(--gold)") + '"></div><div class="med" style="left:' + (med * 10) + '%"></div></div>';
-        s += '<div class="tag ' + (lead ? "tag-up" : "tag-dn") + '">' + v.toFixed(1) + (lead ? " 領先" : " 待補") + '</div></div>';
+        var d = DIMS[i], v = scores[d.id], g = dimGrade(v), w = Math.max(0, Math.min(100, v * 10));
+        s += '<div class="hc-dim2"><span class="dn">' + esc(d.n) + '</span>';
+        s += '<div class="bar"><i style="width:' + w + '%;background:' + g.c + '"></i></div>';
+        s += '<span class="gr" style="color:' + g.c + '">' + g.g + '</span></div>';
       }
       dl.innerHTML = s;
     }
@@ -12341,10 +12345,19 @@ body.hd-locked { overflow: hidden; }
       var t = "", i;
       for (i = 0; i < TIERS.length; i++) {
         var x = TIERS[i], cur = (i === curIdx);
-        t += '<div class="hc-step' + (cur ? " cur" : "") + '" style="' + (cur ? "background:" + hexa(x.col, .10) + ";box-shadow:0 4px 16px " + hexa(x.col, .18) : "") + '">';
-        if (cur) t += '<div class="here">你在這裡</div>';
-        t += hexBadge(x.col, x.sc, 40);
-        t += '<div class="sn" style="color:' + (cur ? x.col : "var(--ink)") + '">' + esc(x.sn) + '</div><div class="sc">LV ' + x.sc + '</div></div>';
+        var sz = cur ? 40 : 30;
+        var op = cur ? "1" : (i < curIdx ? "0.82" : "0.45");
+        var fill = cur ? x.col : "#ffffff";
+        var stroke = cur ? x.col : "#D4D7DE";
+        var sw = cur ? "0" : "1.5";
+        var fg = cur ? "#ffffff" : "#9AA1AC";
+        var fw = cur ? "700" : "600";
+        var fs = cur ? "14px" : "11px";
+        t += '<div class="hc-ladstep"><div class="hc-ladhex" style="width:' + sz + 'px;height:' + Math.round(sz * 1.1) + 'px;opacity:' + op + '">';
+        if (cur) t += '<span class="now" style="color:' + x.col + '">現在</span>';
+        t += '<svg viewBox="0 0 40 44" width="100%" height="100%" style="display:block;position:absolute;inset:0"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '"></polygon></svg>';
+        t += '<span style="position:relative;color:' + fg + ';font-weight:' + fw + ';font-size:' + fs + '">' + esc(x.sc) + '</span>';
+        t += '</div></div>';
       }
       lad.innerHTML = t;
     }
@@ -12499,6 +12512,55 @@ body.hd-locked { overflow: hidden; }
     HC_CSS += '.hc-flag span{font-size:12px;color:var(--ink-muted)}';
     HC_CSS += '.hc-report-foot{text-align:center;padding:40px 32px 0}';
     HC_CSS += '.hc-report-foot .btn{margin:0 6px}';
+    HC_CSS += '.hc-rep2-body{padding:0 32px 8px}';
+    HC_CSS += '.hc-rep2-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:24px;align-items:start;margin-top:24px}';
+    HC_CSS += '.hc-rep2-col{display:flex;flex-direction:column;gap:24px;min-width:0}';
+    HC_CSS += '.hc-gradecard{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}';
+    HC_CSS += '.hc-gradecard-hd{padding:26px 28px;display:flex;align-items:center;gap:22px}';
+    HC_CSS += '.hc-gradecard-badge{flex:none;filter:drop-shadow(0 6px 18px rgba(20,20,40,.18))}';
+    HC_CSS += '.hc-gradecard-meta{display:flex;flex-direction:column;gap:6px;min-width:0}';
+    HC_CSS += '.hc-gradecard-meta .ovl{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}';
+    HC_CSS += '.hc-gradecard-meta .snm{font-size:21px;font-weight:700;color:var(--ink);line-height:1.2}';
+    HC_CSS += '.hc-gradecard-meta .by{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-muted)}';
+    HC_CSS += '.hc-gradecard-meta .by svg{flex:none}';
+    HC_CSS += '.hc-gradecard-bd{padding:22px 28px 24px;display:flex;flex-direction:column;gap:14px}';
+    HC_CSS += '.hc-gradecard-verdict{font-size:17px;font-weight:700;line-height:1.45;color:var(--ink)}';
+    HC_CSS += '.hc-gradecard-tldr{font-size:13px;line-height:1.65;color:var(--ink-muted)}';
+    HC_CSS += '.hc-gradecard-bd .hc-cap-note{max-width:none;margin:0}';
+    HC_CSS += '.hc-ladder-wrap{display:flex;flex-direction:column;gap:14px;margin-top:2px}';
+    HC_CSS += '.hc-ladder-lab{font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--ink)}';
+    HC_CSS += '.hc-ladder2{position:relative;display:flex;align-items:center;justify-content:space-between}';
+    HC_CSS += '.hc-ladder2::before{content:"";position:absolute;left:24px;right:24px;top:50%;height:2px;background:var(--line-soft,var(--bg-hover));transform:translateY(-50%);z-index:0}';
+    HC_CSS += '.hc-ladstep{flex:1;display:flex;justify-content:center;position:relative;z-index:1}';
+    HC_CSS += '.hc-ladstep .hc-ladhex{position:relative;display:flex;align-items:center;justify-content:center}';
+    HC_CSS += '.hc-ladstep .now{position:absolute;bottom:100%;margin-bottom:6px;white-space:nowrap;font-size:9px;font-weight:700;letter-spacing:.08em}';
+    HC_CSS += '.hc-radarcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 14px 16px;display:flex;flex-direction:column;align-items:center;gap:6px}';
+    HC_CSS += '.hc-radarcard-hd{align-self:stretch;display:flex;align-items:baseline;gap:10px;padding:0 6px 4px;font-size:13px;font-weight:700;color:var(--ink)}';
+    HC_CSS += '.hc-radarcard-hd span{font-size:11px;font-weight:500;color:var(--ink-muted)}';
+    HC_CSS += '.hc-radarcard svg{display:block;width:100%;max-width:340px}';
+    HC_CSS += '.hc-dimcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:16px}';
+    HC_CSS += '.hc-dimcard>h3{margin:0;font-size:15px;font-weight:700;color:var(--ink)}';
+    HC_CSS += '.hc-dimcard .hc-dimlist{gap:0}';
+    HC_CSS += '.hc-dim2{display:flex;align-items:center;gap:14px}';
+    HC_CSS += '.hc-dim2 .dn{width:74px;flex:none;font-size:13px;color:var(--ink-sec)}';
+    HC_CSS += '.hc-dim2 .bar{flex:1;height:6px;background:var(--line-soft,var(--bg-hover));border-radius:999px;overflow:hidden}';
+    HC_CSS += '.hc-dim2 .bar i{display:block;height:100%;border-radius:999px}';
+    HC_CSS += '.hc-dim2 .gr{width:30px;flex:none;text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}';
+    HC_CSS += '.hc-bottomcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:16px}';
+    HC_CSS += '.hc-bottomcard>h3{margin:0;font-size:15px;font-weight:700;color:var(--ink)}';
+    HC_CSS += '.hc-bottomcard .hc-two-stack{grid-template-columns:1fr;gap:18px}';
+    HC_CSS += '.hc-bottomblk{min-width:0}';
+    HC_CSS += '.hc-warmcard{background:#FBF7F0;border:1px solid #EFE7D8;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px}';
+    HC_CSS += 'html[data-theme="dark"] .hc-warmcard{background:rgba(224,138,58,.08);border-color:rgba(224,138,58,.24)}';
+    HC_CSS += '.hc-warmcard>h3{margin:0;font-size:15px;font-weight:700;color:var(--ink)}';
+    HC_CSS += '.hc-warmcard-why{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--gold)}';
+    HC_CSS += 'html[data-theme="dark"] .hc-warmcard-why{color:#E89A4E}';
+    HC_CSS += '.hc-warmcard-tt{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:16px;font-weight:700;line-height:1.5;color:var(--amber-ink)}';
+    HC_CSS += 'html[data-theme="dark"] .hc-warmcard-tt{color:#f0d9b8}';
+    HC_CSS += '.hc-warmcard-bd{margin:0;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:15px;line-height:1.7;color:var(--ink-sec)}';
+    HC_CSS += 'html[data-theme="dark"] .hc-warmcard-bd{color:var(--ink-muted)}';
+    HC_CSS += '@media(max-width:860px){.hc-rep2-grid{grid-template-columns:1fr}.hc-rep2-body{padding:0 20px 8px}}';
+    HC_CSS += '@media(max-width:560px){.hc-gradecard-hd{padding:22px 20px;gap:16px}.hc-gradecard-bd{padding:18px 20px 20px}.hc-dimcard,.hc-bottomcard,.hc-warmcard{padding:18px}.hc-rep2-body{padding:0 16px 8px}}';
     HC_CSS += '@media(max-width:720px){.hc-radar-wrap{grid-template-columns:1fr}.hc-kpi-row{grid-template-columns:1fr}.hc-two{grid-template-columns:1fr}.hc-ladder{grid-template-columns:1fr}}';
     HC_CSS += '@media(max-width:560px){.hc-hero{padding:40px 22px 32px}.hc-verdict{font-size:25px}.hc-sec{padding:28px 20px 0}.hc-panel{padding:18px}.hc-report-foot{padding:32px 20px 0}.hc-report-foot .btn{margin:6px 4px;width:calc(50% - 8px)}}';
 
@@ -44473,7 +44535,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.18 · AI能力檢測 報告頁版面重排對齊設計檔 FRAME4 雙欄（Edward「整個結果頁沒照設計檔·重新對照」·卡西法產 diff·蘇菲驗收上線）：①移除三數字卡(設計檔無) ②全寬 hero → 左欄「等級卡」(gradeTint header：六邊形 + 整體等級 label + 等級名 + 由 Coach 評定 + verdict + tldr + cap-note + 能力階梯併入卡底) ③雙欄重組 grid 1fr/1.15fr：左=等級卡(含階梯)+雷達卡 / 右=六維拆解卡 + 底子卡 + 也許試試看卡(暖色 #FBF7F0 + Georgia italic serif) ④認證卡(作品分)移雙欄下方全寬 ⑤drawDimList 字母化(分數→S/A+/A/B+/B·色依等級) ⑥drawLadder 橫排小六邊形 + 現在標 · 真 Chrome 實測：雙欄 render 完整、console 無 app error、字母等級正確、暖色建議 serif、認證作品分顯示 · 含暗色相容 + 860px RWD 折單欄 · sidebar v1.12.17→v1.12.18 -->
 <!-- v1.12.17 · AI能力檢測 作品佔最終認證 40%（Edward「有沒有作品該佔多少比例·重新思考認證」·拍板訪談 60%+作品 40%）：①根因=訪談 tier 與作品 certLevel 兩套獨立等級脫鉤(之前「認證 A vs 整體 S」對不上的原因) ②作品審核改給「作品品質分」workScore 0-10(非 B/A/S 字母) ③buildResult 綜合：有作品 finalScore = 訪談 lscore×0.6 + 作品×0.4 → 定 tier；沒作品仍封頂 B+ ④認證區改顯示「作品分數圓 X.X/10 + 已佔最終認證 40%」(移除獨立認證等級徽章→一套等級·不再兩套) ⑤certSystemPrompt/certSchema/fallbackCert/done/certColor 全同步改 workScore · 真 Chrome 實測：訪談 A 配好作品8→A+、配爛作品4→B+(被拉低)、沒作品→封頂B+·作品品質實質影響認證 · ⚠️報告版面雙欄對齊設計檔 仍待重排 · sidebar v1.12.16→v1.12.17 -->
 <!-- v1.12.16 · AI能力檢測 雙入口精簡 + 返回移位（Edward 指）：①雙入口頁拿掉「一個人能扛多少…」說明文字(hc-lead)·標題下直接兩張入口卡 ②開始說明頁返回鈕 從 header 上方 → header 下方(page-title-area 之後·解 Edward「返回浮在標題上方突兀」) · 真 Chrome 實測雙入口文字已刪、返回在 header 下方 · ⚠️作品佔評分比例機制(Edward「有沒有作品該佔多少比例·重新思考認證」)：現況=訪談 tier 與作品 certLevel 兩套獨立脫鉤→待拍板權重後改成加權綜合 · sidebar v1.12.15→v1.12.16 -->
-<!-- v1.12.15 · AI能力檢測 沒作品封頂 B+（Edward「我沒提供作品評分也可以 A?? 莫名其妙」）：①根因=等級只看訪談六維分數算(calcLScore+calcTier)、作品(work)只存進結果不算等級→沒交作品光訪談說得好就給 A ②buildResult 加封頂：沒作品(work=null)且訪談 rawTier > B+ → 等級封頂 B+（A/A+/S 必須作品佐證·對齊 BeyondPath 證據導向「沒證據不給高分」）·結果存 rawTierIdx + capped 旗標 ③報告 hero 加封頂提示卡(暖色 gold·非漸層)：「你在訪談中展現了 X 級的實力——但 A 以上認證需作品佐證·交一份作品解鎖·目前認證等級 B+」· 真 Chrome 實測：A+ 實力訪談 沒作品→封頂 B+(capped)、有作品→A+(不封頂)·提示卡視覺確認 · ⚠️報告版面對齊設計檔雙欄(設計檔左等級+階梯/右六維拆解·現為單欄+多三數字卡) 下輪照設計檔重排 · sidebar v1.12.14→v1.12.15 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
