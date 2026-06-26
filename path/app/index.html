@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.1</div>
+        <div class="sidebar-version">v1.12.2</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11414,28 +11414,46 @@ body.hd-locked { overflow: hidden; }
       var st = document.createElement('style');
       st.id = 'hc-inline-style';
       st.textContent = [
-        '.hc-wrap{max-width:880px}',
-        '.hc-entry{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}',
-        '@media(max-width:680px){.hc-entry{grid-template-columns:1fr}}',
-        '.hc-card{position:relative;border-radius:18px;padding:24px;cursor:pointer;color:#fff;transition:transform .16s ease,box-shadow .16s ease}',
-        '.hc-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(20,20,40,.18)}',
-        '.hc-card.personal{background:#7C5CFC}',
-        '.hc-card.team{background:#1BA891}',
-        '.hc-card .hc-ic{width:34px;height:34px;margin-bottom:14px;opacity:.95}',
-        '.hc-card h3{font-size:18px;font-weight:700;margin:0 0 6px}',
-        '.hc-card p{font-size:13px;line-height:1.55;opacity:.92;margin:0 0 16px}',
-        '.hc-card .hc-go{font-size:13px;font-weight:600}',
-        '.hc-card .hc-soon{position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;background:rgba(255,255,255,.22);padding:3px 9px;border-radius:99px}',
-        '.hc-intro{max-width:680px;margin:0 auto;text-align:center;padding:24px 0}',
-        '.hc-intro .hc-ey{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#D4712A;font-weight:700;margin-bottom:18px}',
-        '.hc-intro h2{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:26px;font-weight:700;color:#3D2E1A;margin:0 0 12px;line-height:1.3}',
-        '.hc-intro .hc-sub{font-size:14px;color:var(--ink-muted);line-height:1.6;margin:0 auto 24px;max-width:520px}',
-        '.hc-points{text-align:left;max-width:460px;margin:0 auto 26px;display:flex;flex-direction:column;gap:14px}',
-        '.hc-pt{display:flex;gap:12px;align-items:flex-start}',
-        '.hc-pt .d{width:7px;height:7px;border-radius:99px;background:#7C5CFC;margin-top:7px;flex:0 0 auto}',
-        '.hc-pt b{font-size:13px;font-weight:600;color:var(--ink)}',
-        '.hc-pt span{font-size:12px;color:var(--ink-muted)}',
-        '.hc-back{font-size:12px;color:var(--ink-muted);cursor:pointer;margin-bottom:8px;display:inline-block}'
+        '.hc-wrap{max-width:960px;margin:0 auto}',
+        '.hc-back{font-size:13px;color:var(--ink-muted);cursor:pointer;margin-bottom:20px;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;transition:background var(--motion-fast,120ms),color var(--motion-fast,120ms)}',
+        '.hc-back:hover{background:var(--bg-hover);color:var(--ink)}',
+        '.hc-lead{max-width:620px;margin:4px 0 32px}',
+        '.hc-lead p{font-size:15px;line-height:1.7;color:var(--ink-muted);margin:0}',
+        '.hc-entry{display:grid;grid-template-columns:1fr 1fr;gap:20px}',
+        '@media(max-width:760px){.hc-entry{grid-template-columns:1fr}}',
+        '.hc-card{position:relative;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:28px 26px 24px;cursor:pointer;overflow:hidden;transition:transform var(--motion-normal,180ms) cubic-bezier(.4,0,.2,1),box-shadow var(--motion-normal,180ms),border-color var(--motion-normal,180ms)}',
+        '.hc-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--border-hover)}',
+        '.hc-card:focus-visible{outline:2px solid var(--primary);outline-offset:3px}',
+        '.hc-card .hc-ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:18px}',
+        '.hc-card .hc-ic svg{width:22px;height:22px;stroke-width:1.6}',
+        '.hc-card.personal .hc-ic{background:var(--primary-light);color:var(--primary)}',
+        '.hc-card.team .hc-ic{background:var(--teal-bg);color:var(--teal)}',
+        '.hc-card h3{font-size:17px;font-weight:700;margin:0 0 8px;color:var(--ink);letter-spacing:-.2px}',
+        '.hc-card p{font-size:13.5px;line-height:1.65;color:var(--ink-muted);margin:0 0 20px}',
+        '.hc-card .hc-go{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600}',
+        '.hc-card.personal .hc-go{color:var(--primary)}',
+        '.hc-card.team .hc-go{color:var(--teal)}',
+        '.hc-card .hc-go svg{width:16px;height:16px;transition:transform var(--motion-fast,120ms)}',
+        '.hc-card:hover .hc-go svg{transform:translateX(4px)}',
+        '.hc-card.team{cursor:default}',
+        '.hc-card.team:hover{transform:none;box-shadow:var(--shadow-card);border-color:var(--border)}',
+        '.hc-card .hc-soon{position:absolute;top:18px;right:18px;font-size:10.5px;font-weight:700;letter-spacing:.04em;color:var(--ink-muted);background:var(--bg-hover);padding:4px 11px;border-radius:99px}',
+        '.hc-intro{max-width:560px;margin:0 auto;text-align:center;padding:48px 0 40px}',
+        '.hc-intro .hc-ey{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber-accent);font-weight:700;margin-bottom:20px}',
+        '.hc-intro h2{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:30px;font-weight:700;color:var(--amber-ink);margin:0 0 16px;line-height:1.3;letter-spacing:-.3px}',
+        'html[data-theme="dark"] .hc-intro h2{color:#f0d9b8}',
+        '.hc-intro .hc-sub{font-size:14.5px;color:var(--ink-muted);line-height:1.75;margin:0 auto 36px;max-width:480px}',
+        '.hc-intro .hc-rule{height:1px;background:var(--border);max-width:80px;margin:0 auto 36px}',
+        '.hc-points{text-align:left;max-width:480px;margin:0 auto 36px;display:flex;flex-direction:column;gap:12px}',
+        '.hc-pt{display:flex;gap:14px;align-items:flex-start;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:border-color var(--motion-fast,120ms)}',
+        '.hc-pt:hover{border-color:var(--border-hover)}',
+        '.hc-pt .n{flex:0 0 auto;width:26px;height:26px;border-radius:8px;background:var(--primary-light);color:var(--primary);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}',
+        '.hc-pt b{display:block;font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:3px}',
+        '.hc-pt span{font-size:12.5px;color:var(--ink-muted);line-height:1.55}',
+        '.hc-intro .hc-cta{display:inline-flex;align-items:center;gap:8px;font-size:14.5px}',
+        '.hc-intro .hc-cta svg{width:17px;height:17px;transition:transform var(--motion-fast,120ms)}',
+        '.hc-intro .hc-cta:hover svg{transform:translateX(3px)}',
+        '.hc-intro .hc-foot{font-size:12px;color:var(--ink-dim);margin-top:18px}'
       ].join('');
       document.head.appendChild(st);
     }
@@ -11447,40 +11465,48 @@ body.hd-locked { overflow: hidden; }
       +   '<h1><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3l2-5 3 10 2-7 1.5 3h4.5"/></svg><span>AI能力檢測</span></h1>'
       +   '<p class="subtitle">你和你的團隊，到底多會用 AI？</p>'
       + '</div>'
+      + '<div class="hc-wrap"><div class="hc-lead">'
+      +   '<p>一個人能扛多少，現在很大一部分取決於你多會用 AI。這裡有兩面鏡子——先照你自己，或照整支團隊。</p>'
+      + '</div></div>'
       + '<div class="hc-wrap"><div class="hc-entry">'
-      +   '<div class="hc-card personal" id="hc-go-personal">'
-      +     '<svg class="hc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>'
+      +   '<div class="hc-card personal" id="hc-go-personal" tabindex="0" role="button">'
+      +     '<div class="hc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg></div>'
       +     '<h3>個人能力檢測</h3>'
-      +     '<p>你一個人 + AI，用到多深？10 分鐘照出你跟 AI 一起工作的真實樣子。</p>'
-      +     '<div class="hc-go">先照照自己 →</div>'
+      +     '<p>你一個人 + AI，到底用到多深？10 分鐘，照出你跟 AI 一起工作的真實樣子。</p>'
+      +     '<div class="hc-go">先照照自己<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>'
       +   '</div>'
       +   '<div class="hc-card team" id="hc-go-team">'
       +     '<span class="hc-soon">即將推出</span>'
-      +     '<svg class="hc-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.6"/><circle cx="16.5" cy="9" r="2.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M14.5 19a5 5 0 0 1 6-4.7"/></svg>'
+      +     '<div class="hc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="2.6"/><circle cx="16.5" cy="9" r="2.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M14.5 19a5 5 0 0 1 6-4.7"/></svg></div>'
       +     '<h3>團隊能力檢測</h3>'
-      +     '<p>工作室、企業都適用。看整隊的 AI 能力落在哪、誰能帶誰。</p>'
-      +     '<div class="hc-go">照照整支團隊 →</div>'
+      +     '<p>工作室、企業都適用。看整支團隊的 AI 能力落在哪、誰能帶誰一起往上。</p>'
+      +     '<div class="hc-go">照照整支團隊<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>'
       +   '</div>'
       + '</div></div>';
     var p = document.getElementById('hc-go-personal');
-    if (p) p.onclick = function(){ renderHealthCheck('personal'); };
+    if (p) {
+      p.onclick = function(){ renderHealthCheck('personal'); };
+      p.onkeydown = function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); renderHealthCheck('personal'); } };
+    }
     var t = document.getElementById('hc-go-team');
-    if (t) t.onclick = function(){ alert('團隊能力檢測即將推出（個人版先上）'); };
+    if (t) t.onclick = function(){ if (typeof showToast === 'function') showToast('團隊能力檢測即將推出 · 個人版先上'); else alert('團隊能力檢測即將推出（個人版先上）'); };
   }
 
   function _hcPersonalIntro(content){
     content.innerHTML = ''
-      + '<div class="hc-wrap"><span class="hc-back" id="hc-back">← 返回</span>'
+      + '<div class="hc-wrap"><span class="hc-back" id="hc-back"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>返回</span>'
       + '<div class="hc-intro">'
       +   '<div class="hc-ey">個人能力檢測</div>'
       +   '<h2>看清楚你跟 AI 一起工作的真實樣子</h2>'
       +   '<p class="hc-sub">這不是考試，是一面鏡子。沒有及格不及格，只有「你現在在哪、下一步往哪走」。誠實回答，鏡子才照得準。</p>'
+      +   '<div class="hc-rule"></div>'
       +   '<div class="hc-points">'
-      +     '<div class="hc-pt"><span class="d"></span><div><b>誠實，比答得漂亮更重要</b><br><span>我們會追問真實案例。講不出細節的「很會用 AI」不算數。</span></div></div>'
-      +     '<div class="hc-pt"><span class="d"></span><div><b>大約 15 分鐘</b><br><span>一場對話式訪談，5 到 6 段。像跟一個懂行的朋友聊你怎麼工作。</span></div></div>'
-      +     '<div class="hc-pt"><span class="d"></span><div><b>你會拿到一份完整健檢報告</b><br><span>六個面向的能力雷達、跟同行的對照、你的強項與下一步。</span></div></div>'
+      +     '<div class="hc-pt"><span class="n">01</span><div><b>誠實，比答得漂亮更重要</b><span>我們會追問真實案例。講不出細節的「很會用 AI」不算數。</span></div></div>'
+      +     '<div class="hc-pt"><span class="n">02</span><div><b>大約 15 分鐘</b><span>一場對話式訪談，5 到 6 段。像跟一個懂行的朋友聊你怎麼工作。</span></div></div>'
+      +     '<div class="hc-pt"><span class="n">03</span><div><b>你會拿到一份完整健檢報告</b><span>六個面向的能力雷達、跟同行的對照、你的強項與下一步。</span></div></div>'
       +   '</div>'
-      +   '<button class="btn-accent" id="hc-start">開始檢測 →</button>'
+      +   '<button class="btn-accent hc-cta" id="hc-start">開始檢測<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>'
+      +   '<div class="hc-foot">放輕鬆，這是一面鏡子、不是考試，隨時可以停。</div>'
       + '</div></div>';
     var b = document.getElementById('hc-back');
     if (b) b.onclick = function(){ renderHealthCheck('select'); };
@@ -11751,12 +11777,12 @@ body.hd-locked { overflow: hidden; }
     function addAI(text, isProbe, probeTag){
       var d = document.createElement("div");
       d.className = "hcv-msg ai" + (isProbe ? " probe" : "");
-      var inner = '<div class="hcv-meta">';
+      var inner = '<div class="hcv-inner"><div class="hcv-meta">';
       if (isProbe) inner += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>追問';
       else inner += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v5l3 2"/></svg>訪談官';
       inner += '</div>';
       if (isProbe && probeTag) inner += '<div class="hcv-probe-tag">' + esc(probeTag) + '</div>';
-      inner += '<div class="hcv-bubble"></div>';
+      inner += '<div class="hcv-bubble"></div></div>';
       d.innerHTML = inner;
       d.querySelector(".hcv-bubble").textContent = text;
       feed.appendChild(d); scrollFeed();
@@ -12024,43 +12050,47 @@ body.hd-locked { overflow: hidden; }
     }
 
     var HC_CSS = "";
-    HC_CSS += '.hcv-wrap{max-width:680px;margin:0 auto}';
-    HC_CSS += '.hcv-top{position:sticky;top:0;z-index:20;background:var(--bg);padding:14px 0 12px;border-bottom:1px solid var(--border,var(--border));margin-bottom:8px}';
+    HC_CSS += '.hcv-wrap{max-width:720px;margin:0 auto}';
+    HC_CSS += '.hcv-top{position:sticky;top:0;z-index:20;background:var(--bg-app);padding:16px 0 14px;border-bottom:1px solid var(--border);margin-bottom:8px}';
     HC_CSS += '.hcv-bar{display:flex;align-items:center;gap:12px}';
     HC_CSS += '.hcv-who{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--ink)}';
-    HC_CSS += '.hcv-who .av{width:28px;height:28px;border-radius:9px;background:rgba(124,92,252,.14);display:flex;align-items:center;justify-content:center}';
-    HC_CSS += '.hcv-who .av svg{width:16px;height:16px;color:#D4712A}';
+    HC_CSS += '.hcv-who .av{width:30px;height:30px;border-radius:9px;background:var(--amber-bg);display:flex;align-items:center;justify-content:center}';
+    HC_CSS += '.hcv-who .av svg{width:16px;height:16px;color:var(--amber-accent)}';
     HC_CSS += '.hcv-steps{flex:1;display:flex;gap:5px;margin-left:6px}';
-    HC_CSS += '.hcv-st{flex:1;height:3px;border-radius:99px;background:var(--line,var(--border));overflow:hidden}';
-    HC_CSS += '.hcv-st i{display:block;height:100%;width:0;background:var(--primary);border-radius:99px;transition:width .5s ease}';
+    HC_CSS += '.hcv-st{flex:1;height:5px;border-radius:99px;background:var(--bg-hover);overflow:hidden}';
+    HC_CSS += '.hcv-st i{display:block;height:100%;width:0;background:var(--primary);border-radius:99px;transition:width var(--motion-smooth,280ms) ease}';
     HC_CSS += '.hcv-st.done i{width:100%}.hcv-st.cur i{width:55%}';
-    HC_CSS += '.hcv-feed{padding:18px 0 150px}';
+    HC_CSS += '.hcv-feed{padding:24px 0 160px}';
     HC_CSS += '.hcv-msg{margin-bottom:22px;animation:hcFade .4s ease both}';
     HC_CSS += '@keyframes hcFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}';
-    HC_CSS += '.hcv-msg.ai .hcv-bubble{font-family:Georgia,"Times New Roman",serif;font-size:16.5px;line-height:1.7;color:var(--ink);max-width:560px}';
-    HC_CSS += '.hcv-msg.ai .hcv-meta{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#D4712A;font-weight:600;margin-bottom:9px;display:flex;align-items:center;gap:6px}';
+    HC_CSS += '.hcv-msg.ai{display:flex;justify-content:flex-start}';
+    HC_CSS += '.hcv-msg.ai .hcv-inner{max-width:82%}';
+    HC_CSS += '.hcv-msg.ai .hcv-bubble{font-family:Georgia,"Times New Roman",serif;font-size:16px;line-height:1.7;color:var(--ink);background:var(--bg-card);border:1px solid var(--border);padding:14px 18px;border-radius:4px 16px 16px 16px;box-shadow:var(--shadow-sm)}';
+    HC_CSS += '.hcv-msg.ai .hcv-meta{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber-accent);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}';
     HC_CSS += '.hcv-msg.ai .hcv-meta svg{width:13px;height:13px}';
     HC_CSS += '.hcv-msg.ai.probe .hcv-meta{color:var(--gold)}';
+    HC_CSS += '.hcv-msg.ai.probe .hcv-bubble{background:var(--gold-bg);border-color:transparent}';
     HC_CSS += '.hcv-msg.ai.probe .hcv-meta::before{content:"";display:inline-block;width:7px;height:7px;border-radius:99px;background:var(--gold);flex:none}';
     HC_CSS += '.hcv-probe-tag{display:inline-block;font-size:10.5px;font-weight:600;color:#a85f1a;background:rgba(224,138,58,.16);padding:2px 9px;border-radius:99px;margin-bottom:10px}';
     HC_CSS += 'html[data-theme="dark"] .hcv-probe-tag{color:#E89A4E}';
     HC_CSS += '.hcv-msg.me{display:flex;justify-content:flex-end}';
-    HC_CSS += '.hcv-msg.me .hcv-bubble{font-size:14.5px;line-height:1.6;color:#fff;background:var(--primary);padding:12px 16px;border-radius:16px 16px 4px 16px;max-width:74%;box-shadow:0 2px 10px rgba(124,92,252,.22);white-space:pre-wrap;word-break:break-word}';
-    HC_CSS += '.hcv-typing{display:inline-flex;gap:4px;padding:4px 0}';
+    HC_CSS += '.hcv-msg.me .hcv-bubble{font-size:14.5px;line-height:1.6;color:#fff;background:var(--primary);padding:12px 16px;border-radius:16px 16px 4px 16px;max-width:74%;box-shadow:0 2px 10px var(--primary-glow);white-space:pre-wrap;word-break:break-word}';
+    HC_CSS += '.hcv-typing{display:inline-flex;gap:4px;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px 16px 16px 16px}';
     HC_CSS += '.hcv-typing i{width:7px;height:7px;border-radius:99px;background:var(--slate);opacity:.5;animation:hcBlink 1.2s infinite}';
     HC_CSS += '.hcv-typing i:nth-child(2){animation-delay:.2s}.hcv-typing i:nth-child(3){animation-delay:.4s}';
     HC_CSS += '@keyframes hcBlink{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:.9;transform:translateY(-3px)}}';
-    HC_CSS += '.hcv-input{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--bg);border-top:1px solid var(--line,var(--border));padding:14px 0 calc(14px + env(safe-area-inset-bottom))}';
-    HC_CSS += '.hcv-iwrap{max-width:680px;margin:0 auto;padding:0 24px;display:flex;gap:10px;align-items:flex-end}';
-    HC_CSS += '.hcv-input textarea{flex:1;font-family:inherit;font-size:14.5px;color:var(--ink);background:var(--field,var(--card));border:1px solid var(--field-line,var(--border));border-radius:14px;padding:12px 14px;resize:none;line-height:1.5;max-height:120px}';
-    HC_CSS += '.hcv-input textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,92,252,.12)}';
-    HC_CSS += '.hcv-send{flex:none;width:44px;height:44px;border-radius:13px;border:none;background:var(--primary);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(124,92,252,.26)}';
+    HC_CSS += '.hcv-input{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--bg-app);border-top:1px solid var(--border);padding:14px 0 calc(14px + env(safe-area-inset-bottom))}';
+    HC_CSS += '.hcv-iwrap{max-width:720px;margin:0 auto;padding:0 24px;display:flex;gap:10px;align-items:flex-end}';
+    HC_CSS += '.hcv-input textarea{flex:1;font-family:inherit;font-size:14.5px;color:var(--ink);background:var(--bg-input);border:1px solid var(--border);border-radius:14px;padding:12px 14px;resize:none;line-height:1.5;max-height:120px}';
+    HC_CSS += '.hcv-input textarea::placeholder{color:var(--ink-placeholder)}';
+    HC_CSS += '.hcv-input textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}';
+    HC_CSS += '.hcv-send{flex:none;width:44px;height:44px;border-radius:13px;border:none;background:var(--primary);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px var(--primary-glow);transition:transform var(--motion-fast,120ms)}';
     HC_CSS += '.hcv-send:hover{transform:translateY(-1px)}.hcv-send:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}';
     HC_CSS += '.hcv-send svg{width:19px;height:19px}';
-    HC_CSS += '.hcv-hints{max-width:680px;margin:0 auto 10px;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap}';
-    HC_CSS += '.hcv-hint{font-family:inherit;font-size:12.5px;color:var(--ink-muted);background:var(--card);border:1px solid var(--line,var(--border));border-radius:99px;padding:7px 14px;cursor:pointer;line-height:1.3;text-align:left}';
+    HC_CSS += '.hcv-hints{max-width:720px;margin:0 auto 10px;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap}';
+    HC_CSS += '.hcv-hint{font-family:inherit;font-size:12.5px;color:var(--ink-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:99px;padding:7px 14px;cursor:pointer;line-height:1.3;text-align:left;transition:border-color var(--motion-fast,120ms),color var(--motion-fast,120ms)}';
     HC_CSS += '.hcv-hint:hover{border-color:var(--primary);color:var(--primary)}';
-    HC_CSS += '.hc-calc{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center;padding:40px 24px;background:radial-gradient(120% 80% at 50% 30%,rgba(212,113,42,.10),rgba(212,113,42,.02) 55%,transparent)}';
+    HC_CSS += '.hc-calc{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center;padding:40px 24px;background:var(--amber-bg)}';
     HC_CSS += '.hc-calc-ring{position:relative;width:140px;height:140px;margin-bottom:42px}';
     HC_CSS += '.hc-calc-ring svg{width:140px;height:140px;transform:rotate(-90deg)}';
     HC_CSS += '.hc-calc-ring .track{fill:none;stroke:var(--line,var(--border));stroke-width:3}';
@@ -12078,23 +12108,24 @@ body.hd-locked { overflow: hidden; }
     HC_CSS += '.hc-cl.show{opacity:1}';
 
     HC_CSS += '.hc-report{max-width:880px;margin:0 auto;padding:0 0 60px}';
-    HC_CSS += '.hc-hero{background:var(--bg-warm);padding:48px 32px 40px;text-align:center;border-radius:0 0 28px 28px}';
-    HC_CSS += '.hc-hero-ey{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#D4712A;font-weight:600;margin-bottom:22px}';
+    HC_CSS += '.hc-hero{background:var(--amber-bg);padding:48px 32px 40px;text-align:center;border-radius:0 0 28px 28px}';
+    HC_CSS += '.hc-hero-ey{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber-accent);font-weight:600;margin-bottom:22px}';
     HC_CSS += '.hc-badge{display:inline-flex;flex-direction:column;align-items:center;gap:6px;padding:20px 30px;border-radius:20px;margin-bottom:22px}';
     HC_CSS += '.hc-badge .ico{width:34px;height:34px}';
-    HC_CSS += '.hc-badge .name{font-family:Georgia,serif;font-style:italic;font-size:23px;font-weight:700;color:#3D2E1A}';
+    HC_CSS += '.hc-badge .name{font-family:Georgia,serif;font-style:italic;font-size:23px;font-weight:700;color:var(--amber-ink)}';
     HC_CSS += 'html[data-theme="dark"] .hc-badge .name{color:#f0d9b8}';
     HC_CSS += '.hc-badge .code{font-size:11px;letter-spacing:.14em;color:var(--ink-muted);font-weight:600}';
-    HC_CSS += '.hc-verdict{font-family:Georgia,serif;font-style:italic;font-size:30px;line-height:1.25;font-weight:700;color:#3D2E1A;max-width:560px;margin:0 auto 14px}';
+    HC_CSS += '.hc-verdict{font-family:Georgia,serif;font-style:italic;font-size:30px;line-height:1.25;font-weight:700;color:var(--amber-ink);max-width:560px;margin:0 auto 14px}';
     HC_CSS += 'html[data-theme="dark"] .hc-verdict{color:#f0d9b8}';
-    HC_CSS += '.hc-tldr{font-family:Georgia,serif;font-style:italic;font-size:15px;color:#7a6650;max-width:520px;margin:0 auto;line-height:1.6}';
-    HC_CSS += 'html[data-theme="dark"] .hc-tldr{color:#c4ad8c}';
+    HC_CSS += '.hc-tldr{font-family:Georgia,serif;font-style:italic;font-size:15px;color:var(--amber-ink);opacity:.72;max-width:520px;margin:0 auto;line-height:1.6}';
+    HC_CSS += 'html[data-theme="dark"] .hc-tldr{color:#c4ad8c;opacity:1}';
     HC_CSS += '.hc-ritual-break{height:1px;background:var(--line,var(--border));max-width:120px;margin:36px auto 0}';
     HC_CSS += '.hc-sec{padding:32px 32px 0}';
     HC_CSS += '.hc-sec-meta{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}';
     HC_CSS += '.hc-sec-meta .num{color:var(--primary)}';
     HC_CSS += '.hc-kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}';
-    HC_CSS += '.hc-kpi{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(20,20,40,.06)}';
+    HC_CSS += '.hc-kpi{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(20,20,40,.06);transition:box-shadow var(--motion-normal,180ms),transform var(--motion-normal,180ms)}';
+    HC_CSS += '.hc-kpi:hover{box-shadow:var(--shadow-card);transform:translateY(-2px)}';
     HC_CSS += '.hc-kpi .val{font-size:32px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink)}';
     HC_CSS += '.hc-kpi .val small{font-size:16px;color:var(--ink-muted);font-weight:600}';
     HC_CSS += '.hc-kpi .lab{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);font-weight:600;margin-top:4px}';
@@ -44010,7 +44041,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.2 · AI能力檢測模組整體設計重整（女巫 Gate2 主導·蘇菲審）：①根治版面靠左空蕩(.hc-wrap 補 margin:0 auto 置中) ②入口卡 滿版色磚→白底卡+色票塊(封閉五色語意) ③進入頁 編號說明卡+儀式分隔線+層次 ④訪談頁 修 var(--bg) 落空致捲動穿透(→var(--bg-app)) + AI 訊息加氣泡容器(原裸文字) + 進度條加粗 ⑤報告頁 寫死琥珀→複用 --amber-* token + 暖底修正(原灰底) + KPI hover ⑥全暗色變數化·對比達標·去漸層飽和純色 ⑦鍵盤可達+隱私文案校正 · rubric 86/100 · sidebar v1.12.1→v1.12.2 -->
 <!-- v1.12.1 · AI Native 體質檢測→改名「AI能力檢測」(模組總名+個人/團隊雙入口+訪談官/評分官/報告全改) · 修「側邊欄點不開」bug(Router routes 補登記 health→點擊正確開啟健檢頁) · 設定頁「模組管理·你的工作台」補上 AI能力檢測 開關(MODULE_DEFAULTS/MIN_PLAN 登記 mod-health=free·免費可用) · 歸類=個人驗證工具(與產品力診斷同欄) · sidebar v1.12.0→v1.12.1 -->
 <!-- v1.12.0 · 設定頁功能對照表重寫（舊 Free/Starter NT$290/Pro NT$990/Enterprise → 新 免費試用/PRO NT$499/MAX NT$999/Team）· credits 欄對齊拍板（50/50/1,000/依方案）· 模組欄依 PLAN_CATALOG（免費試用=全模組、PRO=核心6、MAX=全、Team=全+多人）· 殘留舊價 NT$290/NT$990/credits 30/500/3,000 清除 · sidebar v1.11.2→v1.12.0 ＋ 新增 AI Native 體質檢測模組(個人版)：側邊欄入口+個人/團隊雙入口+7段AI訪談(真AI追問逼證據)+6維評分+B~S不羞辱等級+防灌水紅旗+暗色適配+飽和純色 -->
-<!-- v1.11.2 · 品牌改名 BeyondPath→BeyondSpec(69 處顯示文字) + 模組名 PATH 診斷→產品力診斷(56) + PATH 四維模型→產品力四維模型(4) + navigate() 加 PostHog $pageview/module_view 逐模組數據追蹤(try/catch 降級安全·不弄壞導航) · 程式骨架 PATH_AI/pathType//path/ 全未動 · 基準=線上 v1.11.1 抓回(本地 v1.5.1 已 stale 改備份) · sidebar v1.11.1→v1.11.2 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->

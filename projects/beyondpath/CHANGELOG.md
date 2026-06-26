@@ -529,3 +529,6 @@ P0 結構除錯（任務中心稽核後）
 
 ## v1.11.1
 <!-- v1.11.1 (payroll) Calcifer 2026-06-18 - 0a Sentry DSN-ready 骨架 + 全域 onerror/unhandledrejection 統一上報通道(Sentry->PostHog->console 逐層降級); 1a resolveWorkspace() idempotent 建 workspaces/{uid} 父文件(owner/memberEmails/attendanceAccessEmails 三欄·fire-and-forget·不阻塞薪資載入)解 owner 出缺勤進不去; 0b deploy-prod.py 五層 guard. sidebar v1.11.0->v1.11.1 -->
+
+## v1.11.2
+<!-- v1.11.2 · 品牌改名 BeyondPath→BeyondSpec(69 處顯示文字) + 模組名 PATH 診斷→產品力診斷(56) + PATH 四維模型→產品力四維模型(4) + navigate() 加 PostHog $pageview/module_view 逐模組數據追蹤(try/catch 降級安全·不弄壞導航) · 程式骨架 PATH_AI/pathType//path/ 全未動 · 基準=線上 v1.11.1 抓回(本地 v1.5.1 已 stale 改備份) · sidebar v1.11.1→v1.11.2 -->
