@@ -8131,7 +8131,7 @@ body.hd-locked { overflow: hidden; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           <span>收合選單</span>
         </button>
-        <div class="sidebar-version">v1.12.4</div>
+        <div class="sidebar-version">v1.12.5</div>
       </div>
     </aside>
     <main id="main"><div id="content"></div></main>
@@ -11721,6 +11721,8 @@ body.hd-locked { overflow: hidden; }
     var feed, stepsBox, hintsBox, txt, sendBtn;
     var segIdx = 0, inProbe = false, probeDone = false, locked = false;
     var transcript = [];
+    var work = null;   // 作品提交物件 {url, repo, note} · null = 跳過
+    var cert = null;   // AI 審核認證物件 · null = 未審核
     var aiAvailable = false;
 
     function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -11732,6 +11734,7 @@ body.hd-locked { overflow: hidden; }
       aiAvailable = !!(window.PATH_AI && typeof window.PATH_AI.callV2 === "function" && window.PATH_AI.isAvailable && window.PATH_AI.isAvailable());
       injectStyle();
       transcript = []; segIdx = 0; inProbe = false; probeDone = false; locked = false;
+      work = null; cert = null;
       renderInterviewShell();
       buildSteps();
       addTyping();
@@ -11859,11 +11862,143 @@ body.hd-locked { overflow: hidden; }
       paintSteps(); lockInput(true); setHints(null); addTyping();
       setTimeout(function(){
         rmTyping();
-        addAI("謝謝你這麼具體。我已經聽夠了——讓我把這些整理成一份只屬於你的報告。", false);
-        setTimeout(runCalc, 1300);
+        addAI("謝謝你這麼具體。我已經聽夠了——在替你出報告之前，最後一步：讓我看看你真正做出來的東西。", false);
+        setTimeout(renderWorkSubmit, 1300);
       }, 700);
     }
 
+    function renderWorkSubmit(){
+      elRoot.innerHTML =
+        '<div class="hcw-wrap">' +
+          '<div class="hcw-head">' +
+            '<div class="hcw-ey">最後一步 · 作品審核</div>' +
+            '<h2 class="hcw-title">帶上你的作品，讓 AI 看看真本事</h2>' +
+            '<p class="hcw-sub">訪談聊的是你怎麼想，作品證明你真的做得到。貼一個你用 AI 做出來的成果，讓 AI Native Coach OS 為你的協作成熟度做一份認證。</p>' +
+          '</div>' +
+          '<div class="hcw-form">' +
+            '<div class="hcw-field">' +
+              '<label class="hcw-lab">作品連結<span class="req">必填</span></label>' +
+              '<input type="url" id="hcwUrl" class="hcw-inp" placeholder="https://\u2026 \u4f60\u7684\u4f5c\u54c1\u3001Demo\u3001\u4e0a\u7dda\u9801\u9762\u6216\u6210\u679c\u9023\u7d50" />' +
+              '<div class="hcw-err" id="hcwUrlErr"></div>' +
+            '</div>' +
+            '<div class="hcw-field">' +
+              '<label class="hcw-lab">Git Repo / \u6a94\u6848\u9023\u7d50<span class="opt">選填</span></label>' +
+              '<input type="url" id="hcwRepo" class="hcw-inp" placeholder="https://github.com/\u2026 \u6216\u96f2\u7aef\u6a94\u6848\u9023\u7d50\uff08\u53ef\u7559\u7a7a\uff09" />' +
+            '</div>' +
+            '<div class="hcw-field">' +
+              '<label class="hcw-lab">作品說明<span class="req">必填</span></label>' +
+              '<textarea id="hcwNote" class="hcw-inp hcw-area" rows="5" placeholder="\u4f60\u505a\u4e86\u4ec0\u9ebc\uff1fAI \u5728\u88e1\u9762\u53c3\u8207\u54ea\u4e9b\uff1f\u4f60\u81ea\u5df1\u7684\u5224\u65b7\u8207\u628a\u95dc\u662f\u4ec0\u9ebc\uff1f\u8b1b\u5177\u9ad4\u4e00\u9ede\uff0cAI \u624d\u770b\u5f97\u51fa\u4f60\u7684\u771f\u529f\u592b\u3002"></textarea>' +
+              '<div class="hcw-err" id="hcwNoteErr"></div>' +
+            '</div>' +
+            '<div class="hcw-note-honest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg><span>AI 看不到連結裡的實際內容，會<b>依你填寫的作品說明與連結</b>評定。說得越具體、越誠實，認證越準。</span></div>' +
+            '<div class="hcw-actions">' +
+              '<button class="btn-accent hcw-submit" id="hcwSubmit">送 AI 審核<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>' +
+              '<button class="btn-ghost hcw-skip" id="hcwSkip" type="button">先跳過，直接看報告</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      try { window.scrollTo(0, 0); } catch(e){}
+      var urlEl = document.getElementById("hcwUrl");
+      var repoEl = document.getElementById("hcwRepo");
+      var noteEl = document.getElementById("hcwNote");
+      var subBtn = document.getElementById("hcwSubmit");
+      var skipBtn = document.getElementById("hcwSkip");
+      function clearErr(){ var ue = document.getElementById("hcwUrlErr"), ne = document.getElementById("hcwNoteErr"); if (ue) ue.textContent = ""; if (ne) ne.textContent = ""; }
+      if (urlEl) urlEl.addEventListener("input", clearErr);
+      if (noteEl) noteEl.addEventListener("input", clearErr);
+      if (subBtn) subBtn.onclick = function(){
+        var u = (urlEl && urlEl.value || "").replace(/^\s+|\s+$/g, "");
+        var r = (repoEl && repoEl.value || "").replace(/^\s+|\s+$/g, "");
+        var n = (noteEl && noteEl.value || "").replace(/^\s+|\s+$/g, "");
+        var ok = true;
+        if (!u || !/^https?:\/\/.{3,}/i.test(u)) { var ue = document.getElementById("hcwUrlErr"); if (ue) ue.textContent = "請填一個有效的作品連結（含 http:// 或 https://）"; ok = false; }
+        if (!n || n.length < 10) { var ne = document.getElementById("hcwNoteErr"); if (ne) ne.textContent = "說明太短了——多講一點你做了什麼、AI 參與哪些，AI 才審得準"; ok = false; }
+        if (!ok) return;
+        work = { url:u, repo:r, note:n, at:new Date().toISOString() };
+        runCertReview();
+      };
+      if (skipBtn) skipBtn.onclick = function(){ work = null; cert = null; runCalc(); };
+    }
+    function certSystemPrompt(){
+      return [
+        "你是 BeyondSpec「AI Native Coach OS」的作品審核官。你只會收到受測者【自己填寫的作品說明與連結文字】——你看不到連結裡的實際內容，請僅依這些文字所展現的 AI 協作成熟度來評定，不要假裝你檢視了作品本身。",
+        "評估重點：\u2460 受測者是否清楚說明 AI 在作品中參與了哪些環節 \u2461 是否展現自己的判斷、把關與決策（而非全交給 AI）\u2462 是否有具體做法、流程或可驗證的成果。",
+        "認證等級三級：",
+        "B（AI 協作入門）：能說出 AI 怎麼幫上忙，但人機分工或把關描述較模糊。",
+        "A（AI 協作實踐）：清楚說明 AI 參與環節、有自己的判斷與把關、做法具體。",
+        "S（AI 協作領航）：人機分工成熟、把關嚴謹、有可重複的方法或明確成果，能成為他人對標對象。",
+        "review 是一句審核評語：繁體中文、30 字以內、成長導向、不羞辱、不否定對方努力。",
+        "evidence 是 1-3 條從說明裡讀到的具體亮點，每條繁體中文一句話。",
+        "pass 一律給 true（這是認證、不是淘汰；等級高低已反映成熟度）。",
+        "嚴格只回 JSON，不要任何多餘文字：",
+        '{ "pass": true, "certLevel": "B", "certName": "AI 協作實踐者", "review": "", "evidence": [] }'
+      ].join("\n");
+    }
+    function certUserPrompt(w){
+      var lines = [];
+      lines.push("【作品連結】" + (w && w.url || "（未提供）"));
+      lines.push("【Git Repo / 檔案連結】" + (w && w.repo ? w.repo : "（未提供）"));
+      lines.push("【受測者自填的作品說明】\n" + (w && w.note || "（未提供）"));
+      return lines.join("\n\n");
+    }
+    function certSchema(o){
+      if (!o || typeof o !== "object") return { valid:false, errors:["非物件"] };
+      if (typeof o.certLevel !== "string" || !/^(B|A|S)$/.test(o.certLevel)) return { valid:false, errors:["certLevel 必須是 B/A/S"] };
+      if (typeof o.certName !== "string" || !o.certName) return { valid:false, errors:["缺 certName"] };
+      if (typeof o.review !== "string" || !o.review) return { valid:false, errors:["缺 review"] };
+      return { valid:true };
+    }
+    function certColor(level){ return level === "S" ? "#E08A3A" : (level === "A" ? "#7C5CFC" : "#94A3B8"); }
+    function fallbackCert(w){
+      var note = (w && w.note || "");
+      var toolRe = /(ChatGPT|GPT|Claude|Gemini|Midjourney|Notion|Zapier|Make|n8n|Copilot|Perplexity|Cursor|API)/gi;
+      var judgeRe = /(判斷|把關|查證|驗證|檢查|決策|取捨|修正)/g;
+      var tm = note.match(toolRe), jm = note.match(judgeRe);
+      var toolHits = tm ? tm.length : 0, judgeHits = jm ? jm.length : 0;
+      var level = "B", name = "AI 協作入門者";
+      if (note.length >= 120 && toolHits >= 1 && judgeHits >= 1) { level = "A"; name = "AI 協作實踐者"; }
+      if (note.length >= 220 && toolHits >= 2 && judgeHits >= 2) { level = "S"; name = "AI 協作領航者"; }
+      var ev = [];
+      if (toolHits >= 1) ev.push("作品說明點出了具體的 AI 工具與用法");
+      if (judgeHits >= 1) ev.push("能描述自己對 AI 產出的判斷與把關");
+      if (note.length >= 120) ev.push("作品脈絡交代得相對完整");
+      if (!ev.length) ev.push("已把 AI 實際用進作品、踏出協作的第一步");
+      return { pass:true, certLevel:level, certName:name, review:"依你提供的說明，已展現實際的 AI 協作能力，繼續往更成熟邁進。", evidence:ev.slice(0,3), fallback:true };
+    }
+
+    var CERT_MSGS = [
+      "正在讀你寫的作品說明\u2026",
+      "看看 AI 在你的成果裡參與了哪些\u2026",
+      "判斷你的把關與決策有多扎實\u2026",
+      "為你的協作成熟度定一個認證等級\u2026"
+    ];
+    function runCertReview(){
+      elRoot.innerHTML =
+        '<div class="hc-calc hcw-calc">' +
+          '<div class="hc-calc-ring run" id="hcCertRing">' +
+            '<svg viewBox="0 0 140 140"><circle class="track" cx="70" cy="70" r="66"/><circle class="prog" cx="70" cy="70" r="66"/></svg>' +
+            '<div class="core"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg></div>' +
+          '</div>' +
+          '<div class="hc-calc-title">AI 正在審核你的作品</div>' +
+          '<div class="hc-calc-lines" id="hcCertLines"></div>' +
+        '</div>';
+      var box = document.getElementById("hcCertLines"), i;
+      for (i = 0; i < CERT_MSGS.length; i++) { var d = document.createElement("div"); d.className = "hc-cl"; d.textContent = CERT_MSGS[i]; box.appendChild(d); }
+      var lines = box.querySelectorAll(".hc-cl"), idx = 0;
+      function showLine(){ var k; for (k = 0; k < lines.length; k++) lines[k].classList.remove("show"); if (idx < lines.length) { lines[idx].classList.add("show"); idx++; setTimeout(showLine, 1300); } }
+      showLine();
+
+      var certStart = Date.now();
+      function done(cc){ cert = cc; var wait = Math.max(0, 4200 - (Date.now() - certStart)); setTimeout(runCalc, wait); }
+      if (!aiAvailable) { done(fallbackCert(work)); return; }
+      window.PATH_AI.callV2(certSystemPrompt(), certUserPrompt(work), { reportType:"health_cert", timeout:40000, retries:3, schema:certSchema })
+        .then(function(res){
+          if (res && res.ok && res.data) {
+            var d = res.data;
+            done({ pass: d.pass !== false, certLevel: d.certLevel, certName: d.certName, review: d.review, evidence: (d.evidence && d.evidence.length) ? d.evidence.slice(0,3) : fallbackCert(work).evidence });
+          } else { done(fallbackCert(work)); }
+        })["catch"](function(){ done(fallbackCert(work)); });
+    }
     var CALC_MSGS = [
       "正在讀你講的每一個案例…",
       "對照同職能工作者的中位水準…",
@@ -11910,7 +12045,8 @@ body.hd-locked { overflow: hidden; }
       return {
         id: "hc_" + Date.now(), kind: "personal", date: new Date().toISOString(),
         scores: scores, lscore: lscore, tierIdx: tierIdx, tier: TIERS[tierIdx].sc,
-        confidence: conf, leadCount: leadCount, flags: flags, ai: ai || null, transcriptLen: transcript.length
+        confidence: conf, leadCount: leadCount, flags: flags, ai: ai || null, transcriptLen: transcript.length,
+        work: work || null, cert: cert || null
       };
     }
 
@@ -11965,6 +12101,7 @@ body.hd-locked { overflow: hidden; }
       var ii; for (ii = 0; ii < improvements.length; ii++) html += '<div class="hc-li dn">' + esc(improvements[ii]) + '</div>';
       html += '</div></div></div>';
       html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">03</span> 你在哪、往哪走</div><div class="hc-ladder" id="hcLadder"></div></div>';
+      html += certSection(R);
       html += '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">04</span> 你的下一步</div>';
       html += '<div class="hc-advice"><div class="why">對應你的弱項 · ' + esc(advice.why || "") + '</div><h4>' + esc(advice.title || "") + '</h4><p>' + esc(advice.body || "") + '</p></div></div>';
       html += '<div class="hc-report-foot">';
@@ -11980,6 +12117,43 @@ body.hd-locked { overflow: hidden; }
       if (rb) rb.onclick = function(){ if (typeof renderHealthCheck === "function") renderHealthCheck("personal"); };
       var tb = document.getElementById("hcToTasks");
       if (tb) tb.onclick = function(){ pushToTasks(R, advice); };
+      var cr = document.getElementById("hcCertRedo");
+      if (cr) cr.onclick = function(){ renderWorkSubmit(); };
+    }
+    function certSection(R){
+      var c = R.cert;
+      var h = '<div class="hc-sec"><div class="hc-sec-meta"><span class="num">\u2605</span> AI Native Coach OS 認證</div>';
+      if (!c) {
+        h += '<div class="hc-cert hc-cert-empty">' +
+               '<div class="hc-cert-empty-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M8.5 14.5L6 22l6-3 6 3-2.5-7.5"/></svg></div>' +
+               '<div class="hc-cert-empty-tx"><b>你還沒提交作品，這份認證暫時留白</b><span>完成一次作品審核，就能拿到 AI Native Coach OS 的協作成熟度認證——這是你能對外展示的真功夫。</span></div>' +
+               '<button class="btn btn-outline hc-cert-redo" id="hcCertRedo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>補交作品</button>' +
+             '</div>';
+        h += '</div>';
+        return h;
+      }
+      var col = certColor(c.certLevel);
+      h += '<div class="hc-cert" style="background:' + hexa(col, .07) + '">';
+      h += '<div class="hc-cert-main">';
+      h += '<div class="hc-cert-badge" style="background:' + hexa(col, .12) + ';box-shadow:0 6px 22px ' + hexa(col, .18) + '">' + hexBadge(col, c.certLevel, 64) + '</div>';
+      h += '<div class="hc-cert-body">';
+      h += '<div class="hc-cert-name">' + esc(c.certName || "AI 協作實踐者") + '</div>';
+      h += '<div class="hc-cert-lv">認證等級 ' + esc(c.certLevel) + '</div>';
+      h += '<div class="hc-cert-review">' + esc(c.review || "") + '</div>';
+      h += '</div></div>';
+      if (c.evidence && c.evidence.length) {
+        h += '<div class="hc-cert-ev">';
+        var i; for (i = 0; i < c.evidence.length; i++) {
+          h += '<div class="hc-cert-evi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>' + esc(c.evidence[i]) + '</span></div>';
+        }
+        h += '</div>';
+      }
+      if (R.work && R.work.url) {
+        h += '<a class="hc-cert-link" href="' + esc(R.work.url) + '" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>查看提交的作品</a>';
+      }
+      h += '<div class="hc-cert-foot">AI 依你提供的作品說明與連結評定，未實際存取連結內容。</div>';
+      h += '</div></div>';
+      return h;
     }
 
     function medAvg(){ var s = 0, k; for (k in MED) { if (MED.hasOwnProperty(k)) s += MED[k]; } return (s / 6).toFixed(1); }
@@ -12185,6 +12359,56 @@ body.hd-locked { overflow: hidden; }
     HC_CSS += '@media(max-width:720px){.hc-radar-wrap{grid-template-columns:1fr}.hc-kpi-row{grid-template-columns:1fr}.hc-two{grid-template-columns:1fr}.hc-ladder{grid-template-columns:1fr}}';
     HC_CSS += '@media(max-width:560px){.hc-hero{padding:40px 22px 32px}.hc-verdict{font-size:25px}.hc-sec{padding:28px 20px 0}.hc-panel{padding:18px}.hc-report-foot{padding:32px 20px 0}.hc-report-foot .btn{margin:6px 4px;width:calc(50% - 8px)}}';
 
+    HC_CSS += '.hcw-wrap{max-width:720px;margin:0 auto;padding:48px 24px 80px}';
+    HC_CSS += '.hcw-head{text-align:center;margin-bottom:36px}';
+    HC_CSS += '.hcw-ey{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber-accent);font-weight:600;margin-bottom:14px}';
+    HC_CSS += '.hcw-title{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:28px;font-weight:700;line-height:1.3;color:var(--amber-ink);margin-bottom:14px}';
+    HC_CSS += 'html[data-theme="dark"] .hcw-title{color:#f0d9b8}';
+    HC_CSS += '.hcw-sub{font-size:14px;line-height:1.7;color:var(--ink-muted);max-width:540px;margin:0 auto}';
+    HC_CSS += '.hcw-form{background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:28px 24px;box-shadow:var(--shadow-sm)}';
+    HC_CSS += '.hcw-field{margin-bottom:20px}';
+    HC_CSS += '.hcw-lab{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:8px}';
+    HC_CSS += '.hcw-lab .req{font-size:10px;font-weight:700;color:var(--rose);background:rgba(217,68,98,.12);padding:2px 7px;border-radius:99px;letter-spacing:.02em}';
+    HC_CSS += '.hcw-lab .opt{font-size:10px;font-weight:600;color:var(--slate);background:var(--bg-hover);padding:2px 7px;border-radius:99px;letter-spacing:.02em}';
+    HC_CSS += '.hcw-inp{width:100%;font-family:inherit;font-size:14px;color:var(--ink);background:var(--bg-input);border:1px solid var(--border);border-radius:12px;padding:12px 14px;line-height:1.5;box-sizing:border-box}';
+    HC_CSS += '.hcw-inp::placeholder{color:var(--ink-placeholder)}';
+    HC_CSS += '.hcw-inp:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}';
+    HC_CSS += '.hcw-area{resize:vertical;min-height:110px}';
+    HC_CSS += '.hcw-err{font-size:12px;color:var(--rose);margin-top:6px;min-height:0;line-height:1.5}';
+    HC_CSS += '.hcw-note-honest{display:flex;gap:10px;align-items:flex-start;background:var(--amber-bg);border-radius:12px;padding:13px 15px;margin:4px 0 24px}';
+    HC_CSS += '.hcw-note-honest svg{flex:none;width:18px;height:18px;color:var(--amber-accent);margin-top:1px}';
+    HC_CSS += '.hcw-note-honest span{font-size:12.5px;line-height:1.6;color:var(--ink-muted)}';
+    HC_CSS += '.hcw-note-honest b{color:var(--ink);font-weight:600}';
+    HC_CSS += '.hcw-actions{display:flex;flex-direction:column;gap:12px;align-items:center}';
+    HC_CSS += '.hcw-submit{width:100%;justify-content:center}';
+    HC_CSS += '.hcw-skip{font-size:13px;color:var(--ink-muted);background:none;border:none;cursor:pointer;padding:6px 12px;transition:color var(--motion-fast,120ms)}';
+    HC_CSS += '.hcw-skip:hover{color:var(--ink)}';
+    HC_CSS += '.hcw-calc .hc-calc-title{font-size:24px}';
+    HC_CSS += '.hc-cert{border-radius:18px;padding:24px;background:var(--card);box-shadow:0 1px 3px rgba(20,20,40,.06)}';
+    HC_CSS += '.hc-cert-main{display:flex;gap:18px;align-items:center}';
+    HC_CSS += '.hc-cert-badge{flex:none;display:flex;align-items:center;justify-content:center;padding:14px;border-radius:16px}';
+    HC_CSS += '.hc-cert-body{flex:1;min-width:0}';
+    HC_CSS += '.hc-cert-name{font-family:Georgia,serif;font-style:italic;font-size:22px;font-weight:700;color:var(--amber-ink);line-height:1.25}';
+    HC_CSS += 'html[data-theme="dark"] .hc-cert-name{color:#f0d9b8}';
+    HC_CSS += '.hc-cert-lv{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-muted);font-weight:600;margin-top:4px}';
+    HC_CSS += '.hc-cert-review{font-size:14px;line-height:1.6;color:var(--ink-sec);margin-top:10px}';
+    HC_CSS += 'html[data-theme="dark"] .hc-cert-review{color:var(--ink-muted)}';
+    HC_CSS += '.hc-cert-ev{display:flex;flex-direction:column;gap:8px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line-soft,var(--bg-hover))}';
+    HC_CSS += '.hc-cert-evi{display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--ink-sec);line-height:1.5}';
+    HC_CSS += 'html[data-theme="dark"] .hc-cert-evi{color:var(--ink-muted)}';
+    HC_CSS += '.hc-cert-evi svg{flex:none;width:16px;height:16px;color:var(--teal);margin-top:2px}';
+    HC_CSS += '.hc-cert-link{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--primary);margin-top:16px;text-decoration:none}';
+    HC_CSS += '.hc-cert-link svg{width:15px;height:15px}';
+    HC_CSS += '.hc-cert-link:hover{text-decoration:underline}';
+    HC_CSS += '.hc-cert-foot{font-size:11px;color:var(--ink-muted);margin-top:16px;line-height:1.5}';
+    HC_CSS += '.hc-cert-empty{display:flex;align-items:center;gap:16px;flex-wrap:wrap}';
+    HC_CSS += '.hc-cert-empty-ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--bg-hover);display:flex;align-items:center;justify-content:center}';
+    HC_CSS += '.hc-cert-empty-ic svg{width:24px;height:24px;color:var(--slate)}';
+    HC_CSS += '.hc-cert-empty-tx{flex:1;min-width:200px}';
+    HC_CSS += '.hc-cert-empty-tx b{display:block;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px}';
+    HC_CSS += '.hc-cert-empty-tx span{font-size:12.5px;color:var(--ink-muted);line-height:1.55}';
+    HC_CSS += '.hc-cert-redo{flex:none}';
+    HC_CSS += '@media(max-width:560px){.hcw-wrap{padding:40px 20px 60px}.hcw-title{font-size:24px}.hcw-form{padding:22px 18px}.hc-cert{padding:20px}.hc-cert-main{gap:14px}.hc-cert-name{font-size:20px}.hc-cert-empty{flex-direction:column;align-items:flex-start}.hc-cert-redo{width:100%;justify-content:center}}';
     window._HC = { start: start };
   })();
 
@@ -44051,7 +44275,7 @@ function openPayslipPicker(){
 
 </body>
 </html>
+<!-- v1.12.5 · AI能力檢測第 2 批·作品提交 + AI 審核 + 認證（Edward 選 B 完整功能版·卡西法實作·蘇菲審）：①訪談後新增「上傳作品」階段(作品連結 + Git Repo + 作品說明) ②AI 審核作品(callV2·依作品說明與連結評定·誠實標示 AI 不存取連結實際內容·有 fallback) ③報告新增「AI Native Coach OS 認證」區(六邊形認證徽章 + 等級 B/A/S + 評語 + 亮點 + 作品連結) ④跳過→顯示未提交引導 + 補交按鈕 ⑤work/cert 隨報告存檔 · 暗色評語對比優化 · Gate1 完整流程實測(訪談→作品→AI審核→認證報告 render 全對 + 零 console error) · sidebar v1.12.4→v1.12.5 -->
 <!-- v1.12.4 · AI能力檢測第 2 批(部分)·六邊形徽章：報告主徽章 + 能力階梯 從線條 icon 改「六邊形 + 等級字母」(對齊 Claude Design 定稿)；新增 hexBadge helper(正六邊形 SVG + 白字垂直置中)；色階 B灰#94A3B8 / B+綠#1BA891 / A紫#7C5CFC / A+紫深#5B3FC9 / S金#E08A3A · 訪談右側數據條 + 作品提交階段續做 · sidebar v1.12.3→v1.12.4 -->
 <!-- v1.12.3 · AI能力檢測對照 Claude Design 定稿設計（Edward 親修版）第 1 批視覺對齊：①六維改名全鏈(工作流/工具/判斷/領域/協作/交付 → 提問框架/批判視野/任務拆解/工具整合/反思迭代/領域提案；DIMS + 評分官 prompt + 訪談 self 段同步、id 不動所以評分邏輯安全) ②報告加「由 AI Native Coach OS 評定」+ 雷達標 Coach OS 模型 ③等級色階對齊(A+ 金→紫深 #5B3FC9、S 紫深→金 #E08A3A 對調) ④雙入口文案對齊(個人卡描述 + 按鈕統一「去檢測」) · 六邊形徽章樣式/訪談數據條/作品提交階段列第 2 批 · sidebar v1.12.2→v1.12.3 -->
-<!-- v1.12.2 · AI能力檢測模組整體設計重整（女巫 Gate2 主導·蘇菲審）：①根治版面靠左空蕩(.hc-wrap 補 margin:0 auto 置中) ②入口卡 滿版色磚→白底卡+色票塊(封閉五色語意) ③進入頁 編號說明卡+儀式分隔線+層次 ④訪談頁 修 var(--bg) 落空致捲動穿透(→var(--bg-app)) + AI 訊息加氣泡容器(原裸文字) + 進度條加粗 ⑤報告頁 寫死琥珀→複用 --amber-* token + 暖底修正(原灰底) + KPI hover ⑥全暗色變數化·對比達標·去漸層飽和純色 ⑦鍵盤可達+隱私文案校正 · rubric 86/100 · sidebar v1.12.1→v1.12.2 -->
 <!-- changelog 歷史：見 projects/beyondpath/CHANGELOG.md -->
